@@ -9,6 +9,7 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
@@ -40,4 +41,70 @@ func Test_fitness01(tst *testing.T) {
 	Fitness(f, ovs)
 	io.Pforan("f = %v\n", f)
 	chk.Vector(tst, "f", 1e-15, f, utl.LinSpace(1, 0, 11))
+}
+
+func Test_ranking01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("ranking01")
+
+	f := Ranking(11, 2.0)
+	io.Pforan("f = %v\n", f)
+	chk.Vector(tst, "f", 1e-15, f, []float64{2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0})
+
+	f = Ranking(11, 1.1)
+	io.Pfblue2("f = %v\n", f)
+	chk.Vector(tst, "f", 1e-15, f, []float64{1.1, 1.08, 1.06, 1.04, 1.02, 1, 0.98, 0.96, 0.94, 0.92, 0.9})
+}
+
+func Test_cumsum01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("cumsum01")
+
+	p := []float64{1, 2, 3, 4, 5}
+	cs := make([]float64, len(p))
+	CumSum(cs, p)
+	io.Pforan("cs = %v\n", cs)
+	chk.Vector(tst, "cumsum", 1e-17, cs, []float64{1, 3, 6, 10, 15})
+}
+
+func Test_rws01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("rws01. roulette whell selection")
+
+	f := []float64{2.0, 1.8, 1.6, 1.4, 1.2, 1.0, 0.8, 0.6, 0.4, 0.2, 0.0}
+	n := len(f)
+	p := make([]float64, n)
+	sum := la.VecAccum(f)
+	for i := 0; i < n; i++ {
+		p[i] = f[i] / sum
+	}
+	cs := make([]float64, len(p))
+	CumSum(cs, p)
+	selinds := make([]int, 6)
+	RouletteSelect(selinds, cs, []float64{0.81, 0.32, 0.96, 0.01, 0.65, 0.42})
+	io.Pforan("selinds = %v\n", selinds)
+	chk.Ints(tst, "selinds", selinds, []int{5, 1, 8, 0, 4, 2})
+}
+
+func Test_sus01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("sus01. stochastic-universal-sampling")
+
+	f := []float64{2.0, 1.8, 1.6, 1.4, 1.2, 1.0, 0.8, 0.6, 0.4, 0.2, 0.0}
+	n := len(f)
+	p := make([]float64, n)
+	sum := la.VecAccum(f)
+	for i := 0; i < n; i++ {
+		p[i] = f[i] / sum
+	}
+	cs := make([]float64, len(p))
+	CumSum(cs, p)
+	selinds := make([]int, 6)
+	SUSselect(selinds, cs, 0.1)
+	io.Pforan("selinds = %v\n", selinds)
+	chk.Ints(tst, "selinds", selinds, []int{0, 1, 2, 3, 5, 7})
 }
