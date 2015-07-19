@@ -4,7 +4,13 @@
 
 package goga
 
-import "github.com/cpmech/gosl/rnd"
+import (
+	"math"
+
+	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/la"
+	"github.com/cpmech/gosl/rnd"
+)
 
 // SimpleChromo splits 'genes' into 'nbases' unequal parts
 //  Input:
@@ -26,10 +32,27 @@ func SimpleChromo(genes []float64, nbases int) (chromo []float64) {
 	var sumv float64
 	for i, g := range genes {
 		rnd.Float64s(values, 0, 1)
-		sumv = sum(values)
+		sumv = la.VecAccum(values)
 		for j := 0; j < nbases; j++ {
 			chromo[i*nbases+j] = g * values[j] / sumv
 		}
 	}
 	return
+}
+
+// Fitness maps objective values into [0, 1]; thus returning the fitness function values
+//  Input:
+//    ovs -- objective values
+//  Output:
+//    f -- fitness function values
+func Fitness(f, ovs []float64) {
+	chk.IntAssert(len(f), len(ovs))
+	ymin, ymax := la.VecMinMax(ovs)
+	if math.Abs(ymax-ymin) < 1e-14 {
+		la.VecFill(f, 1)
+		return
+	}
+	for i := 0; i < len(ovs); i++ {
+		f[i] = (ymax - ovs[i]) / (ymax - ymin)
+	}
 }

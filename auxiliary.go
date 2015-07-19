@@ -32,9 +32,16 @@ func max(a, b float64) float64 {
 	return b
 }
 
-func sum(v []float64) (res float64) {
-	for _, x := range v {
-		res += x
+func printThickLine(n int) (l string) {
+	for i := 0; i < n; i++ {
+		l += "="
 	}
-	return
+	return l + "\n"
+}
+
+func printThinLine(n int) (l string) {
+	for i := 0; i < n; i++ {
+		l += "-"
+	}
+	return l + "\n"
 }
