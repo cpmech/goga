@@ -31,7 +31,7 @@ func Test_pop01(tst *testing.T) {
 
 	// init population
 	nbases := 2
-	pop := NewFloatChromoPop(nbases, genes)
+	pop := NewPopFloatChromo(nbases, genes)
 	for i, ind := range pop {
 		ind.ObjValue = ovs[i]
 		ind.Fitness = fits[i]
@@ -115,7 +115,7 @@ func Test_pop02(tst *testing.T) {
 
 	// init population
 	nbases := 2
-	pop := NewFloatChromoPop(nbases, genes)
+	pop := NewPopFloatChromo(nbases, genes)
 	for i, ind := range pop {
 		ind.ObjValue = ovs[i]
 		ind.Fitness = fits[i]
@@ -144,4 +144,25 @@ func Test_pop02(tst *testing.T) {
 			chk.Scalar(tst, io.Sf("i%dg%d", i, j), 1e-17, g.GetFloat(), genes_sorted[i][j])
 		}
 	}
+}
+
+func Test_pop03(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("pop03")
+
+	var ind Individual
+	nbases := 3
+	ind.InitChromo(nbases,
+		[]int{1, 20, 300},
+		[]float64{4.4, 5.5, 666},
+		[]string{"abc", "b", "c"},
+		[]byte("SGA"),
+		[][]byte{[]byte("ABC"), []byte("DEF"), []byte("GHI")},
+		[]Func_t{func() string { return "f0" }, func() string { return "f1" }, func() string { return "f2" }},
+	)
+
+	ninds := 5
+	pop := NewPopReference(ninds, &ind)
+	io.Pforan("%v\n", pop.Output())
 }

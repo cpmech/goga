@@ -34,8 +34,37 @@ func NewGene(nbases int) *Gene {
 	return gene
 }
 
+// GetCopy returns a copy of this gene
+func (o Gene) GetCopy() (x *Gene) {
+	nbases := len(o.SubFloats)
+	x = NewGene(nbases)
+	if o.Int != nil {
+		x.SetInt(*o.Int)
+	}
+	if o.Float != nil {
+		x.SetFloat(*o.Float)
+		if nbases > 1 {
+			copy(x.SubFloats, o.SubFloats)
+		}
+	}
+	if o.String != nil {
+		x.SetString(*o.String)
+	}
+	if o.Byte != nil {
+		x.SetByte(*o.Byte)
+	}
+	if o.Bytes != nil {
+		x.SetBytes(o.Bytes)
+	}
+	if o.Func != nil {
+		x.SetFunc(o.Func)
+	}
+	return
+}
+
 // genetic algorithm operators /////////////////////////////////////////////////////////////////////
 
+// TODO
 //func (o *Gene)
 
 // set methods /////////////////////////////////////////////////////////////////////////////////////
@@ -77,6 +106,13 @@ func (o *Gene) SetFloat(value float64) {
 //  Note: Float will be computed accordingly; i.e. Float = sum(SubFloats)
 func (o *Gene) SetSubFloats(start int, values []float64) {
 	nbases := len(o.SubFloats)
+	if nbases < 2 {
+		if len(values) > 0 {
+			*o.Float = values[0]
+			return
+		}
+		return
+	}
 	chk.IntAssertLessThan(start, nbases)
 	chk.IntAssertLessThan(len(values), nbases+1)
 	for i, v := range values {

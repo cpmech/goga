@@ -87,6 +87,19 @@ func (o *Individual) InitChromo(nbases int, slices ...interface{}) {
 	}
 }
 
+// GetCopy returns a copy of this individual
+func (o Individual) GetCopy() (x *Individual) {
+	x = new(Individual)
+	ngenes := len(o.Chromo)
+	x.Chromo = make([]*Gene, ngenes)
+	for i := 0; i < ngenes; i++ {
+		x.Chromo[i] = o.Chromo[i].GetCopy()
+	}
+	x.ObjValue = o.ObjValue
+	x.Fitness = o.Fitness
+	return
+}
+
 // output //////////////////////////////////////////////////////////////////////////////////////////
 
 // GetStringSizes returns the sizes of strings represent each gene type

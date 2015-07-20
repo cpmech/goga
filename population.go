@@ -13,6 +13,28 @@ import (
 // Population holds all individuals
 type Population []*Individual
 
+// NewPopFloatChromo allocates a population made entirely of float point numbers
+//  Input:
+//   genes -- all genes of all individuals [ninds][ngenes]
+func NewPopFloatChromo(nbases int, genes [][]float64) (pop Population) {
+	ninds := len(genes)
+	pop = make([]*Individual, ninds)
+	for i := 0; i < ninds; i++ {
+		pop[i] = new(Individual)
+		pop[i].InitChromo(nbases, genes[i])
+	}
+	return
+}
+
+// NewPopReference creates a population based on a reference individual
+func NewPopReference(ninds int, ref *Individual) (pop Population) {
+	pop = make([]*Individual, ninds)
+	for i := 0; i < ninds; i++ {
+		pop[i] = ref.GetCopy()
+	}
+	return
+}
+
 // Len returns the length of the population == number of individuals
 func (o Population) Len() int {
 	return len(o)
@@ -101,21 +123,6 @@ func (o Population) OutFloatBases(numFmt string) (l string) {
 			l += io.Sf(numFmt, g.SubFloats)
 		}
 		l += "\n"
-	}
-	return
-}
-
-// allocators //////////////////////////////////////////////////////////////////////////////////////
-
-// NewFloatChromoPop allocates a population made entirely of float point numbers
-//  Input:
-//   genes -- all genes of all individuals [ninds][ngenes]
-func NewFloatChromoPop(nbases int, genes [][]float64) (pop Population) {
-	ninds := len(genes)
-	pop = make([]*Individual, ninds)
-	for i := 0; i < ninds; i++ {
-		pop[i] = new(Individual)
-		pop[i].InitChromo(nbases, genes[i])
 	}
 	return
 }
