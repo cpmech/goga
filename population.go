@@ -4,7 +4,11 @@
 
 package goga
 
-import "sort"
+import (
+	"sort"
+
+	"github.com/cpmech/gosl/io"
+)
 
 // Population holds all individuals
 type Population []*Individual
@@ -34,7 +38,34 @@ func (o *Population) Sort() {
 //  Input:
 //   prob    -- probabilities
 //   cumprob -- cumulated probabilities
-func (o Population) Output(prob, cumprob []float64) (line string) {
+func (o Population) Output(prob, cumprob []float64) (l string) {
+	nI, nF, nS, nB := 0, 0, 0, 0
+	for _, ind := range o {
+		sI, sF, sS, sB := ind.GetStringSizes()
+		nI = imax(nI, sI)
+		nF = imax(nF, sF)
+		nS = imax(nS, sS)
+		nB = imax(nB, sB)
+	}
+	nI, nF, nS, nB = nI+1, nF+1, nS+1, nB+1
+	fI, fF, fS, fB := io.Sf("%%%dd", nI), io.Sf("%%%dg", nF), io.Sf("%%%ds", nS), io.Sf("%%%ds", nB)
+	for _, ind := range o {
+		l += ind.Output(fI, fF, fS, fB) + "\n"
+	}
+	return
+}
 
+// allocators //////////////////////////////////////////////////////////////////////////////////////
+
+// NewFloatChromoPop allocates a population made entirely of float point numbers
+//  Input:
+//   genes -- all genes of all individuals [ninds][ngenes]
+func NewFloatChromoPop(nbases int, genes [][]float64) (pop Population) {
+	ninds := len(genes)
+	pop = make([]*Individual, ninds)
+	for i := 0; i < ninds; i++ {
+		pop[i] = new(Individual)
+		pop[i].InitChromo(nbases, genes[i])
+	}
 	return
 }

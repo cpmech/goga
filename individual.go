@@ -4,6 +4,8 @@
 
 package goga
 
+import "github.com/cpmech/gosl/io"
+
 // Individual implements one individual in a population
 type Individual struct {
 	Chromo   []*Gene // chromosome [ngenes*nbases]
@@ -85,15 +87,44 @@ func (o *Individual) InitChromo(nbases int, slices ...interface{}) {
 	}
 }
 
+// output //////////////////////////////////////////////////////////////////////////////////////////
+
+// GetStringSizes returns the sizes of strings represent each gene type
+func (o Individual) GetStringSizes() (szInt, szFloat, szString, szBytes int) {
+	for _, g := range o.Chromo {
+		if g.Int != nil {
+			szInt = imax(szInt, len(io.Sf("%d", g.GetInt())))
+		}
+		if g.Float != nil {
+			szFloat = imax(szFloat, len(io.Sf("%g", g.GetFloat())))
+		}
+		if g.String != nil {
+			szString = imax(szString, len(io.Sf("%s", g.GetString())))
+		}
+		if g.Bytes != nil {
+			szBytes = imax(szBytes, len(io.Sf("%s", string(g.GetBytes()))))
+		}
+	}
+	return
+}
+
 // Output returns a string representation of this individual
 func (o Individual) Output(fmtInt, fmtFloat, fmtString, fmtBytes string) (l string) {
-	l = "("
+	if len(o.Chromo) < 1 {
+		return
+	}
+	nfields := o.Chromo[0].Nfields()
+	if nfields > 1 {
+		l = "("
+	}
 	for i, g := range o.Chromo {
-		if i > 0 {
+		if i > 0 && nfields > 1 {
 			l += ") ("
 		}
 		l += g.Output(fmtInt, fmtFloat, fmtString, fmtBytes)
 	}
-	l += ")"
+	if nfields > 1 {
+		l += ")"
+	}
 	return
 }

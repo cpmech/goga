@@ -136,23 +136,51 @@ func (o Gene) GetFunc() Func_t {
 
 // Output returns a string representation of this gene
 func (o Gene) Output(fmtInt, fmtFloat, fmtString, fmtBytes string) (l string) {
+	comma := ","
+	if o.Nfields() == 1 {
+		comma = ""
+	}
 	if o.Int != nil {
 		l += io.Sf(fmtInt, *o.Int)
 	}
 	if o.Float != nil {
-		l += io.Sf(","+fmtFloat, *o.Float)
+		l += io.Sf(comma+fmtFloat, *o.Float)
 	}
 	if o.String != nil {
-		l += io.Sf(","+fmtString, *o.String)
+		l += io.Sf(comma+fmtString, *o.String)
 	}
 	if o.Byte != nil {
-		l += io.Sf(",%x", *o.Byte)
+		l += io.Sf(comma+"%x", *o.Byte)
 	}
 	if o.Bytes != nil {
-		l += io.Sf(","+fmtBytes, string(o.Bytes))
+		l += io.Sf(comma+fmtBytes, string(o.Bytes))
 	}
 	if o.Func != nil {
-		l += "," + o.Func()
+		l += comma + o.Func()
+	}
+	return
+}
+
+// auxiliary ///////////////////////////////////////////////////////////////////////////////////////
+
+func (o Gene) Nfields() (n int) {
+	if o.Int != nil {
+		n++
+	}
+	if o.Float != nil {
+		n++
+	}
+	if o.String != nil {
+		n++
+	}
+	if o.Byte != nil {
+		n++
+	}
+	if o.Bytes != nil {
+		n++
+	}
+	if o.Func != nil {
+		n++
 	}
 	return
 }

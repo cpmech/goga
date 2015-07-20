@@ -13,7 +13,7 @@ import (
 
 func Test_ind01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("ind01")
 
 	var ind Individual
