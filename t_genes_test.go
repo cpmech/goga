@@ -13,7 +13,7 @@ import (
 
 func Test_gene01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("gene01")
 
 	nbases := 3

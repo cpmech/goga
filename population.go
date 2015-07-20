@@ -67,14 +67,49 @@ func (o Population) Output() (l string) {
 		return
 	}
 
+	// auxiliary function
+	nOvl, nFit, nGen := 0, 0, 0
+	fmts := []string{"%d", "%g", "%s", "%q"}
+	output := func() {
+		nOvl = imax(nOvl, 6) // 6 ==> "ObjVal"
+		nFit = imax(nFit, 7) // 7 ==> "Fitness"
+		n := nOvl + nFit + 3 + nGen
+		fmtOvl := io.Sf("%%%d", nOvl+1)
+		fmtFit := io.Sf("%%%d", nFit+1)
+		fmtGen := io.Sf("%%%ds", nGen)
+		l += printThickLine(n)
+		l += io.Sf(fmtOvl+"s", "ObjVal")
+		l += io.Sf(fmtFit+"s", "Fitness") + " "
+		l += io.Sf(fmtGen, "Genes")
+		l += "\n" + printThinLine(n)
+		fmtOvl += "g"
+		fmtFit += "g"
+		for _, ind := range o {
+			l += io.Sf(fmtOvl, ind.ObjValue) + io.Sf(fmtFit, ind.Fitness) + " " + ind.Output(fmts) + "\n"
+		}
+		l += printThickLine(n)
+	}
+
 	// mixed genes type
 	if o[0].Chromo[0].Nfields() > 1 {
-		return "TODO: mixed genes type"
+		//gmax := 0
+		for _, ind := range o {
+			nOvl = imax(nOvl, len(io.Sf("%g", ind.ObjValue)))
+			nFit = imax(nFit, len(io.Sf("%g", ind.Fitness)))
+			nGen = imax(nGen, len(ind.Output(fmts)))
+			//for _, g := range ind.Chromo {
+			//gmax = imax(gmax, len(g.Output(fmts)))
+			//}
+		}
+		//ngenes := len(o[0].Chromo)
+		//nGen = gmax*ngenes + ngenes - 1
+		nGen = imax(5, nGen)
+		output()
+		return
 	}
 
 	// single type in genes
 	sizes := make([]int, 4) // int, float, string, byte
-	nOvl, nFit, nGen := 0, 0, 0
 	for _, ind := range o {
 		nOvl = imax(nOvl, len(io.Sf("%g", ind.ObjValue)))
 		nFit = imax(nFit, len(io.Sf("%g", ind.Fitness)))
@@ -92,27 +127,10 @@ func (o Population) Output() (l string) {
 			}
 		}
 	}
-	nOvl = imax(nOvl, 6) // 6 ==> "ObjVal"
-	nFit = imax(nFit, 7) // 7 ==> "Fitness"
-	fmts := make([]string, 4)
-	n := nOvl + nFit + 2 + nGen
 	for i, str := range []string{"d", "g", "s", "s"} {
 		fmts[i] = io.Sf("%%%d%s", sizes[i]+1, str)
 	}
-	fmtOvl := io.Sf("%%%d", nOvl+1)
-	fmtFit := io.Sf("%%%d", nFit+1)
-	fmtGen := io.Sf("%%%ds", nGen)
-	l += printThickLine(n)
-	l += io.Sf(fmtOvl+"s", "ObjVal")
-	l += io.Sf(fmtFit+"s", "Fitness")
-	l += io.Sf(fmtGen, "Genes")
-	l += "\n" + printThinLine(n)
-	fmtOvl += "g"
-	fmtFit += "g"
-	for _, ind := range o {
-		l += io.Sf(fmtOvl, ind.ObjValue) + io.Sf(fmtFit, ind.Fitness) + ind.Output(fmts) + "\n"
-	}
-	l += printThickLine(n)
+	output()
 	return
 }
 
