@@ -4,8 +4,6 @@
 
 package goga
 
-import "github.com/cpmech/gosl/chk"
-
 // Individual implements one individual in a population
 type Individual struct {
 	Chromo   []*Gene // chromosome [ngenes*nbases]
@@ -13,147 +11,88 @@ type Individual struct {
 	Fitness  float64 // fitness
 }
 
-func (o *Individual) InitIntChromo(nbases int, genes []int) (err error) {
-	o.Chromo = make([]*Gene, len(genes))
-	for i, g := range o.Chromo {
-		g = NewGene(nbases, genes[i])
-		if g == nil {
-			return chk.Err("cannot create chromosome of integers")
-		}
-	}
-	return
-}
-
-func (o *Individual) InitFloatChromo(nbases int, genes []float64) (err error) {
-	o.Chromo = make([]*Gene, len(genes))
-	for i, g := range o.Chromo {
-		g = NewGene(nbases, genes[i])
-		if g == nil {
-			return chk.Err("cannot create chromosome of float point numbers")
-		}
-	}
-	return
-}
-
-func (o *Individual) InitStringChromo(nbases int, genes []string) (err error) {
-	o.Chromo = make([]*Gene, len(genes))
-	for i, g := range o.Chromo {
-		g = NewGene(nbases, genes[i])
-		if g == nil {
-			return chk.Err("cannot create chromosome of float point numbers")
-		}
-	}
-	return
-}
-
-// ints, floats and strings can be nil
-func (o *Individual) InitMixedChromo(nbases int, ints []int, floats []float64, strings []string) (err error) {
-
-	// check
-	if ints == nil && floats == nil && strings == nil {
-		return chk.Err("at least one of the 'ints', 'floats' or 'strings' slices must be non-nil")
-	}
-
-	// strings only
-	if ints == nil && floats == nil {
-		o.Chromo = make([]*Gene, len(strings))
-		for i, g := range o.Chromo {
-			g = NewGene(nbases, strings[i])
-			if g == nil {
-				return chk.Err("cannot create chromosome of mixed gene types: strings only")
-			}
-		}
-		return
-	}
-
-	// floats only
-	if ints == nil && strings == nil {
-		o.Chromo = make([]*Gene, len(floats))
-		for i, g := range o.Chromo {
-			g = NewGene(nbases, floats[i])
-			if g == nil {
-				return chk.Err("cannot create chromosome of mixed gene types: floats only")
-			}
-		}
-		return
-	}
-
-	// ints only
-	if floats == nil && strings == nil {
-		o.Chromo = make([]*Gene, len(ints))
-		for i, g := range o.Chromo {
-			g = NewGene(nbases, ints[i])
-			if g == nil {
-				return chk.Err("cannot create chromosome of mixed gene types: ints only")
-			}
-		}
-		return
-	}
-
-	// floats and strings
-	if ints == nil {
-		chk.IntAssert(len(floats), len(strings))
-		o.Chromo = make([]*Gene, len(floats))
-		for i, g := range o.Chromo {
-			g = NewGene(nbases, floats[i], strings[i])
-			if g == nil {
-				return chk.Err("cannot create chromosome of mixed gene types. floats and strings")
-			}
-		}
-		return
-	}
-
-	// ints and strings
-	if floats == nil {
-		chk.IntAssert(len(ints), len(strings))
-		o.Chromo = make([]*Gene, len(ints))
-		for i, g := range o.Chromo {
-			g = NewGene(nbases, ints[i], strings[i])
-			if g == nil {
-				return chk.Err("cannot create chromosome of mixed gene types. ints and strings")
-			}
-		}
-		return
-	}
-
-	// ints and floats
-	if strings == nil {
-		chk.IntAssert(len(ints), len(floats))
-		o.Chromo = make([]*Gene, len(ints))
-		for i, g := range o.Chromo {
-			g = NewGene(nbases, ints[i], floats[i])
-			if g == nil {
-				return chk.Err("cannot create chromosome of mixed gene types. ints and floats")
-			}
-		}
-	}
-	return
-}
-
-// String returns a table-row representation of an individual
+// InitChromo initialises chromosome with all genes
 //  Input:
-//   ovfmt -- objective value formatting string; use "" to skip this item
-//   ftfmt -- fitness formatting string; use "" to skip this item
-//   gefmt -- genes formatting string; use "" to skip this item
-//   bsfmt -- bases formatting string; use "" to skip this item
-func (o Individual) String(ovfmt, ftfmt, gefmt, bsfmt string) (line string) {
-	/*
-		if ovfmt != "" {
-			line += io.Sf(ovfmt, o.ObjValue)
+//   nbases -- used to split genes of floats into smaller parts
+//   slices -- slices of ints, floats, strings, bytes, and Func_t
+//  Notes:
+//   1) the slices in 'genes' can all be combined to define genes with mixed data;
+//   2) the slices can also be nil, except for one of them.
+//  Example
+func (o *Individual) InitChromo(nbases int, slices ...interface{}) {
+
+	// auxiliary function
+	newgenes := func(ngenes int) {
+		o.Chromo = make([]*Gene, ngenes)
+		for i := 0; i < ngenes; i++ {
+			o.Chromo[i] = NewGene(nbases)
 		}
-		if ftfmt != "" {
-			line += io.Sf(ftfmt, o.Fitness)
-		}
-		if gefmt != "" {
-			for _, g := range o.Genes {
-				line += io.Sf(gefmt, g)
+	}
+
+	// set genes
+	ngenes := 0
+	for _, slice := range slices {
+		switch s := slice.(type) {
+		case []int:
+			if ngenes < 1 {
+				ngenes = len(s)
+				newgenes(ngenes)
+			}
+			for i, value := range s {
+				o.Chromo[i].SetInt(value)
+			}
+		case []float64:
+			if ngenes < 1 {
+				ngenes = len(s)
+				newgenes(ngenes)
+			}
+			for i, value := range s {
+				o.Chromo[i].SetFloat(value)
+			}
+		case []string:
+			if ngenes < 1 {
+				ngenes = len(s)
+				newgenes(ngenes)
+			}
+			for i, value := range s {
+				o.Chromo[i].SetString(value)
+			}
+		case []byte:
+			if ngenes < 1 {
+				ngenes = len(s)
+				newgenes(ngenes)
+			}
+			for i, value := range s {
+				o.Chromo[i].SetByte(value)
+			}
+		case [][]byte:
+			if ngenes < 1 {
+				ngenes = len(s)
+				newgenes(ngenes)
+			}
+			for i, value := range s {
+				o.Chromo[i].SetBytes(value)
+			}
+		case []Func_t:
+			if ngenes < 1 {
+				ngenes = len(s)
+				newgenes(ngenes)
+			}
+			for i, value := range s {
+				o.Chromo[i].SetFunc(value)
 			}
 		}
-		if bsfmt != "" {
-			for _, v := range o.Chromo {
-				line += io.Sf(bsfmt, v)
-			}
+	}
+}
+
+func (o Individual) Output(fmtInt, fmtFloat, fmtString, fmtBytes string) (l string) {
+	l = "("
+	for i, g := range o.Chromo {
+		if i > 0 {
+			l += ") ("
 		}
-	*/
+		l += g.Output(fmtInt, fmtFloat, fmtString, fmtBytes)
+	}
+	l += ")"
 	return
 }
