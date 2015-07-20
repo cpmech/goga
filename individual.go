@@ -85,6 +85,7 @@ func (o *Individual) InitChromo(nbases int, slices ...interface{}) {
 	}
 }
 
+// Output returns a string representation of this individual
 func (o Individual) Output(fmtInt, fmtFloat, fmtString, fmtBytes string) (l string) {
 	l = "("
 	for i, g := range o.Chromo {
