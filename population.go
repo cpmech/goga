@@ -35,22 +35,72 @@ func (o *Population) Sort() {
 }
 
 // Output generates a nice table with population data
-//  Input:
-//   prob    -- probabilities
-//   cumprob -- cumulated probabilities
-func (o Population) Output(prob, cumprob []float64) (l string) {
-	nI, nF, nS, nB := 0, 0, 0, 0
-	for _, ind := range o {
-		sI, sF, sS, sB := ind.GetStringSizes()
-		nI = imax(nI, sI)
-		nF = imax(nF, sF)
-		nS = imax(nS, sS)
-		nB = imax(nB, sB)
+func (o Population) Output() (l string) {
+
+	// check
+	if len(o) < 1 {
+		return
 	}
-	nI, nF, nS, nB = nI+1, nF+1, nS+1, nB+1
-	fI, fF, fS, fB := io.Sf("%%%dd", nI), io.Sf("%%%dg", nF), io.Sf("%%%ds", nS), io.Sf("%%%ds", nB)
+	if len(o[0].Chromo) < 1 {
+		return
+	}
+
+	// mixed genes type
+	if o[0].Chromo[0].Nfields() > 1 {
+		return "TODO: mixed genes type"
+	}
+
+	// single type in genes
+	sizes := make([]int, 4) // int, float, string, byte
+	nOvl, nFit, nGen := 0, 0, 0
 	for _, ind := range o {
-		l += ind.Output(fI, fF, fS, fB) + "\n"
+		nOvl = imax(nOvl, len(io.Sf("%g", ind.ObjValue)))
+		nFit = imax(nFit, len(io.Sf("%g", ind.Fitness)))
+		sz := ind.GetStringSizes()
+		for i := 0; i < 4; i++ {
+			sizes[i] = imax(sizes[i], sz[i])
+			if sz[i] > 0 {
+				if sizes[i]*len(ind.Chromo) < 5 { // 5 ==> "Genes"
+					sizes[i] = 3
+					if len(ind.Chromo) == 1 {
+						sizes[i] = 5
+					}
+				}
+				nGen = (sizes[i] + 1) * len(ind.Chromo)
+			}
+		}
+	}
+	nOvl = imax(nOvl, 6) // 6 ==> "ObjVal"
+	nFit = imax(nFit, 7) // 7 ==> "Fitness"
+	fmts := make([]string, 4)
+	n := nOvl + nFit + 2 + nGen
+	for i, str := range []string{"d", "g", "s", "s"} {
+		fmts[i] = io.Sf("%%%d%s", sizes[i]+1, str)
+	}
+	fmtOvl := io.Sf("%%%d", nOvl+1)
+	fmtFit := io.Sf("%%%d", nFit+1)
+	fmtGen := io.Sf("%%%ds", nGen)
+	l += printThickLine(n)
+	l += io.Sf(fmtOvl+"s", "ObjVal")
+	l += io.Sf(fmtFit+"s", "Fitness")
+	l += io.Sf(fmtGen, "Genes")
+	l += "\n" + printThinLine(n)
+	fmtOvl += "g"
+	fmtFit += "g"
+	for _, ind := range o {
+		l += io.Sf(fmtOvl, ind.ObjValue) + io.Sf(fmtFit, ind.Fitness) + ind.Output(fmts) + "\n"
+	}
+	l += printThickLine(n)
+	return
+}
+
+// OutFloatBases print bases of float genes
+func (o Population) OutFloatBases(numFmt string) (l string) {
+	for _, ind := range o {
+		for _, g := range ind.Chromo {
+			l += io.Sf(numFmt, g.SubFloats)
+		}
+		l += "\n"
 	}
 	return
 }

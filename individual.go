@@ -90,26 +90,29 @@ func (o *Individual) InitChromo(nbases int, slices ...interface{}) {
 // output //////////////////////////////////////////////////////////////////////////////////////////
 
 // GetStringSizes returns the sizes of strings represent each gene type
-func (o Individual) GetStringSizes() (szInt, szFloat, szString, szBytes int) {
+//  sizes -- []int{szInt, szFloat, szString, szBytes}
+func (o Individual) GetStringSizes() (sizes []int) {
+	sizes = make([]int, 4)
 	for _, g := range o.Chromo {
 		if g.Int != nil {
-			szInt = imax(szInt, len(io.Sf("%d", g.GetInt())))
+			sizes[0] = imax(sizes[0], len(io.Sf("%d", g.GetInt())))
 		}
 		if g.Float != nil {
-			szFloat = imax(szFloat, len(io.Sf("%g", g.GetFloat())))
+			sizes[1] = imax(sizes[1], len(io.Sf("%g", g.GetFloat())))
 		}
 		if g.String != nil {
-			szString = imax(szString, len(io.Sf("%s", g.GetString())))
+			sizes[2] = imax(sizes[2], len(io.Sf("%s", g.GetString())))
 		}
 		if g.Bytes != nil {
-			szBytes = imax(szBytes, len(io.Sf("%s", string(g.GetBytes()))))
+			sizes[3] = imax(sizes[3], len(io.Sf("%s", string(g.GetBytes()))))
 		}
 	}
 	return
 }
 
 // Output returns a string representation of this individual
-func (o Individual) Output(fmtInt, fmtFloat, fmtString, fmtBytes string) (l string) {
+//  fmts -- []string{formatInt, formatFloat, formatString, formatBytes}
+func (o Individual) Output(fmts []string) (l string) {
 	if len(o.Chromo) < 1 {
 		return
 	}
@@ -121,7 +124,7 @@ func (o Individual) Output(fmtInt, fmtFloat, fmtString, fmtBytes string) (l stri
 		if i > 0 && nfields > 1 {
 			l += ") ("
 		}
-		l += g.Output(fmtInt, fmtFloat, fmtString, fmtBytes)
+		l += g.Output(fmts)
 	}
 	if nfields > 1 {
 		l += ")"

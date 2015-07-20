@@ -27,9 +27,7 @@ func Test_ind01(tst *testing.T) {
 		[]Func_t{func() string { return "f0" }, func() string { return "f1" }, func() string { return "f2" }},
 	)
 
-	fmtInt, fmtFloat, fmtString, fmtBytes := "%d", "%g", "%s", "%q"
-
-	out := ind.Output(fmtInt, fmtFloat, fmtString, fmtBytes)
+	out := ind.Output([]string{"%d", "%g", "%s", "%q"})
 	io.Pfyel("\n%v\n\n", out)
 	chk.String(tst, out, "(1,4.4,abc,53,\"ABC\",f0) (20,5.5,b,47,\"DEF\",f1) (300,666,c,41,\"GHI\",f2)")
 }

@@ -5,6 +5,7 @@
 package goga
 
 import (
+	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
@@ -15,23 +16,27 @@ type Func_t func() string
 
 // Gene defines the gene type
 type Gene struct {
-	Int      *int      // int gene
-	Float    *float64  // float64 gene
-	SubFloat []float64 // subdivisions of float64 gene == bases
-	String   *string   // string gene
-	Byte     *byte     // byte gene
-	Bytes    []byte    // bytes gene
-	Func     Func_t    // function gene
+	Int       *int      // int gene
+	Float     *float64  // float64 gene
+	SubFloats []float64 // subdivisions of float64 gene == bases
+	String    *string   // string gene
+	Byte      *byte     // byte gene
+	Bytes     []byte    // bytes gene
+	Func      Func_t    // function gene
 }
 
 // NewGene allocates a new gene
 func NewGene(nbases int) *Gene {
 	gene := new(Gene)
 	if nbases > 1 {
-		gene.SubFloat = make([]float64, nbases)
+		gene.SubFloats = make([]float64, nbases)
 	}
 	return gene
 }
+
+// genetic algorithm operators /////////////////////////////////////////////////////////////////////
+
+//func (o *Gene)
 
 // set methods /////////////////////////////////////////////////////////////////////////////////////
 
@@ -44,19 +49,40 @@ func (o *Gene) SetInt(value int) {
 }
 
 // SetFloat sets a float point number as gene value
+//  Note: if nbases > 1, basis values will be randomly computed
 func (o *Gene) SetFloat(value float64) {
 	if o.Float == nil {
 		o.Float = new(float64)
 	}
 	*o.Float = value
-	nbases := len(o.SubFloat)
+	nbases := len(o.SubFloats)
 	if nbases > 1 {
-		rnd.Float64s(o.SubFloat, 0, 1)
-		sum := la.VecAccum(o.SubFloat)
+		rnd.Float64s(o.SubFloats, 0, 1)
+		sum := la.VecAccum(o.SubFloats)
 		for j := 0; j < nbases; j++ {
-			o.SubFloat[j] = value * o.SubFloat[j] / sum
+			o.SubFloats[j] = value * o.SubFloats[j] / sum
 		}
 	}
+}
+
+// SetSubFloats sets sub-floats (divisions of Float)
+//  Input:
+//   start  -- start position in SubFloats
+//   values -- values to be copied into SubFloats
+//  Example:
+//   SubFloats (before) = [0, 1, 2, 3, 4, 5]
+//   values             =       [6, 7, 8]
+//   start              =        2
+//   SubFloats (after   = [0, 1, 6, 7, 8, 5]
+//  Note: Float will be computed accordingly; i.e. Float = sum(SubFloats)
+func (o *Gene) SetSubFloats(start int, values []float64) {
+	nbases := len(o.SubFloats)
+	chk.IntAssertLessThan(start, nbases)
+	chk.IntAssertLessThan(len(values), nbases+1)
+	for i, v := range values {
+		o.SubFloats[start+i] = v
+	}
+	*o.Float = la.VecAccum(o.SubFloats)
 }
 
 // SetString sets a string as gene value
@@ -135,25 +161,26 @@ func (o Gene) GetFunc() Func_t {
 // output //////////////////////////////////////////////////////////////////////////////////////////
 
 // Output returns a string representation of this gene
-func (o Gene) Output(fmtInt, fmtFloat, fmtString, fmtBytes string) (l string) {
+//  fmts -- []string{formatInt, formatFloat, formatString, formatBytes}
+func (o Gene) Output(fmts []string) (l string) {
 	comma := ","
 	if o.Nfields() == 1 {
 		comma = ""
 	}
 	if o.Int != nil {
-		l += io.Sf(fmtInt, *o.Int)
+		l += io.Sf(fmts[0], *o.Int)
 	}
 	if o.Float != nil {
-		l += io.Sf(comma+fmtFloat, *o.Float)
+		l += io.Sf(comma+fmts[1], *o.Float)
 	}
 	if o.String != nil {
-		l += io.Sf(comma+fmtString, *o.String)
+		l += io.Sf(comma+fmts[2], *o.String)
 	}
 	if o.Byte != nil {
 		l += io.Sf(comma+"%x", *o.Byte)
 	}
 	if o.Bytes != nil {
-		l += io.Sf(comma+fmtBytes, string(o.Bytes))
+		l += io.Sf(comma+fmts[3], string(o.Bytes))
 	}
 	if o.Func != nil {
 		l += comma + o.Func()
