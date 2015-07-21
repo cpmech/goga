@@ -5,7 +5,6 @@
 package goga
 
 import (
-	"math"
 	"testing"
 
 	"github.com/cpmech/gosl/chk"
@@ -13,36 +12,35 @@ import (
 )
 
 func get_individual(id, nbases int) *Individual {
-	var ind Individual
 	switch id {
 	case 0:
-		ind.InitChromo(nbases,
+		return NewIndividual(nbases,
 			[]int{1, 20, 300},
 			[]float64{4.4, 5.5, 666},
 			[]string{"abc", "b", "c"},
 			[]byte("SGA"),
 			[][]byte{[]byte("ABC"), []byte("DEF"), []byte("GHI")},
-			[]Func_t{
-				func(g *Gene) string { return "f0" },
-				func(g *Gene) string { return "f1" },
-				func(g *Gene) string { return "f2" },
+			[]Func_tt{
+				func(g *Individual) string { return "f0" },
+				func(g *Individual) string { return "f1" },
+				func(g *Individual) string { return "f2" },
 			},
 		)
 	case 1:
-		ind.InitChromo(nbases,
+		return NewIndividual(nbases,
 			[]int{-1, -20, -300},
 			[]float64{104.4, 105.5, 6.66},
 			[]string{"XX", "YY", "ZZ"},
 			[]byte("#.#"),
 			[][]byte{[]byte("^.^"), []byte("-o-"), []byte("*|*")},
-			[]Func_t{
-				func(g *Gene) string { return "g0" },
-				func(g *Gene) string { return "g1" },
-				func(g *Gene) string { return "g2" },
+			[]Func_tt{
+				func(g *Individual) string { return "g0" },
+				func(g *Individual) string { return "g1" },
+				func(g *Individual) string { return "g2" },
 			},
 		)
 	}
-	return &ind
+	return nil
 }
 
 func Test_ind01(tst *testing.T) {
@@ -51,104 +49,50 @@ func Test_ind01(tst *testing.T) {
 	chk.PrintTitle("ind01")
 
 	nbases := 3
-	ind := get_individual(0, nbases)
+	A := get_individual(0, nbases)
+	B := A.GetCopy()
 
-	fmts := [][]string{
-		{" %d", " %g", " %q", " %x", " %q", " %q"}, // use for all genes
-	}
-	out := ind.Output(fmts)
-	io.Pfyel("\n%v\n\n", out)
-	chk.String(tst, out, "[ 1 4.4 \"abc\" 53 \"ABC\" \"f0\"] [ 20 5.5 \"b\" 47 \"DEF\" \"f1\"] [ 300 666 \"c\" 41 \"GHI\" \"f2\"]")
+	oA := A.Output(nil)
+	oB := B.Output(nil)
+	io.Pfyel("\n%v\n", oA)
+	io.Pfyel("%v\n\n", oB)
+	chk.String(tst, oA, " 1 20 300 4.4 5.5 666 \"abc\" \"b\" \"c\" 53 47 41 \"ABC\" \"DEF\" \"GHI\" \"f0\" \"f1\" \"f2\"")
+	chk.String(tst, oB, " 1 20 300 4.4 5.5 666 \"abc\" \"b\" \"c\" 53 47 41 \"ABC\" \"DEF\" \"GHI\" \"f0\" \"f1\" \"f2\"")
 }
 
 func Test_ind02(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("ind02")
-
-	nbases := 3
-	ind := get_individual(0, nbases)
-
-	nint, nflt, nstr, nbyt, nbytes, nfuncs := ind.CountBases()
-
-	ints := make([]int, nint)
-	flts := make([]float64, nflt)
-	strs := make([]string, nstr)
-	byts := make([]byte, nbyt)
-	bytes := make([]byte, nbytes)
-	funcs := make([]Func_t, nfuncs)
-
-	ind.GetBases(ints, flts, strs, byts, bytes, funcs)
-
-	io.Pforan("ints  = %v\n", ints)
-	io.Pforan("flts  = %v\n", flts)
-	io.Pforan("strs  = %v\n", strs)
-	io.Pforan("byts  = %v\n", byts)
-	io.Pforan("bytes = %v\n", bytes)
-	io.Pforan("funcs = %v\n", funcs)
-
-	chk.Ints(tst, "ints", ints, []int{1, 20, 300})
-	chk.Strings(tst, "strs", strs, []string{"abc", "b", "c"})
-	// TODO: add other checks
-
-	oth := get_individual(1, nbases)
-	oth.SetBases(ints, flts, strs, byts, bytes, funcs)
-
-	fmts := [][]string{
-		{"%4d", " %5g", " %3s", " %x", " %3s", " %3s"}, // use for all genes
-	}
-	io.Pfpink("ind = %v\n", ind.Output(fmts))
-	io.Pfcyan("oth = %v\n", oth.Output(fmts))
-	for i, g := range ind.Chromo {
-		if *g.Int != *oth.Chromo[i].Int {
-			tst.Errorf("int: individuals are different\n")
-			return
-		}
-		if math.Abs(*g.Flt-*oth.Chromo[i].Flt) > 1e-12 {
-			tst.Errorf("flt: individuals are different. diff = %v", math.Abs(*g.Flt-*oth.Chromo[i].Flt))
-			return
-		}
-		if *g.String != *oth.Chromo[i].String {
-			tst.Errorf("str: individuals are different\n")
-			return
-		}
-		if *g.Byte != *oth.Chromo[i].Byte {
-			tst.Errorf("byte: individuals are different\n")
-			return
-		}
-		if string(g.Bytes) != string(oth.Chromo[i].Bytes) {
-			tst.Errorf("bytes: individuals are different\n")
-			return
-		}
-		if g.Func(g) != oth.Chromo[i].Func(oth.Chromo[i]) {
-			tst.Errorf("func: individuals are different\n")
-			return
-		}
-	}
-}
-
-func Test_ind03(tst *testing.T) {
-
-	//verbose()
-	chk.PrintTitle("ind03")
 
 	nbases := 3
 	A := get_individual(0, nbases)
 	B := get_individual(1, nbases)
 
 	fmts := [][]string{
-		{"%4d", " %5g", " %3s", " %x", " %3s", " %3s"}, // use for all genes
+		{"%2d", "%4d", "%5d"}, // ints
+		{"%6g", "%6g", "%5g"}, // floats
+		{"%4s", "%2s", "%2s"}, // strings
+		{"%3x", "%3x", "%3x"}, // keys
+		{"%4s", "%4s", "%4s"}, // bytes
+		{"%3s", "%3s", "%3s"}, // funcs
 	}
+	io.Pfpink("A = %v\n", A.Output(fmts))
+	io.Pfcyan("B = %v\n", B.Output(fmts))
 
-	cuts := []int{0}
-	scuts := []int{-1}
+	cuts := [][]int{
+		{-1, -1}, // ints
+		{-1, -1}, // floats
+		{-1, -1}, // strings
+		{-1, -1}, // keys
+		{-1, -1}, // bytes
+		{-1, -1}, // funcs
+	}
 
 	a := A.GetCopy()
 	b := A.GetCopy()
-	Crossover(a, b, A, B, cuts, scuts)
+	Crossover(a, b, A, B, cuts, nil, nil, nil, nil, nil, nil, nil)
 
-	io.Pfpink("A = %v\n", A.Output(fmts))
-	io.Pfcyan("B = %v\n", B.Output(fmts))
 	io.Pforan("a = %v\n", a.Output(fmts))
 	io.Pfblue2("b = %v\n", b.Output(fmts))
 }

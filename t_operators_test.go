@@ -131,3 +131,25 @@ func Test_pairs01(tst *testing.T) {
 		}
 	}
 }
+
+func Test_cxint01(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("cxint01")
+
+	A := []int{1, 2, 3, 4, 5, 6, 7, 8}
+	B := []int{-1, -2, -3, -4, -5, -6, -7, -8}
+	a := make([]int, len(A))
+	b := make([]int, len(A))
+
+	ends := []int{1, 5, 8}
+	IntCrossover(a, b, A, B, ends, 1)
+
+	io.Pfred("A = %v\n", A)
+	io.PfRed("B = %v\n", B)
+	io.Pfcyan("a = %v\n", a)
+	io.Pfblue2("b = %v\n", b)
+
+	chk.Ints(tst, "a", a, []int{1, -2, -3, -4, -5, 6, 7, 8})
+	chk.Ints(tst, "b", b, []int{-1, 2, 3, 4, 5, -6, -7, -8})
+}

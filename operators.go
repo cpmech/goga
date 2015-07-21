@@ -179,3 +179,64 @@ func FilterPairs(A, B []int, selinds []int) {
 		A[i], B[i] = a, b
 	}
 }
+
+//     0 1 2 3 4 5 6 7
+// A = a b c d e f g h    size = 8
+// B = * . . . . * * *    ends = [1, 5, 8]
+//      ↑       ↑     ↑
+//      1       5     8
+// a = a . . . . f g h
+// b = * b c d e * * *
+//
+func IntCrossover(a, b, A, B []int, ends []int, pc float64) {
+	size := len(A)
+	if !rnd.FlipCoin(pc) || size < 2 {
+		copy(a, A)
+		copy(b, B)
+		return
+	}
+	if size == 2 {
+		a[0], b[0] = A[0], B[0]
+		b[1], a[1] = A[1], B[1]
+		return
+	}
+	filter_ends(size, ends)
+	swap := false
+	start := 0
+	for _, end := range ends {
+		if swap {
+			for j := start; j < end; j++ {
+				b[j], a[j] = A[j], B[j]
+			}
+		} else {
+			for j := start; j < end; j++ {
+				a[j], b[j] = A[j], B[j]
+			}
+		}
+		start = end
+		swap = !swap
+	}
+}
+
+func FltCrossover(a, b, A, B []float64, cuts []int, pc float64) {
+}
+
+func StrCrossover(a, b, A, B []string, cuts []int, pc float64) {
+}
+
+func KeyCrossover(a, b, A, B []byte, cuts []int, pc float64) {
+}
+
+func BytCrossover(a, b, A, B [][]byte, cuts []int, pc float64) {
+}
+
+func FunCrossover(a, b, A, B []Func_tt, cuts []int, pc float64) {
+}
+
+// auxiliary //////////
+
+func filter_ends(last int, ends []int) {
+	chk.IntAssertLessThan(1, len(ends))         // len(ends) > 1
+	chk.IntAssertLessThan(0, ends[len(ends)-1]) // ends[first] > 0
+	chk.IntAssert(ends[len(ends)-1], last)      // ends[last] = len(A)
+}
