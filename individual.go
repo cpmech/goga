@@ -110,7 +110,7 @@ func (o Individual) GetStringSizes() (sizes []int) {
 		if g.Int != nil {
 			sizes[0] = imax(sizes[0], len(io.Sf("%d", g.GetInt())))
 		}
-		if g.Float != nil {
+		if g.Flt != nil {
 			sizes[1] = imax(sizes[1], len(io.Sf("%g", g.GetFloat())))
 		}
 		if g.String != nil {

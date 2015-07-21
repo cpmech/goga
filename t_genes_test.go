@@ -24,7 +24,7 @@ func Test_gene01(tst *testing.T) {
 	g0.SetString("abc")
 	g0.SetByte('S')
 	g0.SetBytes([]byte("ABC"))
-	g0.SetFunc(func() string { return "hello" })
+	g0.SetFunc(func(g *Gene) string { return "hello" })
 
 	g1 := g0.GetCopy()
 
@@ -36,5 +36,5 @@ func Test_gene01(tst *testing.T) {
 
 	chk.String(tst, r0, "123,666,abc,53,\"ABC\",hello")
 	chk.String(tst, r1, "123,666,abc,53,\"ABC\",hello")
-	chk.Vector(tst, "subfloats", 1e-17, g0.SubFloats, g1.SubFloats)
+	chk.Vector(tst, "subfloats", 1e-17, g0.Fbases, g1.Fbases)
 }

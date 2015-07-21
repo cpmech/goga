@@ -24,7 +24,11 @@ func Test_ind01(tst *testing.T) {
 		[]string{"abc", "b", "c"},
 		[]byte("SGA"),
 		[][]byte{[]byte("ABC"), []byte("DEF"), []byte("GHI")},
-		[]Func_t{func() string { return "f0" }, func() string { return "f1" }, func() string { return "f2" }},
+		[]Func_t{
+			func(g *Gene) string { return "f0" },
+			func(g *Gene) string { return "f1" },
+			func(g *Gene) string { return "f2" },
+		},
 	)
 
 	out := ind.Output([]string{"%d", "%g", "%s", "%q"})

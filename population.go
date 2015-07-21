@@ -138,7 +138,7 @@ func (o Population) Output() (l string) {
 func (o Population) OutFloatBases(numFmt string) (l string) {
 	for _, ind := range o {
 		for _, g := range ind.Chromo {
-			l += io.Sf(numFmt, g.SubFloats)
+			l += io.Sf(numFmt, g.Fbases)
 		}
 		l += "\n"
 	}

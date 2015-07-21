@@ -42,7 +42,7 @@ func Test_pop01(tst *testing.T) {
 	for i, ind := range pop {
 		for j, g := range ind.Chromo {
 			chk.Scalar(tst, io.Sf("i%dg%d", i, j), 1e-17, g.GetFloat(), genes[i][j])
-			chk.Scalar(tst, io.Sf("i%dg%d bases", i, j), 1e-15, g.SubFloats[0]+g.SubFloats[1], genes[i][j])
+			chk.Scalar(tst, io.Sf("i%dg%d bases", i, j), 1e-15, g.Fbases[0]+g.Fbases[1], genes[i][j])
 		}
 	}
 
@@ -61,7 +61,7 @@ func Test_pop01(tst *testing.T) {
 	ngenes := len(genes[0])
 	for i, b := range bases {
 		for j := 0; j < ngenes; j++ {
-			pop[i].Chromo[j].SetSubFloats(0, b[j*nbases:(j+1)*nbases])
+			pop[i].Chromo[j].SetFbases(0, b[j*nbases:(j+1)*nbases])
 		}
 	}
 
@@ -159,10 +159,14 @@ func Test_pop03(tst *testing.T) {
 		[]string{"abc", "b", "c"},
 		[]byte("SGA"),
 		[][]byte{[]byte("ABC"), []byte("DEF"), []byte("GHI")},
-		[]Func_t{func() string { return "f0" }, func() string { return "f1" }, func() string { return "f2" }},
+		[]Func_t{
+			func(g *Gene) string { return "f0" },
+			func(g *Gene) string { return "f1" },
+			func(g *Gene) string { return "f2" },
+		},
 	)
 
 	ninds := 5
 	pop := NewPopReference(ninds, &ind)
-	io.Pforan("%v\n", pop.Output())
+	io.Pf("\n%v\n", pop.Output())
 }

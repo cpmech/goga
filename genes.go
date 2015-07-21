@@ -12,39 +12,39 @@ import (
 )
 
 // Func_t defines a type for a generic function to be used as a gene value
-type Func_t func() string
+type Func_t func(g *Gene) string
 
 // Gene defines the gene type
 type Gene struct {
-	Int       *int      // int gene
-	Float     *float64  // float64 gene
-	SubFloats []float64 // subdivisions of float64 gene == bases
-	String    *string   // string gene
-	Byte      *byte     // byte gene
-	Bytes     []byte    // bytes gene
-	Func      Func_t    // function gene
+	Int    *int      // int gene
+	Flt    *float64  // float64 gene
+	Fbases []float64 // subdivisions of float64 gene == bases
+	String *string   // string gene
+	Byte   *byte     // byte gene
+	Bytes  []byte    // bytes gene
+	Func   Func_t    // function gene
 }
 
 // NewGene allocates a new gene
 func NewGene(nbases int) *Gene {
 	gene := new(Gene)
 	if nbases > 1 {
-		gene.SubFloats = make([]float64, nbases)
+		gene.Fbases = make([]float64, nbases)
 	}
 	return gene
 }
 
 // GetCopy returns a copy of this gene
 func (o Gene) GetCopy() (x *Gene) {
-	nbases := len(o.SubFloats)
+	nbases := len(o.Fbases)
 	x = NewGene(nbases)
 	if o.Int != nil {
 		x.SetInt(*o.Int)
 	}
-	if o.Float != nil {
-		x.SetFloat(*o.Float)
+	if o.Flt != nil {
+		x.SetFloat(*o.Flt)
 		if nbases > 1 {
-			copy(x.SubFloats, o.SubFloats)
+			copy(x.Fbases, o.Fbases)
 		}
 	}
 	if o.String != nil {
@@ -80,21 +80,21 @@ func (o *Gene) SetInt(value int) {
 // SetFloat sets a float point number as gene value
 //  Note: if nbases > 1, basis values will be randomly computed
 func (o *Gene) SetFloat(value float64) {
-	if o.Float == nil {
-		o.Float = new(float64)
+	if o.Flt == nil {
+		o.Flt = new(float64)
 	}
-	*o.Float = value
-	nbases := len(o.SubFloats)
+	*o.Flt = value
+	nbases := len(o.Fbases)
 	if nbases > 1 {
-		rnd.Float64s(o.SubFloats, 0, 1)
-		sum := la.VecAccum(o.SubFloats)
+		rnd.Float64s(o.Fbases, 0, 1)
+		sum := la.VecAccum(o.Fbases)
 		for j := 0; j < nbases; j++ {
-			o.SubFloats[j] = value * o.SubFloats[j] / sum
+			o.Fbases[j] = value * o.Fbases[j] / sum
 		}
 	}
 }
 
-// SetSubFloats sets sub-floats (divisions of Float)
+// SetFbases sets sub-floats (divisions of Float)
 //  Input:
 //   start  -- start position in SubFloats
 //   values -- values to be copied into SubFloats
@@ -104,11 +104,11 @@ func (o *Gene) SetFloat(value float64) {
 //   start              =        2
 //   SubFloats (after   = [0, 1, 6, 7, 8, 5]
 //  Note: Float will be computed accordingly; i.e. Float = sum(SubFloats)
-func (o *Gene) SetSubFloats(start int, values []float64) {
-	nbases := len(o.SubFloats)
+func (o *Gene) SetFbases(start int, values []float64) {
+	nbases := len(o.Fbases)
 	if nbases < 2 {
 		if len(values) > 0 {
-			*o.Float = values[0]
+			*o.Flt = values[0]
 			return
 		}
 		return
@@ -116,9 +116,9 @@ func (o *Gene) SetSubFloats(start int, values []float64) {
 	chk.IntAssertLessThan(start, nbases)
 	chk.IntAssertLessThan(len(values), nbases+1)
 	for i, v := range values {
-		o.SubFloats[start+i] = v
+		o.Fbases[start+i] = v
 	}
-	*o.Float = la.VecAccum(o.SubFloats)
+	*o.Flt = la.VecAccum(o.Fbases)
 }
 
 // SetString sets a string as gene value
@@ -162,8 +162,8 @@ func (o Gene) GetInt() int {
 
 // GetFloat returns the float point number value, if any
 func (o Gene) GetFloat() float64 {
-	if o.Float != nil {
-		return *o.Float
+	if o.Flt != nil {
+		return *o.Flt
 	}
 	return 0
 }
@@ -198,7 +198,7 @@ func (o Gene) GetFunc() Func_t {
 
 // Output returns a string representation of this gene
 //  fmts -- []string{formatInt, formatFloat, formatString, formatBytes}
-func (o Gene) Output(fmts []string) (l string) {
+func (o *Gene) Output(fmts []string) (l string) {
 	comma := ","
 	if o.Nfields() == 1 {
 		comma = ""
@@ -206,8 +206,8 @@ func (o Gene) Output(fmts []string) (l string) {
 	if o.Int != nil {
 		l += io.Sf(fmts[0], *o.Int)
 	}
-	if o.Float != nil {
-		l += io.Sf(comma+fmts[1], *o.Float)
+	if o.Flt != nil {
+		l += io.Sf(comma+fmts[1], *o.Flt)
 	}
 	if o.String != nil {
 		l += io.Sf(comma+fmts[2], *o.String)
@@ -219,7 +219,7 @@ func (o Gene) Output(fmts []string) (l string) {
 		l += io.Sf(comma+fmts[3], string(o.Bytes))
 	}
 	if o.Func != nil {
-		l += comma + o.Func()
+		l += comma + o.Func(o)
 	}
 	return
 }
@@ -230,7 +230,7 @@ func (o Gene) Nfields() (n int) {
 	if o.Int != nil {
 		n++
 	}
-	if o.Float != nil {
+	if o.Flt != nil {
 		n++
 	}
 	if o.String != nil {
