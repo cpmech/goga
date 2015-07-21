@@ -59,7 +59,6 @@ func (o *Population) Sort() {
 // Output generates a nice table with population data
 //  Input:
 //  fmts -- formats for     int,     flt, string, byte,  bytes, and func
-//          e.g: []string{"%4d", "%8.3f", "%.6s", "%x", "%.6s", "%.6s"}
 //          use fmts == nil to choose default ones
 func (o Population) Output(fmts []string) (l string) {
 

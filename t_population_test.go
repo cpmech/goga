@@ -187,5 +187,6 @@ func Test_pop03(tst *testing.T) {
 		}
 	}
 
-	io.Pfyel("\n%v\n", pop.Output(nil))
+	fmts := []string{"%3d", "%8.3f", "%6.6s", "%x", "%6.6s", "%6.6s"}
+	io.Pfyel("\n%v\n", pop.Output(fmts))
 }

@@ -131,7 +131,6 @@ func (o Individual) GetStringSizes() (sizes []int) {
 
 // Output returns a string representation of this individual
 //  fmts -- formats for     int,     flt, string, byte,  bytes, and func
-//          e.g: []string{"%4d", "%8.3f", "%.6s", "%x", "%.6s", "%.6s"}
 //          use fmts == nil to choose default ones
 func (o Individual) Output(fmts []string) (l string) {
 	if len(o.Chromo) < 1 {

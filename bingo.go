@@ -38,12 +38,12 @@ func NewExampleBingo() *Bingo {
 		[]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
 		[]string{"apple", "banana", "mango", "orange", "peach", "kiwi"},
 		[]Func_t{
-			func(g *Gene) string { return io.Sf("myInt=%v", g.GetInt()) },
-			func(g *Gene) string { return io.Sf("myFlt=%v", g.GetFloat()) },
-			func(g *Gene) string { return io.Sf("myStr=%v", g.GetString()) },
-			func(g *Gene) string { return io.Sf("myByt=%v", g.GetByte()) },
-			func(g *Gene) string { return io.Sf("myBys=%v", g.GetBytes()) },
-			func(g *Gene) string { return io.Sf("myFcs=%v", g.GetFunc()) },
+			func(g *Gene) string { return io.Sf("I=%v", g.GetInt()) },
+			func(g *Gene) string { return io.Sf("F=%v", g.GetFloat()) },
+			func(g *Gene) string { return io.Sf("S=%v", g.GetString()) },
+			func(g *Gene) string { return io.Sf("B=%x", g.GetByte()) },
+			func(g *Gene) string { return io.Sf("T=%s", string(g.GetBytes())) },
+			func(g *Gene) string { return io.Sf("F=%v", g.GetFunc()) },
 		},
 	}
 }

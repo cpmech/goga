@@ -198,11 +198,10 @@ func (o Gene) GetFunc() Func_t {
 
 // Output returns a string representation of this gene
 //  fmts -- formats for     int,     flt, string, byte,  bytes, and func
-//          e.g: []string{"%4d", "%8.3f", "%.6s", "%x", "%.6s", "%.6s"}
 //          use fmts == nil to choose default ones
 func (o *Gene) Output(fmts []string) (l string) {
 	if len(fmts) != 6 {
-		fmts = []string{"%4d", "%8.3f", "%.6s", "%x", "%.6s", "%.6s"}
+		fmts = []string{"%4d", "%8.3f", "%6.6s", "%x", "%6.6s", "%6.6s"}
 	}
 	comma := ","
 	if o.Nfields() == 1 {
