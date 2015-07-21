@@ -103,28 +103,36 @@ func (o Individual) GetCopy() (x *Individual) {
 // output //////////////////////////////////////////////////////////////////////////////////////////
 
 // GetStringSizes returns the sizes of strings represent each gene type
-//  sizes -- []int{szInt, szFloat, szString, szBytes}
+//  sizes -- sizes of strings for {int, flt, string, byte, bytes, func}
 func (o Individual) GetStringSizes() (sizes []int) {
-	sizes = make([]int, 4)
+	sizes = make([]int, 6)
 	for _, g := range o.Chromo {
 		if g.Int != nil {
-			sizes[0] = imax(sizes[0], len(io.Sf("%d", g.GetInt())))
+			sizes[0] = imax(sizes[0], len(io.Sf("%v", g.GetInt())))
 		}
 		if g.Flt != nil {
-			sizes[1] = imax(sizes[1], len(io.Sf("%g", g.GetFloat())))
+			sizes[1] = imax(sizes[1], len(io.Sf("%v", g.GetFloat())))
 		}
 		if g.String != nil {
-			sizes[2] = imax(sizes[2], len(io.Sf("%s", g.GetString())))
+			sizes[2] = imax(sizes[2], len(io.Sf("%v", g.GetString())))
+		}
+		if g.Byte != nil {
+			sizes[3] = imax(sizes[3], len(io.Sf("%v", g.GetByte())))
 		}
 		if g.Bytes != nil {
-			sizes[3] = imax(sizes[3], len(io.Sf("%s", string(g.GetBytes()))))
+			sizes[4] = imax(sizes[4], len(io.Sf("%v", string(g.GetBytes()))))
+		}
+		if g.Func != nil {
+			sizes[5] = imax(sizes[5], len(io.Sf("%v", g.GetFunc()(g))))
 		}
 	}
 	return
 }
 
 // Output returns a string representation of this individual
-//  fmts -- []string{formatInt, formatFloat, formatString, formatBytes}
+//  fmts -- formats for     int,     flt, string, byte,  bytes, and func
+//          e.g: []string{"%4d", "%8.3f", "%.6s", "%x", "%.6s", "%.6s"}
+//          use fmts == nil to choose default ones
 func (o Individual) Output(fmts []string) (l string) {
 	if len(o.Chromo) < 1 {
 		return

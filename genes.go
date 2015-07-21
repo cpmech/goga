@@ -197,8 +197,13 @@ func (o Gene) GetFunc() Func_t {
 // output //////////////////////////////////////////////////////////////////////////////////////////
 
 // Output returns a string representation of this gene
-//  fmts -- []string{formatInt, formatFloat, formatString, formatBytes}
+//  fmts -- formats for     int,     flt, string, byte,  bytes, and func
+//          e.g: []string{"%4d", "%8.3f", "%.6s", "%x", "%.6s", "%.6s"}
+//          use fmts == nil to choose default ones
 func (o *Gene) Output(fmts []string) (l string) {
+	if len(fmts) != 6 {
+		fmts = []string{"%4d", "%8.3f", "%.6s", "%x", "%.6s", "%.6s"}
+	}
 	comma := ","
 	if o.Nfields() == 1 {
 		comma = ""
@@ -213,13 +218,13 @@ func (o *Gene) Output(fmts []string) (l string) {
 		l += io.Sf(comma+fmts[2], *o.String)
 	}
 	if o.Byte != nil {
-		l += io.Sf(comma+"%x", *o.Byte)
+		l += io.Sf(comma+fmts[3], *o.Byte)
 	}
 	if o.Bytes != nil {
-		l += io.Sf(comma+fmts[3], string(o.Bytes))
+		l += io.Sf(comma+fmts[4], string(o.Bytes))
 	}
 	if o.Func != nil {
-		l += comma + o.Func(o)
+		l += io.Sf(comma+fmts[5], o.Func(o))
 	}
 	return
 }

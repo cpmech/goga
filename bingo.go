@@ -12,7 +12,7 @@ import (
 // BingoSample holds the reslts of one Bingo.Draw
 type BingoSample struct {
 	Int    int     // an integer
-	Float  float64 // a float point number
+	Flt    float64 // a float point number
 	String string  // a string
 	Byte   byte    // a byte
 	Bytes  []byte  // a set of bytes
@@ -21,27 +21,30 @@ type BingoSample struct {
 
 // Bingo collects values to be drawn in random operations
 type Bingo struct {
-	IntRange   []int     // min and max integers
-	FloatRange []float64 // min and max float point numbers
-	PoolBytes  []byte    // pool of bytes to be used in Gene.Byte
-	PoolWords  []string  // pool of words to be used in Gene.String
-	PoolBwords []string  // pool of byte-words to be used in Gene.Bytes
-	PoolFuncs  []Func_t  // pool of functions
+	IntRange  []int     // min and max integers
+	FltRange  []float64 // min and max float point numbers
+	PoolWords []string  // pool of words to be used in Gene.String
+	PoolBytes []byte    // pool of bytes to be used in Gene.Byte
+	PoolBtxt  []string  // pool of byte-words to be used in Gene.Bytes
+	PoolFuncs []Func_t  // pool of functions
 }
 
-// Init initialises Bingo with template values
-func (o *Bingo) Init() {
-	o.IntRange = []int{-10, 10}
-	o.FloatRange = []float64{-123.0, 321.0}
-	o.PoolBytes = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	o.PoolBwords = []string{"apple", "banana", "mango", "orange", "peach", "kiwi"}
-	o.PoolFuncs = []Func_t{
-		func(g *Gene) string { return io.Sf("myInt=%d", g.GetInt()) },
-		func(g *Gene) string { return io.Sf("myFlt=%d", g.GetFloat()) },
-		func(g *Gene) string { return io.Sf("myStr=%d", g.GetString()) },
-		func(g *Gene) string { return io.Sf("myByt=%d", g.GetByte()) },
-		func(g *Gene) string { return io.Sf("myBys=%d", g.GetBytes()) },
-		func(g *Gene) string { return io.Sf("myFcs=%d", g.GetFunc()) },
+// NewExampleBingo returns a new Bingo with example values
+func NewExampleBingo() *Bingo {
+	return &Bingo{
+		[]int{-10, 10},
+		[]float64{-123.0, 321.0},
+		[]string{"circle", "square", "pentagon", "b-spline", "line", "point"},
+		[]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+		[]string{"apple", "banana", "mango", "orange", "peach", "kiwi"},
+		[]Func_t{
+			func(g *Gene) string { return io.Sf("myInt=%v", g.GetInt()) },
+			func(g *Gene) string { return io.Sf("myFlt=%v", g.GetFloat()) },
+			func(g *Gene) string { return io.Sf("myStr=%v", g.GetString()) },
+			func(g *Gene) string { return io.Sf("myByt=%v", g.GetByte()) },
+			func(g *Gene) string { return io.Sf("myBys=%v", g.GetBytes()) },
+			func(g *Gene) string { return io.Sf("myFcs=%v", g.GetFunc()) },
+		},
 	}
 }
 
@@ -55,13 +58,51 @@ func (o *Bingo) Init() {
 func (o Bingo) Draw(idx, num int) (sample BingoSample) {
 
 	// integer
-	if idx < 0 || num < 2 {
-		sample.Int = rnd.Int(o.IntRange[0], o.IntRange[1])
-		sample.Float = rnd.Float64(o.FloatRange[0], o.FloatRange[1])
-	} else {
-		sample.Int = o.IntRange[0] + idx*(o.IntRange[1]-o.IntRange[0])/(num-1)
-		sample.Float = o.FloatRange[0] + float64(idx)*(o.FloatRange[1]-o.FloatRange[0])/float64(num-1)
+	if len(o.IntRange) == 2 {
+		if idx < 0 || num < 2 {
+			sample.Int = rnd.Int(o.IntRange[0], o.IntRange[1])
+			sample.Flt = rnd.Float64(o.FltRange[0], o.FltRange[1])
+		} else {
+			sample.Int = o.IntRange[0] + idx*(o.IntRange[1]-o.IntRange[0])/(num-1)
+			sample.Flt = o.FltRange[0] + float64(idx)*(o.FltRange[1]-o.FltRange[0])/float64(num-1)
+		}
 	}
 
+	// float point number
+	if len(o.FltRange) == 2 {
+		if idx < 0 || num < 2 {
+			sample.Int = rnd.Int(o.IntRange[0], o.IntRange[1])
+			sample.Flt = rnd.Float64(o.FltRange[0], o.FltRange[1])
+		} else {
+			sample.Int = o.IntRange[0] + idx*(o.IntRange[1]-o.IntRange[0])/(num-1)
+			sample.Flt = o.FltRange[0] + float64(idx)*(o.FltRange[1]-o.FltRange[0])/float64(num-1)
+		}
+	}
+
+	// sizes of slices
+	nw := len(o.PoolWords)
+	nb := len(o.PoolBytes)
+	nt := len(o.PoolBtxt)
+	nf := len(o.PoolFuncs)
+
+	// string
+	if nw > 0 {
+		sample.String = o.PoolWords[rnd.Int(0, nw-1)]
+	}
+
+	// byte
+	if nb > 0 {
+		sample.Byte = o.PoolBytes[rnd.Int(0, nb-1)]
+	}
+
+	// bytes
+	if nt > 0 {
+		sample.Bytes = []byte(o.PoolBtxt[rnd.Int(0, nt-1)])
+	}
+
+	// function
+	if nf > 0 {
+		sample.Func = o.PoolFuncs[rnd.Int(0, nf-1)]
+	}
 	return
 }

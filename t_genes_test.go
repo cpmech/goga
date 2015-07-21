@@ -28,7 +28,7 @@ func Test_gene01(tst *testing.T) {
 
 	g1 := g0.GetCopy()
 
-	fmts := []string{"%d", "%g", "%s", "%q"}
+	fmts := []string{"%d", "%g", "%s", "%x", "%q", "%s"}
 	r0 := g0.Output(fmts)
 	r1 := g1.Output(fmts)
 	io.Pforan("g0 = %s\n", r0)

@@ -57,7 +57,11 @@ func (o *Population) Sort() {
 }
 
 // Output generates a nice table with population data
-func (o Population) Output() (l string) {
+//  Input:
+//  fmts -- formats for     int,     flt, string, byte,  bytes, and func
+//          e.g: []string{"%4d", "%8.3f", "%.6s", "%x", "%.6s", "%.6s"}
+//          use fmts == nil to choose default ones
+func (o Population) Output(fmts []string) (l string) {
 
 	// check
 	if len(o) < 1 {
@@ -67,70 +71,66 @@ func (o Population) Output() (l string) {
 		return
 	}
 
-	// auxiliary function
-	nOvl, nFit, nGen := 0, 0, 0
-	fmts := []string{"%d", "%g", "%s", "%q"}
-	output := func() {
-		nOvl = imax(nOvl, 6) // 6 ==> "ObjVal"
-		nFit = imax(nFit, 7) // 7 ==> "Fitness"
-		n := nOvl + nFit + 3 + nGen
-		fmtOvl := io.Sf("%%%d", nOvl+1)
-		fmtFit := io.Sf("%%%d", nFit+1)
-		fmtGen := io.Sf("%%%ds", nGen)
-		l += printThickLine(n)
-		l += io.Sf(fmtOvl+"s", "ObjVal")
-		l += io.Sf(fmtFit+"s", "Fitness") + " "
-		l += io.Sf(fmtGen, "Genes")
-		l += "\n" + printThinLine(n)
-		fmtOvl += "g"
-		fmtFit += "g"
+	// compute sizes and generate formats list
+	nfields := o[0].Chromo[0].Nfields()
+	ngenes := len(o[0].Chromo)
+	sizes := make([]int, 6)
+	if fmts == nil {
+		fmts = make([]string, 6)
 		for _, ind := range o {
-			l += io.Sf(fmtOvl, ind.ObjValue) + io.Sf(fmtFit, ind.Fitness) + " " + ind.Output(fmts) + "\n"
+			sz := ind.GetStringSizes()
+			for i := 0; i < 6; i++ {
+				sizes[i] = imax(sizes[i], sz[i])
+				if nfields == 1 {
+					if sz[i] > 0 {
+						if sizes[i]*ngenes < 5 { // 5 ==> len("Genes")
+							sizes[i] = 3
+							if ngenes == 1 {
+								sizes[i] = 5
+							}
+						}
+					}
+				}
+			}
 		}
-		l += printThickLine(n)
+		for i, str := range []string{"d", "g", "s", "x", "s", "s"} {
+			fmts[i] = io.Sf("%%%d%s", sizes[i]+1, str)
+		}
 	}
 
-	// mixed genes type
-	if o[0].Chromo[0].Nfields() > 1 {
-		//gmax := 0
-		for _, ind := range o {
-			nOvl = imax(nOvl, len(io.Sf("%g", ind.ObjValue)))
-			nFit = imax(nFit, len(io.Sf("%g", ind.Fitness)))
-			nGen = imax(nGen, len(ind.Output(fmts)))
-			//for _, g := range ind.Chromo {
-			//gmax = imax(gmax, len(g.Output(fmts)))
-			//}
-		}
-		//ngenes := len(o[0].Chromo)
-		//nGen = gmax*ngenes + ngenes - 1
-		nGen = imax(5, nGen)
-		output()
-		return
-	}
-
-	// single type in genes
-	sizes := make([]int, 4) // int, float, string, byte
+	// compute sizes of header items
+	nOvl, nFit := 0, 0
 	for _, ind := range o {
 		nOvl = imax(nOvl, len(io.Sf("%g", ind.ObjValue)))
 		nFit = imax(nFit, len(io.Sf("%g", ind.Fitness)))
-		sz := ind.GetStringSizes()
-		for i := 0; i < 4; i++ {
-			sizes[i] = imax(sizes[i], sz[i])
-			if sz[i] > 0 {
-				if sizes[i]*len(ind.Chromo) < 5 { // 5 ==> "Genes"
-					sizes[i] = 3
-					if len(ind.Chromo) == 1 {
-						sizes[i] = 5
-					}
-				}
-				nGen = (sizes[i] + 1) * len(ind.Chromo)
-			}
-		}
 	}
-	for i, str := range []string{"d", "g", "s", "s"} {
-		fmts[i] = io.Sf("%%%d%s", sizes[i]+1, str)
+	nChr := nfields * ngenes // spaces between fields
+	for i := 0; i < 6; i++ {
+		nChr += sizes[i] * ngenes
 	}
-	output()
+	if nfields > 1 {
+		nChr += ngenes*2 + (ngenes - 1) // 2 ==> "(" and ")" and (ngens-1) ==> space between
+	}
+	nChr = imax(5, nChr) // 5 ==> len("Genes")
+
+	// print individuals
+	nOvl = imax(nOvl, 6)        // 6 ==> len("ObjVal")
+	nFit = imax(nFit, 7)        // 7 ==> len("Fitness")
+	n := nOvl + nFit + nChr + 3 // 3 ==> spaces beeen "ObjVal", "Fitness" and "Genes"
+	fmtOvl := io.Sf("%%%d", nOvl+1)
+	fmtFit := io.Sf("%%%d", nFit+1)
+	fmtChr := io.Sf("%%%ds", nChr)
+	l += printThickLine(n)
+	l += io.Sf(fmtOvl+"s", "ObjVal")
+	l += io.Sf(fmtFit+"s", "Fitness") + " "
+	l += io.Sf(fmtChr, "Genes")
+	l += "\n" + printThinLine(n)
+	fmtOvl += "g"
+	fmtFit += "g"
+	for _, ind := range o {
+		l += io.Sf(fmtOvl, ind.ObjValue) + io.Sf(fmtFit, ind.Fitness) + " " + ind.Output(fmts) + "\n"
+	}
+	l += printThickLine(n)
 	return
 }
 

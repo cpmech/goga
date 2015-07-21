@@ -36,7 +36,7 @@ func Test_pop01(tst *testing.T) {
 		ind.ObjValue = ovs[i]
 		ind.Fitness = fits[i]
 	}
-	io.Pforan("%v\n", pop.Output())
+	io.Pforan("%v\n", pop.Output(nil))
 
 	// check floats and subfloats
 	for i, ind := range pop {
@@ -93,7 +93,7 @@ func Test_pop01(tst *testing.T) {
 
 func Test_pop02(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("pop02")
 
 	genes := [][]float64{
@@ -120,11 +120,11 @@ func Test_pop02(tst *testing.T) {
 		ind.ObjValue = ovs[i]
 		ind.Fitness = fits[i]
 	}
-	io.Pforan("%v\n", pop.Output())
+	io.Pforan("%v\n", pop.Output(nil))
 
 	pop.Sort()
 
-	io.Pfyel("%v\n", pop.Output())
+	io.Pfyel("%v\n", pop.Output(nil))
 
 	genes_sorted := [][]float64{
 		{4, 6}, // 7
@@ -168,5 +168,24 @@ func Test_pop03(tst *testing.T) {
 
 	ninds := 5
 	pop := NewPopReference(ninds, &ind)
-	io.Pf("\n%v\n", pop.Output())
+	io.Pf("\n%v\n", pop.Output(nil))
+
+	bingo := NewExampleBingo()
+	for i, ind := range pop {
+		for j, g := range ind.Chromo {
+			idx := i
+			if j > 0 {
+				idx = -1
+			}
+			s := bingo.Draw(idx, ninds)
+			g.SetInt(s.Int)
+			g.SetFloat(s.Flt)
+			g.SetString(s.String)
+			g.SetByte(s.Byte)
+			g.SetBytes(s.Bytes)
+			g.SetFunc(s.Func)
+		}
+	}
+
+	io.Pfyel("\n%v\n", pop.Output(nil))
 }
