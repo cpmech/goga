@@ -201,29 +201,25 @@ func (o Gene) GetFunc() Func_t {
 //          use fmts == nil to choose default ones
 func (o *Gene) Output(fmts []string) (l string) {
 	if len(fmts) != 6 {
-		fmts = []string{"%4d", "%8.3f", "%6.6s", "%x", "%6.6s", "%6.6s"}
-	}
-	comma := ","
-	if o.Nfields() == 1 {
-		comma = ""
+		fmts = []string{" %4d", " %8.3f", " %6.6s", " %x", " %6.6s", " %6.6s"}
 	}
 	if o.Int != nil {
 		l += io.Sf(fmts[0], *o.Int)
 	}
 	if o.Flt != nil {
-		l += io.Sf(comma+fmts[1], *o.Flt)
+		l += io.Sf(fmts[1], *o.Flt)
 	}
 	if o.String != nil {
-		l += io.Sf(comma+fmts[2], *o.String)
+		l += io.Sf(fmts[2], *o.String)
 	}
 	if o.Byte != nil {
-		l += io.Sf(comma+fmts[3], *o.Byte)
+		l += io.Sf(fmts[3], *o.Byte)
 	}
 	if o.Bytes != nil {
-		l += io.Sf(comma+fmts[4], string(o.Bytes))
+		l += io.Sf(fmts[4], string(o.Bytes))
 	}
 	if o.Func != nil {
-		l += io.Sf(comma+fmts[5], o.Func(o))
+		l += io.Sf(fmts[5], o.Func(o))
 	}
 	return
 }

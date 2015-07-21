@@ -9,6 +9,7 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/rnd"
 )
 
 func Test_pop01(tst *testing.T) {
@@ -18,11 +19,11 @@ func Test_pop01(tst *testing.T) {
 
 	// genes
 	genes := [][]float64{
-		{1, 5, -2},
-		{1, 3, -3},
-		{5, 7, -4},
-		{1, 2, -5},
-		{2, 4, -3},
+		{1, 5, -200},
+		{1, 3, -300},
+		{5, 7, -400},
+		{1, 2, -500},
+		{2, 4, -300},
 	}
 
 	// objective values and fitness values
@@ -42,7 +43,7 @@ func Test_pop01(tst *testing.T) {
 	for i, ind := range pop {
 		for j, g := range ind.Chromo {
 			chk.Scalar(tst, io.Sf("i%dg%d", i, j), 1e-17, g.GetFloat(), genes[i][j])
-			chk.Scalar(tst, io.Sf("i%dg%d bases", i, j), 1e-14, g.Fbases[0]+g.Fbases[1], genes[i][j])
+			chk.Scalar(tst, io.Sf("i%dg%d bases", i, j), 1e-13, g.Fbases[0]+g.Fbases[1], genes[i][j])
 		}
 	}
 
@@ -151,6 +152,8 @@ func Test_pop03(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("pop03")
 
+	rnd.Init(0)
+
 	var ind Individual
 	nbases := 3
 	ind.InitChromo(nbases,
@@ -173,11 +176,7 @@ func Test_pop03(tst *testing.T) {
 	bingo := NewExampleBingo()
 	for i, ind := range pop {
 		for j, g := range ind.Chromo {
-			idx := i
-			if j > 0 {
-				idx = -1
-			}
-			s := bingo.Draw(idx, ninds)
+			s := bingo.Draw(i, j, ninds)
 			g.SetInt(s.Int)
 			g.SetFloat(s.Flt)
 			g.SetString(s.String)
@@ -187,6 +186,5 @@ func Test_pop03(tst *testing.T) {
 		}
 	}
 
-	fmts := []string{"%3d", "%8.3f", "%6.6s", "%x", "%6.6s", "%6.6s"}
-	io.Pfyel("\n%v\n", pop.Output(fmts))
+	io.Pfyel("\n%v\n", pop.Output(nil))
 }

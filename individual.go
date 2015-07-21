@@ -4,7 +4,10 @@
 
 package goga
 
-import "github.com/cpmech/gosl/io"
+import (
+	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/utl"
+)
 
 // Individual implements one individual in a population
 type Individual struct {
@@ -103,51 +106,61 @@ func (o Individual) GetCopy() (x *Individual) {
 // output //////////////////////////////////////////////////////////////////////////////////////////
 
 // GetStringSizes returns the sizes of strings represent each gene type
-//  sizes -- sizes of strings for {int, flt, string, byte, bytes, func}
-func (o Individual) GetStringSizes() (sizes []int) {
-	sizes = make([]int, 6)
-	for _, g := range o.Chromo {
+//  sizes -- [ngenes] sizes of strings for {int, flt, string, byte, bytes, func}
+func (o Individual) GetStringSizes() (sizes [][]int) {
+	ngenes := len(o.Chromo)
+	sizes = utl.IntsAlloc(ngenes, 6)
+	for i, g := range o.Chromo {
 		if g.Int != nil {
-			sizes[0] = imax(sizes[0], len(io.Sf("%v", g.GetInt())))
+			sizes[i][0] = imax(sizes[i][0], len(io.Sf("%v", g.GetInt())))
 		}
 		if g.Flt != nil {
-			sizes[1] = imax(sizes[1], len(io.Sf("%v", g.GetFloat())))
+			sizes[i][1] = imax(sizes[i][1], len(io.Sf("%v", g.GetFloat())))
 		}
 		if g.String != nil {
-			sizes[2] = imax(sizes[2], len(io.Sf("%v", g.GetString())))
+			sizes[i][2] = imax(sizes[i][2], len(io.Sf("%v", g.GetString())))
 		}
 		if g.Byte != nil {
-			sizes[3] = imax(sizes[3], len(io.Sf("%v", g.GetByte())))
+			sizes[i][3] = imax(sizes[i][3], len(io.Sf("%v", g.GetByte())))
 		}
 		if g.Bytes != nil {
-			sizes[4] = imax(sizes[4], len(io.Sf("%v", string(g.GetBytes()))))
+			sizes[i][4] = imax(sizes[i][4], len(io.Sf("%v", string(g.GetBytes()))))
 		}
 		if g.Func != nil {
-			sizes[5] = imax(sizes[5], len(io.Sf("%v", g.GetFunc()(g))))
+			sizes[i][5] = imax(sizes[i][5], len(io.Sf("%v", g.GetFunc()(g))))
 		}
 	}
 	return
 }
 
 // Output returns a string representation of this individual
-//  fmts -- formats for     int,     flt, string, byte,  bytes, and func
+//  fmts -- [ngenes] formats of strings for {int, flt, string, byte, bytes, func}
 //          use fmts == nil to choose default ones
-func (o Individual) Output(fmts []string) (l string) {
-	if len(o.Chromo) < 1 {
+func (o Individual) Output(fmts [][]string) (l string) {
+	ngenes := len(o.Chromo)
+	if ngenes < 1 {
 		return
 	}
-	nfields := o.Chromo[0].Nfields()
-	if nfields > 1 {
-		l = "("
-	}
 	for i, g := range o.Chromo {
-		if i > 0 && nfields > 1 {
-			l += ") ("
+		if i > 0 {
+			l += " "
 		}
-		l += g.Output(fmts)
-	}
-	if nfields > 1 {
-		l += ")"
+		nfields := g.Nfields()
+		if nfields > 1 {
+			l += "["
+		}
+		if len(fmts) == ngenes {
+			l += g.Output(fmts[i])
+		} else {
+			if len(fmts) == 1 {
+				l += g.Output(fmts[0])
+			} else {
+				l += g.Output(nil)
+			}
+		}
+		if nfields > 1 {
+			l += "]"
+		}
 	}
 	return
 }

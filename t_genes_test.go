@@ -28,13 +28,12 @@ func Test_gene01(tst *testing.T) {
 
 	g1 := g0.GetCopy()
 
-	fmts := []string{"%d", "%g", "%s", "%x", "%q", "%s"}
-	r0 := g0.Output(fmts)
-	r1 := g1.Output(fmts)
+	r0 := g0.Output(nil)
+	r1 := g1.Output(nil)
 	io.Pforan("g0 = %s\n", r0)
 	io.Pfcyan("g1 = %s\n\n", r0)
 
-	chk.String(tst, r0, "123,666,abc,53,\"ABC\",hello")
-	chk.String(tst, r1, "123,666,abc,53,\"ABC\",hello")
+	chk.String(tst, r0, "  123  666.000    abc 53    ABC  hello")
+	chk.String(tst, r1, "  123  666.000    abc 53    ABC  hello")
 	chk.Vector(tst, "subfloats", 1e-17, g0.Fbases, g1.Fbases)
 }

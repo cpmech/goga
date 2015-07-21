@@ -9,6 +9,7 @@ import (
 	"sort"
 
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/utl"
 )
 
 // Population holds all individuals
@@ -16,7 +17,10 @@ type Population []*Individual
 
 // NewPopFloatChromo allocates a population made entirely of float point numbers
 //  Input:
-//   genes -- all genes of all individuals [ninds][ngenes]
+//   nbases -- number of bases in each float point gene
+//   genes  -- all genes of all individuals [ninds][ngenes]
+//  Output:
+//   new population
 func NewPopFloatChromo(nbases int, genes [][]float64) (pop Population) {
 	ninds := len(genes)
 	pop = make([]*Individual, ninds)
@@ -28,10 +32,51 @@ func NewPopFloatChromo(nbases int, genes [][]float64) (pop Population) {
 }
 
 // NewPopReference creates a population based on a reference individual
+//  Input:
+//   ninds -- number of individuals to be generated
+//   ref   -- reference individual with chromosome structure already set
+//  Output:
+//   new population
 func NewPopReference(ninds int, ref *Individual) (pop Population) {
 	pop = make([]*Individual, ninds)
 	for i := 0; i < ninds; i++ {
 		pop[i] = ref.GetCopy()
+	}
+	return
+}
+
+// NewPopRandom generates random population with individuals based on reference individual
+// and gene values randomly drawn from Bingo.
+//  Input:
+//   ninds -- number of individuals to be generated
+//   ref   -- reference individual with chromosome structure already set
+//   bingo -- Bingo structure set with pool of values to draw gene values
+//  Output:
+//   new population
+func NewPopRandom(ninds int, ref *Individual, bingo *Bingo) (pop Population) {
+	pop = NewPopReference(ninds, ref)
+	for i, ind := range pop {
+		for j, g := range ind.Chromo {
+			s := bingo.Draw(i, j, ninds)
+			if g.Int != nil {
+				g.SetInt(s.Int)
+			}
+			if g.Flt != nil {
+				g.SetFloat(s.Flt)
+			}
+			if g.String != nil {
+				g.SetString(s.String)
+			}
+			if g.Byte != nil {
+				g.SetByte(s.Byte)
+			}
+			if g.Bytes != nil {
+				g.SetBytes(s.Bytes)
+			}
+			if g.Func != nil {
+				g.SetFunc(s.Func)
+			}
+		}
 	}
 	return
 }
@@ -59,9 +104,9 @@ func (o *Population) Sort() {
 
 // Output generates a nice table with population data
 //  Input:
-//  fmts -- formats for int, flt, string, byte, bytes, and func
+//  fmts -- [ngenes] formats for int, flt, string, byte, bytes, and func
 //          use fmts == nil to choose default ones
-func (o Population) Output(fmts []string) (buf *bytes.Buffer) {
+func (o Population) Output(fmts [][]string) (buf *bytes.Buffer) {
 
 	// check
 	if len(o) < 1 {
@@ -72,29 +117,22 @@ func (o Population) Output(fmts []string) (buf *bytes.Buffer) {
 	}
 
 	// compute sizes and generate formats list
-	nfields := o[0].Chromo[0].Nfields()
 	ngenes := len(o[0].Chromo)
-	sizes := make([]int, 6)
+	sizes := utl.IntsAlloc(ngenes, 6)
 	if fmts == nil {
-		fmts = make([]string, 6)
+		fmts = utl.StrsAlloc(ngenes, 6)
 		for _, ind := range o {
 			sz := ind.GetStringSizes()
-			for i := 0; i < 6; i++ {
-				sizes[i] = imax(sizes[i], sz[i])
-				if nfields == 1 {
-					if sz[i] > 0 {
-						if sizes[i]*ngenes < 5 { // 5 ==> len("Genes")
-							sizes[i] = 3
-							if ngenes == 1 {
-								sizes[i] = 5
-							}
-						}
-					}
+			for i := 0; i < ngenes; i++ {
+				for j := 0; j < 6; j++ {
+					sizes[i][j] = imax(sizes[i][j], sz[i][j])
 				}
 			}
 		}
-		for i, str := range []string{"d", "g", "s", "x", "s", "s"} {
-			fmts[i] = io.Sf("%%%d%s", sizes[i]+1, str)
+		for i := 0; i < ngenes; i++ {
+			for j, str := range []string{"d", "g", "s", "x", "s", "s"} {
+				fmts[i][j] = io.Sf("%%%d%s", sizes[i][j]+1, str)
+			}
 		}
 	}
 
@@ -121,7 +159,7 @@ func (o Population) Output(fmts []string) (buf *bytes.Buffer) {
 	}
 
 	// write to buffer
-	fmtGen := io.Sf(" %%%ds\n", szb)
+	fmtGen := io.Sf(" %%%d.%ds\n", szb, szb)
 	n := sza + szb
 	buf = new(bytes.Buffer)
 	io.Ff(buf, printThickLine(n))
