@@ -103,7 +103,7 @@ func (o Individual) GetCopy() (x *Individual) {
 	return
 }
 
-// get methods /////////////////////////////////////////////////////////////////////////////////////
+// get set methos for bases ////////////////////////////////////////////////////////////////////////
 
 func (o Individual) CountBases() (nint, nflt, nstr, nbyt, nbytes, nfuncs int) {
 	for _, g := range o.Chromo {
@@ -190,6 +190,59 @@ func (o Individual) GetBases(ints []int, flts []float64, strs []string, byts []b
 		// functions
 		if g.Func != nil {
 			funcs[kfuncs] = g.Func
+			kfuncs++
+		}
+	}
+}
+
+// SetBases set all bases from all genes
+func (o *Individual) SetBases(ints []int, flts []float64, strs []string, byts []byte, bytes []byte, funcs []Func_t) {
+	var kint, kflt, kstr, kbyt, kbytes, kfuncs int
+	for _, g := range o.Chromo {
+
+		// ints
+		if g.Int != nil {
+			*g.Int = ints[kint]
+			kint++
+		}
+
+		// floats
+		nbases := len(g.Fbases)
+		if nbases > 1 {
+			*g.Flt = 0
+			for j := 0; j < nbases; j++ {
+				g.Fbases[j] = flts[kflt]
+				*g.Flt += g.Fbases[j]
+				kflt++
+			}
+		} else {
+			if g.Flt != nil {
+				*g.Flt = flts[kflt]
+				kflt++
+			}
+		}
+
+		// strings
+		if g.String != nil {
+			*g.String = strs[kstr]
+			kstr++
+		}
+
+		// byte
+		if g.Byte != nil {
+			*g.Byte = byts[kbyt]
+			kbyt++
+		}
+
+		// bytes
+		for j := 0; j < len(g.Bytes); j++ {
+			g.Bytes[j] = bytes[kbytes]
+			kbytes++
+		}
+
+		// functions
+		if g.Func != nil {
+			g.Func = funcs[kfuncs]
 			kfuncs++
 		}
 	}

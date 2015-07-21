@@ -5,6 +5,7 @@
 package goga
 
 import (
+	"math"
 	"testing"
 
 	"github.com/cpmech/gosl/chk"
@@ -89,11 +90,46 @@ func Test_ind02(tst *testing.T) {
 	chk.Ints(tst, "ints", ints, []int{1, 20, 300})
 	chk.Strings(tst, "strs", strs, []string{"abc", "b", "c"})
 	// TODO: add other checks
+
+	oth := get_individual(1, nbases)
+	oth.SetBases(ints, flts, strs, byts, bytes, funcs)
+
+	fmts := [][]string{
+		{"%4d", " %5g", " %3s", " %x", " %3s", " %3s"}, // use for all genes
+	}
+	io.Pfpink("ind = %v\n", ind.Output(fmts))
+	io.Pfcyan("oth = %v\n", oth.Output(fmts))
+	for i, g := range ind.Chromo {
+		if *g.Int != *oth.Chromo[i].Int {
+			tst.Errorf("int: individuals are different\n")
+			return
+		}
+		if math.Abs(*g.Flt-*oth.Chromo[i].Flt) > 1e-12 {
+			tst.Errorf("flt: individuals are different. diff = %v", math.Abs(*g.Flt-*oth.Chromo[i].Flt))
+			return
+		}
+		if *g.String != *oth.Chromo[i].String {
+			tst.Errorf("str: individuals are different\n")
+			return
+		}
+		if *g.Byte != *oth.Chromo[i].Byte {
+			tst.Errorf("byte: individuals are different\n")
+			return
+		}
+		if string(g.Bytes) != string(oth.Chromo[i].Bytes) {
+			tst.Errorf("bytes: individuals are different\n")
+			return
+		}
+		if g.Func(g) != oth.Chromo[i].Func(oth.Chromo[i]) {
+			tst.Errorf("func: individuals are different\n")
+			return
+		}
+	}
 }
 
 func Test_ind03(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("ind03")
 
 	nbases := 3
