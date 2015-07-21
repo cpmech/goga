@@ -197,6 +197,18 @@ func (o Individual) GetBases(ints []int, flts []float64, strs []string, byts []b
 
 // genetic algorithm routines //////////////////////////////////////////////////////////////////////
 
+// Crossover performs the crossover between chromosomes of two individuals A and B
+// resulting in the chromosomes of other two individuals a and b
+//  Input:
+//   A and B -- parents
+//   cuts    -- positions in Chromo for cuts. use -1 number for random generation of cuts.
+//   scuts   -- sub-cuts. positions in genes for cuts. -1 => random cuts
+//  Output:
+//   a and b -- offspring
+//  Note: len(cuts) and len(scuts) define the number of cuts
+func Crossover(a, b, A, B *Individual, cuts, subcuts []int) {
+}
+
 // output //////////////////////////////////////////////////////////////////////////////////////////
 
 // GetStringSizes returns the sizes of strings represent each gene type
