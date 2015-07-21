@@ -5,6 +5,7 @@
 package goga
 
 import (
+	"bytes"
 	"sort"
 
 	"github.com/cpmech/gosl/io"
@@ -58,9 +59,9 @@ func (o *Population) Sort() {
 
 // Output generates a nice table with population data
 //  Input:
-//  fmts -- formats for     int,     flt, string, byte,  bytes, and func
+//  fmts -- formats for int, flt, string, byte, bytes, and func
 //          use fmts == nil to choose default ones
-func (o Population) Output(fmts []string) (l string) {
+func (o Population) Output(fmts []string) (buf *bytes.Buffer) {
 
 	// check
 	if len(o) < 1 {
@@ -103,33 +104,33 @@ func (o Population) Output(fmts []string) (l string) {
 		nOvl = imax(nOvl, len(io.Sf("%g", ind.ObjValue)))
 		nFit = imax(nFit, len(io.Sf("%g", ind.Fitness)))
 	}
-	nChr := nfields * ngenes // spaces between fields
-	for i := 0; i < 6; i++ {
-		nChr += sizes[i] * ngenes
-	}
-	if nfields > 1 {
-		nChr += ngenes*2 + (ngenes - 1) // 2 ==> "(" and ")" and (ngens-1) ==> space between
-	}
-	nChr = imax(5, nChr) // 5 ==> len("Genes")
+	nOvl = imax(nOvl, 6) // 6 ==> len("ObjVal")
+	nFit = imax(nFit, 7) // 7 ==> len("Fitness")
 
 	// print individuals
-	nOvl = imax(nOvl, 6)        // 6 ==> len("ObjVal")
-	nFit = imax(nFit, 7)        // 7 ==> len("Fitness")
-	n := nOvl + nFit + nChr + 3 // 3 ==> spaces beeen "ObjVal", "Fitness" and "Genes"
 	fmtOvl := io.Sf("%%%d", nOvl+1)
 	fmtFit := io.Sf("%%%d", nFit+1)
-	fmtChr := io.Sf("%%%ds", nChr)
-	l += printThickLine(n)
-	l += io.Sf(fmtOvl+"s", "ObjVal")
-	l += io.Sf(fmtFit+"s", "Fitness") + " "
-	l += io.Sf(fmtChr, "Genes")
-	l += "\n" + printThinLine(n)
-	fmtOvl += "g"
-	fmtFit += "g"
-	for _, ind := range o {
-		l += io.Sf(fmtOvl, ind.ObjValue) + io.Sf(fmtFit, ind.Fitness) + " " + ind.Output(fmts) + "\n"
+	line, sza, szb := "", 0, 0
+	for i, ind := range o {
+		stra := io.Sf(fmtOvl+"g", ind.ObjValue) + io.Sf(fmtFit+"g", ind.Fitness) + " "
+		strb := ind.Output(fmts)
+		line += stra + strb + "\n"
+		if i == 0 {
+			sza, szb = len(stra), len(strb)
+		}
 	}
-	l += printThickLine(n)
+
+	// write to buffer
+	fmtGen := io.Sf(" %%%ds\n", szb)
+	n := sza + szb
+	buf = new(bytes.Buffer)
+	io.Ff(buf, printThickLine(n))
+	io.Ff(buf, fmtOvl+"s", "ObjVal")
+	io.Ff(buf, fmtFit+"s", "Fitness")
+	io.Ff(buf, fmtGen, "Genes")
+	io.Ff(buf, printThinLine(n))
+	io.Ff(buf, line)
+	io.Ff(buf, printThickLine(n))
 	return
 }
 
