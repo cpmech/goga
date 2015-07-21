@@ -42,7 +42,7 @@ func Test_pop01(tst *testing.T) {
 	for i, ind := range pop {
 		for j, g := range ind.Chromo {
 			chk.Scalar(tst, io.Sf("i%dg%d", i, j), 1e-17, g.GetFloat(), genes[i][j])
-			chk.Scalar(tst, io.Sf("i%dg%d bases", i, j), 1e-15, g.Fbases[0]+g.Fbases[1], genes[i][j])
+			chk.Scalar(tst, io.Sf("i%dg%d bases", i, j), 1e-14, g.Fbases[0]+g.Fbases[1], genes[i][j])
 		}
 	}
 
@@ -93,7 +93,7 @@ func Test_pop01(tst *testing.T) {
 
 func Test_pop02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("pop02")
 
 	genes := [][]float64{
@@ -148,7 +148,7 @@ func Test_pop02(tst *testing.T) {
 
 func Test_pop03(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("pop03")
 
 	var ind Individual
