@@ -148,3 +148,34 @@ func SUSselect(selinds []int, cumprob []float64, pb float64) {
 		selinds[i] = j
 	}
 }
+
+// FilterPairs generates 2 lists with ninds/2 items each corresponding to selected pairs
+// for reprodoction. Repeated indices in pairs are avoided.
+//  Input:
+//   selinds -- list of selected individuals len(selinds) == ninds
+//  Output:
+//   A and B -- [ninds/2] lists with pairs
+func FilterPairs(A, B []int, selinds []int) {
+	ninds := len(selinds)
+	chk.IntAssert(len(A), ninds/2)
+	chk.IntAssert(len(B), ninds/2)
+	var a, b int
+	var aux []int
+	for i := 0; i < ninds/2; i++ {
+		a, b = selinds[2*i], selinds[2*i+1]
+		if a == b {
+			if len(aux) == 0 {
+				aux = rnd.IntGetShuffled(selinds)
+			} else {
+				rnd.IntShuffle(aux)
+			}
+			for _, s := range aux {
+				if s != a {
+					b = s
+					break
+				}
+			}
+		}
+		A[i], B[i] = a, b
+	}
+}

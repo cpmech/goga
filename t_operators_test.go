@@ -108,3 +108,26 @@ func Test_sus01(tst *testing.T) {
 	io.Pforan("selinds = %v\n", selinds)
 	chk.Ints(tst, "selinds", selinds, []int{0, 1, 2, 3, 5, 7})
 }
+
+func Test_pairs01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("pairs01")
+
+	selinds := []int{11, 9, 1, 10, 0, 8, 7, 7, 3, 5, 4, 2, 6, 6, 6, 12}
+	ninds := len(selinds)
+	A := make([]int, ninds/2)
+	B := make([]int, ninds/2)
+	FilterPairs(A, B, selinds)
+	m, n := B[3], B[6]
+	io.Pforan("A = %v\n", A)
+	io.Pforan("B = %v\n", B)
+	chk.Ints(tst, "A", A, []int{11, 1, 0, 7, 3, 4, 6, 6})
+	chk.Ints(tst, "B", B, []int{9, 10, 8, m, 5, 2, n, 12})
+	for i, a := range A {
+		if B[i] == a {
+			tst.Errorf("there are repeated values in A and B: a=%d, b=%d", a, B[i])
+			return
+		}
+	}
+}
