@@ -237,7 +237,7 @@ func Test_ends02(tst *testing.T) {
 
 func Test_cxint01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("cxint01")
 
 	A := []int{1, 2}
@@ -257,62 +257,26 @@ func Test_cxint01(tst *testing.T) {
 	B = []int{-1, -2, -3, -4, -5, -6, -7, -8}
 	a = make([]int, len(A))
 	b = make([]int, len(A))
-	cuts := []int{5, 5, 8}
+	cuts := []int{1, 3}
 	ends := IntCrossover(a, b, A, B, 0, cuts, 1)
 	io.Pforan("ends = %v\n", ends)
 	io.Pfred("A = %2v\n", A)
 	io.PfRed("B = %2v\n", B)
 	io.Pfcyan("a = %2v\n", a)
 	io.Pfblue2("b = %2v\n", b)
-	chk.Ints(tst, "a", a, A)
-	chk.Ints(tst, "b", b, B)
-}
+	chk.Ints(tst, "a", a, []int{1, -2, -3, 4, 5, 6, 7, 8})
+	chk.Ints(tst, "b", b, []int{-1, 2, 3, -4, -5, -6, -7, -8})
 
-/*
-func Test_cxint03(tst *testing.T) {
-
-	verbose()
-	chk.PrintTitle("cxint03")
-
-	A := []int{1, 2, 3, 4, 5, 6, 7, 8}
-	B := []int{-1, -2, -3, -4, -5, -6, -7, -8}
-	a := make([]int, len(A))
-	b := make([]int, len(A))
-
-	ends := []int{8, 8}
-	IntCrossover(a, b, A, B, ends, 1)
-
+	cuts = []int{5, 7}
+	ends = IntCrossover(a, b, A, B, 0, cuts, 1)
+	io.Pforan("ends = %v\n", ends)
 	io.Pfred("A = %2v\n", A)
 	io.PfRed("B = %2v\n", B)
 	io.Pfcyan("a = %2v\n", a)
 	io.Pfblue2("b = %2v\n", b)
-
-	chk.Ints(tst, "a", a, A)
-	chk.Ints(tst, "b", b, B)
+	chk.Ints(tst, "a", a, []int{1, 2, 3, 4, 5, -6, -7, 8})
+	chk.Ints(tst, "b", b, []int{-1, -2, -3, -4, -5, 6, 7, -8})
 }
-
-func Test_cxint04(tst *testing.T) {
-
-	verbose()
-	chk.PrintTitle("cxint04")
-
-	A := []int{1, 2, 3, 4, 5, 6, 7, 8}
-	B := []int{-1, -2, -3, -4, -5, -6, -7, -8}
-	a := make([]int, len(A))
-	b := make([]int, len(A))
-
-	ends := []int{1, 5, 8}
-	IntCrossover(a, b, A, B, ends, 1)
-
-	io.Pfred("A = %2v\n", A)
-	io.PfRed("B = %2v\n", B)
-	io.Pfcyan("a = %2v\n", a)
-	io.Pfblue2("b = %2v\n", b)
-
-	chk.Ints(tst, "a", a, []int{1, -2, -3, -4, -5, 6, 7, 8})
-	chk.Ints(tst, "b", b, []int{-1, 2, 3, 4, 5, -6, -7, -8})
-}
-*/
 
 func checkRepeated(ends []int) {
 	for i := 1; i < len(ends); i++ {

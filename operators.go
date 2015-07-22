@@ -181,19 +181,28 @@ func FilterPairs(A, B []int, selinds []int) {
 	}
 }
 
-//     0 1 2 3 4 5 6 7
-// A = a b c d e f g h    size = 8
-// B = * . . . . * * *    ends = [1, 5, 8]
-//      ↑       ↑     ↑
-//      1       5     8
-// a = a . . . . f g h
-// b = * b c d e * * *
-//
+// IntCrossover performs the crossover of genetic data from A and B
+//  Input:
+//   A and B -- parents
+//   ncuts   -- number of cuts to be used, unless cuts != nil
+//   cuts    -- cut positions. can be nil => use ncuts instead
+//   pc      -- probability of crossover
+//  Output:
+//   a and b -- offspring
+//  Example:
+//         0 1 2 3 4 5 6 7
+//     A = a b c d e f g h    size = 8
+//     B = * . . . . * * *    cuts = [1, 5]
+//          ↑       ↑     ↑   ends = [1, 5, 8]
+//          1       5     8
+//     a = a . . . . f g h
+//     b = * b c d e * * *
 func IntCrossover(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
-		copy(a, A)
-		copy(b, B)
+		for i := 0; i < len(A); i++ {
+			a[i], b[i] = A[i], B[i]
+		}
 		return
 	}
 	ends = GenerateCxEnds(size, ncuts, cuts)
