@@ -9,9 +9,6 @@ import "github.com/cpmech/gosl/io"
 // Func_tt defines a type for a generic function to be used as a gene value
 type Func_tt func(ind *Individual) string
 
-// CxFunc_t defines function to perform the crossover operation
-//type CxFunc_t func(a, b, A, B interface{}, cuts []int, prob float64)
-
 // Individual implements one individual in a population
 type Individual struct {
 
@@ -135,60 +132,52 @@ type FunCxFunc_t func(a, b, A, B []Func_tt, cuts []int, pc float64) (ends []int)
 // resulting in the chromosomes of other two individuals a and b
 //  Input:
 //   A and B -- parents
-//   cuts    -- [6][...] positions for cuts in the augmented/whole chromosome
-//              len(cuts) == 6: {int, flt, string, byte, bytes, func}
-//              len(cuts[i]) defines the number of cuts. use -1 for random generation of cuts
-//              cuts == nil => use random numbers
-//   probs   -- [6] probabilities. use nil for default value
-//   cxfucns -- [6] crossover functions. use nil for default ones
+//   ncuts   -- number of cuts. keys are: 'int', 'flt', 'str', 'key', 'byt', 'fun'
+//              ncuts can be nil if 'cuts' is provided
+//   cuts    -- positions for cuts in the augmented/whole chromosome
+//              len(cuts) == 6: {int, flt, str, key, byt, fun
+//              cuts == nil indicates ncuts is to be used instead
+//   probs   -- probabilities. use nil for default values
+//   cxfucns -- crossover functions. use nil for default ones
 //  Output:
 //   a and b -- offspring
-//func Crossover(a, b, A, B *Individual, cuts map[string][]int, probs map[string]float64, intcxf IntCxFunc_t, fltcxf FltCxFunc_t, strcxf StrCxFunc_t, keycxf KeyCxFunc_t, bytcxf BytCxFunc_t, funcxf FunCxFunc_t) {
-func Crossover(a, b, A, B *Individual, ncuts []int, cuts [][]int, probs []float64, intcxf IntCxFunc_t, fltcxf FltCxFunc_t, strcxf StrCxFunc_t, keycxf KeyCxFunc_t, bytcxf BytCxFunc_t, funcxf FunCxFunc_t) {
-	if cuts == nil {
-		cuts = [][]int{{-1}, {-1}, {-1}, {-1}, {-1}, {-1}}
+func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64, cxfuncs ...interface{}) {
+
+	// default values
+	pc := func(t string) float64 {
+		if val, ok := probs[t]; ok {
+			return val
+		}
+		return 0.8
 	}
-	if probs == nil {
-		probs = []float64{0.8, 0.8, 0.8, 0.8, 0.8, 0.8}
+
+	// default functions
+	intcxf := IntCrossover
+	fltcxf := FltCrossover
+	strcxf := StrCrossover
+	keycxf := KeyCrossover
+	bytcxf := BytCrossover
+	funcxf := FunCrossover
+
+	// perform crossover
+	if A.Ints != nil {
+		intcxf(a.Ints, b.Ints, A.Ints, B.Ints, ncuts["int"], cuts["int"], pc("int"))
 	}
-	if intcxf == nil {
-		intcxf = IntCrossover
+	if A.Floats != nil {
+		fltcxf(a.Floats, b.Floats, A.Floats, B.Floats, ncuts["flt"], cuts["flt"], pc("flt"))
 	}
-	/*
-		if fltcxf == nil {
-			fltcxf = FltCrossover
-		}
-		if strcxf == nil {
-			strcxf = StrCrossover
-		}
-		if keycxf == nil {
-			keycxf = KeyCrossover
-		}
-		if bytcxf == nil {
-			bytcxf = BytCrossover
-		}
-		if funcxf == nil {
-			funcxf = FunCrossover
-		}
-		if A.Ints != nil {
-			intcxf(a.Ints, b.Ints, A.Ints, B.Ints, cuts[0], probs[0])
-		}
-		if A.Floats != nil {
-			fltcxf(a.Floats, b.Floats, A.Floats, B.Floats, cuts[1], probs[1])
-		}
-		if A.Strings != nil {
-			strcxf(a.Strings, b.Strings, A.Strings, B.Strings, cuts[2], probs[2])
-		}
-		if A.Keys != nil {
-			keycxf(a.Keys, b.Keys, A.Keys, B.Keys, cuts[3], probs[3])
-		}
-		if A.Bytes != nil {
-			bytcxf(a.Bytes, b.Bytes, A.Bytes, B.Bytes, cuts[4], probs[4])
-		}
-		if A.Funcs != nil {
-			funcxf(a.Funcs, b.Funcs, A.Funcs, B.Funcs, cuts[5], probs[5])
-		}
-	*/
+	if A.Strings != nil {
+		strcxf(a.Strings, b.Strings, A.Strings, B.Strings, ncuts["str"], cuts["str"], pc("str"))
+	}
+	if A.Keys != nil {
+		keycxf(a.Keys, b.Keys, A.Keys, B.Keys, ncuts["key"], cuts["key"], pc("key"))
+	}
+	if A.Bytes != nil {
+		bytcxf(a.Bytes, b.Bytes, A.Bytes, B.Bytes, ncuts["byt"], cuts["byt"], pc("byt"))
+	}
+	if A.Funcs != nil {
+		funcxf(a.Funcs, b.Funcs, A.Funcs, B.Funcs, ncuts["fun"], cuts["fun"], pc("fun"))
+	}
 }
 
 // output //////////////////////////////////////////////////////////////////////////////////////////
