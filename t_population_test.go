@@ -9,6 +9,7 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 )
 
@@ -92,7 +93,7 @@ func Test_pop01(tst *testing.T) {
 
 func Test_pop02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("pop02")
 
 	rnd.Init(0)
@@ -149,7 +150,7 @@ func Test_pop02(tst *testing.T) {
 
 func Test_pop03(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("pop03")
 
 	rnd.Init(0)
@@ -157,8 +158,25 @@ func Test_pop03(tst *testing.T) {
 	nbases := 3
 	ind := get_individual(0, nbases)
 
+	fmts := [][]string{{"%4d"}, {"%8.2f"}, {" %6.6s"}, {" %x"}, {"%6.6s"}, {"%3s"}}
+
 	ninds := 5
 	bingo := NewExampleBingo()
 	pop := NewPopRandom(ninds, ind, bingo)
-	io.Pf("\n%v\n", pop.Output(nil))
+	io.Pf("\n%v\n", pop.Output(fmts))
+
+	ngenes := 3
+	flts := la.MatAlloc(ninds, ngenes)
+	for i := 0; i < ninds; i++ {
+		for j := 0; j < ngenes; j++ {
+			flts[i][j] = pop[i].GetFloat(j)
+		}
+	}
+	chk.Matrix(tst, "flts", 1e-13, flts, [][]float64{
+		{-123, -1, 0},
+		{-12, -0.5, 0.25},
+		{99, 0, 0.5},
+		{210, 0.5, 0.75},
+		{321, 1, 1},
+	})
 }

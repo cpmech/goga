@@ -9,6 +9,7 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/rnd"
 )
 
 func get_individual(id, nbases int) *Individual {
@@ -48,7 +49,7 @@ func Test_ind01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("ind01")
 
-	//rnd.Init(0)
+	rnd.Init(0)
 
 	nbases := 3
 	A := get_individual(0, nbases)
@@ -61,6 +62,12 @@ func Test_ind01(tst *testing.T) {
 	io.Pfyel("%v\n\n", oB)
 	chk.String(tst, oA, " 1 20 300 4.4 5.5 666.0 \"abc\" \"b\" \"c\" 53 47 41 \"ABC\" \"DEF\" \"GHI\" \"f0\" \"f1\" \"f2\"")
 	chk.String(tst, oB, " 1 20 300 4.4 5.5 666.0 \"abc\" \"b\" \"c\" 53 47 41 \"ABC\" \"DEF\" \"GHI\" \"f0\" \"f1\" \"f2\"")
+
+	A.SetFloat(1, 33)
+	A.SetFloat(2, 88)
+	oA = A.Output(fmts)
+	io.Pfyel("\n%v\n", oA)
+	chk.String(tst, oA, " 1 20 300 4.4 33.0 88.0 \"abc\" \"b\" \"c\" 53 47 41 \"ABC\" \"DEF\" \"GHI\" \"f0\" \"f1\" \"f2\"")
 }
 
 func Test_ind02(tst *testing.T) {

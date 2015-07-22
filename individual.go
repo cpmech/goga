@@ -4,7 +4,11 @@
 
 package goga
 
-import "github.com/cpmech/gosl/io"
+import (
+	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/la"
+	"github.com/cpmech/gosl/rnd"
+)
 
 // Func_tt defines a type for a generic function to be used as a gene value
 type Func_tt func(ind *Individual) string
@@ -180,7 +184,22 @@ func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]i
 	}
 }
 
-// output //////////////////////////////////////////////////////////////////////////////////////////
+// handle bases ////////////////////////////////////////////////////////////////////////////////////
+
+// SetFloat returns the float corresponding to gene 'i'
+//  igene -- is the index of gene/float in [0, Nfloats]
+func (o *Individual) SetFloat(igene int, x float64) {
+	if o.Nbases > 1 {
+		values := make([]float64, o.Nbases)
+		rnd.Float64s(values, 0, 1)
+		sum := la.VecAccum(values)
+		for j := 0; j < o.Nbases; j++ {
+			o.Floats[igene*o.Nbases+j] = x * values[j] / sum
+		}
+		return
+	}
+	o.Floats[igene] = x
+}
 
 // GetFloat returns the float corresponding to gene 'i'
 //  igene -- is the index of gene/float in [0, Nfloats]
@@ -193,6 +212,8 @@ func (o Individual) GetFloat(igene int) (x float64) {
 	}
 	return o.Floats[igene]
 }
+
+// output //////////////////////////////////////////////////////////////////////////////////////////
 
 // GetStringSizes returns the sizes of strings representing each gene type
 //  sizes -- [6][...] sizes of strings for {int, flt, string, byte, bytes, func}
