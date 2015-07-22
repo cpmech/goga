@@ -196,7 +196,7 @@ func (o Individual) GetFloat(igene int) (x float64) {
 
 // GetStringSizes returns the sizes of strings representing each gene type
 //  sizes -- [6][...] sizes of strings for {int, flt, string, byte, bytes, func}
-func (o Individual) GetStringSizes() (sizes [][]int) {
+func (o *Individual) GetStringSizes() (sizes [][]int) {
 
 	sizes = make([][]int, 6)
 	if o.Ints != nil {
@@ -244,7 +244,7 @@ func (o Individual) GetStringSizes() (sizes [][]int) {
 	if o.Funcs != nil {
 		sizes[5] = make([]int, len(o.Funcs))
 		for i, x := range o.Funcs {
-			sizes[5][i] = imax(sizes[5][i], len(io.Sf("%v", x)))
+			sizes[5][i] = imax(sizes[5][i], len(io.Sf("%v", x(o))))
 		}
 	}
 	return
