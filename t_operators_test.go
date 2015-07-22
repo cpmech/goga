@@ -258,8 +258,7 @@ func Test_cxint01(tst *testing.T) {
 	a = make([]int, len(A))
 	b = make([]int, len(A))
 	cuts := []int{1, 3}
-	ends := IntCrossover(a, b, A, B, 0, cuts, 1)
-	io.Pforan("ends = %v\n", ends)
+	IntCrossover(a, b, A, B, 0, cuts, 1)
 	io.Pfred("A = %2v\n", A)
 	io.PfRed("B = %2v\n", B)
 	io.Pfcyan("a = %2v\n", a)
@@ -268,14 +267,106 @@ func Test_cxint01(tst *testing.T) {
 	chk.Ints(tst, "b", b, []int{-1, 2, 3, -4, -5, -6, -7, -8})
 
 	cuts = []int{5, 7}
-	ends = IntCrossover(a, b, A, B, 0, cuts, 1)
-	io.Pforan("ends = %v\n", ends)
+	IntCrossover(a, b, A, B, 0, cuts, 1)
 	io.Pfred("A = %2v\n", A)
 	io.PfRed("B = %2v\n", B)
 	io.Pfcyan("a = %2v\n", a)
 	io.Pfblue2("b = %2v\n", b)
 	chk.Ints(tst, "a", a, []int{1, 2, 3, 4, 5, -6, -7, 8})
 	chk.Ints(tst, "b", b, []int{-1, -2, -3, -4, -5, 6, 7, -8})
+}
+
+func Test_cx01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("cx01")
+
+	A := []float64{1.1, 2.2, 3.3, 4.4, 5.5, 6.6}
+	B := []float64{9.1, 9.2, 9.3, 9.4, 9.5, 9.6}
+	a := make([]float64, len(A))
+	b := make([]float64, len(A))
+	FltCrossover(a, b, A, B, 0, []int{2, 4}, 1)
+	io.Pfred("A = %3v\n", A)
+	io.PfRed("B = %3v\n", B)
+	io.Pfcyan("a = %3v\n", a)
+	io.Pfblue2("b = %3v\n", b)
+	chk.Vector(tst, "a", 1e-17, a, []float64{1.1, 2.2, 9.3, 9.4, 5.5, 6.6})
+	chk.Vector(tst, "b", 1e-17, b, []float64{9.1, 9.2, 3.3, 4.4, 9.5, 9.6})
+	io.Pf("\n")
+
+	C := []string{"A", "B", "C", "D", "E", "F"}
+	D := []string{"-", "o", "+", "@", "*", "&"}
+	c := make([]string, len(A))
+	d := make([]string, len(A))
+	StrCrossover(c, d, C, D, 0, []int{1, 3}, 1)
+	io.Pfred("C = %3v\n", C)
+	io.PfRed("D = %3v\n", D)
+	io.Pfcyan("c = %3v\n", c)
+	io.Pfblue2("d = %3v\n", d)
+	chk.Strings(tst, "c", c, []string{"A", "o", "+", "D", "E", "F"})
+	chk.Strings(tst, "d", d, []string{"-", "B", "C", "@", "*", "&"})
+	io.Pf("\n")
+
+	E := [][]byte{[]byte("A"), []byte("B"), []byte("C"), []byte("D"), []byte("E"), []byte("F")}
+	F := [][]byte{[]byte("-"), []byte("o"), []byte("+"), []byte("@"), []byte("*"), []byte("&")}
+	e := make([][]byte, len(A))
+	f := make([][]byte, len(A))
+	for i := 0; i < len(A); i++ {
+		e[i] = make([]byte, 1)
+		f[i] = make([]byte, 1)
+	}
+	BytCrossover(e, f, E, F, 0, []int{1, 3}, 1)
+	io.Pfred("E = %3s\n", E)
+	io.PfRed("F = %3s\n", F)
+	io.Pfcyan("e = %3s\n", e)
+	io.Pfblue2("f = %3s\n", f)
+	e_s := make([]string, len(A))
+	f_s := make([]string, len(A))
+	for i := 0; i < len(A); i++ {
+		e_s[i] = string(e[i])
+		f_s[i] = string(f[i])
+	}
+	chk.Strings(tst, "e_s", e_s, []string{"A", "o", "+", "D", "E", "F"})
+	chk.Strings(tst, "f_s", f_s, []string{"-", "B", "C", "@", "*", "&"})
+	io.Pf("\n")
+
+	G := []byte("ABCDEF")
+	H := []byte("-o+@*&")
+	g := make([]byte, len(A))
+	h := make([]byte, len(A))
+	KeyCrossover(g, h, G, H, 0, []int{1, 3}, 1)
+	io.Pfred("G = %3v\n", G)
+	io.PfRed("H = %3v\n", H)
+	io.Pfcyan("g = %3v\n", g)
+	io.Pfblue2("h = %3v\n", h)
+	g_s := make([]string, len(A))
+	h_s := make([]string, len(A))
+	for i := 0; i < len(A); i++ {
+		g_s[i] = string(g[i])
+		h_s[i] = string(h[i])
+	}
+	chk.Strings(tst, "g_s", g_s, []string{"A", "o", "+", "D", "E", "F"})
+	chk.Strings(tst, "h_s", h_s, []string{"-", "B", "C", "@", "*", "&"})
+	io.Pf("\n")
+
+	M := []Func_tt{func(i *Individual) string { return "A" }, func(i *Individual) string { return "B" }, func(i *Individual) string { return "C" }, func(i *Individual) string { return "D" }, func(i *Individual) string { return "E" }, func(i *Individual) string { return "F" }}
+	N := []Func_tt{func(i *Individual) string { return "-" }, func(i *Individual) string { return "o" }, func(i *Individual) string { return "+" }, func(i *Individual) string { return "@" }, func(i *Individual) string { return "*" }, func(i *Individual) string { return "&" }}
+	m := make([]Func_tt, len(A))
+	n := make([]Func_tt, len(A))
+	FunCrossover(m, n, M, N, 0, []int{1, 3}, 1)
+	io.Pfred("M = %3v\n", M)
+	io.PfRed("N = %3v\n", N)
+	io.Pfcyan("m = %3v\n", m)
+	io.Pfblue2("n = %3v\n", n)
+	m_s := make([]string, len(A))
+	n_s := make([]string, len(A))
+	for i := 0; i < len(A); i++ {
+		m_s[i] = m[i](nil)
+		n_s[i] = n[i](nil)
+	}
+	chk.Strings(tst, "m_s", m_s, []string{"A", "o", "+", "D", "E", "F"})
+	chk.Strings(tst, "n_s", n_s, []string{"-", "B", "C", "@", "*", "&"})
+	io.Pf("\n")
 }
 
 func checkRepeated(ends []int) {

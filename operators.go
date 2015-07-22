@@ -224,19 +224,222 @@ func IntCrossover(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []i
 	return
 }
 
-func FltCrossover(a, b, A, B []float64, cuts []int, pc float64) {
+// FltCrossover performs the crossover of genetic data from A and B
+//  Input:
+//   A and B -- parents
+//   ncuts   -- number of cuts to be used, unless cuts != nil
+//   cuts    -- cut positions. can be nil => use ncuts instead
+//   pc      -- probability of crossover
+//  Output:
+//   a and b -- offspring
+//  Example:
+//         0 1 2 3 4 5 6 7
+//     A = a b c d e f g h    size = 8
+//     B = * . . . . * * *    cuts = [1, 5]
+//          ↑       ↑     ↑   ends = [1, 5, 8]
+//          1       5     8
+//     a = a . . . . f g h
+//     b = * b c d e * * *
+func FltCrossover(a, b, A, B []float64, ncuts int, cuts []int, pc float64) (ends []int) {
+	size := len(A)
+	if !rnd.FlipCoin(pc) || size < 2 {
+		for i := 0; i < len(A); i++ {
+			a[i], b[i] = A[i], B[i]
+		}
+		return
+	}
+	ends = GenerateCxEnds(size, ncuts, cuts)
+	swap := false
+	start := 0
+	for _, end := range ends {
+		if swap {
+			for j := start; j < end; j++ {
+				b[j], a[j] = A[j], B[j]
+			}
+		} else {
+			for j := start; j < end; j++ {
+				a[j], b[j] = A[j], B[j]
+			}
+		}
+		start = end
+		swap = !swap
+	}
+	return
 }
 
-func StrCrossover(a, b, A, B []string, cuts []int, pc float64) {
+// StrCrossover performs the crossover of genetic data from A and B
+//  Input:
+//   A and B -- parents
+//   ncuts   -- number of cuts to be used, unless cuts != nil
+//   cuts    -- cut positions. can be nil => use ncuts instead
+//   pc      -- probability of crossover
+//  Output:
+//   a and b -- offspring
+//  Example:
+//         0 1 2 3 4 5 6 7
+//     A = a b c d e f g h    size = 8
+//     B = * . . . . * * *    cuts = [1, 5]
+//          ↑       ↑     ↑   ends = [1, 5, 8]
+//          1       5     8
+//     a = a . . . . f g h
+//     b = * b c d e * * *
+func StrCrossover(a, b, A, B []string, ncuts int, cuts []int, pc float64) (ends []int) {
+	size := len(A)
+	if !rnd.FlipCoin(pc) || size < 2 {
+		for i := 0; i < len(A); i++ {
+			a[i], b[i] = A[i], B[i]
+		}
+		return
+	}
+	ends = GenerateCxEnds(size, ncuts, cuts)
+	swap := false
+	start := 0
+	for _, end := range ends {
+		if swap {
+			for j := start; j < end; j++ {
+				b[j], a[j] = A[j], B[j]
+			}
+		} else {
+			for j := start; j < end; j++ {
+				a[j], b[j] = A[j], B[j]
+			}
+		}
+		start = end
+		swap = !swap
+	}
+	return
 }
 
-func KeyCrossover(a, b, A, B []byte, cuts []int, pc float64) {
+// KeyCrossover performs the crossover of genetic data from A and B
+//  Input:
+//   A and B -- parents
+//   ncuts   -- number of cuts to be used, unless cuts != nil
+//   cuts    -- cut positions. can be nil => use ncuts instead
+//   pc      -- probability of crossover
+//  Output:
+//   a and b -- offspring
+//  Example:
+//         0 1 2 3 4 5 6 7
+//     A = a b c d e f g h    size = 8
+//     B = * . . . . * * *    cuts = [1, 5]
+//          ↑       ↑     ↑   ends = [1, 5, 8]
+//          1       5     8
+//     a = a . . . . f g h
+//     b = * b c d e * * *
+func KeyCrossover(a, b, A, B []byte, ncuts int, cuts []int, pc float64) (ends []int) {
+	size := len(A)
+	if !rnd.FlipCoin(pc) || size < 2 {
+		for i := 0; i < len(A); i++ {
+			a[i], b[i] = A[i], B[i]
+		}
+		return
+	}
+	ends = GenerateCxEnds(size, ncuts, cuts)
+	swap := false
+	start := 0
+	for _, end := range ends {
+		if swap {
+			for j := start; j < end; j++ {
+				b[j], a[j] = A[j], B[j]
+			}
+		} else {
+			for j := start; j < end; j++ {
+				a[j], b[j] = A[j], B[j]
+			}
+		}
+		start = end
+		swap = !swap
+	}
+	return
 }
 
-func BytCrossover(a, b, A, B [][]byte, cuts []int, pc float64) {
+// BytCrossover performs the crossover of genetic data from A and B
+//  Input:
+//   A and B -- parents
+//   ncuts   -- number of cuts to be used, unless cuts != nil
+//   cuts    -- cut positions. can be nil => use ncuts instead
+//   pc      -- probability of crossover
+//  Output:
+//   a and b -- offspring
+//  Example:
+//         0 1 2 3 4 5 6 7
+//     A = a b c d e f g h    size = 8
+//     B = * . . . . * * *    cuts = [1, 5]
+//          ↑       ↑     ↑   ends = [1, 5, 8]
+//          1       5     8
+//     a = a . . . . f g h
+//     b = * b c d e * * *
+func BytCrossover(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64) (ends []int) {
+	size := len(A)
+	if !rnd.FlipCoin(pc) || size < 2 {
+		for i := 0; i < len(A); i++ {
+			copy(a[i], A[i])
+			copy(b[i], B[i])
+		}
+		return
+	}
+	ends = GenerateCxEnds(size, ncuts, cuts)
+	swap := false
+	start := 0
+	for _, end := range ends {
+		if swap {
+			for j := start; j < end; j++ {
+				copy(b[j], A[j])
+				copy(a[j], B[j])
+			}
+		} else {
+			for j := start; j < end; j++ {
+				copy(a[j], A[j])
+				copy(b[j], B[j])
+			}
+		}
+		start = end
+		swap = !swap
+	}
+	return
 }
 
-func FunCrossover(a, b, A, B []Func_tt, cuts []int, pc float64) {
+// FunCrossover performs the crossover of genetic data from A and B
+//  Input:
+//   A and B -- parents
+//   ncuts   -- number of cuts to be used, unless cuts != nil
+//   cuts    -- cut positions. can be nil => use ncuts instead
+//   pc      -- probability of crossover
+//  Output:
+//   a and b -- offspring
+//  Example:
+//         0 1 2 3 4 5 6 7
+//     A = a b c d e f g h    size = 8
+//     B = * . . . . * * *    cuts = [1, 5]
+//          ↑       ↑     ↑   ends = [1, 5, 8]
+//          1       5     8
+//     a = a . . . . f g h
+//     b = * b c d e * * *
+func FunCrossover(a, b, A, B []Func_tt, ncuts int, cuts []int, pc float64) (ends []int) {
+	size := len(A)
+	if !rnd.FlipCoin(pc) || size < 2 {
+		for i := 0; i < len(A); i++ {
+			a[i], b[i] = A[i], B[i]
+		}
+		return
+	}
+	ends = GenerateCxEnds(size, ncuts, cuts)
+	swap := false
+	start := 0
+	for _, end := range ends {
+		if swap {
+			for j := start; j < end; j++ {
+				b[j], a[j] = A[j], B[j]
+			}
+		} else {
+			for j := start; j < end; j++ {
+				a[j], b[j] = A[j], B[j]
+			}
+		}
+		start = end
+		swap = !swap
+	}
+	return
 }
 
 // GenerateCxEnds randomly computes the end positions of cuts in chromosomes
