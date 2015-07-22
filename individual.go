@@ -124,12 +124,12 @@ func (o Individual) GetCopy() (x *Individual) {
 
 // genetic algorithm routines //////////////////////////////////////////////////////////////////////
 
-type IntCxFunc_t func(a, b, A, B []int, cuts []int, pc float64)
-type FltCxFunc_t func(a, b, A, B []float64, cuts []int, pc float64)
-type StrCxFunc_t func(a, b, A, B []string, cuts []int, pc float64)
-type KeyCxFunc_t func(a, b, A, B []byte, cuts []int, pc float64)
-type BytCxFunc_t func(a, b, A, B [][]byte, cuts []int, pc float64)
-type FunCxFunc_t func(a, b, A, B []Func_tt, cuts []int, pc float64)
+type IntCxFunc_t func(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []int)
+type FltCxFunc_t func(a, b, A, B []float64, cuts []int, pc float64) (ends []int)
+type StrCxFunc_t func(a, b, A, B []string, cuts []int, pc float64) (ends []int)
+type KeyCxFunc_t func(a, b, A, B []byte, cuts []int, pc float64) (ends []int)
+type BytCxFunc_t func(a, b, A, B [][]byte, cuts []int, pc float64) (ends []int)
+type FunCxFunc_t func(a, b, A, B []Func_tt, cuts []int, pc float64) (ends []int)
 
 // Crossover performs the crossover between chromosomes of two individuals A and B
 // resulting in the chromosomes of other two individuals a and b
@@ -144,7 +144,7 @@ type FunCxFunc_t func(a, b, A, B []Func_tt, cuts []int, pc float64)
 //  Output:
 //   a and b -- offspring
 //func Crossover(a, b, A, B *Individual, cuts map[string][]int, probs map[string]float64, intcxf IntCxFunc_t, fltcxf FltCxFunc_t, strcxf StrCxFunc_t, keycxf KeyCxFunc_t, bytcxf BytCxFunc_t, funcxf FunCxFunc_t) {
-func Crossover(a, b, A, B *Individual, cuts [][]int, probs []float64, intcxf IntCxFunc_t, fltcxf FltCxFunc_t, strcxf StrCxFunc_t, keycxf KeyCxFunc_t, bytcxf BytCxFunc_t, funcxf FunCxFunc_t) {
+func Crossover(a, b, A, B *Individual, ncuts []int, cuts [][]int, probs []float64, intcxf IntCxFunc_t, fltcxf FltCxFunc_t, strcxf StrCxFunc_t, keycxf KeyCxFunc_t, bytcxf BytCxFunc_t, funcxf FunCxFunc_t) {
 	if cuts == nil {
 		cuts = [][]int{{-1}, {-1}, {-1}, {-1}, {-1}, {-1}}
 	}
@@ -154,39 +154,41 @@ func Crossover(a, b, A, B *Individual, cuts [][]int, probs []float64, intcxf Int
 	if intcxf == nil {
 		intcxf = IntCrossover
 	}
-	if fltcxf == nil {
-		fltcxf = FltCrossover
-	}
-	if strcxf == nil {
-		strcxf = StrCrossover
-	}
-	if keycxf == nil {
-		keycxf = KeyCrossover
-	}
-	if bytcxf == nil {
-		bytcxf = BytCrossover
-	}
-	if funcxf == nil {
-		funcxf = FunCrossover
-	}
-	if A.Ints != nil {
-		intcxf(a.Ints, b.Ints, A.Ints, B.Ints, cuts[0], probs[0])
-	}
-	if A.Floats != nil {
-		fltcxf(a.Floats, b.Floats, A.Floats, B.Floats, cuts[1], probs[1])
-	}
-	if A.Strings != nil {
-		strcxf(a.Strings, b.Strings, A.Strings, B.Strings, cuts[2], probs[2])
-	}
-	if A.Keys != nil {
-		keycxf(a.Keys, b.Keys, A.Keys, B.Keys, cuts[3], probs[3])
-	}
-	if A.Bytes != nil {
-		bytcxf(a.Bytes, b.Bytes, A.Bytes, B.Bytes, cuts[4], probs[4])
-	}
-	if A.Funcs != nil {
-		funcxf(a.Funcs, b.Funcs, A.Funcs, B.Funcs, cuts[5], probs[5])
-	}
+	/*
+		if fltcxf == nil {
+			fltcxf = FltCrossover
+		}
+		if strcxf == nil {
+			strcxf = StrCrossover
+		}
+		if keycxf == nil {
+			keycxf = KeyCrossover
+		}
+		if bytcxf == nil {
+			bytcxf = BytCrossover
+		}
+		if funcxf == nil {
+			funcxf = FunCrossover
+		}
+		if A.Ints != nil {
+			intcxf(a.Ints, b.Ints, A.Ints, B.Ints, cuts[0], probs[0])
+		}
+		if A.Floats != nil {
+			fltcxf(a.Floats, b.Floats, A.Floats, B.Floats, cuts[1], probs[1])
+		}
+		if A.Strings != nil {
+			strcxf(a.Strings, b.Strings, A.Strings, B.Strings, cuts[2], probs[2])
+		}
+		if A.Keys != nil {
+			keycxf(a.Keys, b.Keys, A.Keys, B.Keys, cuts[3], probs[3])
+		}
+		if A.Bytes != nil {
+			bytcxf(a.Bytes, b.Bytes, A.Bytes, B.Bytes, cuts[4], probs[4])
+		}
+		if A.Funcs != nil {
+			funcxf(a.Funcs, b.Funcs, A.Funcs, B.Funcs, cuts[5], probs[5])
+		}
+	*/
 }
 
 // output //////////////////////////////////////////////////////////////////////////////////////////

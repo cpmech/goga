@@ -91,7 +91,7 @@ func Test_ind02(tst *testing.T) {
 
 	a := A.GetCopy()
 	b := A.GetCopy()
-	Crossover(a, b, A, B, cuts, nil, nil, nil, nil, nil, nil, nil)
+	Crossover(a, b, A, B, nil, cuts, nil, nil, nil, nil, nil, nil, nil)
 
 	io.Pforan("a = %v\n", a.Output(fmts))
 	io.Pfblue2("b = %v\n", b.Output(fmts))

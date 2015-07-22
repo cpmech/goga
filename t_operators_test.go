@@ -137,57 +137,102 @@ func Test_ends01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("ends01")
 
-	size := 2
-	cuts := []int{}
-	ends := GenerateCxEnds(size, cuts)
+	size := 8
+	cuts := []int{5, 7}
+	ends := GenerateCxEnds(size, 0, cuts)
+	io.Pfpink("size=%v cuts=%v\n", size, cuts)
+	io.Pfyel("ends = %v\n", ends)
+	chk.IntAssert(len(ends), 3)
+	chk.IntAssert(ends[len(ends)-1], size)
+	checkRepeated(ends)
+	io.Pf("\n")
+
+	size = 2
+	cuts = []int{}
+	ends = GenerateCxEnds(size, 0, cuts)
 	io.Pfpink("size=%v cuts=%v\n", size, cuts)
 	io.Pforan("ends = %v\n", ends)
 	chk.Ints(tst, "ends", ends, []int{1, 2})
 	chk.IntAssert(ends[len(ends)-1], size)
+	checkRepeated(ends)
 	io.Pf("\n")
 
 	size = 3
-	cuts = []int{666, -1, -1, -1}
-	ends = GenerateCxEnds(size, cuts)
-	io.Pfpink("size=%v cuts=%v\n", size, cuts)
+	ncuts := 3
+	ends = GenerateCxEnds(size, ncuts, nil)
+	io.Pfpink("size=%v ncuts=%v\n", size, ncuts)
 	io.Pforan("ends = %v\n", ends)
 	chk.Ints(tst, "ends", ends, []int{1, 2, 3})
 	chk.IntAssert(ends[len(ends)-1], size)
+	checkRepeated(ends)
+	io.Pf("\n")
+
+	size = 3
+	ncuts = 2
+	ends = GenerateCxEnds(size, ncuts, nil)
+	io.Pfpink("size=%v ncuts=%v\n", size, ncuts)
+	io.Pforan("ends = %v\n", ends)
+	chk.Ints(tst, "ends", ends, []int{1, 2, 3})
+	chk.IntAssert(ends[len(ends)-1], size)
+	checkRepeated(ends)
 	io.Pf("\n")
 
 	size = 8
 	cuts = []int{7}
-	ends = GenerateCxEnds(size, cuts)
+	ends = GenerateCxEnds(size, 0, cuts)
 	io.Pfpink("size=%v cuts=%v\n", size, cuts)
 	io.Pforan("ends = %v\n", ends)
 	chk.Ints(tst, "ends", ends, []int{7, 8})
 	chk.IntAssert(ends[len(ends)-1], size)
+	checkRepeated(ends)
 	io.Pf("\n")
 
 	size = 8
 	cuts = []int{2, 5}
-	ends = GenerateCxEnds(size, cuts)
+	ends = GenerateCxEnds(size, 0, cuts)
 	io.Pfpink("size=%v cuts=%v\n", size, cuts)
 	io.Pforan("ends = %v\n", ends)
 	chk.Ints(tst, "ends", ends, []int{2, 5, 8})
 	chk.IntAssert(ends[len(ends)-1], size)
+	checkRepeated(ends)
 	io.Pf("\n")
 
 	size = 20
-	cuts = []int{1, 1, 5, 15, 17}
-	ends = GenerateCxEnds(size, cuts)
+	cuts = []int{1, 5, 15, 17}
+	ends = GenerateCxEnds(size, 0, cuts)
 	io.Pfpink("size=%v cuts=%v\n", size, cuts)
 	io.Pfyel("ends = %v\n", ends)
+	chk.Ints(tst, "ends", ends, []int{1, 5, 15, 17, 20})
 	chk.IntAssert(ends[len(ends)-1], size)
+	checkRepeated(ends)
 	io.Pf("\n")
 
 	size = 20
-	cuts = []int{-1, -1, -1, -1, -1}
-	ends = GenerateCxEnds(size, cuts)
+	ncuts = 5
+	ends = GenerateCxEnds(size, ncuts, cuts)
 	io.Pfpink("size=%v cuts=%v\n", size, cuts)
 	io.Pfyel("ends = %v\n", ends)
 	chk.IntAssert(ends[len(ends)-1], size)
+	checkRepeated(ends)
 	io.Pf("\n")
+}
+
+func Test_ends02(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("ends02")
+
+	rnd.Init(0)
+
+	size := 20
+	ncuts := 10
+	nsamples := 1000
+	hist := rnd.IntHistogram{Stations: utl.IntRange(size + 3)}
+	for i := 0; i < nsamples; i++ {
+		ends := GenerateCxEnds(size, ncuts, nil)
+		hist.Count(ends, false)
+	}
+	io.Pf("%s\n", rnd.TextHist(hist.GenLabels("%d"), hist.Counts, 60))
 }
 
 func Test_cxint01(tst *testing.T) {
@@ -199,40 +244,31 @@ func Test_cxint01(tst *testing.T) {
 	B := []int{-1, -2}
 	a := make([]int, len(A))
 	b := make([]int, len(A))
-
-	IntCrossover(a, b, A, B, nil, 1)
-
+	IntCrossover(a, b, A, B, 1, nil, 1)
 	io.Pfred("A = %2d\n", A)
 	io.PfRed("B = %2d\n", B)
 	io.Pfcyan("a = %2d\n", a)
 	io.Pfblue2("b = %2d\n", b)
-
 	chk.Ints(tst, "a", a, []int{1, -2})
 	chk.Ints(tst, "b", b, []int{-1, 2})
-}
+	io.Pf("\n")
 
-func Test_cxint02(tst *testing.T) {
-
-	verbose()
-	chk.PrintTitle("cxint02")
-
-	A := []int{1, 2, 3, 4, 5, 6, 7, 8}
-	B := []int{-1, -2, -3, -4, -5, -6, -7, -8}
-	a := make([]int, len(A))
-	b := make([]int, len(A))
-
-	ends := []int{5, 5, 8}
-	IntCrossover(a, b, A, B, ends, 1)
-
+	A = []int{1, 2, 3, 4, 5, 6, 7, 8}
+	B = []int{-1, -2, -3, -4, -5, -6, -7, -8}
+	a = make([]int, len(A))
+	b = make([]int, len(A))
+	cuts := []int{5, 5, 8}
+	ends := IntCrossover(a, b, A, B, 0, cuts, 1)
+	io.Pforan("ends = %v\n", ends)
 	io.Pfred("A = %2v\n", A)
 	io.PfRed("B = %2v\n", B)
 	io.Pfcyan("a = %2v\n", a)
 	io.Pfblue2("b = %2v\n", b)
-
 	chk.Ints(tst, "a", a, A)
 	chk.Ints(tst, "b", b, B)
 }
 
+/*
 func Test_cxint03(tst *testing.T) {
 
 	verbose()
@@ -275,4 +311,13 @@ func Test_cxint04(tst *testing.T) {
 
 	chk.Ints(tst, "a", a, []int{1, -2, -3, -4, -5, 6, 7, 8})
 	chk.Ints(tst, "b", b, []int{-1, 2, 3, 4, 5, -6, -7, -8})
+}
+*/
+
+func checkRepeated(ends []int) {
+	for i := 1; i < len(ends); i++ {
+		if ends[i] == ends[i-1] {
+			chk.Panic("there are repeated entries in ends = %v", ends)
+		}
+	}
 }

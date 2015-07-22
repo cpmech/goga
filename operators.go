@@ -12,7 +12,6 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
-	"github.com/cpmech/gosl/utl"
 )
 
 // SimpleChromo splits 'genes' into 'nbases' unequal parts
@@ -190,14 +189,14 @@ func FilterPairs(A, B []int, selinds []int) {
 // a = a . . . . f g h
 // b = * b c d e * * *
 //
-func IntCrossover(a, b, A, B []int, cuts []int, pc float64) {
+func IntCrossover(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		copy(a, A)
 		copy(b, B)
 		return
 	}
-	ends := GenerateCxEnds(size, cuts)
+	ends = GenerateCxEnds(size, ncuts, cuts)
 	swap := false
 	start := 0
 	for _, end := range ends {
@@ -213,6 +212,7 @@ func IntCrossover(a, b, A, B []int, cuts []int, pc float64) {
 		start = end
 		swap = !swap
 	}
+	return
 }
 
 func FltCrossover(a, b, A, B []float64, cuts []int, pc float64) {
@@ -232,8 +232,9 @@ func FunCrossover(a, b, A, B []Func_tt, cuts []int, pc float64) {
 
 // GenerateCxEnds randomly computes the end positions of cuts in chromosomes
 //  Input:
-//   size -- size of chromosome
-//   cuts -- cut positions. use -1 or greater than size-1 for random value
+//   size  -- size of chromosome
+//   ncuts -- number of cuts to be used, unless cuts != nil
+//   cuts  -- cut positions. can be nil => use ncuts instead
 //  Output:
 //   ends -- end positions where the last one equals size
 //  Example:
@@ -241,37 +242,51 @@ func FunCrossover(a, b, A, B []Func_tt, cuts []int, pc float64) {
 //    A = a b c d e f g h    size = 8
 //         ↑       ↑     ↑   cuts = [1, 5]
 //         1       5     8   ends = [1, 5, 8]
-func GenerateCxEnds(size int, cuts []int) (ends []int) {
+func GenerateCxEnds(size, ncuts int, cuts []int) (ends []int) {
+
+	// handle small slices
 	if size < 2 {
 		return
 	}
 	if size == 2 {
 		return []int{1, size}
 	}
-	if len(cuts) == 0 {
-		return []int{rnd.Int(1, size-1), size}
+
+	// cuts slice is given
+	if len(cuts) > 0 {
+		ncuts = len(cuts)
+		ends = make([]int, ncuts+1)
+		ends[ncuts] = size
+		for i, cut := range cuts {
+			if cut < 1 || cut >= size {
+				chk.Panic("cut=%d is outside the allowed range: 1 ≤ cut ≤ size-1", cut)
+			}
+			if i > 0 {
+				if cut == cuts[i-1] {
+					chk.Panic("repeated cut values are not allowed: cuts=%v", cuts)
+				}
+			}
+			ends[i] = cut
+		}
+		sort.Ints(ends)
+		return
 	}
-	ncuts := len(cuts)
-	if ncuts >= size-1 {
+
+	// randomly generate cuts
+	if ncuts < 1 {
+		ncuts = 1
+	}
+	if ncuts >= size {
 		ncuts = size - 1
 	}
 	ends = make([]int, ncuts+1)
 	ends[ncuts] = size
-	pool := utl.IntRange2(1, size)
-	rnd.IntShuffle(pool)
+
+	// pool of values for selections
+	pool := rnd.IntGetUniqueN(1, size, ncuts)
+	sort.Ints(pool)
 	for i := 0; i < ncuts; i++ {
-		if cuts[i] < 0 || cuts[i] > size-1 {
-			ends[i] = pool[i]
-		} else {
-			if i > 0 {
-				if cuts[i] == cuts[i-1] { // avoid repeated cuts
-					ends[i] = pool[i]
-					continue
-				}
-			}
-			ends[i] = cuts[i]
-		}
+		ends[i] = pool[i]
 	}
-	sort.Ints(ends)
 	return ends
 }
