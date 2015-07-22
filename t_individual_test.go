@@ -75,6 +75,8 @@ func Test_ind02(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("ind02")
 
+	rnd.Init(0)
+
 	nbases := 1
 	A := get_individual(0, nbases)
 	B := get_individual(1, nbases)
@@ -94,10 +96,14 @@ func Test_ind02(tst *testing.T) {
 		"int": []int{1, 2},
 		"str": []int{1},
 	}
+	pc := map[string]float64{
+		"int": 1,
+		"str": 1,
+	}
 
 	a := A.GetCopy()
 	b := A.GetCopy()
-	Crossover(a, b, A, B, nil, cuts, nil, nil, nil, nil, nil, nil, nil)
+	Crossover(a, b, A, B, nil, cuts, pc, nil, nil, nil, nil, nil, nil)
 
 	io.Pforan("a = %v\n", a.Output(fmts))
 	io.Pfblue2("b = %v\n", b.Output(fmts))
