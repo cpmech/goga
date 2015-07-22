@@ -182,6 +182,17 @@ func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]i
 
 // output //////////////////////////////////////////////////////////////////////////////////////////
 
+// GetFloat returns the float corresponding to gene 'i'
+//  igene -- is the index of gene/float in [0, Nfloats]
+func (o Individual) GetFloat(igene int) (x float64) {
+	if o.Nbases > 1 {
+		for j := 0; j < o.Nbases; j++ {
+			x += o.Floats[igene*o.Nbases+j]
+		}
+	}
+	return o.Floats[igene]
+}
+
 // GetStringSizes returns the sizes of strings representing each gene type
 //  sizes -- [6][...] sizes of strings for {int, flt, string, byte, bytes, func}
 func (o Individual) GetStringSizes() (sizes [][]int) {
@@ -195,9 +206,11 @@ func (o Individual) GetStringSizes() (sizes [][]int) {
 	}
 
 	if o.Floats != nil {
-		sizes[1] = make([]int, len(o.Floats))
-		for i, x := range o.Floats {
+		sizes[1] = make([]int, o.Nfloats)
+		for i := 0; i < o.Nfloats; i++ {
+			x := o.Floats[i]
 			if o.Nbases > 1 {
+				x = 0
 				for j := 0; j < o.Nbases; j++ {
 					x += o.Floats[i*o.Nbases+j]
 				}
