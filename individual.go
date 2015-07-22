@@ -189,6 +189,7 @@ func (o Individual) GetFloat(igene int) (x float64) {
 		for j := 0; j < o.Nbases; j++ {
 			x += o.Floats[igene*o.Nbases+j]
 		}
+		return
 	}
 	return o.Floats[igene]
 }
