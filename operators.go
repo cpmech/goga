@@ -7,10 +7,12 @@ package goga
 import (
 	"math"
 	"math/rand"
+	"sort"
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
+	"github.com/cpmech/gosl/utl"
 )
 
 // SimpleChromo splits 'genes' into 'nbases' unequal parts
@@ -188,19 +190,14 @@ func FilterPairs(A, B []int, selinds []int) {
 // a = a . . . . f g h
 // b = * b c d e * * *
 //
-func IntCrossover(a, b, A, B []int, ends []int, pc float64) {
+func IntCrossover(a, b, A, B []int, cuts []int, pc float64) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		copy(a, A)
 		copy(b, B)
 		return
 	}
-	if size == 2 {
-		a[0], b[0] = A[0], B[0]
-		b[1], a[1] = A[1], B[1]
-		return
-	}
-	filter_ends(size, ends)
+	ends := GenerateCxEnds(size, cuts)
 	swap := false
 	start := 0
 	for _, end := range ends {
@@ -233,10 +230,48 @@ func BytCrossover(a, b, A, B [][]byte, cuts []int, pc float64) {
 func FunCrossover(a, b, A, B []Func_tt, cuts []int, pc float64) {
 }
 
-// auxiliary //////////
-
-func filter_ends(last int, ends []int) {
-	chk.IntAssertLessThan(1, len(ends))         // len(ends) > 1
-	chk.IntAssertLessThan(0, ends[len(ends)-1]) // ends[first] > 0
-	chk.IntAssert(ends[len(ends)-1], last)      // ends[last] = len(A)
+// GenerateCxEnds randomly computes the end positions of cuts in chromosomes
+//  Input:
+//   size -- size of chromosome
+//   cuts -- cut positions. use -1 or greater than size-1 for random value
+//  Output:
+//   ends -- end positions where the last one equals size
+//  Example:
+//        0 1 2 3 4 5 6 7
+//    A = a b c d e f g h    size = 8
+//         ↑       ↑     ↑   cuts = [1, 5]
+//         1       5     8   ends = [1, 5, 8]
+func GenerateCxEnds(size int, cuts []int) (ends []int) {
+	if size < 2 {
+		return
+	}
+	if size == 2 {
+		return []int{1, size}
+	}
+	if len(cuts) == 0 {
+		return []int{rnd.Int(1, size-1), size}
+	}
+	ncuts := len(cuts)
+	if ncuts >= size-1 {
+		ncuts = size - 1
+	}
+	ends = make([]int, ncuts+1)
+	ends[ncuts] = size
+	pool := utl.IntRange2(1, size)
+	rnd.IntShuffle(pool)
+	for i := 0; i < ncuts; i++ {
+		if cuts[i] < 0 || cuts[i] > size-1 {
+			ends[i] = pool[i]
+		} else {
+			if i > 0 {
+				if cuts[i] == cuts[i-1] { // avoid repeated cuts
+					ends[i] = pool[i]
+					continue
+				}
+			}
+			ends[i] = cuts[i]
+		}
+	}
+	sort.Ints(ends)
+	return ends
 }

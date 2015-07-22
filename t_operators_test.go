@@ -132,10 +132,133 @@ func Test_pairs01(tst *testing.T) {
 	}
 }
 
+func Test_ends01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("ends01")
+
+	size := 2
+	cuts := []int{}
+	ends := GenerateCxEnds(size, cuts)
+	io.Pfpink("size=%v cuts=%v\n", size, cuts)
+	io.Pforan("ends = %v\n", ends)
+	chk.Ints(tst, "ends", ends, []int{1, 2})
+	chk.IntAssert(ends[len(ends)-1], size)
+	io.Pf("\n")
+
+	size = 3
+	cuts = []int{666, -1, -1, -1}
+	ends = GenerateCxEnds(size, cuts)
+	io.Pfpink("size=%v cuts=%v\n", size, cuts)
+	io.Pforan("ends = %v\n", ends)
+	chk.Ints(tst, "ends", ends, []int{1, 2, 3})
+	chk.IntAssert(ends[len(ends)-1], size)
+	io.Pf("\n")
+
+	size = 8
+	cuts = []int{7}
+	ends = GenerateCxEnds(size, cuts)
+	io.Pfpink("size=%v cuts=%v\n", size, cuts)
+	io.Pforan("ends = %v\n", ends)
+	chk.Ints(tst, "ends", ends, []int{7, 8})
+	chk.IntAssert(ends[len(ends)-1], size)
+	io.Pf("\n")
+
+	size = 8
+	cuts = []int{2, 5}
+	ends = GenerateCxEnds(size, cuts)
+	io.Pfpink("size=%v cuts=%v\n", size, cuts)
+	io.Pforan("ends = %v\n", ends)
+	chk.Ints(tst, "ends", ends, []int{2, 5, 8})
+	chk.IntAssert(ends[len(ends)-1], size)
+	io.Pf("\n")
+
+	size = 20
+	cuts = []int{1, 1, 5, 15, 17}
+	ends = GenerateCxEnds(size, cuts)
+	io.Pfpink("size=%v cuts=%v\n", size, cuts)
+	io.Pfyel("ends = %v\n", ends)
+	chk.IntAssert(ends[len(ends)-1], size)
+	io.Pf("\n")
+
+	size = 20
+	cuts = []int{-1, -1, -1, -1, -1}
+	ends = GenerateCxEnds(size, cuts)
+	io.Pfpink("size=%v cuts=%v\n", size, cuts)
+	io.Pfyel("ends = %v\n", ends)
+	chk.IntAssert(ends[len(ends)-1], size)
+	io.Pf("\n")
+}
+
 func Test_cxint01(tst *testing.T) {
 
 	verbose()
 	chk.PrintTitle("cxint01")
+
+	A := []int{1, 2}
+	B := []int{-1, -2}
+	a := make([]int, len(A))
+	b := make([]int, len(A))
+
+	IntCrossover(a, b, A, B, nil, 1)
+
+	io.Pfred("A = %2d\n", A)
+	io.PfRed("B = %2d\n", B)
+	io.Pfcyan("a = %2d\n", a)
+	io.Pfblue2("b = %2d\n", b)
+
+	chk.Ints(tst, "a", a, []int{1, -2})
+	chk.Ints(tst, "b", b, []int{-1, 2})
+}
+
+func Test_cxint02(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("cxint02")
+
+	A := []int{1, 2, 3, 4, 5, 6, 7, 8}
+	B := []int{-1, -2, -3, -4, -5, -6, -7, -8}
+	a := make([]int, len(A))
+	b := make([]int, len(A))
+
+	ends := []int{5, 5, 8}
+	IntCrossover(a, b, A, B, ends, 1)
+
+	io.Pfred("A = %2v\n", A)
+	io.PfRed("B = %2v\n", B)
+	io.Pfcyan("a = %2v\n", a)
+	io.Pfblue2("b = %2v\n", b)
+
+	chk.Ints(tst, "a", a, A)
+	chk.Ints(tst, "b", b, B)
+}
+
+func Test_cxint03(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("cxint03")
+
+	A := []int{1, 2, 3, 4, 5, 6, 7, 8}
+	B := []int{-1, -2, -3, -4, -5, -6, -7, -8}
+	a := make([]int, len(A))
+	b := make([]int, len(A))
+
+	ends := []int{8, 8}
+	IntCrossover(a, b, A, B, ends, 1)
+
+	io.Pfred("A = %2v\n", A)
+	io.PfRed("B = %2v\n", B)
+	io.Pfcyan("a = %2v\n", a)
+	io.Pfblue2("b = %2v\n", b)
+
+	chk.Ints(tst, "a", a, A)
+	chk.Ints(tst, "b", b, B)
+}
+
+func Test_cxint04(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("cxint04")
 
 	A := []int{1, 2, 3, 4, 5, 6, 7, 8}
 	B := []int{-1, -2, -3, -4, -5, -6, -7, -8}
@@ -145,10 +268,10 @@ func Test_cxint01(tst *testing.T) {
 	ends := []int{1, 5, 8}
 	IntCrossover(a, b, A, B, ends, 1)
 
-	io.Pfred("A = %v\n", A)
-	io.PfRed("B = %v\n", B)
-	io.Pfcyan("a = %v\n", a)
-	io.Pfblue2("b = %v\n", b)
+	io.Pfred("A = %2v\n", A)
+	io.PfRed("B = %2v\n", B)
+	io.Pfcyan("a = %2v\n", a)
+	io.Pfblue2("b = %2v\n", b)
 
 	chk.Ints(tst, "a", a, []int{1, -2, -3, -4, -5, 6, 7, 8})
 	chk.Ints(tst, "b", b, []int{-1, 2, 3, 4, 5, -6, -7, -8})
