@@ -42,12 +42,12 @@ func SimpleChromo(genes []float64, nbases int) (chromo []float64) {
 	return
 }
 
-// Fitness maps objective values into [0, 1]; thus returning the fitness function values
+// CalcFitness maps objective values into [0, 1]; thus returning the fitness function values
 //  Input:
 //    ovs -- objective values
 //  Output:
 //    f -- fitness function values
-func Fitness(f, ovs []float64) {
+func CalcFitness(f, ovs []float64) {
 	chk.IntAssert(len(f), len(ovs))
 	ymin, ymax := la.VecMinMax(ovs)
 	if math.Abs(ymax-ymin) < 1e-14 {
@@ -59,13 +59,13 @@ func Fitness(f, ovs []float64) {
 	}
 }
 
-// Ranking computes fitness corresponding to a linear ranking
+// CalcFitnessRanking computes fitness corresponding to a linear ranking
 //  Input:
 //    ninds -- number of individuals
 //    sp    -- selective pressure; must be inside [1, 2]
 //  Output:
 //    f -- ranked fitnesses
-func Ranking(ninds int, sp float64) (f []float64) {
+func CalcFitnessRanking(ninds int, sp float64) (f []float64) {
 	if sp < 1.0 || sp > 2.0 {
 		sp = 1.2
 	}
