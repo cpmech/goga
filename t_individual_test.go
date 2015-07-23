@@ -113,4 +113,11 @@ func Test_ind02(tst *testing.T) {
 	chk.Strings(tst, "a.Strings", a.Strings, []string{"abc", "Y", "Z"})
 	chk.Strings(tst, "b.Strings", b.Strings, []string{"X", "b", "c"})
 	// TODO: add other tests here
+	io.Pf("\n")
+
+	x := get_individual(0, nbases)
+	io.Pfblue2("x = %v\n", x.Output(fmts))
+	B.CopyInto(x)
+	io.Pforan("x = %v\n", x.Output(fmts))
+	chk.String(tst, x.Output(fmts), B.Output(fmts))
 }

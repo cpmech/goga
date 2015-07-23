@@ -123,6 +123,42 @@ func (o Individual) GetCopy() (x *Individual) {
 	return
 }
 
+// CopyInto copies this individual's data into another individual
+func (o Individual) CopyInto(x *Individual) {
+
+	x.ObjValue = o.ObjValue
+	x.Fitness = o.Fitness
+	x.Nfloats = o.Nfloats
+	x.Nbases = o.Nbases
+
+	if o.Ints != nil {
+		copy(x.Ints, o.Ints)
+	}
+
+	if o.Floats != nil {
+		copy(x.Floats, o.Floats)
+	}
+
+	if o.Strings != nil {
+		copy(x.Strings, o.Strings)
+	}
+
+	if o.Keys != nil {
+		copy(x.Keys, o.Keys)
+	}
+
+	if o.Bytes != nil {
+		for i, b := range o.Bytes {
+			copy(x.Bytes[i], b)
+		}
+	}
+
+	if o.Funcs != nil {
+		copy(x.Funcs, o.Funcs)
+	}
+	return
+}
+
 // genetic algorithm routines //////////////////////////////////////////////////////////////////////
 
 // crossover functions
