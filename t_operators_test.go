@@ -349,10 +349,10 @@ func Test_cx01(tst *testing.T) {
 	chk.Strings(tst, "h_s", h_s, []string{"-", "B", "C", "@", "*", "&"})
 	io.Pf("\n")
 
-	M := []Func_tt{func(i *Individual) string { return "A" }, func(i *Individual) string { return "B" }, func(i *Individual) string { return "C" }, func(i *Individual) string { return "D" }, func(i *Individual) string { return "E" }, func(i *Individual) string { return "F" }}
-	N := []Func_tt{func(i *Individual) string { return "-" }, func(i *Individual) string { return "o" }, func(i *Individual) string { return "+" }, func(i *Individual) string { return "@" }, func(i *Individual) string { return "*" }, func(i *Individual) string { return "&" }}
-	m := make([]Func_tt, len(A))
-	n := make([]Func_tt, len(A))
+	M := []Func_t{func(i *Individual) string { return "A" }, func(i *Individual) string { return "B" }, func(i *Individual) string { return "C" }, func(i *Individual) string { return "D" }, func(i *Individual) string { return "E" }, func(i *Individual) string { return "F" }}
+	N := []Func_t{func(i *Individual) string { return "-" }, func(i *Individual) string { return "o" }, func(i *Individual) string { return "+" }, func(i *Individual) string { return "@" }, func(i *Individual) string { return "*" }, func(i *Individual) string { return "&" }}
+	m := make([]Func_t, len(A))
+	n := make([]Func_t, len(A))
 	FunCrossover(m, n, M, N, 0, []int{1, 3}, 1)
 	io.Pfred("M = %3v\n", M)
 	io.PfRed("N = %3v\n", N)

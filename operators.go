@@ -415,7 +415,7 @@ func BytCrossover(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64) (ends 
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func FunCrossover(a, b, A, B []Func_tt, ncuts int, cuts []int, pc float64) (ends []int) {
+func FunCrossover(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {

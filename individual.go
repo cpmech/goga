@@ -10,8 +10,8 @@ import (
 	"github.com/cpmech/gosl/rnd"
 )
 
-// Func_tt defines a type for a generic function to be used as a gene value
-type Func_tt func(ind *Individual) string
+// Func_t defines a type for a generic function to be used as a gene value
+type Func_t func(ind *Individual) string
 
 // Individual implements one individual in a population
 type Individual struct {
@@ -28,7 +28,7 @@ type Individual struct {
 	Strings []string  // strings
 	Keys    []byte    // 1D bytes
 	Bytes   [][]byte  // 2D bytes
-	Funcs   []Func_tt // functions
+	Funcs   []Func_t  // functions
 }
 
 // NewIndividual allocates a new individual
@@ -71,8 +71,8 @@ func NewIndividual(nbases int, slices ...interface{}) (o *Individual) {
 				copy(o.Bytes[i], x)
 			}
 
-		case []Func_tt:
-			o.Funcs = make([]Func_tt, len(s))
+		case []Func_t:
+			o.Funcs = make([]Func_t, len(s))
 			copy(o.Funcs, s)
 		}
 	}
@@ -117,7 +117,7 @@ func (o Individual) GetCopy() (x *Individual) {
 	}
 
 	if o.Funcs != nil {
-		x.Funcs = make([]Func_tt, len(o.Funcs))
+		x.Funcs = make([]Func_t, len(o.Funcs))
 		copy(x.Funcs, o.Funcs)
 	}
 	return
@@ -125,12 +125,13 @@ func (o Individual) GetCopy() (x *Individual) {
 
 // genetic algorithm routines //////////////////////////////////////////////////////////////////////
 
+// crossover functions
 type IntCxFunc_t func(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []int)
-type FltCxFunc_t func(a, b, A, B []float64, cuts []int, pc float64) (ends []int)
-type StrCxFunc_t func(a, b, A, B []string, cuts []int, pc float64) (ends []int)
-type KeyCxFunc_t func(a, b, A, B []byte, cuts []int, pc float64) (ends []int)
-type BytCxFunc_t func(a, b, A, B [][]byte, cuts []int, pc float64) (ends []int)
-type FunCxFunc_t func(a, b, A, B []Func_tt, cuts []int, pc float64) (ends []int)
+type FltCxFunc_t func(a, b, A, B []float64, ncuts int, cuts []int, pc float64) (ends []int)
+type StrCxFunc_t func(a, b, A, B []string, ncuts int, cuts []int, pc float64) (ends []int)
+type KeyCxFunc_t func(a, b, A, B []byte, ncuts int, cuts []int, pc float64) (ends []int)
+type BytCxFunc_t func(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64) (ends []int)
+type FunCxFunc_t func(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64) (ends []int)
 
 // Crossover performs the crossover between chromosomes of two individuals A and B
 // resulting in the chromosomes of other two individuals a and b
@@ -183,6 +184,14 @@ func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]i
 		funcxf(a.Funcs, b.Funcs, A.Funcs, B.Funcs, ncuts["fun"], cuts["fun"], pc("fun"))
 	}
 }
+
+// mutation functions
+type IntMutFunc_t func(a []int, pm float64)
+type FltMutFunc_t func(a []float64, pm float64)
+type StrMutFunc_t func(a []string, pm float64)
+type KeyMutFunc_t func(a []byte, pm float64)
+type BytMutFunc_t func(a [][]byte, pm float64)
+type FunMutFunc_t func(a []Func_t, pm float64)
 
 // handle bases ////////////////////////////////////////////////////////////////////////////////////
 

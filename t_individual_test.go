@@ -21,7 +21,7 @@ func get_individual(id, nbases int) *Individual {
 			[]string{"abc", "b", "c"},
 			[]byte("SGA"),
 			[][]byte{[]byte("ABC"), []byte("DEF"), []byte("GHI")},
-			[]Func_tt{
+			[]Func_t{
 				func(g *Individual) string { return "f0" },
 				func(g *Individual) string { return "f1" },
 				func(g *Individual) string { return "f2" },
@@ -34,7 +34,7 @@ func get_individual(id, nbases int) *Individual {
 			[]string{"X", "Y", "Z"},
 			[]byte("#.#"),
 			[][]byte{[]byte("^.^"), []byte("-o-"), []byte("*|*")},
-			[]Func_tt{
+			[]Func_t{
 				func(g *Individual) string { return "g0" },
 				func(g *Individual) string { return "g1" },
 				func(g *Individual) string { return "g2" },

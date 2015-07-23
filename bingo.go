@@ -16,7 +16,7 @@ type Bingo struct {
 	PoolWords [][]string  // [ngene][nsamples] pool of words to be used in Gene.String
 	PoolBytes [][]byte    // [ngene][nsamples] pool of bytes to be used in Gene.Byte
 	PoolBtxt  [][]string  // [ngene][nsamples] pool of byte-words to be used in Gene.Bytes
-	PoolFuncs [][]Func_tt // [ngene][nsamples] pool of functions
+	PoolFuncs [][]Func_t  // [ngene][nsamples] pool of functions
 }
 
 // NewExampleBingo returns a new Bingo with example values
@@ -37,7 +37,7 @@ func NewExampleBingo() *Bingo {
 			{"red", "green", "blue", "cyan", "magenta", "black", "white"},
 			{"x", "y", "z"},
 		},
-		[][]Func_tt{
+		[][]Func_t{
 			{
 				func(i *Individual) string { return "I" },
 				func(i *Individual) string { return "F" },
@@ -136,7 +136,7 @@ func (o Bingo) DrawBytes(iGene int) []byte {
 // DrawFunc randomly selects a function from data pool
 //  Input:
 //   iGene -- index of gene
-func (o Bingo) DrawFunc(iGene int) Func_tt {
+func (o Bingo) DrawFunc(iGene int) Func_t {
 	if iGene < len(o.PoolFuncs) {
 		nf := len(o.PoolFuncs[iGene])
 		return o.PoolFuncs[iGene][rnd.Int(0, nf-1)]
