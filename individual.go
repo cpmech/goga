@@ -202,12 +202,82 @@ func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]i
 }
 
 // mutation functions
-type IntMutFunc_t func(a []int, pm float64)
-type FltMutFunc_t func(a []float64, pm float64)
-type StrMutFunc_t func(a []string, pm float64)
-type KeyMutFunc_t func(a []byte, pm float64)
-type BytMutFunc_t func(a [][]byte, pm float64)
-type FunMutFunc_t func(a []Func_t, pm float64)
+type IntMutFunc_t func(a []int, nchanges int, pm float64, extra interface{})
+type FltMutFunc_t func(a []float64, nchanges int, pm float64, extra interface{})
+type StrMutFunc_t func(a []string, nchanges int, pm float64, extra interface{})
+type KeyMutFunc_t func(a []byte, nchanges int, pm float64, extra interface{})
+type BytMutFunc_t func(a [][]byte, nchanges int, pm float64, extra interface{})
+type FunMutFunc_t func(a []Func_t, nchanges int, pm float64, extra interface{})
+
+// Mutation performs the mutation operation in the chromosomes of an individual
+//  Input:
+//   A        -- individual
+//   nchanges -- number of changes. keys are: 'int', 'flt', 'str', 'key', 'byt', 'fun'
+//               use nil for default values
+//   probs    -- probabilities. use nil for default values
+//   extra    -- extra arguments for each 'int', 'flt', 'str', 'key', 'byt', 'fun'
+//   mutfucns -- mutation functions. use nil for default ones
+//  Output: modified individual
+func Mutation(A *Individual, nchanges map[string]int, probs map[string]float64, extra map[string]interface{}, mutfuncs ...interface{}) {
+
+	// default values
+	nc := func(t string) int {
+		if val, ok := nchanges[t]; ok {
+			return val
+		}
+		return 1
+	}
+	pm := func(t string) float64 {
+		if val, ok := probs[t]; ok {
+			return val
+		}
+		return 0.01
+	}
+
+	// default functions
+	intmutf := IntMutation
+	fltmutf := FltMutation
+	strmutf := StrMutation
+	keymutf := KeyMutation
+	bytmutf := BytMutation
+	funmutf := FunMutation
+	for _, fcn := range mutfuncs {
+		switch f := fcn.(type) {
+		case IntMutFunc_t:
+			intmutf = f
+		case FltMutFunc_t:
+			fltmutf = f
+		case StrMutFunc_t:
+			strmutf = f
+		case KeyMutFunc_t:
+			keymutf = f
+		case BytMutFunc_t:
+			bytmutf = f
+		case FunMutFunc_t:
+			funmutf = f
+		}
+	}
+
+	// perform crossover
+	if A.Ints != nil {
+		intmutf(A.Ints, nc("int"), pm("int"), extra["int"])
+	}
+	if A.Floats != nil {
+		fltmutf(A.Floats, nc("flt"), pm("flt"), extra["flt"])
+	}
+	if A.Strings != nil {
+		strmutf(A.Strings, nc("flt"), pm("str"), extra["str"])
+	}
+	if A.Keys != nil {
+		keymutf(A.Keys, nc("key"), pm("key"), extra["key"])
+	}
+	if A.Bytes != nil {
+		bytmutf(A.Bytes, nc("byt"), pm("byt"), extra["byt"])
+	}
+	if A.Funcs != nil {
+		funmutf(A.Funcs, nc("fun"), pm("fun"), extra["fun"])
+	}
+}
 
 // handle bases ////////////////////////////////////////////////////////////////////////////////////
 

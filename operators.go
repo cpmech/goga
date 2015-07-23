@@ -92,6 +92,8 @@ func CumSum(cs, p []float64) {
 	}
 }
 
+// selection ///////////////////////////////////////////////////////////////////////////////////////
+
 // RouletteSelect selects n individuals
 //  Input:
 //    cumprob -- cumulated probabilities (from sorted population)
@@ -180,6 +182,8 @@ func FilterPairs(A, B []int, selinds []int) {
 		A[i], B[i] = a, b
 	}
 }
+
+// crossover ///////////////////////////////////////////////////////////////////////////////////////
 
 // IntCrossover performs the crossover of genetic data from A and B
 //  Input:
@@ -501,4 +505,141 @@ func GenerateCxEnds(size, ncuts int, cuts []int) (ends []int) {
 		ends[i] = pool[i]
 	}
 	return ends
+}
+
+// mutation ////////////////////////////////////////////////////////////////////////////////////////
+
+// IntMutation performs the mutation of genetic data from A
+//  Input:
+//   A        -- individual
+//   nchanges -- number of changes of genes
+//   pc       -- probability of mutation
+//   extra    -- an integer corresponding to the max value for multiplier 'm'
+//  Output: modified individual 'A'
+func IntMutation(A []int, nchanges int, pm float64, extra interface{}) {
+	size := len(A)
+	if !rnd.FlipCoin(pm) || size < 1 {
+		return
+	}
+	pos := rnd.IntGetUniqueN(0, size, nchanges)
+	mmax := 10
+	if val, ok := extra.(int); ok {
+		mmax = val
+	}
+	for _, i := range pos {
+		m := rnd.Int(1, mmax)
+		if rnd.FlipCoin(0.5) {
+			A[i] += m * A[i]
+		} else {
+			A[i] -= m * A[i]
+		}
+	}
+	return
+}
+
+// FltMutation performs the mutation of genetic data from A
+//  Input:
+//   A        -- individual
+//   nchanges -- number of changes of genes
+//   pc       -- probability of mutation
+//   extra    -- an integer corresponding to the max value for multiplier 'm'
+//  Output: modified individual 'A'
+func FltMutation(A []float64, nchanges int, pm float64, extra interface{}) {
+	size := len(A)
+	if !rnd.FlipCoin(pm) || size < 1 {
+		return
+	}
+	pos := rnd.IntGetUniqueN(0, size, nchanges)
+	mmax := 10.0
+	if val, ok := extra.(float64); ok {
+		mmax = val
+	}
+	for _, i := range pos {
+		m := rnd.Float64(1, mmax)
+		if rnd.FlipCoin(0.5) {
+			A[i] += m * A[i]
+		} else {
+			A[i] -= m * A[i]
+		}
+	}
+	return
+}
+
+// StrMutation performs the mutation of genetic data from A
+//  Input:
+//   A        -- individual
+//   nchanges -- number of changes of genes
+//   pc       -- probability of mutation
+//   extra    -- an integer corresponding to the max value for multiplier 'm'
+//  Output: modified individual 'A'
+func StrMutation(A []string, nchanges int, pm float64, extra interface{}) {
+	size := len(A)
+	if !rnd.FlipCoin(pm) || size < 1 {
+		return
+	}
+	pos := rnd.IntGetUniqueN(0, size, nchanges)
+	for _, i := range pos {
+		A[i] = "TODO" // TODO: improve this
+	}
+	return
+}
+
+// KeyMutation performs the mutation of genetic data from A
+//  Input:
+//   A        -- individual
+//   nchanges -- number of changes of genes
+//   pc       -- probability of mutation
+//   extra    -- an integer corresponding to the max value for multiplier 'm'
+//  Output: modified individual 'A'
+func KeyMutation(A []byte, nchanges int, pm float64, extra interface{}) {
+	size := len(A)
+	if !rnd.FlipCoin(pm) || size < 1 {
+		return
+	}
+	pos := rnd.IntGetUniqueN(0, size, nchanges)
+	for _, i := range pos {
+		v := rnd.Int(0, 100)
+		A[i] = byte(v) // TODO: improve this
+	}
+	return
+}
+
+// BytMutation performs the mutation of genetic data from A
+//  Input:
+//   A        -- individual
+//   nchanges -- number of changes of genes
+//   pc       -- probability of mutation
+//   extra    -- an integer corresponding to the max value for multiplier 'm'
+//  Output: modified individual 'A'
+func BytMutation(A [][]byte, nchanges int, pm float64, extra interface{}) {
+	size := len(A)
+	if !rnd.FlipCoin(pm) || size < 1 {
+		return
+	}
+	pos := rnd.IntGetUniqueN(0, size, nchanges)
+	for _, i := range pos {
+		v := rnd.Int(0, 100)
+		A[i][0] = byte(v) // TODO: improve this
+	}
+	return
+}
+
+// FunMutation performs the mutation of genetic data from A
+//  Input:
+//   A        -- individual
+//   nchanges -- number of changes of genes
+//   pc       -- probability of mutation
+//   extra    -- an integer corresponding to the max value for multiplier 'm'
+//  Output: modified individual 'A'
+func FunMutation(A []Func_t, nchanges int, pm float64, extra interface{}) {
+	size := len(A)
+	if !rnd.FlipCoin(pm) || size < 1 {
+		return
+	}
+	pos := rnd.IntGetUniqueN(0, size, nchanges)
+	for _, i := range pos {
+		// TODO: improve this
+		A[i] = func(ind *Individual) string { return "mutated" }
+	}
+	return
 }

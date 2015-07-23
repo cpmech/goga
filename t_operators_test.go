@@ -376,3 +376,69 @@ func checkRepeated(ends []int) {
 		}
 	}
 }
+
+func Test_mut01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("mut01")
+
+	rnd.Init(0)
+
+	A := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+	nchanges := 3
+	mult := 10
+	io.Pforan("before: A = %v\n", A)
+	IntMutation(A, nchanges, 1, mult)
+	io.Pforan("after:  A = %v\n", A)
+	io.Pf("\n")
+
+	B := []float64{1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9}
+	nchanges = 3
+	multf := 2000.0
+	io.Pforan("before: B = %v\n", B)
+	FltMutation(B, nchanges, 1, multf)
+	io.Pforan("after:  B = %v\n", B)
+	io.Pf("\n")
+
+	C := []string{"a", "b", "c", "d", "e", "f"}
+	nchanges = 2
+	io.Pforan("before: C = %v\n", C)
+	StrMutation(C, nchanges, 1, nil)
+	io.Pforan("after:  C = %v\n", C)
+	io.Pf("\n")
+
+	D := []byte("abcdefghijklm")
+	nchanges = 3
+	io.Pforan("before: D = %s\n", D)
+	KeyMutation(D, nchanges, 1, nil)
+	io.Pforan("after:  D = %s\n", D)
+	io.Pf("\n")
+
+	E := [][]byte{[]byte("abc"), []byte("def"), []byte("ghi"), []byte("jkl")}
+	nchanges = 3
+	io.Pforan("before: E = %s\n", E)
+	BytMutation(E, nchanges, 1, nil)
+	io.Pforan("after:  E = %s\n", E)
+	io.Pf("\n")
+
+	F := []Func_t{
+		func(o *Individual) string { return "f0" },
+		func(o *Individual) string { return "f1" },
+		func(o *Individual) string { return "f2" },
+		func(o *Individual) string { return "g0" },
+		func(o *Individual) string { return "g1" },
+		func(o *Individual) string { return "g2" },
+	}
+	nchanges = 3
+	io.Pforan("before: F =")
+	for _, f := range F {
+		io.Pforan(" %q", f(nil))
+	}
+	FunMutation(F, nchanges, 1, nil)
+	io.Pforan("\nafter:  F =")
+	for _, f := range F {
+		io.Pforan(" %q", f(nil))
+	}
+	io.Pf("\n")
+	io.Pf("\n")
+}
