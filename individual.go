@@ -163,6 +163,22 @@ func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]i
 	keycxf := KeyCrossover
 	bytcxf := BytCrossover
 	funcxf := FunCrossover
+	for _, fcn := range cxfuncs {
+		switch f := fcn.(type) {
+		case IntCxFunc_t:
+			intcxf = f
+		case FltCxFunc_t:
+			fltcxf = f
+		case StrCxFunc_t:
+			strcxf = f
+		case KeyCxFunc_t:
+			keycxf = f
+		case BytCxFunc_t:
+			bytcxf = f
+		case FunCxFunc_t:
+			funcxf = f
+		}
+	}
 
 	// perform crossover
 	if A.Ints != nil {
