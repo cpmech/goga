@@ -31,14 +31,12 @@ func Test_pop01(tst *testing.T) {
 
 	// objective values and fitness values
 	ovs := []float64{11, 21, 10, 12, 13}
-	fits := []float64{0.1, 0.2, 1.2, 5.1, 0.1}
 
 	// init population
 	nbases := 2
 	pop := NewPopFloatChromo(nbases, genes)
 	for i, ind := range pop {
 		ind.ObjValue = ovs[i]
-		ind.Fitness = fits[i]
 	}
 	io.Pforan("%v\n", pop.Output(nil))
 
@@ -112,15 +110,14 @@ func Test_pop02(tst *testing.T) {
 	}
 
 	// objective values and fitness values
-	ovs := []float64{11, 21, 10, 12, 13, 31, 41, 11, 51, 11}
-	fits := []float64{0.1, 0.2, 1.2, 5.1, 0.1, 0.3, 2.1, 8.1, 0.5, 3.1}
+	//                0   1   2   3   4   5   6     7     8     9
+	ovs := []float64{11, 21, 10, 12, 13, 31, 41, 11.1, 31.5, 11.5}
 
 	// init population
 	nbases := 2
 	pop := NewPopFloatChromo(nbases, genes)
 	for i, ind := range pop {
 		ind.ObjValue = ovs[i]
-		ind.Fitness = fits[i]
 	}
 	io.Pforan("%v\n", pop.Output(nil))
 
@@ -129,16 +126,16 @@ func Test_pop02(tst *testing.T) {
 	io.Pfyel("%v\n", pop.Output(nil))
 
 	genes_sorted := [][]float64{
-		{4, 6}, // 7
-		{1, 2}, // 3
-		{0, 0}, // 9
-		{4, 8}, // 6
 		{5, 7}, // 2
-		{1, 3}, // 8
-		{3, 6}, // 5
-		{1, 3}, // 1
-		{2, 4}, // 4
 		{1, 5}, // 0
+		{4, 6}, // 7
+		{0, 0}, // 9
+		{1, 2}, // 3
+		{2, 4}, // 4
+		{1, 3}, // 1
+		{3, 6}, // 5
+		{1, 3}, // 8
+		{4, 8}, // 6
 	}
 
 	for i, ind := range pop {

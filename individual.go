@@ -18,7 +18,6 @@ type Individual struct {
 
 	// data
 	ObjValue float64 // objective value
-	Fitness  float64 // fitness
 	Nfloats  int     // number of floats
 	Nbases   int     // number of bases to split Floats
 
@@ -84,7 +83,6 @@ func (o Individual) GetCopy() (x *Individual) {
 
 	x = new(Individual)
 	x.ObjValue = o.ObjValue
-	x.Fitness = o.Fitness
 	x.Nfloats = o.Nfloats
 	x.Nbases = o.Nbases
 
@@ -127,7 +125,6 @@ func (o Individual) GetCopy() (x *Individual) {
 func (o Individual) CopyInto(x *Individual) {
 
 	x.ObjValue = o.ObjValue
-	x.Fitness = o.Fitness
 	x.Nfloats = o.Nfloats
 	x.Nbases = o.Nbases
 

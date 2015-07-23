@@ -89,9 +89,9 @@ func (o Population) Swap(i, j int) {
 }
 
 // Less returns true if 'i' is "less bad" than 'j'; therefore it can be used
-// to sort the population in decreasing fitness order: best => worst
+// to sort the population in increasing objective values order: best => worst
 func (o Population) Less(i, j int) bool {
-	return o[i].Fitness > o[j].Fitness
+	return o[i].ObjValue < o[j].ObjValue
 }
 
 // Sort sorts the population from best to worst individuals; i.e. decreasing fitness values
@@ -134,20 +134,17 @@ func (o Population) Output(fmts [][]string) (buf *bytes.Buffer) {
 	}
 
 	// compute sizes of header items
-	nOvl, nFit := 0, 0
+	nOvl := 0
 	for _, ind := range o {
 		nOvl = imax(nOvl, len(io.Sf("%g", ind.ObjValue)))
-		nFit = imax(nFit, len(io.Sf("%g", ind.Fitness)))
 	}
 	nOvl = imax(nOvl, 6) // 6 ==> len("ObjVal")
-	nFit = imax(nFit, 7) // 7 ==> len("Fitness")
 
 	// print individuals
 	fmtOvl := io.Sf("%%%d", nOvl+1)
-	fmtFit := io.Sf("%%%d", nFit+1)
 	line, sza, szb := "", 0, 0
 	for i, ind := range o {
-		stra := io.Sf(fmtOvl+"g", ind.ObjValue) + io.Sf(fmtFit+"g", ind.Fitness) + " "
+		stra := io.Sf(fmtOvl+"g", ind.ObjValue) + " "
 		strb := ind.Output(fmts)
 		line += stra + strb + "\n"
 		if i == 0 {
@@ -161,7 +158,6 @@ func (o Population) Output(fmts [][]string) (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	io.Ff(buf, printThickLine(n))
 	io.Ff(buf, fmtOvl+"s", "ObjVal")
-	io.Ff(buf, fmtFit+"s", "Fitness")
 	io.Ff(buf, fmtGen, "Genes")
 	io.Ff(buf, printThinLine(n))
 	io.Ff(buf, line)
