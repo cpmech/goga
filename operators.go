@@ -136,7 +136,7 @@ func RouletteSelect(selinds []int, cumprob []float64, sample []float64) {
 //    selinds -- selected individuals (indices)
 func SUSselect(selinds []int, cumprob []float64, pb float64) {
 	nsel := len(selinds)
-	chk.IntAssertLessThan(nsel, len(cumprob))
+	chk.IntAssertLessThanOrEqualTo(nsel, len(cumprob))
 	dp := 1.0 / float64(nsel)
 	if pb < 0 {
 		pb = rnd.Float64(0, dp)

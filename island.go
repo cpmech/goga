@@ -4,7 +4,11 @@
 
 package goga
 
-import "math"
+import (
+	"math"
+
+	"github.com/cpmech/gosl/chk"
+)
 
 // ObjFunc_t defines the template for the objective function
 type ObjFunc_t func(ind *Individual, time int, best *Individual)
@@ -13,6 +17,8 @@ type ObjFunc_t func(ind *Individual, time int, best *Individual)
 type Control struct {
 	UseRanking  bool
 	RnkPressure float64
+	Roulette    bool
+	Elitism     bool
 }
 
 // Island holds one population and performs the reproduction operation
@@ -23,16 +29,16 @@ type Island struct {
 
 	// population
 	Pop     Population // pointer to current population
-	PopA    Population // population holder
-	PopB    Population // population holder
+	BkpPop  Population // backup population
 	ObjFunc ObjFunc_t  // objective function
 
 	// auxiliary internal data
-	fitsrnk []float64   // all fitness values computed by ranking
-	fitness []float64   // all fitness values
-	prob    []float64   // probabilities
-	cumprob []float64   // cumulated probabilities
-	oldbest *Individual // best individual (copy)
+	fitsrnk []float64 // all fitness values computed by ranking
+	fitness []float64 // all fitness values
+	prob    []float64 // probabilities
+	cumprob []float64 // cumulated probabilities
+	selinds []int     // indices of selected individuals
+	A, B    []int     // indices of selected parents
 }
 
 // NewIsland allocates a new island but with a give population already allocated
@@ -41,10 +47,16 @@ type Island struct {
 //  ofunc -- objective function
 func NewIsland(pop Population, ofunc ObjFunc_t) (o *Island) {
 
+	// check
+	ninds := len(pop)
+	if ninds%2 != 0 {
+		chk.Panic("size of population must be even")
+	}
+
 	// allocate
 	o = new(Island)
 	o.Pop = pop
-	o.PopA = pop
+	o.BkpPop = pop.GetCopy()
 	o.ObjFunc = ofunc
 
 	// set default control values
@@ -60,19 +72,18 @@ func NewIsland(pop Population, ofunc ObjFunc_t) (o *Island) {
 	o.Pop.Sort()
 
 	// auxiliary data
-	ninds := len(o.Pop)
 	o.fitsrnk = make([]float64, ninds)
 	o.fitness = make([]float64, ninds)
 	o.prob = make([]float64, ninds)
 	o.cumprob = make([]float64, ninds)
-	o.oldbest = o.Pop[0].GetCopy()
+	o.selinds = make([]int, ninds)
+	o.A = make([]int, ninds/2)
+	o.B = make([]int, ninds/2)
 	return
 }
 
-func (o *Island) Reproduction(time int) {
-
-	// best individual: Note: population must be sorted already
-	o.Pop[0].CopyInto(o.oldbest)
+// SelectAndReprod performs the selection and reproduction processes
+func (o *Island) SelectAndReprod(time int) {
 
 	// fitness and probabilities
 	ninds := len(o.Pop)
@@ -108,4 +119,39 @@ func (o *Island) Reproduction(time int) {
 		o.prob[i] = o.fitness[i] / sumfit
 	}
 	CumSum(o.cumprob, o.prob)
+
+	// selection
+	if o.C.Roulette {
+		RouletteSelect(o.selinds, o.cumprob, nil)
+	} else {
+		SUSselect(o.selinds, o.cumprob, -1)
+	}
+	FilterPairs(o.A, o.B, o.selinds)
+
+	// reproduction
+	h := ninds / 2
+	for i := 0; i < ninds/2; i++ {
+		Crossover(o.BkpPop[i], o.BkpPop[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], nil, nil, nil)
+		Mutation(o.BkpPop[i], nil, nil, nil)
+		Mutation(o.BkpPop[h+i], nil, nil, nil)
+	}
+
+	// compute objective values
+	for _, ind := range o.BkpPop {
+		o.ObjFunc(ind, 0, nil)
+	}
+
+	// sort
+	o.BkpPop.Sort()
+
+	// elitism
+	if o.C.Elitism {
+		if o.Pop[0].ObjValue < o.BkpPop[0].ObjValue {
+			o.Pop[0].CopyInto(o.BkpPop[ninds-1])
+			o.BkpPop.Sort()
+		}
+	}
+
+	// swap populations
+	o.Pop, o.BkpPop = o.BkpPop, o.Pop
 }

@@ -14,6 +14,16 @@ import (
 // Population holds all individuals
 type Population []*Individual
 
+// GetCopy returns a copy of this population
+func (o Population) GetCopy() (pop Population) {
+	ninds := len(o)
+	pop = make([]*Individual, ninds)
+	for i := 0; i < ninds; i++ {
+		pop[i] = o[i].GetCopy()
+	}
+	return
+}
+
 // NewPopFloatChromo allocates a population made entirely of float point numbers
 //  Input:
 //   nbases -- number of bases in each float point gene
