@@ -9,6 +9,7 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/rnd"
 )
 
 func Test_evo01(tst *testing.T) {
@@ -42,4 +43,36 @@ func Test_evo01(tst *testing.T) {
 	dtmig := 20
 	evo := Evolver{[]*Island{isl}}
 	evo.Run(tf, dtout, dtmig)
+}
+
+func Test_evo02(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("evo02. organise sequence of ints")
+
+	mtfunc := func(A []int, nchanges int, pm float64, extra interface{}) {
+		size := len(A)
+		if !rnd.FlipCoin(pm) || size < 1 {
+			return
+		}
+		pos := rnd.IntGetUniqueN(0, size, nchanges)
+		for _, i := range pos {
+			if rnd.FlipCoin(0.5) {
+				A[i] /= 2
+			} else {
+				A[i] *= 2
+			}
+		}
+	}
+
+	ovfunc := func(ind *Individual, time int, best *Individual) {
+		sum := 0.0
+		for i := 0; i < len(ind.Ints); i++ {
+			sum += float64(ind.Ints[i])
+		}
+		ind.ObjValue = sum
+	}
+
+	_ = mtfunc
+	_ = ovfunc
 }

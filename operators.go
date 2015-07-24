@@ -504,7 +504,7 @@ func GenerateCxEnds(size, ncuts int, cuts []int) (ends []int) {
 	for i := 0; i < ncuts; i++ {
 		ends[i] = pool[i]
 	}
-	return ends
+	return
 }
 
 // mutation ////////////////////////////////////////////////////////////////////////////////////////
@@ -534,7 +534,6 @@ func IntMutation(A []int, nchanges int, pm float64, extra interface{}) {
 			A[i] -= m * A[i]
 		}
 	}
-	return
 }
 
 // FltMutation performs the mutation of genetic data from A
@@ -562,7 +561,6 @@ func FltMutation(A []float64, nchanges int, pm float64, extra interface{}) {
 			A[i] -= m * A[i]
 		}
 	}
-	return
 }
 
 // StrMutation performs the mutation of genetic data from A
@@ -581,7 +579,6 @@ func StrMutation(A []string, nchanges int, pm float64, extra interface{}) {
 	for _, i := range pos {
 		A[i] = "TODO" // TODO: improve this
 	}
-	return
 }
 
 // KeyMutation performs the mutation of genetic data from A
@@ -601,7 +598,6 @@ func KeyMutation(A []byte, nchanges int, pm float64, extra interface{}) {
 		v := rnd.Int(0, 100)
 		A[i] = byte(v) // TODO: improve this
 	}
-	return
 }
 
 // BytMutation performs the mutation of genetic data from A
@@ -621,7 +617,6 @@ func BytMutation(A [][]byte, nchanges int, pm float64, extra interface{}) {
 		v := rnd.Int(0, 100)
 		A[i][0] = byte(v) // TODO: improve this
 	}
-	return
 }
 
 // FunMutation performs the mutation of genetic data from A
@@ -641,5 +636,4 @@ func FunMutation(A []Func_t, nchanges int, pm float64, extra interface{}) {
 		// TODO: improve this
 		A[i] = func(ind *Individual) string { return "mutated" }
 	}
-	return
 }
