@@ -179,7 +179,7 @@ type FunCxFunc_t func(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64) (e
 //   cxfucns -- crossover functions. use nil for default ones
 //  Output:
 //   a and b -- offspring
-func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64, cxfuncs ...interface{}) {
+func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64, cxfuncs map[string]interface{}) {
 
 	// default values
 	pc := func(t string) float64 {
@@ -235,12 +235,12 @@ func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]i
 }
 
 // mutation functions
-type IntMutFunc_t func(a []int, nchanges int, pm float64, extra interface{})
-type FltMutFunc_t func(a []float64, nchanges int, pm float64, extra interface{})
-type StrMutFunc_t func(a []string, nchanges int, pm float64, extra interface{})
-type KeyMutFunc_t func(a []byte, nchanges int, pm float64, extra interface{})
-type BytMutFunc_t func(a [][]byte, nchanges int, pm float64, extra interface{})
-type FunMutFunc_t func(a []Func_t, nchanges int, pm float64, extra interface{})
+type IntMtFunc_t func(a []int, nchanges int, pm float64, extra interface{})
+type FltMtFunc_t func(a []float64, nchanges int, pm float64, extra interface{})
+type StrMtFunc_t func(a []string, nchanges int, pm float64, extra interface{})
+type KeyMtFunc_t func(a []byte, nchanges int, pm float64, extra interface{})
+type BytMtFunc_t func(a [][]byte, nchanges int, pm float64, extra interface{})
+type FunMtFunc_t func(a []Func_t, nchanges int, pm float64, extra interface{})
 
 // Mutation performs the mutation operation in the chromosomes of an individual
 //  Input:
@@ -251,7 +251,7 @@ type FunMutFunc_t func(a []Func_t, nchanges int, pm float64, extra interface{})
 //   extra    -- extra arguments for each 'int', 'flt', 'str', 'key', 'byt', 'fun'
 //   mutfucns -- mutation functions. use nil for default ones
 //  Output: modified individual
-func Mutation(A *Individual, nchanges map[string]int, probs map[string]float64, extra map[string]interface{}, mutfuncs ...interface{}) {
+func Mutation(A *Individual, nchanges map[string]int, probs map[string]float64, extra map[string]interface{}, mtfuncs map[string]interface{}) {
 
 	// default values
 	nc := func(t string) int {
@@ -274,19 +274,19 @@ func Mutation(A *Individual, nchanges map[string]int, probs map[string]float64, 
 	keymutf := KeyMutation
 	bytmutf := BytMutation
 	funmutf := FunMutation
-	for _, fcn := range mutfuncs {
+	for _, fcn := range mtfuncs {
 		switch f := fcn.(type) {
-		case IntMutFunc_t:
+		case IntMtFunc_t:
 			intmutf = f
-		case FltMutFunc_t:
+		case FltMtFunc_t:
 			fltmutf = f
-		case StrMutFunc_t:
+		case StrMtFunc_t:
 			strmutf = f
-		case KeyMutFunc_t:
+		case KeyMtFunc_t:
 			keymutf = f
-		case BytMutFunc_t:
+		case BytMtFunc_t:
 			bytmutf = f
-		case FunMutFunc_t:
+		case FunMtFunc_t:
 			funmutf = f
 		}
 	}

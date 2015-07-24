@@ -13,19 +13,26 @@ import (
 // ObjFunc_t defines the template for the objective function
 type ObjFunc_t func(ind *Individual, time int, best *Individual)
 
-// Control holds control parameters
-type Control struct {
-	UseRanking  bool
-	RnkPressure float64
-	Roulette    bool
-	Elitism     bool
-}
-
 // Island holds one population and performs the reproduction operation
 type Island struct {
 
-	// control parameters
-	C Control
+	// selection/reproduction
+	UseRanking  bool    // use ranking for selection process
+	RnkPressure float64 // ranking pressure
+	Roulette    bool    // use roulette wheel selection; otherwise use stochastic-universal-sampling selection
+	Elitism     bool    // perform elitism: keep at least one best individual from previous generation
+
+	// crossover
+	CxNcuts map[string]int         // crossover number of cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	CxCuts  map[string][]int       // crossover specific cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	CxProbs map[string]float64     // crossover probabilities for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	CxFuncs map[string]interface{} // crossover functions for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+
+	// mutation
+	MtNchanges map[string]int         // mutation number of changes for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	MtProbs    map[string]float64     // mutation probabilities for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	MtExtra    map[string]interface{} // mutation extra parameters for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	MtFuncs    map[string]interface{} // mutation functions for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
 
 	// population
 	Pop     Population // pointer to current population
@@ -60,8 +67,8 @@ func NewIsland(pop Population, ofunc ObjFunc_t) (o *Island) {
 	o.ObjFunc = ofunc
 
 	// set default control values
-	o.C.UseRanking = true
-	o.C.RnkPressure = 1.2
+	o.UseRanking = true
+	o.RnkPressure = 1.2
 
 	// compute objective values
 	for _, ind := range o.Pop {
@@ -88,8 +95,8 @@ func (o *Island) SelectAndReprod(time int) {
 	// fitness and probabilities
 	ninds := len(o.Pop)
 	sumfit := 0.0
-	if o.C.UseRanking {
-		sp := o.C.RnkPressure
+	if o.UseRanking {
+		sp := o.RnkPressure
 		if sp < 1.0 || sp > 2.0 {
 			sp = 1.2
 		}
@@ -121,7 +128,7 @@ func (o *Island) SelectAndReprod(time int) {
 	CumSum(o.cumprob, o.prob)
 
 	// selection
-	if o.C.Roulette {
+	if o.Roulette {
 		RouletteSelect(o.selinds, o.cumprob, nil)
 	} else {
 		SUSselect(o.selinds, o.cumprob, -1)
@@ -131,9 +138,9 @@ func (o *Island) SelectAndReprod(time int) {
 	// reproduction
 	h := ninds / 2
 	for i := 0; i < ninds/2; i++ {
-		Crossover(o.BkpPop[i], o.BkpPop[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], nil, nil, nil)
-		Mutation(o.BkpPop[i], nil, nil, nil)
-		Mutation(o.BkpPop[h+i], nil, nil, nil)
+		Crossover(o.BkpPop[i], o.BkpPop[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], o.CxNcuts, o.CxCuts, o.CxProbs, o.CxFuncs)
+		Mutation(o.BkpPop[i], o.MtNchanges, o.MtProbs, o.MtExtra, o.MtFuncs)
+		Mutation(o.BkpPop[h+i], o.MtNchanges, o.MtProbs, o.MtExtra, o.MtFuncs)
 	}
 
 	// compute objective values
@@ -145,7 +152,7 @@ func (o *Island) SelectAndReprod(time int) {
 	o.BkpPop.Sort()
 
 	// elitism
-	if o.C.Elitism {
+	if o.Elitism {
 		if o.Pop[0].ObjValue < o.BkpPop[0].ObjValue {
 			o.Pop[0].CopyInto(o.BkpPop[ninds-1])
 			o.BkpPop.Sort()
