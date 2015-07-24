@@ -69,6 +69,7 @@ func NewIsland(pop Population, ofunc ObjFunc_t) (o *Island) {
 	// set default control values
 	o.UseRanking = true
 	o.RnkPressure = 1.2
+	o.Elitism = true
 
 	// compute objective values
 	for _, ind := range o.Pop {

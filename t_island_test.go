@@ -16,7 +16,8 @@ func Test_island01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("island01")
 
-	pop := NewPopFloatChromo(1, [][]float64{
+	nbases := 1
+	pop := NewPopFloatChromo(nbases, [][]float64{
 		{11, 21, 31},
 		{12, 22, 32},
 		{13, 23, 33},
@@ -37,5 +38,12 @@ func Test_island01(tst *testing.T) {
 
 	isl.SelectAndReprod(0)
 	io.Pfcyan("%v\n", isl.Pop.Output(nil))
-	io.Pfcyan("best = %v\n", isl.Pop[0].Output(nil))
+
+	isl.SelectAndReprod(1)
+	io.Pforan("%v\n", isl.Pop.Output(nil))
+
+	isl.SelectAndReprod(2)
+	io.Pfcyan("%v\n", isl.Pop.Output(nil))
+
+	// TODO: more tests required
 }
