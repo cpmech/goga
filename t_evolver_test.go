@@ -5,11 +5,13 @@
 package goga
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/rnd"
+	"github.com/cpmech/gosl/utl"
 )
 
 func Test_evo01(tst *testing.T) {
@@ -47,8 +49,10 @@ func Test_evo01(tst *testing.T) {
 
 func Test_evo02(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo02. organise sequence of ints")
+
+	rnd.Init(0)
 
 	mtfunc := func(A []int, nchanges int, pm float64, extra interface{}) {
 		size := len(A)
@@ -73,6 +77,18 @@ func Test_evo02(tst *testing.T) {
 		ind.ObjValue = sum
 	}
 
-	_ = mtfunc
-	_ = ovfunc
+	nvals := 10
+	ind := NewIndividual(1, utl.IntVals(nvals, 1))
+	for i := 0; i < nvals; i++ {
+		ind.Ints[i] = rand.Intn(2)
+	}
+	io.Pforan("ind = %v\n", ind)
+	io.Pforan("mtf = %v\n", mtfunc)
+	io.Pforan("ovf = %v\n", ovfunc)
+
+	ninds := 10
+	bingo := NewBingoInts(nvals, 0, 10)
+	bingo.UseIntRnd = true
+	pop := NewPopRandom(ninds, ind, bingo)
+	io.Pforan("%v\n", pop.Output(nil))
 }
