@@ -23,16 +23,27 @@ type Island struct {
 	Elitism     bool    // perform elitism: keep at least one best individual from previous generation
 
 	// crossover
-	CxNcuts map[string]int         // crossover number of cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	CxCuts  map[string][]int       // crossover specific cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	CxProbs map[string]float64     // crossover probabilities for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	CxFuncs map[string]interface{} // crossover functions for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	CxNcuts   map[string]int         // crossover number of cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	CxCuts    map[string][]int       // crossover specific cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	CxProbs   map[string]float64     // crossover probabilities for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	CxFuncs   map[string]interface{} // crossover functions for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	CxIntFunc CxIntFunc_t
+	CxFltFunc CxFltFunc_t
+	CxStrFunc CxStrFunc_t
+	CxKeyFunc CxKeyFunc_t
+	CxBytFunc CxBytFunc_t
+	CxFunFunc CxFunFunc_t
 
 	// mutation
 	MtNchanges map[string]int         // mutation number of changes for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
 	MtProbs    map[string]float64     // mutation probabilities for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
 	MtExtra    map[string]interface{} // mutation extra parameters for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	MtFuncs    map[string]interface{} // mutation functions for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	MtIntFunc  MtIntFunc_t            // mutation function
+	MtFltFunc  MtFltFunc_t            // mutation function
+	MtStrFunc  MtStrFunc_t            // mutation function
+	MtKeyFunc  MtKeyFunc_t            // mutation function
+	MtBytFunc  MtBytFunc_t            // mutation function
+	MtFunFunc  MtFunFunc_t            // mutation function
 
 	// population
 	Pop     Population // pointer to current population
@@ -139,9 +150,9 @@ func (o *Island) SelectAndReprod(time int) {
 	// reproduction
 	h := ninds / 2
 	for i := 0; i < ninds/2; i++ {
-		Crossover(o.BkpPop[i], o.BkpPop[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], o.CxNcuts, o.CxCuts, o.CxProbs, o.CxFuncs)
-		Mutation(o.BkpPop[i], o.MtNchanges, o.MtProbs, o.MtExtra, o.MtFuncs)
-		Mutation(o.BkpPop[h+i], o.MtNchanges, o.MtProbs, o.MtExtra, o.MtFuncs)
+		Crossover(o.BkpPop[i], o.BkpPop[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], o.CxNcuts, o.CxCuts, o.CxProbs, o.CxIntFunc, o.CxFltFunc, o.CxStrFunc, o.CxKeyFunc, o.CxBytFunc, o.CxFunFunc)
+		Mutation(o.BkpPop[i], o.MtNchanges, o.MtProbs, o.MtExtra, o.MtIntFunc, o.MtFltFunc, o.MtStrFunc, o.MtKeyFunc, o.MtBytFunc, o.MtFunFunc)
+		Mutation(o.BkpPop[h+i], o.MtNchanges, o.MtProbs, o.MtExtra, o.MtIntFunc, o.MtFltFunc, o.MtStrFunc, o.MtKeyFunc, o.MtBytFunc, o.MtFunFunc)
 	}
 
 	// compute objective values

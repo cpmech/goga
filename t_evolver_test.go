@@ -60,35 +60,57 @@ func Test_evo02(tst *testing.T) {
 			return
 		}
 		pos := rnd.IntGetUniqueN(0, size, nchanges)
+		io.Pforan("here = %v\n", 1)
 		for _, i := range pos {
-			if rnd.FlipCoin(0.5) {
-				A[i] /= 2
-			} else {
-				A[i] *= 2
+			if A[i] == 1 {
+				A[i] = 0
+			}
+			if A[i] == 0 {
+				A[i] = 1
 			}
 		}
 	}
 
 	ovfunc := func(ind *Individual, time int, best *Individual) {
-		sum := 0.0
-		for i := 0; i < len(ind.Ints); i++ {
-			sum += float64(ind.Ints[i])
+		score := 0.0
+		count := 0
+		for _, val := range ind.Ints {
+			if val == 0 && count%2 == 0 {
+				score += 1.0
+			}
+			if val == 1 && count%2 != 0 {
+				score += 1.0
+			}
+			count++
 		}
-		ind.ObjValue = sum
+		ind.ObjValue = 1.0 / (1.0 + score)
 	}
 
-	nvals := 10
+	// template individual
+	nvals := 20
 	ind := NewIndividual(1, utl.IntVals(nvals, 1))
 	for i := 0; i < nvals; i++ {
 		ind.Ints[i] = rand.Intn(2)
 	}
-	io.Pforan("ind = %v\n", ind)
-	io.Pforan("mtf = %v\n", mtfunc)
-	io.Pforan("ovf = %v\n", ovfunc)
 
+	// bingo and population
 	ninds := 10
-	bingo := NewBingoInts(nvals, 0, 10)
+	bingo := NewBingoInts(nvals, 0, 1)
 	bingo.UseIntRnd = true
 	pop := NewPopRandom(ninds, ind, bingo)
-	io.Pforan("%v\n", pop.Output(nil))
+
+	// island and evolver
+	isl := NewIsland(pop, ovfunc)
+	isl.MtProbs = make(map[string]float64)
+	isl.MtProbs["int"] = 0.01
+	isl.MtIntFunc = mtfunc
+	io.Pforan("%v\n", isl.Pop.Output(nil))
+
+	// run
+	tf := 200
+	dtout := 10
+	dtmig := 1000
+	evo := Evolver{[]*Island{isl}}
+	evo.Run(tf, dtout, dtmig)
+	io.Pfgreen("%v\n", isl.Pop.Output(nil))
 }

@@ -159,12 +159,12 @@ func (o Individual) CopyInto(x *Individual) {
 // genetic algorithm routines //////////////////////////////////////////////////////////////////////
 
 // crossover functions
-type IntCxFunc_t func(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []int)
-type FltCxFunc_t func(a, b, A, B []float64, ncuts int, cuts []int, pc float64) (ends []int)
-type StrCxFunc_t func(a, b, A, B []string, ncuts int, cuts []int, pc float64) (ends []int)
-type KeyCxFunc_t func(a, b, A, B []byte, ncuts int, cuts []int, pc float64) (ends []int)
-type BytCxFunc_t func(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64) (ends []int)
-type FunCxFunc_t func(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64) (ends []int)
+type CxIntFunc_t func(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []int)
+type CxFltFunc_t func(a, b, A, B []float64, ncuts int, cuts []int, pc float64) (ends []int)
+type CxStrFunc_t func(a, b, A, B []string, ncuts int, cuts []int, pc float64) (ends []int)
+type CxKeyFunc_t func(a, b, A, B []byte, ncuts int, cuts []int, pc float64) (ends []int)
+type CxBytFunc_t func(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64) (ends []int)
+type CxFunFunc_t func(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64) (ends []int)
 
 // Crossover performs the crossover between chromosomes of two individuals A and B
 // resulting in the chromosomes of other two individuals a and b
@@ -179,7 +179,13 @@ type FunCxFunc_t func(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64) (e
 //   cxfucns -- crossover functions. use nil for default ones
 //  Output:
 //   a and b -- offspring
-func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64, cxfuncs map[string]interface{}) {
+func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64,
+	cxint CxIntFunc_t,
+	cxflt CxFltFunc_t,
+	cxstr CxStrFunc_t,
+	cxkey CxKeyFunc_t,
+	cxbyt CxBytFunc_t,
+	cxfun CxFunFunc_t) {
 
 	// default values
 	pc := func(t string) float64 {
@@ -190,57 +196,53 @@ func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]i
 	}
 
 	// default functions
-	intcxf := IntCrossover
-	fltcxf := FltCrossover
-	strcxf := StrCrossover
-	keycxf := KeyCrossover
-	bytcxf := BytCrossover
-	funcxf := FunCrossover
-	for _, fcn := range cxfuncs {
-		switch f := fcn.(type) {
-		case IntCxFunc_t:
-			intcxf = f
-		case FltCxFunc_t:
-			fltcxf = f
-		case StrCxFunc_t:
-			strcxf = f
-		case KeyCxFunc_t:
-			keycxf = f
-		case BytCxFunc_t:
-			bytcxf = f
-		case FunCxFunc_t:
-			funcxf = f
-		}
+	if cxint == nil {
+		cxint = IntCrossover
+	}
+	if cxflt == nil {
+		cxflt = FltCrossover
+	}
+	if cxstr == nil {
+		cxstr = StrCrossover
+	}
+	if cxkey == nil {
+		cxkey = KeyCrossover
+	}
+	if cxbyt == nil {
+		cxbyt = BytCrossover
+	}
+	if cxfun == nil {
+		cxfun = FunCrossover
 	}
 
 	// perform crossover
 	if A.Ints != nil {
-		intcxf(a.Ints, b.Ints, A.Ints, B.Ints, ncuts["int"], cuts["int"], pc("int"))
+		cxint(a.Ints, b.Ints, A.Ints, B.Ints, ncuts["int"], cuts["int"], pc("int"))
 	}
 	if A.Floats != nil {
-		fltcxf(a.Floats, b.Floats, A.Floats, B.Floats, ncuts["flt"], cuts["flt"], pc("flt"))
+		cxflt(a.Floats, b.Floats, A.Floats, B.Floats, ncuts["flt"], cuts["flt"], pc("flt"))
 	}
 	if A.Strings != nil {
-		strcxf(a.Strings, b.Strings, A.Strings, B.Strings, ncuts["str"], cuts["str"], pc("str"))
+		cxstr(a.Strings, b.Strings, A.Strings, B.Strings, ncuts["str"], cuts["str"], pc("str"))
 	}
 	if A.Keys != nil {
-		keycxf(a.Keys, b.Keys, A.Keys, B.Keys, ncuts["key"], cuts["key"], pc("key"))
+		cxkey(a.Keys, b.Keys, A.Keys, B.Keys, ncuts["key"], cuts["key"], pc("key"))
 	}
 	if A.Bytes != nil {
-		bytcxf(a.Bytes, b.Bytes, A.Bytes, B.Bytes, ncuts["byt"], cuts["byt"], pc("byt"))
+		cxbyt(a.Bytes, b.Bytes, A.Bytes, B.Bytes, ncuts["byt"], cuts["byt"], pc("byt"))
 	}
 	if A.Funcs != nil {
-		funcxf(a.Funcs, b.Funcs, A.Funcs, B.Funcs, ncuts["fun"], cuts["fun"], pc("fun"))
+		cxfun(a.Funcs, b.Funcs, A.Funcs, B.Funcs, ncuts["fun"], cuts["fun"], pc("fun"))
 	}
 }
 
 // mutation functions
-type IntMtFunc_t func(a []int, nchanges int, pm float64, extra interface{})
-type FltMtFunc_t func(a []float64, nchanges int, pm float64, extra interface{})
-type StrMtFunc_t func(a []string, nchanges int, pm float64, extra interface{})
-type KeyMtFunc_t func(a []byte, nchanges int, pm float64, extra interface{})
-type BytMtFunc_t func(a [][]byte, nchanges int, pm float64, extra interface{})
-type FunMtFunc_t func(a []Func_t, nchanges int, pm float64, extra interface{})
+type MtIntFunc_t func(a []int, nchanges int, pm float64, extra interface{})
+type MtFltFunc_t func(a []float64, nchanges int, pm float64, extra interface{})
+type MtStrFunc_t func(a []string, nchanges int, pm float64, extra interface{})
+type MtKeyFunc_t func(a []byte, nchanges int, pm float64, extra interface{})
+type MtBytFunc_t func(a [][]byte, nchanges int, pm float64, extra interface{})
+type MtFunFunc_t func(a []Func_t, nchanges int, pm float64, extra interface{})
 
 // Mutation performs the mutation operation in the chromosomes of an individual
 //  Input:
@@ -251,7 +253,13 @@ type FunMtFunc_t func(a []Func_t, nchanges int, pm float64, extra interface{})
 //   extra    -- extra arguments for each 'int', 'flt', 'str', 'key', 'byt', 'fun'
 //   mutfucns -- mutation functions. use nil for default ones
 //  Output: modified individual
-func Mutation(A *Individual, nchanges map[string]int, probs map[string]float64, extra map[string]interface{}, mtfuncs map[string]interface{}) {
+func Mutation(A *Individual, nchanges map[string]int, probs map[string]float64, extra map[string]interface{},
+	mtint MtIntFunc_t,
+	mtflt MtFltFunc_t,
+	mtstr MtStrFunc_t,
+	mtkey MtKeyFunc_t,
+	mtbyt MtBytFunc_t,
+	mtfun MtFunFunc_t) {
 
 	// default values
 	nc := func(t string) int {
@@ -268,47 +276,43 @@ func Mutation(A *Individual, nchanges map[string]int, probs map[string]float64, 
 	}
 
 	// default functions
-	intmutf := IntMutation
-	fltmutf := FltMutation
-	strmutf := StrMutation
-	keymutf := KeyMutation
-	bytmutf := BytMutation
-	funmutf := FunMutation
-	for _, fcn := range mtfuncs {
-		switch f := fcn.(type) {
-		case IntMtFunc_t:
-			intmutf = f
-		case FltMtFunc_t:
-			fltmutf = f
-		case StrMtFunc_t:
-			strmutf = f
-		case KeyMtFunc_t:
-			keymutf = f
-		case BytMtFunc_t:
-			bytmutf = f
-		case FunMtFunc_t:
-			funmutf = f
-		}
+	if mtint == nil {
+		mtint = IntMutation
+	}
+	if mtflt == nil {
+		mtflt = FltMutation
+	}
+	if mtstr == nil {
+		mtstr = StrMutation
+	}
+	if mtkey == nil {
+		mtkey = KeyMutation
+	}
+	if mtbyt == nil {
+		mtbyt = BytMutation
+	}
+	if mtfun == nil {
+		mtfun = FunMutation
 	}
 
 	// perform crossover
 	if A.Ints != nil {
-		intmutf(A.Ints, nc("int"), pm("int"), extra["int"])
+		mtint(A.Ints, nc("int"), pm("int"), extra["int"])
 	}
 	if A.Floats != nil {
-		fltmutf(A.Floats, nc("flt"), pm("flt"), extra["flt"])
+		mtflt(A.Floats, nc("flt"), pm("flt"), extra["flt"])
 	}
 	if A.Strings != nil {
-		strmutf(A.Strings, nc("flt"), pm("str"), extra["str"])
+		mtstr(A.Strings, nc("flt"), pm("str"), extra["str"])
 	}
 	if A.Keys != nil {
-		keymutf(A.Keys, nc("key"), pm("key"), extra["key"])
+		mtkey(A.Keys, nc("key"), pm("key"), extra["key"])
 	}
 	if A.Bytes != nil {
-		bytmutf(A.Bytes, nc("byt"), pm("byt"), extra["byt"])
+		mtbyt(A.Bytes, nc("byt"), pm("byt"), extra["byt"])
 	}
 	if A.Funcs != nil {
-		funmutf(A.Funcs, nc("fun"), pm("fun"), extra["fun"])
+		mtfun(A.Funcs, nc("fun"), pm("fun"), extra["fun"])
 	}
 }
 
