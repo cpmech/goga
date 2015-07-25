@@ -9,6 +9,26 @@ import "github.com/cpmech/gosl/io"
 // Evolver realises the evolutionary process
 type Evolver struct {
 	Islands []*Island
+	BestOV  float64
+	// TODO: store pointer to best individual as well
+}
+
+// NewEvolver creates a new evolver
+//  Input:
+//   nislands --  number of islands
+//   ninds    -- number of individuals to be generated
+//   ref      -- reference individual with chromosome structure already set
+//   bingo    -- Bingo structure set with pool of values to draw gene values
+//   ovfunc   -- objective function
+//  Output:
+//   new population
+func NewEvolver(nislands, ninds int, ref *Individual, bingo *Bingo, ovfunc ObjFunc_t) (o *Evolver) {
+	o = new(Evolver)
+	o.Islands = make([]*Island, nislands)
+	for i := 0; i < nislands; i++ {
+		o.Islands[i] = NewIsland(NewPopRandom(ninds, ref, bingo), ovfunc)
+	}
+	return
 }
 
 func (o *Evolver) Run(tf, dtout, dtmig int) {
@@ -33,27 +53,33 @@ func (o *Evolver) Run(tf, dtout, dtmig int) {
 	tmig := dtmig
 
 	// best individual
-	bestov := o.Islands[0].Pop[0].ObjValue
+	o.BestOV = o.Islands[0].Pop[0].ObjValue
 
 	// first output
-	io.Pf(strt, t, "", bestov)
+	io.Pf(strt, t, "", o.BestOV)
 
 	// time loop
-	done := make(chan int, nislands)
+	var ov float64
+	ovs := make(chan float64, nislands)
 	for t < tf {
 
 		// reproduction in all islands
 		for i := 0; i < nislands; i++ {
-			// TODO: activate this
-			//go func() {
-			for j := t; j < tout; j++ {
-				o.Islands[i].SelectAndReprod(j)
-			}
-			done <- 1
-			//}()
+			go func(isl *Island) {
+				for j := t; j < tout; j++ {
+					isl.SelectAndReprod(j)
+				}
+				ovs <- isl.Pop[0].ObjValue
+			}(o.Islands[i])
 		}
-		for i := 0; i < nislands; i++ {
-			<-done
+
+		// listen to channels and get best OV
+		o.BestOV = <-ovs
+		for i := 1; i < nislands; i++ {
+			ov = <-ovs
+			if ov < o.BestOV {
+				o.BestOV = ov
+			}
 		}
 
 		// current time and next cycle
@@ -68,12 +94,8 @@ func (o *Evolver) Run(tf, dtout, dtmig int) {
 			tmig = t + dtmig
 		}
 
-		// best individual
-		bestov = o.Islands[0].Pop[0].ObjValue
-		// TODO: get best among all islands
-
 		// output
-		io.Pf(strt, t, mig, bestov)
+		io.Pf(strt, t, mig, o.BestOV)
 	}
 
 	// footer

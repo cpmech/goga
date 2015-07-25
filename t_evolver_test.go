@@ -43,13 +43,13 @@ func Test_evo01(tst *testing.T) {
 	tf := 100
 	dtout := 10
 	dtmig := 20
-	evo := Evolver{[]*Island{isl}}
+	evo := Evolver{[]*Island{isl}, 0}
 	evo.Run(tf, dtout, dtmig)
 }
 
 func Test_evo02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo02. organise sequence of ints")
 
 	rnd.Init(0)
@@ -60,7 +60,6 @@ func Test_evo02(tst *testing.T) {
 			return
 		}
 		pos := rnd.IntGetUniqueN(0, size, nchanges)
-		io.Pforan("here = %v\n", 1)
 		for _, i := range pos {
 			if A[i] == 1 {
 				A[i] = 0
@@ -86,31 +85,38 @@ func Test_evo02(tst *testing.T) {
 		ind.ObjValue = 1.0 / (1.0 + score)
 	}
 
-	// template individual
+	// reference individual
 	nvals := 20
-	ind := NewIndividual(1, utl.IntVals(nvals, 1))
+	ref := NewIndividual(1, utl.IntVals(nvals, 1))
 	for i := 0; i < nvals; i++ {
-		ind.Ints[i] = rand.Intn(2)
+		ref.Ints[i] = rand.Intn(2)
 	}
 
-	// bingo and population
-	ninds := 10
+	// bingo
 	bingo := NewBingoInts(nvals, 0, 1)
-	bingo.UseIntRnd = true
-	pop := NewPopRandom(ninds, ind, bingo)
 
-	// island and evolver
-	isl := NewIsland(pop, ovfunc)
-	isl.MtProbs = make(map[string]float64)
-	isl.MtProbs["int"] = 0.01
-	isl.MtIntFunc = mtfunc
-	io.Pforan("%v\n", isl.Pop.Output(nil))
+	// population => islands => evolver
+	nislands := 2
+	ninds := 10
+	evo := NewEvolver(nislands, ninds, ref, bingo, ovfunc)
+	for _, isl := range evo.Islands {
+		isl.MtProbs = make(map[string]float64)
+		isl.MtProbs["int"] = 0.01
+		isl.MtIntFunc = mtfunc
+		io.Pforan("\n%v\n", isl.Pop.Output(nil))
+	}
 
 	// run
-	tf := 200
-	dtout := 10
+	tf := 100
+	dtout := 20
 	dtmig := 1000
-	evo := Evolver{[]*Island{isl}}
 	evo.Run(tf, dtout, dtmig)
-	io.Pfgreen("%v\n", isl.Pop.Output(nil))
+	for _, isl := range evo.Islands {
+		isl.MtProbs = make(map[string]float64)
+		isl.MtProbs["int"] = 0.01
+		isl.MtIntFunc = mtfunc
+		io.Pfgreen("%v\n", isl.Pop.Output(nil))
+	}
+	io.PfGreen("\nBestOV = %v\n", evo.BestOV)
+	// TODO: print best individual as well
 }

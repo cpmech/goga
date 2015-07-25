@@ -61,9 +61,9 @@ type Island struct {
 
 // NewIsland allocates a new island but with a give population already allocated
 // Input:
-//  pop   -- the population
-//  ofunc -- objective function
-func NewIsland(pop Population, ofunc ObjFunc_t) (o *Island) {
+//  pop    -- the population
+//  ovfunc -- objective function
+func NewIsland(pop Population, ovfunc ObjFunc_t) (o *Island) {
 
 	// check
 	ninds := len(pop)
@@ -75,7 +75,7 @@ func NewIsland(pop Population, ofunc ObjFunc_t) (o *Island) {
 	o = new(Island)
 	o.Pop = pop
 	o.BkpPop = pop.GetCopy()
-	o.ObjFunc = ofunc
+	o.ObjFunc = ovfunc
 
 	// set default control values
 	o.UseRanking = true
