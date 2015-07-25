@@ -13,6 +13,7 @@ import (
 // Bingo collects values to be drawn in random operations
 type Bingo struct {
 	UseIntRnd bool        // generate random integers instead of selecting from grid
+	UseFltRnd bool        // generate random float point numbers instead of selecting from grid
 	IntRange  [][]int     // [ngene][nsamples] min and max integers
 	FltRange  [][]float64 // [ngene][nsamples] min and max float point numbers
 	PoolWords [][]string  // [ngene][nsamples] pool of words to be used in Gene.String
@@ -24,7 +25,7 @@ type Bingo struct {
 // NewExampleBingo returns a new Bingo with example values
 func NewExampleBingo() *Bingo {
 	return &Bingo{
-		false,
+		false, false,
 		[][]int{{-10, 10}, {-20, 20}, {-30, 30}, {-40, 40}},
 		[][]float64{{-123.0, 321.0}, {-1, 1}, {0, 1}},
 		[][]string{
@@ -65,13 +66,35 @@ func NewExampleBingo() *Bingo {
 	}
 }
 
-// NewBingoInts creates a bingo to generate int numbers between imin and imax
-func NewBingoInts(ngenes, imin, imax int) (o *Bingo) {
+// NewBingoInts creates a bingo to generate int numbers between xmin and xmax
+//  Input:
+//   xmin -- min values of genes. len(xmin) == ngenes
+//   xmax -- max values of genes
+func NewBingoInts(xmin, xmax []int) (o *Bingo) {
+	chk.IntAssert(len(xmin), len(xmax))
 	o = new(Bingo)
+	ngenes := len(xmin)
 	o.IntRange = utl.IntsAlloc(ngenes, 2)
 	for i := 0; i < ngenes; i++ {
-		o.IntRange[i][0] = imin
-		o.IntRange[i][1] = imax
+		o.IntRange[i][0] = xmin[i]
+		o.IntRange[i][1] = xmax[i]
+	}
+	return
+}
+
+// NewBingoFloats creates a bingo to generate float point numbers between xmin and xmax
+//  Input:
+//   nbases -- number of subdivisions of each gene
+//   xmin   -- min values of genes (to be subdivided). len(xmin) == ngenes
+//   xmax   -- max values of genes (to be subdivided)
+func NewBingoFloats(nbases, xmin, xmax []float64) (o *Bingo) {
+	chk.IntAssert(len(xmin), len(xmax))
+	o = new(Bingo)
+	ngenes := len(xmin)
+	o.FltRange = utl.DblsAlloc(ngenes, 2)
+	for i := 0; i < ngenes; i++ {
+		o.FltRange[i][0] = xmin[i]
+		o.FltRange[i][1] = xmax[i]
 	}
 	return
 }
@@ -87,10 +110,7 @@ func (o Bingo) DrawInt(iInd, iGene, nInd int) int {
 		chk.IntAssert(len(o.IntRange[iGene]), 2)
 		xmin := o.IntRange[iGene][0]
 		xmax := o.IntRange[iGene][1]
-		if o.UseIntRnd {
-			return rnd.Int(xmin, xmax)
-		}
-		if iInd < 0 || nInd < 2 {
+		if iInd < 0 || nInd < 2 || o.UseIntRnd {
 			return rnd.Int(xmin, xmax)
 		}
 		return xmin + iInd*(xmax-xmin)/(nInd-1)
@@ -109,7 +129,7 @@ func (o Bingo) DrawFloat(iInd, iGene, nInd int) float64 {
 		chk.IntAssert(len(o.FltRange[iGene]), 2)
 		xmin := o.FltRange[iGene][0]
 		xmax := o.FltRange[iGene][1]
-		if iInd < 0 || nInd < 2 {
+		if iInd < 0 || nInd < 2 || o.UseFltRnd {
 			return rnd.Float64(xmin, xmax)
 		}
 		return xmin + float64(iInd)*(xmax-xmin)/float64(nInd-1)

@@ -19,6 +19,15 @@ func Test_evo01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("evo01")
 
+	// initialise random numbers generator
+	rnd.Init(0) // 0 => use current time as seed
+
+	// objective function
+	ovfunc := func(ind *Individual, time int, best *Individual) {
+		ind.ObjValue = 1.0 / (1.0 + (ind.GetFloat(0)+ind.GetFloat(1)+ind.GetFloat(2))/3.0)
+	}
+
+	// reference population
 	nbases := 8
 	pop := NewPopFloatChromo(nbases, [][]float64{
 		{11, 21, 31},
@@ -29,31 +38,26 @@ func Test_evo01(tst *testing.T) {
 		{16, 26, 36},
 	})
 
-	ofunc := func(ind *Individual, time int, best *Individual) {
-		ind.ObjValue = 1.0 / (1.0 + (ind.GetFloat(0)+ind.GetFloat(1)+ind.GetFloat(2))/3.0)
-	}
+	// evolver
+	evo := NewEvolverPop([]Population{pop}, ovfunc)
 
-	isl := NewIsland(pop, ofunc)
-	isl.MtProbs = make(map[string]float64)
-	isl.MtProbs["flt"] = 0.0
-	io.Pforan("%v\n", isl.Pop.Output(nil))
-	io.Pforan("best = %v\n", isl.Pop[0].Output(nil))
-	io.Pf("\n")
-
+	// run
 	tf := 100
 	dtout := 10
 	dtmig := 20
-	evo := Evolver{[]*Island{isl}, 0}
+	io.Pf("\n")
 	evo.Run(tf, dtout, dtmig)
 }
 
 func Test_evo02(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo02. organise sequence of ints")
 
-	rnd.Init(0)
+	// initialise random numbers generator
+	rnd.Init(0) // 0 => use current time as seed
 
+	// mutation function
 	mtfunc := func(A []int, nchanges int, pm float64, extra interface{}) {
 		size := len(A)
 		if !rnd.FlipCoin(pm) || size < 1 {
@@ -70,6 +74,7 @@ func Test_evo02(tst *testing.T) {
 		}
 	}
 
+	// objective function
 	ovfunc := func(ind *Individual, time int, best *Individual) {
 		score := 0.0
 		count := 0
@@ -93,9 +98,9 @@ func Test_evo02(tst *testing.T) {
 	}
 
 	// bingo
-	bingo := NewBingoInts(nvals, 0, 1)
+	bingo := NewBingoInts([]int{0}, []int{1})
 
-	// population => islands => evolver
+	// evolver
 	nislands := 2
 	ninds := 10
 	evo := NewEvolver(nislands, ninds, ref, bingo, ovfunc)
@@ -111,12 +116,14 @@ func Test_evo02(tst *testing.T) {
 	dtout := 20
 	dtmig := 1000
 	evo.Run(tf, dtout, dtmig)
+
+	// results
+	io.Pf("\n")
 	for _, isl := range evo.Islands {
 		isl.MtProbs = make(map[string]float64)
 		isl.MtProbs["int"] = 0.01
 		isl.MtIntFunc = mtfunc
 		io.Pfgreen("%v\n", isl.Pop.Output(nil))
 	}
-	io.PfGreen("\nBestOV = %v\n", evo.BestOV)
-	// TODO: print best individual as well
+	io.PfGreen("\nBest = %v\nBestOV = %v\n", evo.Best.Ints, evo.Best.ObjValue)
 }

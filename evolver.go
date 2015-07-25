@@ -9,19 +9,16 @@ import "github.com/cpmech/gosl/io"
 // Evolver realises the evolutionary process
 type Evolver struct {
 	Islands []*Island
-	BestOV  float64
-	// TODO: store pointer to best individual as well
+	Best    *Individual
 }
 
 // NewEvolver creates a new evolver
 //  Input:
-//   nislands --  number of islands
+//   nislands -- number of islands
 //   ninds    -- number of individuals to be generated
 //   ref      -- reference individual with chromosome structure already set
 //   bingo    -- Bingo structure set with pool of values to draw gene values
 //   ovfunc   -- objective function
-//  Output:
-//   new population
 func NewEvolver(nislands, ninds int, ref *Individual, bingo *Bingo, ovfunc ObjFunc_t) (o *Evolver) {
 	o = new(Evolver)
 	o.Islands = make([]*Island, nislands)
@@ -31,6 +28,25 @@ func NewEvolver(nislands, ninds int, ref *Individual, bingo *Bingo, ovfunc ObjFu
 	return
 }
 
+// NewEvolverPop creates a new evolver based on a given population
+//  Input:
+//   pops   -- populations. len(pop) == nislands
+//   ovfunc -- objective function
+func NewEvolverPop(pops []Population, ovfunc ObjFunc_t) (o *Evolver) {
+	o = new(Evolver)
+	nislands := len(pops)
+	o.Islands = make([]*Island, nislands)
+	for i, pop := range pops {
+		o.Islands[i] = NewIsland(pop, ovfunc)
+	}
+	return
+}
+
+// Run runs the evolution process
+//  Input:
+//   tf    -- final time
+//   dtout -- increment of time for output
+//   dtmig -- increment of time for migration
 func (o *Evolver) Run(tf, dtout, dtmig int) {
 
 	// check
@@ -53,14 +69,13 @@ func (o *Evolver) Run(tf, dtout, dtmig int) {
 	tmig := dtmig
 
 	// best individual
-	o.BestOV = o.Islands[0].Pop[0].ObjValue
+	o.Best = o.Islands[0].Pop[0]
 
 	// first output
-	io.Pf(strt, t, "", o.BestOV)
+	io.Pf(strt, t, "", o.Best.ObjValue)
 
 	// time loop
-	var ov float64
-	ovs := make(chan float64, nislands)
+	done := make(chan int, nislands)
 	for t < tf {
 
 		// reproduction in all islands
@@ -69,17 +84,13 @@ func (o *Evolver) Run(tf, dtout, dtmig int) {
 				for j := t; j < tout; j++ {
 					isl.SelectAndReprod(j)
 				}
-				ovs <- isl.Pop[0].ObjValue
+				done <- 1
 			}(o.Islands[i])
 		}
 
-		// listen to channels and get best OV
-		o.BestOV = <-ovs
-		for i := 1; i < nislands; i++ {
-			ov = <-ovs
-			if ov < o.BestOV {
-				o.BestOV = ov
-			}
+		// listen to channels
+		for i := 0; i < nislands; i++ {
+			<-done
 		}
 
 		// current time and next cycle
@@ -94,8 +105,16 @@ func (o *Evolver) Run(tf, dtout, dtmig int) {
 			tmig = t + dtmig
 		}
 
+		// best individual from all islands
+		o.Best = o.Islands[0].Pop[0]
+		for i := 0; i < nislands; i++ {
+			if o.Islands[i].Pop[0].ObjValue < o.Best.ObjValue {
+				o.Best = o.Islands[i].Pop[0]
+			}
+		}
+
 		// output
-		io.Pf(strt, t, mig, o.BestOV)
+		io.Pf(strt, t, mig, o.Best.ObjValue)
 	}
 
 	// footer
