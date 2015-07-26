@@ -5,6 +5,7 @@
 package goga
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/cpmech/gosl/chk"
@@ -26,7 +27,7 @@ func Test_island01(tst *testing.T) {
 		{16, 26, 36},
 	})
 
-	ofunc := func(ind *Individual, time int, best *Individual) {
+	ofunc := func(ind *Individual, time int, report *bytes.Buffer) {
 		ind.ObjValue = 1.0 / (1.0 + (ind.GetFloat(0)+ind.GetFloat(1)+ind.GetFloat(2))/3.0)
 	}
 

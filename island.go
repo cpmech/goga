@@ -15,7 +15,7 @@ import (
 )
 
 // ObjFunc_t defines the template for the objective function
-type ObjFunc_t func(ind *Individual, time int, best *Individual)
+type ObjFunc_t func(ind *Individual, time int, report *bytes.Buffer)
 
 // Island holds one population and performs the reproduction operation
 type Island struct {
@@ -55,7 +55,8 @@ type Island struct {
 	ObjFunc ObjFunc_t  // objective function
 
 	// results
-	OVS []float64 // best objective values collected from multiple calls to SelectAndReprod
+	Report bytes.Buffer // buffer to report results
+	OVS    []float64    // best objective values collected from multiple calls to SelectAndReprod
 
 	// auxiliary internal data
 	fitsrnk []float64 // all fitness values computed by ranking
@@ -91,7 +92,7 @@ func NewIsland(pop Population, ovfunc ObjFunc_t) (o *Island) {
 
 	// compute objective values
 	for _, ind := range o.Pop {
-		o.ObjFunc(ind, 0, nil)
+		o.ObjFunc(ind, 0, &o.Report)
 	}
 
 	// sort
@@ -167,7 +168,7 @@ func (o *Island) SelectAndReprod(time int) {
 
 	// compute objective values
 	for _, ind := range o.BkpPop {
-		o.ObjFunc(ind, 0, nil)
+		o.ObjFunc(ind, time, &o.Report)
 	}
 
 	// sort
@@ -212,4 +213,12 @@ func (o Island) PlotOvs(dirout, fnkey, args string, tf int, withtxt bool, numfmt
 		plt.Gll("time", "objective value", "")
 		plt.SaveD(dirout, fnkey+".eps")
 	}
+}
+
+// SaveReport saves report to file
+func (o Island) SaveReport(dirout, fnkey string) {
+	if dirout == "" {
+		dirout = "/tmp/goga/"
+	}
+	io.WriteFileD(dirout, fnkey+".rpt", &o.Report)
 }
