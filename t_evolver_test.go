@@ -117,6 +117,9 @@ func Test_evo02(tst *testing.T) {
 		io.Pforan("\n%v\n", isl.Pop.Output(nil))
 	}
 
+	// saving files
+	evo.FnKey = "evo02"
+
 	// run
 	tf := 100
 	dtout := 20
@@ -138,6 +141,10 @@ func Test_evo02(tst *testing.T) {
 
 	// plot
 	if true {
-		evo.Islands[0].PlotOvs("/tmp", "fig_evo02", "", tf, true, "%.6f", true, true)
+		for i, isl := range evo.Islands {
+			first := i == 0
+			last := i == nislands-1
+			isl.PlotOvs("/tmp", "fig_evo02", "", tf, true, "%.6f", first, last)
+		}
 	}
 }

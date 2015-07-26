@@ -190,6 +190,10 @@ func (o *Island) SelectAndReprod(time int) {
 
 // Write writes results to buffer
 func (o Island) Write(buf *bytes.Buffer, t int, json bool) {
+	if json {
+		return
+	}
+	buf.Write(o.Pop.Output(nil).Bytes())
 }
 
 // PlotOvs plots objective values versus time
