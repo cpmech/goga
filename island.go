@@ -9,6 +9,9 @@ import (
 	"math"
 
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/plt"
+	"github.com/cpmech/gosl/utl"
 )
 
 // ObjFunc_t defines the template for the objective function
@@ -51,6 +54,9 @@ type Island struct {
 	BkpPop  Population // backup population
 	ObjFunc ObjFunc_t  // objective function
 
+	// results
+	OVS []float64 // best objective values collected from multiple calls to SelectAndReprod
+
 	// auxiliary internal data
 	fitsrnk []float64 // all fitness values computed by ranking
 	fitness []float64 // all fitness values
@@ -90,6 +96,9 @@ func NewIsland(pop Population, ovfunc ObjFunc_t) (o *Island) {
 
 	// sort
 	o.Pop.Sort()
+
+	// results
+	o.OVS = []float64{o.Pop[0].ObjValue}
 
 	// auxiliary data
 	o.fitsrnk = make([]float64, ninds)
@@ -172,10 +181,31 @@ func (o *Island) SelectAndReprod(time int) {
 		}
 	}
 
-	// swap populations
+	// swap populations (Pop will always point to current one)
 	o.Pop, o.BkpPop = o.BkpPop, o.Pop
+
+	// results
+	o.OVS = append(o.OVS, o.Pop[0].ObjValue)
 }
 
 // Write writes results to buffer
 func (o Island) Write(buf *bytes.Buffer, t int, json bool) {
+}
+
+// PlotOvs plots objective values versus time
+func (o Island) PlotOvs(dirout, fnkey, args string, tf int, withtxt bool, numfmt string, first, last bool) {
+	if first {
+		plt.SetForEps(0.75, 250)
+	}
+	n := len(o.OVS)
+	T := utl.LinSpace(0, float64(tf), n)
+	plt.Plot(T, o.OVS, args)
+	if withtxt {
+		plt.Text(T[0], o.OVS[0], io.Sf(numfmt, o.OVS[0]), "ha='left'")
+		plt.Text(T[n-1], o.OVS[n-1], io.Sf(numfmt, o.OVS[n-1]), "ha='right'")
+	}
+	if last {
+		plt.Gll("time", "objective value", "")
+		plt.SaveD(dirout, fnkey+".eps")
+	}
 }

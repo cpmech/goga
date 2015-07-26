@@ -57,9 +57,7 @@ func NewEvolverPop(pops []Population, ovfunc ObjFunc_t) (o *Evolver) {
 //   dtout   -- increment of time for output
 //   dtmig   -- increment of time for migration
 //   verbose -- print information suring progress
-//  Output:
-//   ovs -- objective values for all times
-func (o *Evolver) Run(tf, dtout, dtmig int, verbose bool) (ovs []float64) {
+func (o *Evolver) Run(tf, dtout, dtmig int, verbose bool) {
 
 	// check
 	nislands := len(o.Islands)
@@ -74,9 +72,6 @@ func (o *Evolver) Run(tf, dtout, dtmig int, verbose bool) (ovs []float64) {
 	t := 0
 	tout := dtout
 	tmig := dtmig
-
-	// results
-	ovs = make([]float64, tf/dtout)
 
 	// best individual and index of worst individual
 	o.FindBestFromAll()

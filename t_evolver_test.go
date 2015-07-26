@@ -16,7 +16,7 @@ import (
 
 func Test_evo01(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo01")
 
 	// initialise random numbers generator
@@ -47,6 +47,11 @@ func Test_evo01(tst *testing.T) {
 	dtmig := 20
 	io.Pf("\n")
 	evo.Run(tf, dtout, dtmig, true)
+
+	// plot
+	if true {
+		evo.Islands[0].PlotOvs("/tmp", "fig_evo01", "", tf, true, "%.6f", true, true)
+	}
 }
 
 func Test_evo02(tst *testing.T) {
@@ -129,5 +134,10 @@ func Test_evo02(tst *testing.T) {
 		}
 		ideal := 1.0 / (1.0 + float64(nvals))
 		io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.ObjValue, ideal)
+	}
+
+	// plot
+	if true {
+		evo.Islands[0].PlotOvs("/tmp", "fig_evo02", "", tf, true, "%.6f", true, true)
 	}
 }
