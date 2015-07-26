@@ -16,7 +16,7 @@ import (
 
 func Test_evo01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo01")
 
 	// initialise random numbers generator
@@ -49,15 +49,17 @@ func Test_evo01(tst *testing.T) {
 	evo.Run(tf, dtout, dtmig, true)
 
 	// plot
-	if true {
+	//if true {
+	if false {
 		evo.Islands[0].PlotOvs("/tmp", "fig_evo01", "", tf, true, "%.6f", true, true)
 	}
 }
 
 func Test_evo02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo02. organise sequence of ints")
+	io.Pf("\n")
 
 	// initialise random numbers generator
 	rnd.Init(0) // 0 => use current time as seed
@@ -108,13 +110,12 @@ func Test_evo02(tst *testing.T) {
 
 	// evolver
 	nislands := 3
-	ninds := 10
+	ninds := 6
 	evo := NewEvolver(nislands, ninds, ref, bingo, ovfunc)
 	for _, isl := range evo.Islands {
 		isl.MtProbs = make(map[string]float64)
 		isl.MtProbs["int"] = 0.01
 		isl.MtIntFunc = mtfunc
-		io.Pforan("\n%v\n", isl.Pop.Output(nil))
 	}
 
 	// saving files
@@ -123,24 +124,16 @@ func Test_evo02(tst *testing.T) {
 	// run
 	tf := 100
 	dtout := 20
-	dtmig := 400
+	dtmig := 40
 	evo.Run(tf, dtout, dtmig, true)
 
-	if true {
-		// results
-		io.Pf("\n")
-		for _, isl := range evo.Islands {
-			isl.MtProbs = make(map[string]float64)
-			isl.MtProbs["int"] = 0.01
-			isl.MtIntFunc = mtfunc
-			io.Pfgreen("%v\n", isl.Pop.Output(nil))
-		}
-		ideal := 1.0 / (1.0 + float64(nvals))
-		io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.ObjValue, ideal)
-	}
+	// results
+	ideal := 1.0 / (1.0 + float64(nvals))
+	io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.ObjValue, ideal)
 
 	// plot
-	if true {
+	//if true {
+	if false {
 		for i, isl := range evo.Islands {
 			first := i == 0
 			last := i == nislands-1
