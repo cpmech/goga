@@ -84,10 +84,9 @@ func NewBingoInts(xmin, xmax []int) (o *Bingo) {
 
 // NewBingoFloats creates a bingo to generate float point numbers between xmin and xmax
 //  Input:
-//   nbases -- number of subdivisions of each gene
-//   xmin   -- min values of genes (to be subdivided). len(xmin) == ngenes
-//   xmax   -- max values of genes (to be subdivided)
-func NewBingoFloats(nbases, xmin, xmax []float64) (o *Bingo) {
+//   xmin -- min values of genes (to be subdivided). len(xmin) == ngenes
+//   xmax -- max values of genes (to be subdivided)
+func NewBingoFloats(xmin, xmax []float64) (o *Bingo) {
 	chk.IntAssert(len(xmin), len(xmax))
 	o = new(Bingo)
 	ngenes := len(xmin)
