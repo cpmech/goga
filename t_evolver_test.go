@@ -46,7 +46,7 @@ func Test_evo01(tst *testing.T) {
 	dtout := 10
 	dtmig := 20
 	io.Pf("\n")
-	evo.Run(tf, dtout, dtmig)
+	evo.Run(tf, dtout, dtmig, true)
 }
 
 func Test_evo02(tst *testing.T) {
@@ -115,10 +115,10 @@ func Test_evo02(tst *testing.T) {
 	// run
 	tf := 100
 	dtout := 20
-	dtmig := 40
-	evo.Run(tf, dtout, dtmig)
+	dtmig := 400
+	evo.Run(tf, dtout, dtmig, true)
 
-	if false {
+	if true {
 		// results
 		io.Pf("\n")
 		for _, isl := range evo.Islands {
@@ -127,6 +127,7 @@ func Test_evo02(tst *testing.T) {
 			isl.MtIntFunc = mtfunc
 			io.Pfgreen("%v\n", isl.Pop.Output(nil))
 		}
-		io.PfGreen("\nBest = %v\nBestOV = %v\n", evo.Best.Ints, evo.Best.ObjValue)
+		ideal := 1.0 / (1.0 + float64(nvals))
+		io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.ObjValue, ideal)
 	}
 }

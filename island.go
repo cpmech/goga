@@ -5,6 +5,7 @@
 package goga
 
 import (
+	"bytes"
 	"math"
 
 	"github.com/cpmech/gosl/chk"
@@ -173,4 +174,8 @@ func (o *Island) SelectAndReprod(time int) {
 
 	// swap populations
 	o.Pop, o.BkpPop = o.BkpPop, o.Pop
+}
+
+// Write writes results to buffer
+func (o Island) Write(buf *bytes.Buffer, t int, json bool) {
 }
