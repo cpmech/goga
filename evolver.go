@@ -8,8 +8,8 @@ import "github.com/cpmech/gosl/io"
 
 // Evolver realises the evolutionary process
 type Evolver struct {
-	Islands []*Island
-	Best    *Individual
+	Islands []*Island   // islands
+	Best    *Individual // best individual among all in all islands
 }
 
 // NewEvolver creates a new evolver
@@ -54,6 +54,14 @@ func (o *Evolver) Run(tf, dtout, dtmig int) {
 	if nislands < 1 {
 		return
 	}
+
+	/*
+		o.Dest = make([][]bool, nislands)
+		for i := 0; i < nislands; i++ {
+			o.Dest[i] = make([]bool, nislands)
+		}
+		o.Ids = utl.IntRange(nislands)
+	*/
 
 	// header
 	lent := len(io.Sf("%d", tf))
@@ -100,9 +108,17 @@ func (o *Evolver) Run(tf, dtout, dtmig int) {
 		// migration
 		mig := ""
 		if t >= tmig {
-			// TODO: implement this
 			mig = "true"
 			tmig = t + dtmig
+			for i := 0; i < nislands; i++ {
+				for j := i + 1; j < nislands; j++ {
+					last := len(o.Islands[j].Pop) - 1
+					o.Islands[i].Pop[0].CopyInto(o.Islands[j].Pop[last]) // iBest => jWorst
+					o.Islands[j].Pop[0].CopyInto(o.Islands[i].Pop[last]) // jBest => iWorst
+					o.Islands[i].Pop.Sort()
+					o.Islands[j].Pop.Sort()
+				}
+			}
 		}
 
 		// best individual from all islands

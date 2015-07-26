@@ -98,10 +98,11 @@ func Test_evo02(tst *testing.T) {
 	}
 
 	// bingo
-	bingo := NewBingoInts([]int{0}, []int{1})
+	bingo := NewBingoInts(utl.IntVals(nvals, 0), utl.IntVals(nvals, 1))
+	bingo.UseIntRnd = true
 
 	// evolver
-	nislands := 2
+	nislands := 3
 	ninds := 10
 	evo := NewEvolver(nislands, ninds, ref, bingo, ovfunc)
 	for _, isl := range evo.Islands {
@@ -114,16 +115,18 @@ func Test_evo02(tst *testing.T) {
 	// run
 	tf := 100
 	dtout := 20
-	dtmig := 1000
+	dtmig := 40
 	evo.Run(tf, dtout, dtmig)
 
-	// results
-	io.Pf("\n")
-	for _, isl := range evo.Islands {
-		isl.MtProbs = make(map[string]float64)
-		isl.MtProbs["int"] = 0.01
-		isl.MtIntFunc = mtfunc
-		io.Pfgreen("%v\n", isl.Pop.Output(nil))
+	if false {
+		// results
+		io.Pf("\n")
+		for _, isl := range evo.Islands {
+			isl.MtProbs = make(map[string]float64)
+			isl.MtProbs["int"] = 0.01
+			isl.MtIntFunc = mtfunc
+			io.Pfgreen("%v\n", isl.Pop.Output(nil))
+		}
+		io.PfGreen("\nBest = %v\nBestOV = %v\n", evo.Best.Ints, evo.Best.ObjValue)
 	}
-	io.PfGreen("\nBest = %v\nBestOV = %v\n", evo.Best.Ints, evo.Best.ObjValue)
 }
