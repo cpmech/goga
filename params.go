@@ -19,6 +19,8 @@ type Params struct {
 	Tf        int     // number of generations
 	Dtout     int     // increment of time for output
 	Dtmig     int     // increment of time for migration
+	Dtreg     int     // increment of time for regeneration
+	Nreg      int     // max number of generations
 	Pc        float64 // probability of crossover
 	Pm        float64 // probability of mutation
 	Elite     bool    // use elitism
@@ -44,6 +46,8 @@ func ReadParams(filenamepath string) *Params {
 	o.Tf = 100
 	o.Dtout = 10
 	o.Dtmig = 40
+	o.Dtreg = 200
+	o.Nreg = -1
 	o.Pc = 0.8
 	o.Pm = 0.01
 	o.Elite = true
