@@ -15,10 +15,13 @@ import (
 )
 
 // ObjFunc_t defines the template for the objective function
-type ObjFunc_t func(ind *Individual, time int, report *bytes.Buffer)
+type ObjFunc_t func(ind *Individual, idIsland, time int, report *bytes.Buffer)
 
 // Island holds one population and performs the reproduction operation
 type Island struct {
+
+	// index
+	Id int // index of this island
 
 	// selection/reproduction
 	UseRanking  bool    // use ranking for selection process
@@ -69,9 +72,10 @@ type Island struct {
 
 // NewIsland allocates a new island but with a give population already allocated
 // Input:
+//  id     -- index of this island
 //  pop    -- the population
 //  ovfunc -- objective function
-func NewIsland(pop Population, ovfunc ObjFunc_t) (o *Island) {
+func NewIsland(id int, pop Population, ovfunc ObjFunc_t) (o *Island) {
 
 	// check
 	ninds := len(pop)
@@ -81,6 +85,7 @@ func NewIsland(pop Population, ovfunc ObjFunc_t) (o *Island) {
 
 	// allocate
 	o = new(Island)
+	o.Id = id
 	o.Pop = pop
 	o.BkpPop = pop.GetCopy()
 	o.ObjFunc = ovfunc
@@ -92,7 +97,7 @@ func NewIsland(pop Population, ovfunc ObjFunc_t) (o *Island) {
 
 	// compute objective values
 	for _, ind := range o.Pop {
-		o.ObjFunc(ind, 0, &o.Report)
+		o.ObjFunc(ind, o.Id, 0, &o.Report)
 	}
 
 	// sort
@@ -168,7 +173,7 @@ func (o *Island) SelectAndReprod(time int) {
 
 	// compute objective values
 	for _, ind := range o.BkpPop {
-		o.ObjFunc(ind, time, &o.Report)
+		o.ObjFunc(ind, o.Id, time, &o.Report)
 	}
 
 	// sort

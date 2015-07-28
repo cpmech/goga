@@ -32,7 +32,7 @@ func NewEvolver(nislands, ninds int, ref *Individual, bingo *Bingo, ovfunc ObjFu
 	o = new(Evolver)
 	o.Islands = make([]*Island, nislands)
 	for i := 0; i < nislands; i++ {
-		o.Islands[i] = NewIsland(NewPopRandom(ninds, ref, bingo), ovfunc)
+		o.Islands[i] = NewIsland(i, NewPopRandom(ninds, ref, bingo), ovfunc)
 	}
 	return
 }
@@ -46,7 +46,7 @@ func NewEvolverPop(pops []Population, ovfunc ObjFunc_t) (o *Evolver) {
 	nislands := len(pops)
 	o.Islands = make([]*Island, nislands)
 	for i, pop := range pops {
-		o.Islands[i] = NewIsland(pop, ovfunc)
+		o.Islands[i] = NewIsland(i, pop, ovfunc)
 	}
 	return
 }

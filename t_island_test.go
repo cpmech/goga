@@ -27,11 +27,11 @@ func Test_island01(tst *testing.T) {
 		{16, 26, 36},
 	})
 
-	ofunc := func(ind *Individual, time int, report *bytes.Buffer) {
+	ofunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
 		ind.ObjValue = 1.0 / (1.0 + (ind.GetFloat(0)+ind.GetFloat(1)+ind.GetFloat(2))/3.0)
 	}
 
-	isl := NewIsland(pop, ofunc)
+	isl := NewIsland(0, pop, ofunc)
 	io.Pforan("%v\n", isl.Pop.Output(nil))
 	io.Pforan("best = %v\n", isl.Pop[0].Output(nil))
 	chk.Vector(tst, "best", 1e-17, isl.Pop[0].Floats, []float64{16, 26, 36})

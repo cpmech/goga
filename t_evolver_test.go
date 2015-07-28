@@ -24,7 +24,7 @@ func Test_evo01(tst *testing.T) {
 	rnd.Init(0) // 0 => use current time as seed
 
 	// objective function
-	ovfunc := func(ind *Individual, time int, report *bytes.Buffer) {
+	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
 		ind.ObjValue = 1.0 / (1.0 + (ind.GetFloat(0)+ind.GetFloat(1)+ind.GetFloat(2))/3.0)
 	}
 
@@ -83,7 +83,7 @@ func Test_evo02(tst *testing.T) {
 	}
 
 	// objective function
-	ovfunc := func(ind *Individual, time int, report *bytes.Buffer) {
+	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
 		score := 0.0
 		count := 0
 		for _, val := range ind.Ints {
