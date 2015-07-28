@@ -111,9 +111,10 @@ func (o *Population) Sort() {
 
 // Output generates a nice table with population data
 //  Input:
-//  fmts -- [ngenes] formats for int, flt, string, byte, bytes, and func
-//          use fmts == nil to choose default ones
-func (o Population) Output(fmts [][]string) (buf *bytes.Buffer) {
+//  fmts      -- [ngenes] formats for int, flt, string, byte, bytes, and func
+//               use fmts == nil to choose default ones
+//  showBases -- show bases, if any
+func (o Population) Output(fmts [][]string, showBases bool) (buf *bytes.Buffer) {
 
 	// check
 	if len(o) < 1 {
@@ -155,7 +156,7 @@ func (o Population) Output(fmts [][]string) (buf *bytes.Buffer) {
 	line, sza, szb := "", 0, 0
 	for i, ind := range o {
 		stra := io.Sf(fmtOvl+"g", ind.ObjValue) + " "
-		strb := ind.Output(fmts)
+		strb := ind.Output(fmts, showBases)
 		line += stra + strb + "\n"
 		if i == 0 {
 			sza, szb = len(stra), len(strb)

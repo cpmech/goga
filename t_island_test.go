@@ -32,19 +32,19 @@ func Test_island01(tst *testing.T) {
 	}
 
 	isl := NewIsland(0, pop, ofunc)
-	io.Pforan("%v\n", isl.Pop.Output(nil))
-	io.Pforan("best = %v\n", isl.Pop[0].Output(nil))
+	io.Pforan("%v\n", isl.Pop.Output(nil, false))
+	io.Pforan("best = %v\n", isl.Pop[0].Output(nil, false))
 	chk.Vector(tst, "best", 1e-17, isl.Pop[0].Floats, []float64{16, 26, 36})
 	chk.Scalar(tst, "ind2", 1e-17, isl.Pop[2].ObjValue, 0.04) // 1/25
 
 	isl.SelectAndReprod(0)
-	io.Pfcyan("%v\n", isl.Pop.Output(nil))
+	io.Pfcyan("%v\n", isl.Pop.Output(nil, false))
 
 	isl.SelectAndReprod(1)
-	io.Pforan("%v\n", isl.Pop.Output(nil))
+	io.Pforan("%v\n", isl.Pop.Output(nil, false))
 
 	isl.SelectAndReprod(2)
-	io.Pfcyan("%v\n", isl.Pop.Output(nil))
+	io.Pfcyan("%v\n", isl.Pop.Output(nil, false))
 
 	// TODO: more tests required
 }

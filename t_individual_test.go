@@ -56,8 +56,8 @@ func Test_ind01(tst *testing.T) {
 	B := A.GetCopy()
 
 	fmts := [][]string{{" %d"}, {" %.1f"}, {" %q"}, {" %x"}, {" %q"}, {" %q"}}
-	oA := A.Output(fmts)
-	oB := B.Output(fmts)
+	oA := A.Output(fmts, false)
+	oB := B.Output(fmts, false)
 	io.Pfyel("\n%v\n", oA)
 	io.Pfyel("%v\n\n", oB)
 	chk.String(tst, oA, " 1 20 300 4.4 5.5 666.0 \"abc\" \"b\" \"c\" 53 47 41 \"ABC\" \"DEF\" \"GHI\" \"f0\" \"f1\" \"f2\"")
@@ -65,7 +65,7 @@ func Test_ind01(tst *testing.T) {
 
 	A.SetFloat(1, 33)
 	A.SetFloat(2, 88)
-	oA = A.Output(fmts)
+	oA = A.Output(fmts, false)
 	io.Pfyel("\n%v\n", oA)
 	chk.String(tst, oA, " 1 20 300 4.4 33.0 88.0 \"abc\" \"b\" \"c\" 53 47 41 \"ABC\" \"DEF\" \"GHI\" \"f0\" \"f1\" \"f2\"")
 }
@@ -89,8 +89,8 @@ func Test_ind02(tst *testing.T) {
 		{"%4s", "%4s", "%4s"}, // bytes
 		{"%3s", "%3s", "%3s"}, // funcs
 	}
-	io.Pfpink("A = %v\n", A.Output(fmts))
-	io.Pfcyan("B = %v\n", B.Output(fmts))
+	io.Pfpink("A = %v\n", A.Output(fmts, false))
+	io.Pfcyan("B = %v\n", B.Output(fmts, false))
 
 	cuts := map[string][]int{
 		"int": []int{1, 2},
@@ -105,8 +105,8 @@ func Test_ind02(tst *testing.T) {
 	b := A.GetCopy()
 	Crossover(a, b, A, B, nil, cuts, pc, nil, nil, nil, nil, nil, nil)
 
-	io.Pforan("a = %v\n", a.Output(fmts))
-	io.Pfblue2("b = %v\n", b.Output(fmts))
+	io.Pforan("a = %v\n", a.Output(fmts, false))
+	io.Pfblue2("b = %v\n", b.Output(fmts, false))
 
 	chk.Ints(tst, "a.Ints   ", a.Ints, []int{1, -20, 300})
 	chk.Ints(tst, "b.Ints   ", b.Ints, []int{-1, 20, -300})
@@ -116,8 +116,8 @@ func Test_ind02(tst *testing.T) {
 	io.Pf("\n")
 
 	x := get_individual(0, nbases)
-	io.Pfblue2("x = %v\n", x.Output(fmts))
+	io.Pfblue2("x = %v\n", x.Output(fmts, false))
 	B.CopyInto(x)
-	io.Pforan("x = %v\n", x.Output(fmts))
-	chk.String(tst, x.Output(fmts), B.Output(fmts))
+	io.Pforan("x = %v\n", x.Output(fmts, false))
+	chk.String(tst, x.Output(fmts, false), B.Output(fmts, false))
 }

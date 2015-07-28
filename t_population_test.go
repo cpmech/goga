@@ -38,7 +38,7 @@ func Test_pop01(tst *testing.T) {
 	for i, ind := range pop {
 		ind.ObjValue = ovs[i]
 	}
-	io.Pforan("%v\n", pop.Output(nil))
+	io.Pforan("%v\n", pop.Output(nil, false))
 
 	// check floats and subfloats
 	for i, ind := range pop {
@@ -119,11 +119,11 @@ func Test_pop02(tst *testing.T) {
 	for i, ind := range pop {
 		ind.ObjValue = ovs[i]
 	}
-	io.Pforan("%v\n", pop.Output(nil))
+	io.Pforan("%v\n", pop.Output(nil, false))
 
 	pop.Sort()
 
-	io.Pfyel("%v\n", pop.Output(nil))
+	io.Pfyel("%v\n", pop.Output(nil, false))
 
 	genes_sorted := [][]float64{
 		{5, 7}, // 2
@@ -160,7 +160,7 @@ func Test_pop03(tst *testing.T) {
 	ninds := 5
 	bingo := NewExampleBingo()
 	pop := NewPopRandom(ninds, ind, bingo)
-	io.Pf("\n%v\n", pop.Output(fmts))
+	io.Pf("\n%v\n", pop.Output(fmts, false))
 
 	ngenes := 3
 	flts := la.MatAlloc(ninds, ngenes)

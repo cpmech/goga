@@ -10,6 +10,7 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
@@ -59,8 +60,9 @@ type Island struct {
 	ObjFunc ObjFunc_t  // objective function
 
 	// results
-	Report bytes.Buffer // buffer to report results
-	OVS    []float64    // best objective values collected from multiple calls to SelectAndReprod
+	ShowBases bool         // show also bases when printing results (if any)
+	Report    bytes.Buffer // buffer to report results
+	OVS       []float64    // best objective values collected from multiple calls to SelectAndReprod
 
 	// auxiliary internal data
 	fitsrnk []float64 // all fitness values computed by ranking
@@ -69,6 +71,9 @@ type Island struct {
 	cumprob []float64 // cumulated probabilities
 	selinds []int     // indices of selected individuals
 	A, B    []int     // indices of selected parents
+
+	// for statistics
+	allfloats [][]float64 // [nfloats*nbases][ninds]
 }
 
 // NewIsland allocates a new island but with a give population already allocated
@@ -115,6 +120,11 @@ func NewIsland(id int, pop Population, ovfunc ObjFunc_t) (o *Island) {
 	o.selinds = make([]int, ninds)
 	o.A = make([]int, ninds/2)
 	o.B = make([]int, ninds/2)
+
+	// for statistics
+	if len(o.Pop[0].Floats) > 0 {
+		o.allfloats = la.MatAlloc(len(o.Pop[0].Floats), ninds)
+	}
 	return
 }
 
@@ -197,6 +207,7 @@ func (o *Island) SelectAndReprod(time int) {
 
 // Regenerate regenerates population with basis on best individual(s)
 func (o *Island) Regenerate(time int) {
+	// TODO: fix this
 	best := o.Pop[0]
 	ninds := len(o.Pop)
 	nreg := ninds / 3
@@ -212,12 +223,32 @@ func (o *Island) Regenerate(time int) {
 	o.Pop.Sort()
 }
 
+// Stat computes some statistic information
+func (o *Island) Stat() (minsdev, maxsdev float64) {
+	for i, ind := range o.Pop {
+		for j := 0; j < len(ind.Floats); j++ {
+			o.allfloats[j][i] = ind.Floats[j]
+		}
+	}
+	for i := 0; i < len(o.Pop[0].Floats); i++ {
+		_, _, sdev := rnd.Stat(o.allfloats[i])
+		if i == 0 {
+			minsdev = sdev
+			maxsdev = sdev
+		} else {
+			minsdev = min(minsdev, sdev)
+			maxsdev = max(maxsdev, sdev)
+		}
+	}
+	return
+}
+
 // Write writes results to buffer
 func (o Island) Write(buf *bytes.Buffer, t int, json bool) {
 	if json {
 		return
 	}
-	buf.Write(o.Pop.Output(nil).Bytes())
+	buf.Write(o.Pop.Output(nil, o.ShowBases).Bytes())
 }
 
 // PlotOvs plots objective values versus time

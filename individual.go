@@ -404,9 +404,10 @@ func (o *Individual) GetStringSizes() (sizes [][]int) {
 }
 
 // Output returns a string representation of this individual
-//  fmts -- [6][...] formats of strings for {int, flt, string, byte, bytes, func}
-//          use fmts == nil to choose default ones
-func (o *Individual) Output(fmts [][]string) (l string) {
+//  fmts      -- [6][...] formats of strings for {int, flt, string, byte, bytes, func}
+//               use fmts == nil to choose default ones
+//  showBases -- show bases, if any
+func (o *Individual) Output(fmts [][]string, showBases bool) (l string) {
 
 	if fmts == nil {
 		fmts = [][]string{{" %d"}, {" %g"}, {" %q"}, {" %x"}, {" %q"}, {" %q"}}
@@ -449,6 +450,13 @@ func (o *Individual) Output(fmts [][]string) (l string) {
 
 	for i, x := range o.Funcs {
 		l += io.Sf(fmt(5, i), x(o))
+	}
+
+	if showBases && len(o.Floats) > 0 {
+		l += " | "
+		for _, x := range o.Floats {
+			l += io.Sf("%11.3e", x)
+		}
 	}
 
 	return

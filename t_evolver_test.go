@@ -41,16 +41,18 @@ func Test_evo01(tst *testing.T) {
 
 	// evolver
 	evo := NewEvolverPop([]Population{pop}, ovfunc)
+	evo.FnKey = "test_evo01"
 
 	// set island
 	evo.Islands[0].Roulette = true
+	evo.Islands[0].ShowBases = true
 
 	// run
 	tf := 100
 	dtout := 10
 	dtmig := 20
 	dtreg := 30
-	nreg := 2
+	nreg := 0
 	io.Pf("\n")
 	evo.Run(tf, dtout, dtmig, dtreg, nreg, true)
 
