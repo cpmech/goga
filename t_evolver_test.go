@@ -42,6 +42,9 @@ func Test_evo01(tst *testing.T) {
 	// evolver
 	evo := NewEvolverPop([]Population{pop}, ovfunc)
 
+	// set island
+	evo.Islands[0].Roulette = true
+
 	// run
 	tf := 100
 	dtout := 10

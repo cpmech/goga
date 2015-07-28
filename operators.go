@@ -102,7 +102,7 @@ func CumSum(cs, p []float64) {
 //    selinds -- selected individuals (indices). len(selinds) == nsel
 func RouletteSelect(selinds []int, cumprob []float64, sample []float64) {
 	nsel := len(selinds)
-	chk.IntAssertLessThan(nsel, len(cumprob))
+	chk.IntAssertLessThanOrEqualTo(nsel, len(cumprob))
 	if sample == nil {
 		var s float64
 		for i := 0; i < nsel; i++ {
