@@ -173,7 +173,7 @@ func (o *Island) SelectAndReprod(time int) {
 
 	// compute objective values
 	for _, ind := range o.BkpPop {
-		o.ObjFunc(ind, o.Id, time, &o.Report)
+		o.ObjFunc(ind, o.Id, time+1, &o.Report) // +1 => this is an updated generation
 	}
 
 	// sort
