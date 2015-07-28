@@ -28,6 +28,7 @@ type Params struct {
 	Fnkey     string  // key for reports' filenames
 	UseIntRnd bool    // generate random integers instead of selecting from grid
 	UseFltRnd bool    // generate random float point numbers instead of selecting from grid
+	DoPlot    bool    // plot results
 }
 
 // ReadParams reads parameters from JSON file
@@ -52,6 +53,7 @@ func ReadParams(filenamepath string) *Params {
 	o.Fnkey = ""
 	o.UseIntRnd = false
 	o.UseFltRnd = false
+	o.DoPlot = false
 
 	// read file
 	b, err := io.ReadFile(filenamepath)
