@@ -453,8 +453,10 @@ func (o *Individual) Output(fmts [][]string, showBases bool) (l string) {
 	}
 
 	if showBases && len(o.Floats) > 0 {
-		l += " | "
-		for _, x := range o.Floats {
+		for i, x := range o.Floats {
+			if i%o.Nbases == 0 {
+				l += " |"
+			}
 			l += io.Sf("%11.3e", x)
 		}
 	}

@@ -17,7 +17,7 @@ import (
 
 func Test_evo01(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo01")
 
 	// initialise random numbers generator
