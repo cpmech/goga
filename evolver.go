@@ -78,7 +78,7 @@ func (o *Evolver) Run(tf, dtout, dtmig int, verbose bool) {
 	iworst := len(o.Islands[0].Pop) - 1
 
 	// saving results
-	dosave := o.prepare_for_saving_results()
+	dosave := o.prepare_for_saving_results(verbose)
 
 	// header
 	lent := len(io.Sf("%d", tf))
@@ -139,7 +139,7 @@ func (o *Evolver) Run(tf, dtout, dtmig int, verbose bool) {
 
 	// save results
 	if dosave {
-		o.save_results("final", t)
+		o.save_results("final", t, verbose)
 	}
 
 	// footer
@@ -165,7 +165,7 @@ func (o *Evolver) FindBestFromAll() {
 
 // auxiliary ///////////////////////////////////////////////////////////////////////////////////////
 
-func (o *Evolver) prepare_for_saving_results() (dosave bool) {
+func (o *Evolver) prepare_for_saving_results(verbose bool) (dosave bool) {
 	dosave = o.FnKey != ""
 	if dosave {
 		if o.DirOut == "" {
@@ -176,12 +176,12 @@ func (o *Evolver) prepare_for_saving_results() (dosave bool) {
 			chk.Panic("cannot create directory:%v", err)
 		}
 		io.RemoveAll(io.Sf("%s/%s*", o.DirOut, o.FnKey))
-		o.save_results("initial", 0)
+		o.save_results("initial", 0, verbose)
 	}
 	return
 }
 
-func (o Evolver) save_results(key string, t int) {
+func (o Evolver) save_results(key string, t int, verbose bool) {
 	var b bytes.Buffer
 	for i, isl := range o.Islands {
 		if i > 0 {
@@ -197,5 +197,9 @@ func (o Evolver) save_results(key string, t int) {
 	if o.Json {
 		ext = "json"
 	}
-	io.WriteFile(io.Sf("%s/%s_%s.%s", o.DirOut, o.FnKey, key, ext), &b)
+	fn := io.Sf("%s/%s_%s.%s", o.DirOut, o.FnKey, key, ext)
+	if verbose {
+		io.WriteFileV(fn, &b)
+	}
+	io.WriteFile(fn, &b)
 }
