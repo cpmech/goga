@@ -163,6 +163,20 @@ func (o *Evolver) FindBestFromAll() {
 	}
 }
 
+// SetParams sets all islands with given paramters
+func (o *Evolver) SetParams(params *Params) {
+	o.FnKey = params.Fnkey
+	pc, pm := params.Pc, params.Pm
+	for _, isl := range o.Islands {
+		isl.CxProbs = map[string]float64{"int": pc, "flt": pc, "str": pc, "key": pc, "byt": pc, "fun": pc}
+		isl.MtProbs = map[string]float64{"int": pm, "flt": pm, "str": pm, "key": pm, "byt": pm, "fun": pm}
+		isl.Elitism = params.Elite
+		isl.UseRanking = params.Rnk
+		isl.RnkPressure = params.RnkSP
+		isl.Roulette = params.Rws
+	}
+}
+
 // auxiliary ///////////////////////////////////////////////////////////////////////////////////////
 
 func (o *Evolver) prepare_for_saving_results(verbose bool) (dosave bool) {
