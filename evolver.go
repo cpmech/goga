@@ -56,8 +56,10 @@ func NewEvolverPop(pops []Population, ovfunc ObjFunc_t) (o *Evolver) {
 //   tf      -- final time
 //   dtout   -- increment of time for output
 //   dtmig   -- increment of time for migration
+//   dtreg   -- increment of time for regeneration
+//   nreg    -- number of regenerations allowed. -1 means unlimited
 //   verbose -- print information suring progress
-func (o *Evolver) Run(tf, dtout, dtmig int, verbose bool) {
+func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 
 	// check
 	nislands := len(o.Islands)
@@ -72,6 +74,13 @@ func (o *Evolver) Run(tf, dtout, dtmig int, verbose bool) {
 	t := 0
 	tout := dtout
 	tmig := dtmig
+	treg := dtreg
+
+	// regeneration control
+	idxreg := 0
+	if nreg < 0 {
+		nreg = tf + 1
+	}
 
 	// best individual and index of worst individual
 	o.FindBestFromAll()
@@ -83,12 +92,13 @@ func (o *Evolver) Run(tf, dtout, dtmig int, verbose bool) {
 	// header
 	lent := len(io.Sf("%d", tf))
 	strt := io.Sf("%%%d", lent+2)
+	szline := lent + 2 + 12 + 25
 	if verbose {
-		io.Pf("%s", printThickLine(lent+2+11+25))
-		io.Pf(strt+"s%11s%25s\n", "time", "migration", "objval")
-		io.Pf("%s", printThinLine(lent+2+11+25))
-		strt = strt + "d%11s%25g\n"
-		io.Pf(strt, t, "", o.Best.ObjValue)
+		io.Pf("%s", printThickLine(szline))
+		io.Pf(strt+"s%6s%6s%25s\n", "time", "mig", "reg", "objval")
+		io.Pf("%s", printThinLine(szline))
+		strt = strt + "d%6s%6s%25g\n"
+		io.Pf(strt, t, "", "", o.Best.ObjValue)
 	}
 
 	// time loop
@@ -104,8 +114,6 @@ func (o *Evolver) Run(tf, dtout, dtmig int, verbose bool) {
 				done <- 1
 			}(o.Islands[i])
 		}
-
-		// listen to channels
 		for i := 0; i < nislands; i++ {
 			<-done
 		}
@@ -130,16 +138,35 @@ func (o *Evolver) Run(tf, dtout, dtmig int, verbose bool) {
 			tmig = t + dtmig
 		}
 
-		// output
+		// regeneration
+		reg := ""
+		if t >= treg && idxreg < nreg {
+			for i := 0; i < nislands; i++ {
+				go func(isl *Island) {
+					isl.Regenerate(t)
+					done <- 1
+				}(o.Islands[i])
+			}
+			for i := 0; i < nislands; i++ {
+				<-done
+			}
+			reg = "true"
+			treg = t + dtreg
+			idxreg += 1
+		}
+
+		// best individual
 		o.FindBestFromAll()
+
+		// output
 		if verbose {
-			io.Pf(strt, t, mig, o.Best.ObjValue)
+			io.Pf(strt, t, mig, reg, o.Best.ObjValue)
 		}
 	}
 
 	// footer
 	if verbose {
-		io.Pf("%s", printThickLine(lent+2+11+25))
+		io.Pf("%s", printThickLine(szline))
 	}
 
 	// save results

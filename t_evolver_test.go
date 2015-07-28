@@ -49,8 +49,10 @@ func Test_evo01(tst *testing.T) {
 	tf := 100
 	dtout := 10
 	dtmig := 20
+	dtreg := 30
+	nreg := 2
 	io.Pf("\n")
-	evo.Run(tf, dtout, dtmig, true)
+	evo.Run(tf, dtout, dtmig, dtreg, nreg, true)
 
 	// plot
 	//if true {
@@ -129,7 +131,9 @@ func Test_evo02(tst *testing.T) {
 	tf := 100
 	dtout := 20
 	dtmig := 40
-	evo.Run(tf, dtout, dtmig, true)
+	dtreg := 50
+	nreg := -1
+	evo.Run(tf, dtout, dtmig, dtreg, nreg, true)
 
 	// results
 	ideal := 1.0 / (1.0 + float64(nvals))

@@ -11,6 +11,7 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
+	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
 
@@ -192,6 +193,23 @@ func (o *Island) SelectAndReprod(time int) {
 
 	// results
 	o.OVS = append(o.OVS, o.Pop[0].ObjValue)
+}
+
+// Regenerate regenerates population with basis on best individual(s)
+func (o *Island) Regenerate(time int) {
+	best := o.Pop[0]
+	ninds := len(o.Pop)
+	nreg := ninds / 3
+	for i := ninds - nreg; i < ninds; i++ {
+		for j := 0; j < best.Nfloats; j++ {
+			xref := best.GetFloat(j)
+			xmin := 0.1 * xref
+			xmax := 10.0 * xref
+			o.Pop[i].SetFloat(j, rnd.Float64(xmin, xmax))
+		}
+		o.ObjFunc(o.Pop[i], o.Id, time, nil)
+	}
+	o.Pop.Sort()
 }
 
 // Write writes results to buffer
