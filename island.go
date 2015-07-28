@@ -223,7 +223,7 @@ func (o Island) PlotOvs(dirout, fnkey, args string, tf int, withtxt bool, numfmt
 // SaveReport saves report to file
 func (o Island) SaveReport(dirout, fnkey string) {
 	if dirout == "" {
-		dirout = "/tmp/goga/"
+		dirout = "/tmp/goga"
 	}
 	io.WriteFileD(dirout, fnkey+".rpt", &o.Report)
 }

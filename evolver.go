@@ -137,14 +137,14 @@ func (o *Evolver) Run(tf, dtout, dtmig int, verbose bool) {
 		}
 	}
 
-	// save results
-	if dosave {
-		o.save_results("final", t, verbose)
-	}
-
 	// footer
 	if verbose {
 		io.Pf("%s", printThickLine(lent+2+11+25))
+	}
+
+	// save results
+	if dosave {
+		o.save_results("final", t, verbose)
 	}
 	return
 }
@@ -169,7 +169,7 @@ func (o *Evolver) prepare_for_saving_results(verbose bool) (dosave bool) {
 	dosave = o.FnKey != ""
 	if dosave {
 		if o.DirOut == "" {
-			o.DirOut = "/tmp/goga/"
+			o.DirOut = "/tmp/goga"
 		}
 		err := os.MkdirAll(o.DirOut, 0777)
 		if err != nil {
@@ -197,9 +197,17 @@ func (o Evolver) save_results(key string, t int, verbose bool) {
 	if o.Json {
 		ext = "json"
 	}
-	fn := io.Sf("%s/%s_%s.%s", o.DirOut, o.FnKey, key, ext)
-	if verbose {
-		io.WriteFileV(fn, &b)
+	write := io.WriteFile
+	if t > 0 && verbose {
+		write = io.WriteFileV
+		io.Pf("\n")
 	}
-	io.WriteFile(fn, &b)
+	write(io.Sf("%s/%s-%s.%s", o.DirOut, o.FnKey, key, ext), &b)
+	if t > 0 {
+		for i, isl := range o.Islands {
+			if isl.Report.Len() > 0 {
+				write(io.Sf("%s/%s-isl%d.rpt", o.DirOut, o.FnKey, i), &isl.Report)
+			}
+		}
+	}
 }
