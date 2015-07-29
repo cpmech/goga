@@ -285,13 +285,13 @@ func (o Island) Write(buf *bytes.Buffer, t int, json bool) {
 }
 
 // PlotOvs plots objective values versus time
-func (o Island) PlotOvs(dirout, fnkey, args string, tf int, withtxt bool, numfmt string, first, last bool) {
+func (o Island) PlotOvs(dirout, fnkey, args string, t0, tf int, withtxt bool, numfmt string, first, last bool) {
 	if first {
 		plt.SetForEps(0.75, 250)
 	}
-	n := len(o.OVS)
-	T := utl.LinSpace(0, float64(tf), n)
-	plt.Plot(T, o.OVS, args)
+	n := len(o.OVS) - t0
+	T := utl.LinSpace(float64(t0), float64(tf), n)
+	plt.Plot(T, o.OVS[:n], args)
 	if withtxt {
 		plt.Text(T[0], o.OVS[0], io.Sf(numfmt, o.OVS[0]), "ha='left'")
 		plt.Text(T[n-1], o.OVS[n-1], io.Sf(numfmt, o.OVS[n-1]), "ha='right'")

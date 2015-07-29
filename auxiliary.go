@@ -4,6 +4,24 @@
 
 package goga
 
+// GtPenalty implements a 'greater than' penalty function where
+// x must be greater than b; otherwise the error is magnified
+func GtPenalty(x, b, penaltyM float64) float64 {
+	if x > b {
+		return 0.0
+	}
+	return penaltyM*(b-x) + 1e-16 // must add small number because x must be greater than b
+}
+
+// GtePenalty implements a 'greater than or equal' penalty function where
+// x must be greater than b or equal to be; otherwise the error is magnified
+func GtePenalty(x, b, penaltyM float64) float64 {
+	if x >= b {
+		return 0.0
+	}
+	return penaltyM * (b - x)
+}
+
 func imin(a, b int) int {
 	if a < b {
 		return a

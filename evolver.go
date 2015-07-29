@@ -45,7 +45,7 @@ func NewEvolver(nislands, ninds int, ref *Individual, ovfunc ObjFunc_t, bingo *B
 //   ovfunc -- objective function
 func NewEvolverPop(pops []Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver) {
 	o = new(Evolver)
-	o.TolRegen = 1e-2
+	o.TolRegen = 1e-3
 	nislands := len(pops)
 	o.Islands = make([]*Island, nislands)
 	for i, pop := range pops {

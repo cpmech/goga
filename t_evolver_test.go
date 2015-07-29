@@ -11,6 +11,8 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/la"
+	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
@@ -70,9 +72,8 @@ func Test_evo01(tst *testing.T) {
 	evo.Run(tf, dtout, dtmig, dtreg, nreg, true)
 
 	// plot
-	//if true {
 	if false {
-		evo.Islands[0].PlotOvs("/tmp", "fig_evo01", "", tf, true, "%.6f", true, true)
+		evo.Islands[0].PlotOvs("/tmp", "fig_evo01", "", 0, tf, true, "%.6f", true, true)
 	}
 }
 
@@ -155,12 +156,120 @@ func Test_evo02(tst *testing.T) {
 	io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.ObjValue, ideal)
 
 	// plot
-	//if true {
 	if false {
 		for i, isl := range evo.Islands {
 			first := i == 0
 			last := i == nislands-1
-			isl.PlotOvs("/tmp", "fig_evo02", "", tf, true, "%.6f", first, last)
+			isl.PlotOvs("/tmp", "fig_evo02", "", 0, tf, true, "%.6f", first, last)
 		}
+	}
+}
+
+func Test_evo03(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("evo03")
+
+	// initialise random numbers generator
+	rnd.Init(0) // 0 => use current time as seed
+
+	f := func(x, y float64) float64 { return x*x/2.0 + y*y - x*y - 2.0*x - 6.0*y }
+	c1 := func(x, y float64) float64 { return x + y - 2.0 }      // ≤ 0
+	c2 := func(x, y float64) float64 { return -x + 2.0*y - 2.0 } // ≤ 0
+	c3 := func(x, y float64) float64 { return 2.0*x + y - 3.0 }  // ≤ 0
+	c4 := func(x, y float64) float64 { return -x }               // ≤ 0
+	c5 := func(x, y float64) float64 { return -y }               // ≤ 0
+
+	// objective function
+	p := 1000.0
+	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
+		x := ind.GetFloat(0)
+		y := ind.GetFloat(1)
+		ind.ObjValue = f(x, y)
+		ind.ObjValue += GtePenalty(0, c1(x, y), p)
+		ind.ObjValue += GtePenalty(0, c2(x, y), p)
+		ind.ObjValue += GtePenalty(0, c3(x, y), p)
+		ind.ObjValue += GtePenalty(0, c4(x, y), p)
+		ind.ObjValue += GtePenalty(0, c5(x, y), p)
+	}
+
+	// bingo, reference individual and evolver
+	ndim := 2
+	nbases := 8
+	ninds := 20
+	nislands := 4
+	vmin, vmax := -2.0, 2.0
+	bingo := NewBingoFloats(utl.DblVals(ndim, vmin), utl.DblVals(ndim, vmax))
+	bingo.UseFltRnd = true
+	ref := NewIndividual(nbases, make([]float64, ndim))
+	evo := NewEvolver(nislands, ninds, ref, ovfunc, bingo)
+	evo.TolRegen = 1e-3
+
+	doplot := false
+	if doplot {
+		plt.SetForEps(0.8, 300)
+		n, nn := 41, 7
+		X, Y := utl.MeshGrid2D(vmin, vmax, vmin, vmax, n, n)
+		Z := la.MatAlloc(n, n)
+		xx, yy := utl.MeshGrid2D(vmin, vmax, vmin, vmax, nn, nn)
+		z1 := la.MatAlloc(nn, nn)
+		z2 := la.MatAlloc(nn, nn)
+		z3 := la.MatAlloc(nn, nn)
+		z4 := la.MatAlloc(nn, nn)
+		z5 := la.MatAlloc(nn, nn)
+		for i := 0; i < n; i++ {
+			for j := 0; j < n; j++ {
+				Z[i][j] = f(X[i][j], Y[i][j])
+			}
+		}
+		for i := 0; i < nn; i++ {
+			for j := 0; j < nn; j++ {
+				z1[i][j] = c1(xx[i][j], yy[i][j])
+				z2[i][j] = c2(xx[i][j], yy[i][j])
+				z3[i][j] = c3(xx[i][j], yy[i][j])
+				z4[i][j] = c4(xx[i][j], yy[i][j])
+				z5[i][j] = c5(xx[i][j], yy[i][j])
+			}
+		}
+		plt.Contour(X, Y, Z, "")
+		plt.ContourSimple(xx, yy, z1, "levels=[0], colors=['yellow']")
+		plt.ContourSimple(xx, yy, z2, "levels=[0], colors=['yellow']")
+		plt.ContourSimple(xx, yy, z3, "levels=[0], colors=['yellow']")
+		plt.ContourSimple(xx, yy, z4, "levels=[0], colors=['yellow'], linestyles=['--']")
+		plt.ContourSimple(xx, yy, z5, "levels=[0], colors=['yellow'], linestyles=['--']")
+		for _, ind := range evo.Islands[0].Pop {
+			x := ind.GetFloat(0)
+			y := ind.GetFloat(1)
+			plt.PlotOne(x, y, "'k.'")
+		}
+	}
+
+	// run
+	tf := 100
+	dtout := 10
+	dtmig := 30
+	dtreg := 10
+	nreg := 1
+	evo.Run(tf, dtout, dtmig, dtreg, nreg, true)
+	io.PfGreen("\nx=%g (%g)\n", evo.Best.GetFloat(0), 2.0/3.0)
+	io.PfGreen("y=%g (%g)\n", evo.Best.GetFloat(1), 4.0/3.0)
+	io.PfGreen("BestOV=%g (%g)\n", evo.Best.ObjValue, f(2.0/3.0, 4.0/3.0))
+
+	if doplot {
+		for _, ind := range evo.Islands[0].Pop {
+			x := ind.GetFloat(0)
+			y := ind.GetFloat(1)
+			plt.PlotOne(x, y, "'g*'")
+		}
+		x := evo.Best.GetFloat(0)
+		y := evo.Best.GetFloat(1)
+		plt.PlotOne(x, y, "'y*', ms=8")
+		plt.Equal()
+		plt.SaveD("/tmp/goga", "fig_evo03_contour.eps")
+	}
+
+	// plot
+	if doplot {
+		evo.Islands[0].PlotOvs("/tmp/goga", "fig_evo03", "", 10, tf, true, "%.6f", true, true)
 	}
 }
