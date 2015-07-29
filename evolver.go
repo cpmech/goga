@@ -14,11 +14,12 @@ import (
 
 // Evolver realises the evolutionary process
 type Evolver struct {
-	Islands []*Island   // islands
-	Best    *Individual // best individual among all in all islands
-	DirOut  string      // directory to save output files. "" means "/tmp/goga/"
-	FnKey   string      // filename key for output files. "" means no output files
-	Json    bool        // output results as .json files; not tables
+	Islands  []*Island   // islands
+	Best     *Individual // best individual among all in all islands
+	DirOut   string      // directory to save output files. "" means "/tmp/goga/"
+	FnKey    string      // filename key for output files. "" means no output files
+	Json     bool        // output results as .json files; not tables
+	TolRegen float64     // tolerance for ρ to activate regeneration
 }
 
 // NewEvolver creates a new evolver
@@ -28,11 +29,12 @@ type Evolver struct {
 //   ref      -- reference individual with chromosome structure already set
 //   bingo    -- Bingo structure set with pool of values to draw gene values
 //   ovfunc   -- objective function
-func NewEvolver(nislands, ninds int, ref *Individual, bingo *Bingo, ovfunc ObjFunc_t) (o *Evolver) {
+func NewEvolver(nislands, ninds int, ref *Individual, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver) {
 	o = new(Evolver)
+	o.TolRegen = 1e-2
 	o.Islands = make([]*Island, nislands)
 	for i := 0; i < nislands; i++ {
-		o.Islands[i] = NewIsland(i, NewPopRandom(ninds, ref, bingo), ovfunc)
+		o.Islands[i] = NewIsland(i, NewPopRandom(ninds, ref, bingo), ovfunc, bingo)
 	}
 	return
 }
@@ -41,12 +43,13 @@ func NewEvolver(nislands, ninds int, ref *Individual, bingo *Bingo, ovfunc ObjFu
 //  Input:
 //   pops   -- populations. len(pop) == nislands
 //   ovfunc -- objective function
-func NewEvolverPop(pops []Population, ovfunc ObjFunc_t) (o *Evolver) {
+func NewEvolverPop(pops []Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver) {
 	o = new(Evolver)
+	o.TolRegen = 1e-2
 	nislands := len(pops)
 	o.Islands = make([]*Island, nislands)
 	for i, pop := range pops {
-		o.Islands[i] = NewIsland(i, pop, ovfunc)
+		o.Islands[i] = NewIsland(i, pop, ovfunc, bingo)
 	}
 	return
 }
@@ -144,20 +147,27 @@ func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 
 		// statistics
 		minrho, averho, maxrho, devrho = o.calc_stat()
+		homogeneous := averho < o.TolRegen
 
 		// regeneration
 		reg := ""
-		if t >= treg && idxreg < nreg {
+		if (t >= treg && idxreg < nreg) || homogeneous {
+			reg = "best"
+			if homogeneous {
+				reg = "grid"
+			}
 			for i := 0; i < nislands; i++ {
 				go func(isl *Island) {
-					isl.Regenerate(t)
+					isl.Regenerate(t, !homogeneous)
 					done <- 1
 				}(o.Islands[i])
 			}
 			for i := 0; i < nislands; i++ {
+				if o.Islands[i].RegenBest {
+					reg = "best"
+				}
 				<-done
 			}
-			reg = "true"
 			treg = t + dtreg
 			idxreg += 1
 		}

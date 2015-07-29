@@ -6,6 +6,7 @@ package goga
 
 import (
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
@@ -20,6 +21,21 @@ type Bingo struct {
 	PoolBytes [][]byte    // [ngene][nsamples] pool of bytes to be used in Gene.Byte
 	PoolBtxt  [][]string  // [ngene][nsamples] pool of byte-words to be used in Gene.Bytes
 	PoolFuncs [][]Func_t  // [ngene][nsamples] pool of functions
+}
+
+// GetCopy returns a copy of this bingo
+func (o Bingo) GetCopy() (p *Bingo) {
+	p = new(Bingo)
+	p.UseIntRnd = o.UseIntRnd
+	p.UseFltRnd = o.UseFltRnd
+	p.IntRange = utl.IntsClone(o.IntRange)
+	p.FltRange = la.MatClone(o.FltRange)
+	//TODO
+	//p.PoolWords = utl.StrsClone(o.PoolWords)
+	//p.PoolBytes = utl.BytesClone(o.PoolBytes)
+	//p.PoolBtxt = utl.Clone(o.PoolBtxt)
+	//p.PoolFuncs = utl.Clone(o.PoolFuncs)
+	return
 }
 
 // NewExampleBingo returns a new Bingo with example values
@@ -178,4 +194,17 @@ func (o Bingo) DrawFunc(iGene int) Func_t {
 		return o.PoolFuncs[iGene][rnd.Int(0, nf-1)]
 	}
 	return nil
+}
+
+// ResetBasedOnRef resets bingo with values based on reference (e.g. best) individual
+//  Input:
+//   mmin -- multiplier to decrease reference value; e.g. 0.1
+//   mmax -- multiplier to increase reference value; e.g. 10.0
+func (o *Bingo) ResetBasedOnRef(time int, ind *Individual, mmin, mmax float64) {
+	for i := 0; i < ind.Nfltgenes; i++ {
+		xref := ind.GetFloat(i)
+		o.FltRange[i][0] = mmin * xref
+		o.FltRange[i][1] = mmax * xref
+	}
+	// TODO: implement other types of genes
 }

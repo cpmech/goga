@@ -47,8 +47,11 @@ func Test_evo01(tst *testing.T) {
 		{60, 6, 06},
 	})
 
+	// bingo
+	bingo := NewBingoFloats([]float64{-100, -200, -300}, []float64{100, 200, 300})
+
 	// evolver
-	evo := NewEvolverPop([]Population{pop0, pop1}, ovfunc)
+	evo := NewEvolverPop([]Population{pop0, pop1}, ovfunc, bingo)
 	evo.FnKey = "test_evo01"
 
 	// set islands
@@ -129,7 +132,7 @@ func Test_evo02(tst *testing.T) {
 	// evolver
 	nislands := 3
 	ninds := 6
-	evo := NewEvolver(nislands, ninds, ref, bingo, ovfunc)
+	evo := NewEvolver(nislands, ninds, ref, ovfunc, bingo)
 	for _, isl := range evo.Islands {
 		isl.MtProbs = make(map[string]float64)
 		isl.MtProbs["int"] = 0.01

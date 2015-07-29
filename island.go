@@ -31,6 +31,12 @@ type Island struct {
 	Roulette    bool    // use roulette wheel selection; otherwise use stochastic-universal-sampling selection
 	Elitism     bool    // perform elitism: keep at least one best individual from previous generation
 
+	// regeneration
+	RegenBest bool    // enforce that regeneration is always based on based individual, regardless the population is homogeneous or not
+	RegenPct  float64 // percentage of individuals to be regenerated
+	RegenMmin float64 // multiplier to decrease reference value; e.g. 0.1
+	RegenMmax float64 // multiplier to increase reference value; e.g. 10.0
+
 	// crossover
 	CxNcuts   map[string]int         // crossover number of cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
 	CxCuts    map[string][]int       // crossover specific cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
@@ -54,10 +60,12 @@ type Island struct {
 	MtBytFunc  MtBytFunc_t            // mutation function
 	MtFunFunc  MtFunFunc_t            // mutation function
 
-	// population
-	Pop     Population // pointer to current population
-	BkpPop  Population // backup population
-	ObjFunc ObjFunc_t  // objective function
+	// input
+	Pop       Population // pointer to current population
+	BkpPop    Population // backup population
+	ObjFunc   ObjFunc_t  // objective function
+	BingoGrid *Bingo     // bingo for regeneration with initial values from grid
+	BingoBest *Bingo     // bingo for regeneration with values recomputed based on best individual
 
 	// results
 	UseStdDev bool         // use standard deviation (σ) instead of average deviation in Stat
@@ -84,7 +92,8 @@ type Island struct {
 //  id     -- index of this island
 //  pop    -- the population
 //  ovfunc -- objective function
-func NewIsland(id int, pop Population, ovfunc ObjFunc_t) (o *Island) {
+//  bingo  -- structure needed for regeneration of individuals
+func NewIsland(id int, pop Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Island) {
 
 	// check
 	ninds := len(pop)
@@ -98,11 +107,17 @@ func NewIsland(id int, pop Population, ovfunc ObjFunc_t) (o *Island) {
 	o.Pop = pop
 	o.BkpPop = pop.GetCopy()
 	o.ObjFunc = ovfunc
+	o.BingoGrid = bingo
+	o.BingoBest = bingo.GetCopy()
 
 	// set default control values
 	o.UseRanking = true
 	o.RnkPressure = 1.2
 	o.Elitism = true
+	o.RegenBest = true
+	o.RegenPct = 0.3
+	o.RegenMmin = 0.1
+	o.RegenMmax = 10.0
 
 	// compute objective values
 	for _, ind := range o.Pop {
@@ -213,23 +228,21 @@ func (o *Island) SelectAndReprod(time int) {
 }
 
 // Regenerate regenerates population with basis on best individual(s)
-func (o *Island) Regenerate(time int) {
-	// TODO: fix this
-	/*
-		best := o.Pop[0]
-		ninds := len(o.Pop)
-		nreg := ninds / 3
-		for i := ninds - nreg; i < ninds; i++ {
-			for j := 0; j < best.Nfloats; j++ {
-				xref := best.GetFloat(j)
-				xmin := 0.1 * xref
-				xmax := 10.0 * xref
-				o.Pop[i].SetFloat(j, rnd.Float64(xmin, xmax))
-			}
-			o.ObjFunc(o.Pop[i], o.Id, time, nil)
+func (o *Island) Regenerate(time int, basedOnBest bool) {
+	bingo := o.BingoGrid
+	if basedOnBest || o.RegenBest {
+		o.BingoBest.ResetBasedOnRef(time, o.Pop[0], o.RegenMmin, o.RegenMmax)
+		bingo = o.BingoBest
+	}
+	ninds := len(o.Pop)
+	start := ninds - int(o.RegenPct*float64(ninds))
+	for i := start; i < ninds; i++ {
+		for j := 0; j < o.Pop[i].Nfltgenes; j++ {
+			o.Pop[i].SetFloat(j, bingo.DrawFloat(i, j, ninds))
 		}
-		o.Pop.Sort()
-	*/
+		o.ObjFunc(o.Pop[i], o.Id, time, nil)
+	}
+	o.Pop.Sort()
 }
 
 // Stat computes some statistic information

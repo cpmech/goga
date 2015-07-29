@@ -31,7 +31,9 @@ func Test_island01(tst *testing.T) {
 		ind.ObjValue = 1.0 / (1.0 + (ind.GetFloat(0)+ind.GetFloat(1)+ind.GetFloat(2))/3.0)
 	}
 
-	isl := NewIsland(0, pop, ofunc)
+	bingo := NewBingoFloats([]float64{-100, -200, -300}, []float64{100, 200, 300})
+
+	isl := NewIsland(0, pop, ofunc, bingo)
 	io.Pforan("%v\n", isl.Pop.Output(nil, false))
 	io.Pforan("best = %v\n", isl.Pop[0].Output(nil, false))
 	chk.Vector(tst, "best", 1e-17, isl.Pop[0].Floats, []float64{16, 26, 36})
