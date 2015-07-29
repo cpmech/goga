@@ -42,7 +42,7 @@ func Test_pop01(tst *testing.T) {
 
 	// check floats and subfloats
 	for i, ind := range pop {
-		for j := 0; j < ind.Nfloats; j++ {
+		for j := 0; j < ind.Nfltgenes; j++ {
 			chk.Scalar(tst, io.Sf("before: i%dg%d", i, j), 1e-12, ind.GetFloat(j), genes[i][j])
 		}
 	}
@@ -139,7 +139,7 @@ func Test_pop02(tst *testing.T) {
 	}
 
 	for i, ind := range pop {
-		for j := 0; j < ind.Nfloats; j++ {
+		for j := 0; j < ind.Nfltgenes; j++ {
 			chk.Scalar(tst, io.Sf("i%dg%d", i, j), 1e-14, ind.GetFloat(j), genes_sorted[i][j])
 		}
 	}

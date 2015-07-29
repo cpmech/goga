@@ -85,21 +85,24 @@ func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 	// best individual and index of worst individual
 	o.FindBestFromAll()
 	iworst := len(o.Islands[0].Pop) - 1
-	minsdev, maxsdev := o.calc_stat()
+	minrho, averho, maxrho, devrho := o.calc_stat()
 
 	// saving results
 	dosave := o.prepare_for_saving_results(verbose)
 
 	// header
 	lent := len(io.Sf("%d", tf))
-	strt := io.Sf("%%%d", lent+2)
-	szline := lent + 2 + 6 + 6 + 11 + 11 + 25
+	if lent < 5 {
+		lent = 5
+	}
+	strt := io.Sf("%%%d", lent)
+	szline := lent + 6 + 6 + 11 + 11 + 11 + 11 + 25
 	if verbose {
 		io.Pf("%s", printThickLine(szline))
-		io.Pf(strt+"s%6s%6s%11s%11s%25s\n", "time", "mig", "reg", "min(sdev)", "max(sdev)", "objval")
+		io.Pf(strt+"s%6s%6s%11s%11s%11s%11s%25s\n", "time", "mig", "reg", "min(rho)", "ave(rho)", "max(rho)", "dev(rho)", "objval")
 		io.Pf("%s", printThinLine(szline))
-		strt = strt + "d%6s%6s%11.3e%11.3e%25g\n"
-		io.Pf(strt, t, "", "", minsdev, maxsdev, o.Best.ObjValue)
+		strt = strt + "d%6s%6s%11.3e%11.3e%11.3e%11.3e%25g\n"
+		io.Pf(strt, t, "", "", minrho, averho, maxrho, devrho, o.Best.ObjValue)
 	}
 
 	// time loop
@@ -140,7 +143,7 @@ func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 		}
 
 		// statistics
-		minsdev, maxsdev = o.calc_stat()
+		minrho, averho, maxrho, devrho = o.calc_stat()
 
 		// regeneration
 		reg := ""
@@ -164,7 +167,7 @@ func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 
 		// output
 		if verbose {
-			io.Pf(strt, t, mig, reg, minsdev, maxsdev, o.Best.ObjValue)
+			io.Pf(strt, t, mig, reg, minrho, averho, maxrho, devrho, o.Best.ObjValue)
 		}
 	}
 
@@ -210,22 +213,26 @@ func (o *Evolver) SetParams(params *Params) {
 
 // auxiliary ///////////////////////////////////////////////////////////////////////////////////////
 
-func (o Evolver) calc_stat() (minsdev, maxsdev float64) {
+// calc_stat computes some statistical data from float bases
+//  Note: avedev is actually the maximum average among all islands
+func (o Evolver) calc_stat() (minrho, averho, maxrho, devrho float64) {
 	nislands := len(o.Islands)
-	type pair_t struct{ xmin, xmax float64 }
-	results := make(chan pair_t, nislands)
+	type res_t struct{ xmin, xave, xmax, xdev float64 }
+	results := make(chan res_t, nislands)
 	for i := 0; i < nislands; i++ {
 		go func(isl *Island) {
-			xmin, xmax := isl.Stat()
-			results <- pair_t{xmin, xmax}
+			xmin, xave, xmax, xdev := isl.Stat()
+			results <- res_t{xmin, xave, xmax, xdev}
 		}(o.Islands[i])
 	}
-	pair := <-results
-	minsdev, maxsdev = pair.xmin, pair.xmax
+	res := <-results
+	minrho, averho, maxrho, devrho = res.xmin, res.xave, res.xmax, res.xdev
 	for i := 1; i < nislands; i++ {
-		pair = <-results
-		minsdev = min(minsdev, pair.xmin)
-		maxsdev = max(maxsdev, pair.xmax)
+		res = <-results
+		minrho = min(minrho, res.xmin)
+		averho = min(averho, res.xave)
+		maxrho = min(maxrho, res.xmax)
+		devrho = min(devrho, res.xdev)
 	}
 	return
 }

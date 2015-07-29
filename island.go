@@ -60,6 +60,7 @@ type Island struct {
 	ObjFunc ObjFunc_t  // objective function
 
 	// results
+	UseStdDev bool         // use standard deviation (σ) instead of average deviation in Stat
 	ShowBases bool         // show also bases when printing results (if any)
 	Report    bytes.Buffer // buffer to report results
 	OVS       []float64    // best objective values collected from multiple calls to SelectAndReprod
@@ -73,7 +74,9 @@ type Island struct {
 	A, B    []int     // indices of selected parents
 
 	// for statistics
-	allfloats [][]float64 // [nfloats*nbases][ninds]
+	maxabsgene []float64   // [ngenes] max absolute values of genes
+	fltbases   [][]float64 // [ngenes*nbases][ninds] all bases
+	devbases   []float64   // [ngenes*nbases] deviations of bases
 }
 
 // NewIsland allocates a new island but with a give population already allocated
@@ -122,8 +125,12 @@ func NewIsland(id int, pop Population, ovfunc ObjFunc_t) (o *Island) {
 	o.B = make([]int, ninds/2)
 
 	// for statistics
-	if len(o.Pop[0].Floats) > 0 {
-		o.allfloats = la.MatAlloc(len(o.Pop[0].Floats), ninds)
+	nfltgenes := o.Pop[0].Nfltgenes
+	if nfltgenes > 0 {
+		nbases := o.Pop[0].Nbases
+		o.maxabsgene = make([]float64, nfltgenes)
+		o.fltbases = la.MatAlloc(nfltgenes*nbases, ninds)
+		o.devbases = make([]float64, nfltgenes*nbases)
 	}
 	return
 }
@@ -208,38 +215,51 @@ func (o *Island) SelectAndReprod(time int) {
 // Regenerate regenerates population with basis on best individual(s)
 func (o *Island) Regenerate(time int) {
 	// TODO: fix this
-	best := o.Pop[0]
-	ninds := len(o.Pop)
-	nreg := ninds / 3
-	for i := ninds - nreg; i < ninds; i++ {
-		for j := 0; j < best.Nfloats; j++ {
-			xref := best.GetFloat(j)
-			xmin := 0.1 * xref
-			xmax := 10.0 * xref
-			o.Pop[i].SetFloat(j, rnd.Float64(xmin, xmax))
+	/*
+		best := o.Pop[0]
+		ninds := len(o.Pop)
+		nreg := ninds / 3
+		for i := ninds - nreg; i < ninds; i++ {
+			for j := 0; j < best.Nfloats; j++ {
+				xref := best.GetFloat(j)
+				xmin := 0.1 * xref
+				xmax := 10.0 * xref
+				o.Pop[i].SetFloat(j, rnd.Float64(xmin, xmax))
+			}
+			o.ObjFunc(o.Pop[i], o.Id, time, nil)
 		}
-		o.ObjFunc(o.Pop[i], o.Id, time, nil)
-	}
-	o.Pop.Sort()
+		o.Pop.Sort()
+	*/
 }
 
 // Stat computes some statistic information
-func (o *Island) Stat() (minsdev, maxsdev float64) {
-	for i, ind := range o.Pop {
-		for j := 0; j < len(ind.Floats); j++ {
-			o.allfloats[j][i] = ind.Floats[j]
+//  rho (ρ) is a normalised quantity measuring the deviation of bases of each gene
+func (o *Island) Stat() (minrho, averho, maxrho, devrho float64) {
+	ngenes := o.Pop[0].Nfltgenes
+	if ngenes < 1 {
+		return
+	}
+	nbases := o.Pop[0].Nbases
+	for k, ind := range o.Pop {
+		for i := 0; i < ngenes; i++ {
+			x := math.Abs(ind.GetFloat(i))
+			if k == 0 {
+				o.maxabsgene[i] = x
+			} else {
+				o.maxabsgene[i] = max(o.maxabsgene[i], x)
+			}
+			for j := 0; j < nbases; j++ {
+				o.fltbases[i*nbases+j][k] = ind.Floats[i*nbases+j]
+			}
 		}
 	}
-	for i := 0; i < len(o.Pop[0].Floats); i++ {
-		_, _, sdev := rnd.Stat(o.allfloats[i])
-		if i == 0 {
-			minsdev = sdev
-			maxsdev = sdev
-		} else {
-			minsdev = min(minsdev, sdev)
-			maxsdev = max(maxsdev, sdev)
+	for i := 0; i < ngenes; i++ {
+		x := 1.0 + o.maxabsgene[i]
+		for j := 0; j < nbases; j++ {
+			o.devbases[i*nbases+j] = rnd.StatDev(o.fltbases[i*nbases+j], o.UseStdDev) / x
 		}
 	}
+	minrho, averho, maxrho, devrho = rnd.StatBasic(o.devbases, o.UseStdDev)
 	return
 }
 

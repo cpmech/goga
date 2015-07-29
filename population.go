@@ -68,7 +68,7 @@ func NewPopRandom(ninds int, ref *Individual, bingo *Bingo) (pop Population) {
 			ind.Ints[j] = bingo.DrawInt(i, j, ninds)
 		}
 		if ind.Floats != nil {
-			for j := 0; j < ind.Nfloats; j++ {
+			for j := 0; j < ind.Nfltgenes; j++ {
 				ind.SetFloat(j, bingo.DrawFloat(i, j, ninds))
 			}
 		}

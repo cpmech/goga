@@ -17,7 +17,7 @@ import (
 
 func Test_evo01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo01")
 
 	// initialise random numbers generator
@@ -30,7 +30,7 @@ func Test_evo01(tst *testing.T) {
 
 	// reference population
 	nbases := 8
-	pop := NewPopFloatChromo(nbases, [][]float64{
+	pop0 := NewPopFloatChromo(nbases, [][]float64{
 		{11, 21, 31},
 		{12, 22, 32},
 		{13, 23, 33},
@@ -38,14 +38,24 @@ func Test_evo01(tst *testing.T) {
 		{15, 25, 35},
 		{16, 26, 36},
 	})
+	pop1 := NewPopFloatChromo(nbases, [][]float64{
+		{10, 1, 01},
+		{20, 2, 02},
+		{30, 3, 03},
+		{40, 4, 04},
+		{50, 5, 05},
+		{60, 6, 06},
+	})
 
 	// evolver
-	evo := NewEvolverPop([]Population{pop}, ovfunc)
+	evo := NewEvolverPop([]Population{pop0, pop1}, ovfunc)
 	evo.FnKey = "test_evo01"
 
-	// set island
+	// set islands
 	evo.Islands[0].Roulette = true
+	evo.Islands[1].Roulette = true
 	evo.Islands[0].ShowBases = true
+	evo.Islands[1].ShowBases = true
 
 	// run
 	tf := 100

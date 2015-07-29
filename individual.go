@@ -17,13 +17,13 @@ type Func_t func(ind *Individual) string
 type Individual struct {
 
 	// data
-	ObjValue float64 // objective value
-	Nfloats  int     // number of floats
-	Nbases   int     // number of bases to split Floats
+	ObjValue  float64 // objective value
+	Nfltgenes int     // number of floats == number of float64 genes
+	Nbases    int     // number of bases to split Floats
 
 	// chromosome
 	Ints    []int     // integers
-	Floats  []float64 // floats [nfloats * nbases]
+	Floats  []float64 // floats [nFLTgenes * nbases]
 	Strings []string  // strings
 	Keys    []byte    // 1D bytes
 	Bytes   [][]byte  // 2D bytes
@@ -46,12 +46,12 @@ func NewIndividual(nbases int, slices ...interface{}) (o *Individual) {
 			copy(o.Ints, s)
 
 		case []float64:
-			o.Nfloats = len(s)
+			o.Nfltgenes = len(s)
 			o.Nbases = nbases
 			if o.Nbases > 1 {
 				o.Floats = SimpleChromo(s, nbases)
 			} else {
-				o.Floats = make([]float64, o.Nfloats*o.Nbases)
+				o.Floats = make([]float64, o.Nfltgenes*o.Nbases)
 				copy(o.Floats, s)
 			}
 
@@ -83,7 +83,7 @@ func (o Individual) GetCopy() (x *Individual) {
 
 	x = new(Individual)
 	x.ObjValue = o.ObjValue
-	x.Nfloats = o.Nfloats
+	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
 
 	if o.Ints != nil {
@@ -125,7 +125,7 @@ func (o Individual) GetCopy() (x *Individual) {
 func (o Individual) CopyInto(x *Individual) {
 
 	x.ObjValue = o.ObjValue
-	x.Nfloats = o.Nfloats
+	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
 
 	if o.Ints != nil {
@@ -319,7 +319,7 @@ func Mutation(A *Individual, nchanges map[string]int, probs map[string]float64, 
 // handle bases ////////////////////////////////////////////////////////////////////////////////////
 
 // SetFloat returns the float corresponding to gene 'i'
-//  igene -- is the index of gene/float in [0, Nfloats]
+//  igene -- is the index of gene/float in [0, Nfltgenes]
 func (o *Individual) SetFloat(igene int, x float64) {
 	if o.Nbases > 1 {
 		values := make([]float64, o.Nbases)
@@ -334,7 +334,7 @@ func (o *Individual) SetFloat(igene int, x float64) {
 }
 
 // GetFloat returns the float corresponding to gene 'i'
-//  igene -- is the index of gene/float in [0, Nfloats]
+//  igene -- is the index of gene/float in [0, Nfltgenes]
 func (o Individual) GetFloat(igene int) (x float64) {
 	if o.Nbases > 1 {
 		for j := 0; j < o.Nbases; j++ {
@@ -360,8 +360,8 @@ func (o *Individual) GetStringSizes() (sizes [][]int) {
 	}
 
 	if o.Floats != nil {
-		sizes[1] = make([]int, o.Nfloats)
-		for i := 0; i < o.Nfloats; i++ {
+		sizes[1] = make([]int, o.Nfltgenes)
+		for i := 0; i < o.Nfltgenes; i++ {
 			x := o.Floats[i]
 			if o.Nbases > 1 {
 				x = 0
@@ -425,7 +425,7 @@ func (o *Individual) Output(fmts [][]string, showBases bool) (l string) {
 		l += io.Sf(fmt(0, i), x)
 	}
 
-	for i := 0; i < o.Nfloats; i++ {
+	for i := 0; i < o.Nfltgenes; i++ {
 		x := o.Floats[i]
 		if o.Nbases > 1 {
 			x = 0
@@ -455,7 +455,11 @@ func (o *Individual) Output(fmts [][]string, showBases bool) (l string) {
 	if showBases && len(o.Floats) > 0 {
 		for i, x := range o.Floats {
 			if i%o.Nbases == 0 {
-				l += " |"
+				if i == 0 {
+					l += " ||"
+				} else {
+					l += " |"
+				}
 			}
 			l += io.Sf("%11.3e", x)
 		}
