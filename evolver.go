@@ -121,29 +121,32 @@ func (o *Evolver) Run(verbose bool) {
 
 		// loop over all islands
 		for i := 0; i < nislands; i++ {
-			go func(isl *Island) {
 
-				// reproduction
-				var comm comm_t
-				comm.myaverho = isl.SelectAndReprod(t)
-				homogeneous := comm.myaverho < o.C.RegTol
+			isl := o.Islands[i]
 
-				// regeneration
-				comm.myregtype = 0
-				if doregen || homogeneous {
-					comm.myregtype = isl.Regenerate(t, !homogeneous)
-				}
+			//go func(isl *Island) {
 
-				// report
-				if t >= tout {
-					io.Ff(&isl.Report, "\nt=%d averho=%g homogeneous=%v\n", t, comm.myaverho, homogeneous)
-					isl.Report.Write(isl.Pop.Output(nil, o.C.ShowBases).Bytes())
-				}
+			// reproduction
+			var comm comm_t
+			comm.myaverho = isl.SelectAndReprod(t)
+			homogeneous := comm.myaverho < o.C.RegTol
 
-				// send results
-				ch <- comm
+			// regeneration
+			comm.myregtype = 0
+			if doregen || homogeneous {
+				comm.myregtype = isl.Regenerate(t, !homogeneous)
+			}
 
-			}(o.Islands[i])
+			// report
+			if t >= tout {
+				io.Ff(&isl.Report, "\nt=%d averho=%g homogeneous=%v\n", t, comm.myaverho, homogeneous)
+				isl.Report.Write(isl.Pop.Output(nil, o.C.ShowBases).Bytes())
+			}
+
+			// send results
+			ch <- comm
+
+			//}(o.Islands[i])
 		}
 
 		// receive results
@@ -166,6 +169,7 @@ func (o *Evolver) Run(verbose bool) {
 				}
 			}
 			for _, isl := range o.Islands {
+				isl.CalcDemerits(isl.Pop)
 				isl.Pop.Sort()
 			}
 			mig = "true"

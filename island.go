@@ -91,7 +91,8 @@ func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *B
 	o.B = make([]int, ninds/2)
 
 	// compute objective values, demerits, and sort population
-	o.CalcOvsAndDemerits(o.Pop, 0)
+	o.CalcOvs(o.Pop, 0)
+	o.CalcDemerits(o.Pop)
 	o.Pop.Sort()
 
 	// results
@@ -108,27 +109,30 @@ func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *B
 	return
 }
 
-// CalcOvsAndDemerits computes objective values, out-of-range values and demerits
-func (o *Island) CalcOvsAndDemerits(pop Population, time int) {
-
-	// ovs and oors
-	var ova, oor float64
-	var iova, ioor int // indices of individuals with ova and with oor, respectively
+// CalcOvs computes objective and out-of-range values
+func (o *Island) CalcOvs(pop Population, time int) {
 	for _, ind := range pop {
-		ova, oor = o.OvOorFunc(ind, o.Id, time, &o.Report)
+		ova, oor := o.OvOorFunc(ind, o.Id, time, &o.Report)
 		if oor < 0 {
 			chk.Panic("out-of-range values must be positive (or zero) indicating the positive distance to constraints. oor=%g is invalid", oor)
 		}
-		if oor > 0 { // infeasible solutions (out-of-range)
-			ind.Ova = 0 // not used for infeasible (oor) individuals
-			ind.Oor = oor
-			o.oors[ioor] = oor
+		ind.Ova = ova
+		ind.Oor = oor
+	}
+}
+
+// CalcDemerits computes demerits
+func (o *Island) CalcDemerits(pop Population) {
+
+	// ovs and oors
+	var iova, ioor int // indices of individuals with ova and with oor, respectively
+	for _, ind := range pop {
+		if ind.Oor > 0 { // infeasible solutions (out-of-range)
+			o.oors[ioor] = ind.Oor
 			ioor++
 		} else { // feasible solutions
 			o.foundov = true
-			ind.Ova = ova
-			ind.Oor = 0 // not used for feasible individuals
-			o.ovas[iova] = ova
+			o.ovas[iova] = ind.Ova
 			iova++
 		}
 	}
@@ -203,7 +207,8 @@ func (o *Island) SelectAndReprod(time int) (averho float64) {
 	}
 
 	// compute objective values, demerits, and sort population
-	o.CalcOvsAndDemerits(o.BkpPop, time+1) // +1 => this is an updated generation
+	o.CalcOvs(o.BkpPop, time+1) // +1 => this is an updated generation
+	o.CalcDemerits(o.BkpPop)
 	o.BkpPop.Sort()
 
 	// elitism
@@ -249,7 +254,8 @@ func (o *Island) Regenerate(time int, basedOnBest bool) (regtype int) {
 			o.Pop[i].SetFloat(j, bingo.DrawFloat(i, j, ninds))
 		}
 	}
-	o.CalcOvsAndDemerits(o.Pop, time)
+	o.CalcOvs(o.Pop, time)
+	o.CalcDemerits(o.Pop)
 	o.Pop.Sort()
 	return
 }
