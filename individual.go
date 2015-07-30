@@ -17,11 +17,11 @@ type Func_t func(ind *Individual) string
 type Individual struct {
 
 	// data
-	ObjValue   float64 // objective value
-	OutOfRange float64 // out-of-range: sum of positive distances from constraints
-	Score      float64 // quantity for comparing individuals. values in [-1,1] with negative values indicating out-of-range (infeasible) individuals
-	Nfltgenes  int     // number of floats == number of float64 genes
-	Nbases     int     // number of bases to split Floats
+	Ova       float64 // objective value
+	Oor       float64 // out-of-range: sum of positive distances from constraints
+	Demerit   float64 // quantity for comparing individuals. 0=good 1=bad 2=worse(oor) 3=worst(oor)
+	Nfltgenes int     // number of floats == number of float64 genes
+	Nbases    int     // number of bases to split Floats
 
 	// chromosome
 	Ints    []int     // integers
@@ -84,9 +84,9 @@ func NewIndividual(nbases int, slices ...interface{}) (o *Individual) {
 func (o Individual) GetCopy() (x *Individual) {
 
 	x = new(Individual)
-	x.ObjValue = o.ObjValue
-	x.OutOfRange = o.OutOfRange
-	x.Score = o.Score
+	x.Ova = o.Ova
+	x.Oor = o.Oor
+	x.Demerit = o.Demerit
 	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
 
@@ -128,9 +128,9 @@ func (o Individual) GetCopy() (x *Individual) {
 // CopyInto copies this individual's data into another individual
 func (o Individual) CopyInto(x *Individual) {
 
-	x.ObjValue = o.ObjValue
-	x.OutOfRange = o.OutOfRange
-	x.Score = o.Score
+	x.Ova = o.Ova
+	x.Oor = o.Oor
+	x.Demerit = o.Demerit
 	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
 

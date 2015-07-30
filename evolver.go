@@ -14,12 +14,9 @@ import (
 
 // Evolver realises the evolutionary process
 type Evolver struct {
-	Islands  []*Island   // islands
-	Best     *Individual // best individual among all in all islands
-	DirOut   string      // directory to save output files. "" means "/tmp/goga/"
-	FnKey    string      // filename key for output files. "" means no output files
-	Json     bool        // output results as .json files; not tables
-	TolRegen float64     // tolerance for ρ to activate regeneration
+	C       *ConfParams // configuration parameters
+	Islands []*Island   // islands
+	Best    *Individual // best individual among all in all islands
 }
 
 // NewEvolver creates a new evolver
@@ -29,12 +26,12 @@ type Evolver struct {
 //   ref      -- reference individual with chromosome structure already set
 //   bingo    -- Bingo structure set with pool of values to draw gene values
 //   ovfunc   -- objective function
-func NewEvolver(nislands, ninds int, ref *Individual, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver) {
+func NewEvolver(C *ConfParams, ref *Individual, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver) {
 	o = new(Evolver)
-	o.TolRegen = 1e-2
-	o.Islands = make([]*Island, nislands)
-	for i := 0; i < nislands; i++ {
-		o.Islands[i] = NewIsland(i, NewPopRandom(ninds, ref, bingo), ovfunc, bingo)
+	o.C = C
+	o.Islands = make([]*Island, o.C.Nisl)
+	for i := 0; i < o.C.Nisl; i++ {
+		o.Islands[i] = NewIsland(i, o.C, NewPopRandom(o.C.Ninds, ref, bingo), ovfunc, bingo)
 	}
 	return
 }
@@ -43,26 +40,19 @@ func NewEvolver(nislands, ninds int, ref *Individual, ovfunc ObjFunc_t, bingo *B
 //  Input:
 //   pops   -- populations. len(pop) == nislands
 //   ovfunc -- objective function
-func NewEvolverPop(pops []Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver) {
+func NewEvolverPop(C *ConfParams, pops []Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver) {
 	o = new(Evolver)
-	o.TolRegen = 1e-3
-	nislands := len(pops)
-	o.Islands = make([]*Island, nislands)
+	o.C = C
+	chk.IntAssert(C.Nisl, len(pops))
+	o.Islands = make([]*Island, o.C.Nisl)
 	for i, pop := range pops {
-		o.Islands[i] = NewIsland(i, pop, ovfunc, bingo)
+		o.Islands[i] = NewIsland(i, o.C, pop, ovfunc, bingo)
 	}
 	return
 }
 
 // Run runs the evolution process
-//  Input:
-//   tf      -- final time
-//   dtout   -- increment of time for output
-//   dtmig   -- increment of time for migration
-//   dtreg   -- increment of time for regeneration
-//   nreg    -- number of regenerations allowed. -1 means unlimited
-//   verbose -- print information suring progress
-func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
+func (o *Evolver) Run(verbose bool) {
 
 	// check
 	nislands := len(o.Islands)
@@ -71,18 +61,15 @@ func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 	}
 
 	// time control
-	if dtout < 1 {
-		dtout = 1
-	}
 	t := 0
-	tout := dtout
-	tmig := dtmig
-	treg := dtreg
+	tout := o.C.Dtout
+	tmig := o.C.Dtmig
+	treg := o.C.Dtreg
 
 	// regeneration control
 	idxreg := 0
-	if nreg < 0 {
-		nreg = tf + 1
+	if o.C.RegNmax < 0 {
+		o.C.RegNmax = o.C.Tf + 1
 	}
 
 	// best individual and index of worst individual
@@ -94,7 +81,7 @@ func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 	dosave := o.prepare_for_saving_results(verbose)
 
 	// header
-	lent := len(io.Sf("%d", tf))
+	lent := len(io.Sf("%d", o.C.Tf))
 	if lent < 5 {
 		lent = 5
 	}
@@ -105,12 +92,12 @@ func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 		io.Pf(strt+"s%6s%6s%11s%11s%11s%11s%25s\n", "time", "mig", "reg", "min(rho)", "ave(rho)", "max(rho)", "dev(rho)", "objval")
 		io.Pf("%s", printThinLine(szline))
 		strt = strt + "d%6s%6s%11.3e%11.3e%11.3e%11.3e%25g\n"
-		io.Pf(strt, t, "", "", minrho, averho, maxrho, devrho, o.Best.ObjValue)
+		io.Pf(strt, t, "", "", minrho, averho, maxrho, devrho, o.Best.Ova)
 	}
 
 	// time loop
 	done := make(chan int, nislands)
-	for t < tf {
+	for t < o.C.Tf {
 
 		// reproduction in all islands
 		for i := 0; i < nislands; i++ {
@@ -126,8 +113,8 @@ func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 		}
 
 		// current time and next cycle
-		t += dtout
-		tout = t + dtout
+		t += o.C.Dtout
+		tout = t + o.C.Dtout
 
 		// migration
 		mig := ""
@@ -142,18 +129,18 @@ func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 				isl.Pop.Sort()
 			}
 			mig = "true"
-			tmig = t + dtmig
+			tmig = t + o.C.Dtmig
 		}
 
 		// statistics
 		minrho, averho, maxrho, devrho = o.calc_stat()
-		homogeneous := averho < o.TolRegen
+		homogeneous := averho < o.C.RegTol
 
 		// regeneration
 		reg := ""
-		if (t >= treg && idxreg < nreg) || homogeneous {
+		if (t >= treg && idxreg < o.C.RegNmax) || homogeneous {
 			reg = "best"
-			if homogeneous {
+			if homogeneous && !o.C.RegBest {
 				reg = "grid"
 			}
 			for i := 0; i < nislands; i++ {
@@ -163,12 +150,9 @@ func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 				}(o.Islands[i])
 			}
 			for i := 0; i < nislands; i++ {
-				if o.Islands[i].RegenBest {
-					reg = "best"
-				}
 				<-done
 			}
-			treg = t + dtreg
+			treg = t + o.C.Dtreg
 			idxreg += 1
 		}
 
@@ -177,7 +161,7 @@ func (o *Evolver) Run(tf, dtout, dtmig, dtreg, nreg int, verbose bool) {
 
 		// output
 		if verbose {
-			io.Pf(strt, t, mig, reg, minrho, averho, maxrho, devrho, o.Best.ObjValue)
+			io.Pf(strt, t, mig, reg, minrho, averho, maxrho, devrho, o.Best.Ova)
 		}
 	}
 
@@ -201,23 +185,9 @@ func (o *Evolver) FindBestFromAll() {
 	}
 	o.Best = o.Islands[0].Pop[0]
 	for _, isl := range o.Islands {
-		if isl.Pop[0].ObjValue < o.Best.ObjValue {
+		if isl.Pop[0].Ova < o.Best.Ova {
 			o.Best = isl.Pop[0]
 		}
-	}
-}
-
-// SetParams sets all islands with given paramters
-func (o *Evolver) SetParams(params *Params) {
-	o.FnKey = params.Fnkey
-	pc, pm := params.Pc, params.Pm
-	for _, isl := range o.Islands {
-		isl.CxProbs = map[string]float64{"int": pc, "flt": pc, "str": pc, "key": pc, "byt": pc, "fun": pc}
-		isl.MtProbs = map[string]float64{"int": pm, "flt": pm, "str": pm, "key": pm, "byt": pm, "fun": pm}
-		isl.Elitism = params.Elite
-		isl.UseRanking = params.Rnk
-		isl.RnkPressure = params.RnkSP
-		isl.Roulette = params.Rws
 	}
 }
 
@@ -248,16 +218,16 @@ func (o Evolver) calc_stat() (minrho, averho, maxrho, devrho float64) {
 }
 
 func (o *Evolver) prepare_for_saving_results(verbose bool) (dosave bool) {
-	dosave = o.FnKey != ""
+	dosave = o.C.FnKey != ""
 	if dosave {
-		if o.DirOut == "" {
-			o.DirOut = "/tmp/goga"
+		if o.C.DirOut == "" {
+			o.C.DirOut = "/tmp/goga"
 		}
-		err := os.MkdirAll(o.DirOut, 0777)
+		err := os.MkdirAll(o.C.DirOut, 0777)
 		if err != nil {
 			chk.Panic("cannot create directory:%v", err)
 		}
-		io.RemoveAll(io.Sf("%s/%s*", o.DirOut, o.FnKey))
+		io.RemoveAll(io.Sf("%s/%s*", o.C.DirOut, o.C.FnKey))
 		o.save_results("initial", 0, verbose)
 	}
 	return
@@ -267,16 +237,16 @@ func (o Evolver) save_results(key string, t int, verbose bool) {
 	var b bytes.Buffer
 	for i, isl := range o.Islands {
 		if i > 0 {
-			if o.Json {
+			if o.C.Json {
 				io.Ff(&b, ",\n")
 			} else {
 				io.Ff(&b, "\n")
 			}
 		}
-		isl.Write(&b, t, o.Json)
+		isl.Write(&b, t, o.C.Json)
 	}
 	ext := "res"
-	if o.Json {
+	if o.C.Json {
 		ext = "json"
 	}
 	write := io.WriteFile
@@ -284,11 +254,11 @@ func (o Evolver) save_results(key string, t int, verbose bool) {
 		write = io.WriteFileV
 		io.Pf("\n")
 	}
-	write(io.Sf("%s/%s-%s.%s", o.DirOut, o.FnKey, key, ext), &b)
+	write(io.Sf("%s/%s-%s.%s", o.C.DirOut, o.C.FnKey, key, ext), &b)
 	if t > 0 {
 		for i, isl := range o.Islands {
 			if isl.Report.Len() > 0 {
-				write(io.Sf("%s/%s-isl%d.rpt", o.DirOut, o.FnKey, i), &isl.Report)
+				write(io.Sf("%s/%s-isl%d.rpt", o.C.DirOut, o.C.FnKey, i), &isl.Report)
 			}
 		}
 	}

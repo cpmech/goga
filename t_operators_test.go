@@ -57,18 +57,6 @@ func Test_ranking01(tst *testing.T) {
 	chk.Vector(tst, "f", 1e-15, f, []float64{1.1, 1.08, 1.06, 1.04, 1.02, 1, 0.98, 0.96, 0.94, 0.92, 0.9})
 }
 
-func Test_cumsum01(tst *testing.T) {
-
-	//verbose()
-	chk.PrintTitle("cumsum01")
-
-	p := []float64{1, 2, 3, 4, 5}
-	cs := make([]float64, len(p))
-	CumSum(cs, p)
-	io.Pforan("cs = %v\n", cs)
-	chk.Vector(tst, "cumsum", 1e-17, cs, []float64{1, 3, 6, 10, 15})
-}
-
 func Test_rws01(tst *testing.T) {
 
 	//verbose()
@@ -82,7 +70,7 @@ func Test_rws01(tst *testing.T) {
 		p[i] = f[i] / sum
 	}
 	cs := make([]float64, len(p))
-	CumSum(cs, p)
+	utl.CumSum(cs, p)
 	selinds := make([]int, 6)
 	RouletteSelect(selinds, cs, []float64{0.81, 0.32, 0.96, 0.01, 0.65, 0.42})
 	io.Pforan("selinds = %v\n", selinds)
@@ -102,7 +90,7 @@ func Test_sus01(tst *testing.T) {
 		p[i] = f[i] / sum
 	}
 	cs := make([]float64, len(p))
-	CumSum(cs, p)
+	utl.CumSum(cs, p)
 	selinds := make([]int, 6)
 	SUSselect(selinds, cs, 0.1)
 	io.Pforan("selinds = %v\n", selinds)

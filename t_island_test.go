@@ -14,41 +14,46 @@ import (
 
 func Test_island01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("island01")
 
 	nbases := 1
 	pop := NewPopFloatChromo(nbases, [][]float64{
 		{11, 21, 31},
-		{12, 22, 32},
 		{13, 23, 33},
-		{14, 24, 34},
 		{15, 25, 35},
+		{12, 22, 32},
 		{16, 26, 36},
+		{14, 24, 34},
 	})
 
+	// the best will have the largest genes (x,y,z);
+	// but with the first gene (x) smaller than or equal to 13
 	ofunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64) {
 		x, y, z := ind.GetFloat(0), ind.GetFloat(1), ind.GetFloat(2)
 		ov = 1.0 / (1.0 + (x+y+z)/3.0)
-		if ind.GetFloat(0) > 10 {
+		if ind.GetFloat(0) > 13 {
 			oor = x - 10
 		}
 		return
 	}
 
+	// parameters
+	C := NewConfParams()
+	C.Ninds = len(pop)
+	C.Rnk = false
+
+	// bingo
 	bingo := NewBingoFloats([]float64{-100, -200, -300}, []float64{100, 200, 300})
 
-	isl := NewIsland(0, pop, ofunc, bingo)
-	isl.UseRanking = false
+	// island
+	isl := NewIsland(0, C, pop, ofunc, bingo)
 	io.Pforan("%v\n", isl.Pop.Output(nil, false))
 	io.Pforan("best = %v\n", isl.Pop[0].Output(nil, false))
-	chk.Vector(tst, "best", 1e-17, isl.Pop[0].Floats, []float64{16, 26, 36})
-	chk.Scalar(tst, "ind2", 1e-17, isl.Pop[2].ObjValue, 0.04) // 1/25
+	chk.Vector(tst, "best", 1e-17, isl.Pop[0].Floats, []float64{13, 23, 33})
 
 	isl.SelectAndReprod(0)
 	io.Pfcyan("%v\n", isl.Pop.Output(nil, false))
-
-	return
 
 	isl.SelectAndReprod(1)
 	io.Pforan("%v\n", isl.Pop.Output(nil, false))

@@ -99,10 +99,16 @@ func (o Population) Swap(i, j int) {
 }
 
 // Less returns true if 'i' is "less bad" than 'j'; therefore it can be used
-// to sort the population in decreasing order of scores: from best to worst
+// to sort the population in increasing order of demerits: from best to worst
 func (o Population) Less(i, j int) bool {
-	return o[i].Score > o[j].Score
+	return o[i].Demerit < o[j].Demerit
 }
+
+// Less returns true if 'i' is "less bad" than 'j'; therefore it can be used
+// to sort the population in decreasing order of scores: from best to worst
+//func (o Population) Less(i, j int) bool {
+//return o[i].Demerit > o[j].Demerit
+//}
 
 // Sort sorts the population from best to worst individuals; i.e. decreasing fitness values
 func (o *Population) Sort() {
@@ -145,23 +151,30 @@ func (o Population) Output(fmts [][]string, showBases bool) (buf *bytes.Buffer) 
 	}
 
 	// compute sizes of header items
-	szov, szoor, szscore := 0, 0, 0
+	szova, szoor, szdem := 0, 0, 0
 	for _, ind := range o {
-		szov = imax(szov, len(io.Sf("%g", ind.ObjValue)))
-		szoor = imax(szoor, len(io.Sf("%g", ind.OutOfRange)))
-		szscore = imax(szscore, len(io.Sf("%g", ind.Score)))
+		szova = imax(szova, len(io.Sf("%g", ind.Ova)))
+		szoor = imax(szoor, len(io.Sf("%g", ind.Oor)))
+		szdem = imax(szdem, len(io.Sf("%g", ind.Demerit)))
 	}
-	szov = imax(szov, 2)       // 2 ==> len("OV")
-	szoor = imax(szoor, 3)     // 2 ==> len("OoR")
-	szscore = imax(szscore, 5) // 2 ==> len("Score")
+	szova = imax(szova, 3) // 3 ==> len("Ova")
+	szoor = imax(szoor, 3) // 3 ==> len("Oor")
+	szdem = imax(szdem, 7) // 7 ==> len("Demerit")
 
 	// print individuals
-	fmtov := io.Sf("%%%d", szov+1)
+	fmtova := io.Sf("%%%d", szova+1)
 	fmtoor := io.Sf("%%%d", szoor+1)
-	fmtscore := io.Sf("%%%d", szscore+1)
+	fmtdem := io.Sf("%%%d", szdem+1)
 	line, sza, szb := "", 0, 0
 	for i, ind := range o {
-		stra := io.Sf(fmtov+"g", ind.ObjValue) + io.Sf(fmtoor+"g", ind.OutOfRange) + io.Sf(fmtscore+"g", ind.Score) + " "
+		stra := io.Sf(fmtova+"g", ind.Ova)
+		if ind.Oor > 0 {
+			stra = io.Sf(fmtova+"s", "n/a")
+			stra += io.Sf(fmtoor+"g", ind.Oor)
+		} else {
+			stra += io.Sf(fmtoor+"s", "n/a")
+		}
+		stra += io.Sf(fmtdem+"g", ind.Demerit) + " "
 		strb := ind.Output(fmts, showBases)
 		line += stra + strb + "\n"
 		if i == 0 {
@@ -174,9 +187,9 @@ func (o Population) Output(fmts [][]string, showBases bool) (buf *bytes.Buffer) 
 	n := sza + szb
 	buf = new(bytes.Buffer)
 	io.Ff(buf, printThickLine(n))
-	io.Ff(buf, fmtov+"s", "OV")
-	io.Ff(buf, fmtoor+"s", "OoR")
-	io.Ff(buf, fmtscore+"s", "Score")
+	io.Ff(buf, fmtova+"s", "Ova")
+	io.Ff(buf, fmtoor+"s", "Oor")
+	io.Ff(buf, fmtdem+"s", "Demerit")
 	io.Ff(buf, fmtgenes, "Genes")
 	io.Ff(buf, printThinLine(n))
 	io.Ff(buf, line)

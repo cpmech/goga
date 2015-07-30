@@ -53,28 +53,23 @@ func Test_evo01(tst *testing.T) {
 	// bingo
 	bingo := NewBingoFloats([]float64{-100, -200, -300}, []float64{100, 200, 300})
 
-	// evolver
-	evo := NewEvolverPop([]Population{pop0, pop1}, ovfunc, bingo)
-	evo.FnKey = "test_evo01"
+	// parameters
+	C := NewConfParams()
+	C.Nisl = 2
+	C.Ninds = len(pop0)
+	C.Rws = true
+	C.FnKey = "test_evo01"
 
-	// set islands
-	evo.Islands[0].Roulette = true
-	evo.Islands[1].Roulette = true
-	evo.Islands[0].ShowBases = true
-	evo.Islands[1].ShowBases = true
+	// evolver
+	evo := NewEvolverPop(C, []Population{pop0, pop1}, ovfunc, bingo)
 
 	// run
-	tf := 100
-	dtout := 10
-	dtmig := 20
-	dtreg := 30
-	nreg := 0
 	io.Pf("\n")
-	evo.Run(tf, dtout, dtmig, dtreg, nreg, true)
+	evo.Run(true)
 
 	// plot
-	if false {
-		evo.Islands[0].PlotOvs("/tmp", "fig_evo01", "", 0, tf, true, "%.6f", true, true)
+	if C.DoPlot {
+		evo.Islands[0].PlotOvs(".png", "", 0, C.Tf, true, "%.6f", true, true)
 	}
 }
 
@@ -132,37 +127,29 @@ func Test_evo02(tst *testing.T) {
 	bingo := NewBingoInts(utl.IntVals(nvals, 0), utl.IntVals(nvals, 1))
 	bingo.UseIntRnd = true
 
-	// evolver
-	nislands := 3
-	ninds := 6
-	evo := NewEvolver(nislands, ninds, ref, ovfunc, bingo)
-	for _, isl := range evo.Islands {
-		isl.MtProbs = make(map[string]float64)
-		isl.MtProbs["int"] = 0.01
-		isl.MtIntFunc = mtfunc
-	}
+	// parameters
+	C := NewConfParams()
+	C.Nisl = 3
+	C.Ninds = 6
+	C.FnKey = "test_evo02"
+	C.MtIntFunc = mtfunc
 
-	// saving files
-	evo.FnKey = "evo02"
+	// evolver
+	evo := NewEvolver(C, ref, ovfunc, bingo)
 
 	// run
-	tf := 100
-	dtout := 20
-	dtmig := 40
-	dtreg := 50
-	nreg := -1
-	evo.Run(tf, dtout, dtmig, dtreg, nreg, true)
+	evo.Run(true)
 
 	// results
 	ideal := 1.0 / (1.0 + float64(nvals))
-	io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.ObjValue, ideal)
+	io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.Ova, ideal)
 
 	// plot
-	if false {
+	if C.DoPlot {
 		for i, isl := range evo.Islands {
 			first := i == 0
-			last := i == nislands-1
-			isl.PlotOvs("/tmp", "fig_evo02", "", 0, tf, true, "%.6f", first, last)
+			last := i == C.Nisl-1
+			isl.PlotOvs(".png", "", 0, C.Tf, true, "%.6f", first, last)
 		}
 	}
 }
@@ -188,28 +175,34 @@ func Test_evo03(tst *testing.T) {
 		x := ind.GetFloat(0)
 		y := ind.GetFloat(1)
 		ov = f(x, y)
-		oor += GtePenalty(0, c1(x, y), p)
-		oor += GtePenalty(0, c2(x, y), p)
-		oor += GtePenalty(0, c3(x, y), p)
-		oor += GtePenalty(0, c4(x, y), p)
-		oor += GtePenalty(0, c5(x, y), p)
+		oor += utl.GtePenalty(0, c1(x, y), p)
+		oor += utl.GtePenalty(0, c2(x, y), p)
+		oor += utl.GtePenalty(0, c3(x, y), p)
+		oor += utl.GtePenalty(0, c4(x, y), p)
+		oor += utl.GtePenalty(0, c5(x, y), p)
 		return
 	}
 
-	// bingo, reference individual and evolver
+	// parameters
+	C := NewConfParams()
+	C.Nisl = 4
+	C.Ninds = 6
+	C.FnKey = "test_evo03"
+
+	// bingo
 	ndim := 2
-	nbases := 8
-	ninds := 20
-	nislands := 4
 	vmin, vmax := -2.0, 2.0
 	bingo := NewBingoFloats(utl.DblVals(ndim, vmin), utl.DblVals(ndim, vmax))
 	bingo.UseFltRnd = true
-	ref := NewIndividual(nbases, make([]float64, ndim))
-	evo := NewEvolver(nislands, ninds, ref, ovfunc, bingo)
-	evo.TolRegen = 1e-3
 
-	doplot := false
-	if doplot {
+	// reference individual
+	ref := NewIndividual(C.Nbases, make([]float64, ndim))
+
+	// evolver
+	evo := NewEvolver(C, ref, ovfunc, bingo)
+
+	// plot contour
+	if C.DoPlot {
 		plt.SetForEps(0.8, 300)
 		n, nn := 41, 7
 		X, Y := utl.MeshGrid2D(vmin, vmax, vmin, vmax, n, n)
@@ -248,17 +241,13 @@ func Test_evo03(tst *testing.T) {
 	}
 
 	// run
-	tf := 100
-	dtout := 10
-	dtmig := 30
-	dtreg := 10
-	nreg := 1
-	evo.Run(tf, dtout, dtmig, dtreg, nreg, true)
+	evo.Run(true)
 	io.PfGreen("\nx=%g (%g)\n", evo.Best.GetFloat(0), 2.0/3.0)
 	io.PfGreen("y=%g (%g)\n", evo.Best.GetFloat(1), 4.0/3.0)
-	io.PfGreen("BestOV=%g (%g)\n", evo.Best.ObjValue, f(2.0/3.0, 4.0/3.0))
+	io.PfGreen("BestOV=%g (%g)\n", evo.Best.Ova, f(2.0/3.0, 4.0/3.0))
 
-	if doplot {
+	// plot population on contour
+	if C.DoPlot {
 		for _, ind := range evo.Islands[0].Pop {
 			x := ind.GetFloat(0)
 			y := ind.GetFloat(1)
@@ -272,7 +261,7 @@ func Test_evo03(tst *testing.T) {
 	}
 
 	// plot
-	if doplot {
-		evo.Islands[0].PlotOvs("/tmp/goga", "fig_evo03", "", 10, tf, true, "%.6f", true, true)
+	if C.DoPlot {
+		evo.Islands[0].PlotOvs(".png", "", 10, C.Tf, true, "%.6f", true, true)
 	}
 }

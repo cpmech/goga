@@ -76,22 +76,6 @@ func CalcFitnessRanking(ninds int, sp float64) (f []float64) {
 	return
 }
 
-// CumSum returns the cumulative sum of the elements in p
-//  Input:
-//   p -- values
-//  Output:
-//   cs -- cumulated sum
-func CumSum(cs, p []float64) {
-	chk.IntAssert(len(cs), len(p))
-	if len(p) < 1 {
-		return
-	}
-	cs[0] = p[0]
-	for i := 1; i < len(p); i++ {
-		cs[i] = cs[i-1] + p[i]
-	}
-}
-
 // selection ///////////////////////////////////////////////////////////////////////////////////////
 
 // RouletteSelect selects n individuals

@@ -36,7 +36,7 @@ func Test_pop01(tst *testing.T) {
 	nbases := 2
 	pop := NewPopFloatChromo(nbases, genes)
 	for i, ind := range pop {
-		ind.ObjValue = ovs[i]
+		ind.Ova = ovs[i]
 	}
 	io.Pforan("%v\n", pop.Output(nil, false))
 
@@ -118,8 +118,8 @@ func Test_pop02(tst *testing.T) {
 	nbases := 2
 	pop := NewPopFloatChromo(nbases, genes)
 	for i, ind := range pop {
-		ind.ObjValue = ovs[i]
-		ind.Score = sco[i]
+		ind.Ova = ovs[i]
+		ind.Demerit = sco[i]
 	}
 	io.Pforan("%v\n", pop.Output(nil, false))
 
