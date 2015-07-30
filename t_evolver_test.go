@@ -99,7 +99,7 @@ func Test_evo01(tst *testing.T) {
 
 func Test_evo02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo02")
 
 	// initialise random numbers generator
@@ -130,10 +130,10 @@ func Test_evo02(tst *testing.T) {
 	C := NewConfParams()
 	C.Nisl = 4
 	C.Ninds = 20
-	C.FnKey = "test_evo02"
-	C.DoPlot = true
-	//C.FnKey = ""
-	//C.DoPlot = false
+	if chk.Verbose {
+		C.FnKey = "test_evo02"
+		C.DoPlot = true
+	}
 	C.Noise = 0.5
 	C.RegBest = false
 	C.Dtout = 1

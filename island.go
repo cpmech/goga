@@ -34,8 +34,6 @@ type Island struct {
 	// results
 	Report bytes.Buffer // buffer to report results
 	OVS    []float64    // best objective values collected from multiple calls to SelectAndReprod
-	OOR    []float64    // best out-of-range values
-	SCO    []float64    // best scores
 
 	// auxiliary internal data
 	ovas    []float64 // all ova values
@@ -97,8 +95,6 @@ func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *B
 
 	// results
 	o.OVS = []float64{o.Pop[0].Ova}
-	o.OOR = []float64{o.Pop[0].Oor}
-	o.SCO = []float64{o.Pop[0].Demerit}
 
 	// for statistics
 	nfltgenes := o.Pop[0].Nfltgenes
@@ -154,7 +150,7 @@ func (o *Island) CalcOvsAndDemerits(pop Population, time int) {
 
 // SelectAndReprod performs the selection and reproduction processes
 //  Note: this function considers a SORTED population already
-func (o *Island) SelectAndReprod(time int) {
+func (o *Island) SelectAndReprod(time int) (averho float64) {
 
 	// fitness
 	ninds := len(o.Pop)
@@ -219,10 +215,12 @@ func (o *Island) SelectAndReprod(time int) {
 	// swap populations (Pop will always point to current one)
 	o.Pop, o.BkpPop = o.BkpPop, o.Pop
 
+	// statistics
+	_, averho, _, _ = o.Stat()
+
 	// results
 	o.OVS = append(o.OVS, o.Pop[0].Ova)
-	o.OOR = append(o.OVS, o.Pop[0].Oor)
-	o.SCO = append(o.OVS, o.Pop[0].Demerit)
+	return
 }
 
 // Regenerate regenerates population with basis on best individual(s)

@@ -125,10 +125,7 @@ func (o *Evolver) Run(verbose bool) {
 
 				// reproduction
 				var comm comm_t
-				isl.SelectAndReprod(t)
-
-				// statistics
-				_, comm.myaverho, _, _ = isl.Stat()
+				comm.myaverho = isl.SelectAndReprod(t)
 				homogeneous := comm.myaverho < o.C.RegTol
 
 				// regeneration
