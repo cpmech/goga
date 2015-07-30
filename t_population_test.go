@@ -109,15 +109,17 @@ func Test_pop02(tst *testing.T) {
 		{0, 0}, // 9
 	}
 
-	// objective values and fitness values
+	// objective values, oor and scores
 	//                0   1   2   3   4   5   6     7     8     9
 	ovs := []float64{11, 21, 10, 12, 13, 31, 41, 11.1, 31.5, 11.5}
+	sco := []float64{0.9, 0.4, 1, 0.6, 0.5, 0.3, 0.1, 0.8, 0.2, 0.7}
 
 	// init population
 	nbases := 2
 	pop := NewPopFloatChromo(nbases, genes)
 	for i, ind := range pop {
 		ind.ObjValue = ovs[i]
+		ind.Score = sco[i]
 	}
 	io.Pforan("%v\n", pop.Output(nil, false))
 

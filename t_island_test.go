@@ -14,7 +14,7 @@ import (
 
 func Test_island01(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("island01")
 
 	nbases := 1
@@ -27,13 +27,19 @@ func Test_island01(tst *testing.T) {
 		{16, 26, 36},
 	})
 
-	ofunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
-		ind.ObjValue = 1.0 / (1.0 + (ind.GetFloat(0)+ind.GetFloat(1)+ind.GetFloat(2))/3.0)
+	ofunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64) {
+		x, y, z := ind.GetFloat(0), ind.GetFloat(1), ind.GetFloat(2)
+		ov = 1.0 / (1.0 + (x+y+z)/3.0)
+		if ind.GetFloat(0) > 10 {
+			oor = x - 10
+		}
+		return
 	}
 
 	bingo := NewBingoFloats([]float64{-100, -200, -300}, []float64{100, 200, 300})
 
 	isl := NewIsland(0, pop, ofunc, bingo)
+	isl.UseRanking = false
 	io.Pforan("%v\n", isl.Pop.Output(nil, false))
 	io.Pforan("best = %v\n", isl.Pop[0].Output(nil, false))
 	chk.Vector(tst, "best", 1e-17, isl.Pop[0].Floats, []float64{16, 26, 36})
@@ -41,6 +47,8 @@ func Test_island01(tst *testing.T) {
 
 	isl.SelectAndReprod(0)
 	io.Pfcyan("%v\n", isl.Pop.Output(nil, false))
+
+	return
 
 	isl.SelectAndReprod(1)
 	io.Pforan("%v\n", isl.Pop.Output(nil, false))

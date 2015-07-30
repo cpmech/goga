@@ -17,7 +17,7 @@ import (
 )
 
 // ObjFunc_t defines the template for the objective function
-type ObjFunc_t func(ind *Individual, idIsland, time int, report *bytes.Buffer)
+type ObjFunc_t func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64)
 
 // Island holds one population and performs the reproduction operation
 type Island struct {
@@ -63,7 +63,7 @@ type Island struct {
 	// input
 	Pop       Population // pointer to current population
 	BkpPop    Population // backup population
-	ObjFunc   ObjFunc_t  // objective function
+	OvOorFunc ObjFunc_t  // function to compute objective and out-of-range values
 	BingoGrid *Bingo     // bingo for regeneration with initial values from grid
 	BingoBest *Bingo     // bingo for regeneration with values recomputed based on best individual
 
@@ -72,6 +72,8 @@ type Island struct {
 	ShowBases bool         // show also bases when printing results (if any)
 	Report    bytes.Buffer // buffer to report results
 	OVS       []float64    // best objective values collected from multiple calls to SelectAndReprod
+	OOR       []float64    // best out-of-range values
+	SCO       []float64    // best scores
 
 	// auxiliary internal data
 	fitsrnk []float64 // all fitness values computed by ranking
@@ -106,29 +108,18 @@ func NewIsland(id int, pop Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Islan
 	o.Id = id
 	o.Pop = pop
 	o.BkpPop = pop.GetCopy()
-	o.ObjFunc = ovfunc
+	o.OvOorFunc = ovfunc
 	o.BingoGrid = bingo
 	o.BingoBest = bingo.GetCopy()
 
 	// set default control values
 	o.UseRanking = true
-	o.RnkPressure = 1.2
+	o.RnkPressure = 2.0
 	o.Elitism = true
 	o.RegenBest = true
 	o.RegenPct = 0.3
 	o.RegenMmin = 0.1
 	o.RegenMmax = 10.0
-
-	// compute objective values
-	for _, ind := range o.Pop {
-		o.ObjFunc(ind, o.Id, 0, &o.Report)
-	}
-
-	// sort
-	o.Pop.Sort()
-
-	// results
-	o.OVS = []float64{o.Pop[0].ObjValue}
 
 	// auxiliary data
 	o.fitsrnk = make([]float64, ninds)
@@ -138,6 +129,15 @@ func NewIsland(id int, pop Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Islan
 	o.selinds = make([]int, ninds)
 	o.A = make([]int, ninds/2)
 	o.B = make([]int, ninds/2)
+
+	// compute scores and sort population
+	o.CalcOvsAndScores(o.Pop, 0)
+	o.Pop.Sort()
+
+	// results
+	o.OVS = []float64{o.Pop[0].ObjValue}
+	o.OOR = []float64{o.Pop[0].OutOfRange}
+	o.SCO = []float64{o.Pop[0].Score}
 
 	// for statistics
 	nfltgenes := o.Pop[0].Nfltgenes
@@ -150,43 +150,95 @@ func NewIsland(id int, pop Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Islan
 	return
 }
 
-// SelectAndReprod performs the selection and reproduction processes
-func (o *Island) SelectAndReprod(time int) {
+// CalcOvsAndScores computes objective values and scores
+func (o *Island) CalcOvsAndScores(pop Population, time int) {
 
-	// fitness and probabilities
-	ninds := len(o.Pop)
-	sumfit := 0.0
+	// ovs and oors
+	var ov, oor, ovmin, ovmax, oormin, oormax float64
+	firstov := true
+	firstoor := true
+	for _, ind := range pop {
+		ov, oor = o.OvOorFunc(ind, o.Id, time, &o.Report)
+		if oor < 0 {
+			chk.Panic("out-of-range values must be positive (or zero) indicating the positive distance to constraints. oor=%g is invalid", oor)
+		}
+		if oor > 0 { // infeasible solutions (out-of-range)
+			if firstoor {
+				oormin, oormax = oor, oor
+				firstoor = false
+			} else {
+				oormin = min(oormin, oor)
+				oormax = max(oormax, oor)
+			}
+			ind.ObjValue = 0 // not used for infeasible (oor) individuals
+			ind.OutOfRange = oor
+		} else { // feasible solutions
+			if firstov {
+				ovmin, ovmax = ov, ov
+				firstov = false
+			} else {
+				ovmin = min(ovmin, ov)
+				ovmax = max(ovmax, ov)
+			}
+			ind.ObjValue = ov
+			ind.OutOfRange = 0 // not used for feasible individuals
+		}
+	}
+
+	// normalised ovs => partial scores. values in [-2.0(worst), 1.0(best)]
+	ninds := len(pop)
+	var scoremin, scoremax float64
+	if math.Abs(ovmax-ovmin) < 1e-14 {
+		for i, ind := range pop {
+			ind.Score = float64(i) / float64(ninds-1)
+			if ind.OutOfRange > 0 {
+				io.Pfgrey("hasoor = true\n")
+				ind.Score -= (1.0 + ind.OutOfRange/oormax) // note that oor >= 0
+			}
+		}
+	} else {
+		for _, ind := range pop {
+			ind.Score = (ovmax - ind.ObjValue) / (ovmax - ovmin) // needed because -inf < ov < inf
+			if ind.OutOfRange > 0 {
+				io.Pfgrey("hasoor = true\n")
+				ind.Score -= (1.0 + ind.OutOfRange/oormax)
+			}
+		}
+	}
+
+	// fitnesses
+	var sumfit float64
 	if o.UseRanking {
 		sp := o.RnkPressure
 		if sp < 1.0 || sp > 2.0 {
-			sp = 1.2
+			sp = 2.0
 		}
 		for i := 0; i < ninds; i++ {
 			o.fitness[i] = 2.0 - sp + 2.0*(sp-1.0)*float64(ninds-i-1)/float64(ninds-1)
 			sumfit += o.fitness[i]
 		}
 	} else {
-		ovmin, ovmax := o.Pop[0].ObjValue, o.Pop[0].ObjValue
-		for _, ind := range o.Pop {
-			ovmin = min(ovmin, ind.ObjValue)
-			ovmax = max(ovmax, ind.ObjValue)
-		}
-		if math.Abs(ovmax-ovmin) < 1e-14 {
-			for i := 0; i < ninds; i++ {
-				o.fitness[i] = float64(i) / float64(ninds-1)
-				sumfit += o.fitness[i]
-			}
-		} else {
-			for i, ind := range o.Pop {
-				o.fitness[i] = (ovmax - ind.ObjValue) / (ovmax - ovmin)
-				sumfit += o.fitness[i]
-			}
+		for i, ind := range pop {
+			o.fitness[i] = (ind.Score - scoremin) / (scoremax - scoremin)
+			sumfit += o.fitness[i]
 		}
 	}
+
+	io.Pforan("fitness = %v\n", o.fitness)
+
+	// probabilities
 	for i := 0; i < ninds; i++ {
 		o.prob[i] = o.fitness[i] / sumfit
+		if i == 0 {
+			o.cumprob[i] = o.prob[i]
+		} else {
+			o.cumprob[i] = o.cumprob[i-1] + o.prob[i]
+		}
 	}
-	CumSum(o.cumprob, o.prob)
+}
+
+// SelectAndReprod performs the selection and reproduction processes
+func (o *Island) SelectAndReprod(time int) {
 
 	// selection
 	if o.Roulette {
@@ -197,6 +249,7 @@ func (o *Island) SelectAndReprod(time int) {
 	FilterPairs(o.A, o.B, o.selinds)
 
 	// reproduction
+	ninds := len(o.Pop)
 	h := ninds / 2
 	for i := 0; i < ninds/2; i++ {
 		Crossover(o.BkpPop[i], o.BkpPop[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], o.CxNcuts, o.CxCuts, o.CxProbs, o.CxIntFunc, o.CxFltFunc, o.CxStrFunc, o.CxKeyFunc, o.CxBytFunc, o.CxFunFunc)
@@ -204,17 +257,13 @@ func (o *Island) SelectAndReprod(time int) {
 		Mutation(o.BkpPop[h+i], o.MtNchanges, o.MtProbs, o.MtExtra, o.MtIntFunc, o.MtFltFunc, o.MtStrFunc, o.MtKeyFunc, o.MtBytFunc, o.MtFunFunc)
 	}
 
-	// compute objective values
-	for _, ind := range o.BkpPop {
-		o.ObjFunc(ind, o.Id, time+1, &o.Report) // +1 => this is an updated generation
-	}
-
-	// sort
+	// compute scores and sort population
+	o.CalcOvsAndScores(o.BkpPop, time+1) // +1 => this is an updated generation
 	o.BkpPop.Sort()
 
 	// elitism
 	if o.Elitism {
-		if o.Pop[0].ObjValue < o.BkpPop[0].ObjValue {
+		if o.Pop[0].Score > o.BkpPop[0].Score {
 			o.Pop[0].CopyInto(o.BkpPop[ninds-1])
 			o.BkpPop.Sort()
 		}
@@ -225,6 +274,8 @@ func (o *Island) SelectAndReprod(time int) {
 
 	// results
 	o.OVS = append(o.OVS, o.Pop[0].ObjValue)
+	o.OOR = append(o.OVS, o.Pop[0].OutOfRange)
+	o.SCO = append(o.OVS, o.Pop[0].Score)
 }
 
 // Regenerate regenerates population with basis on best individual(s)
@@ -240,8 +291,8 @@ func (o *Island) Regenerate(time int, basedOnBest bool) {
 		for j := 0; j < o.Pop[i].Nfltgenes; j++ {
 			o.Pop[i].SetFloat(j, bingo.DrawFloat(i, j, ninds))
 		}
-		o.ObjFunc(o.Pop[i], o.Id, time, nil)
 	}
+	o.CalcOvsAndScores(o.Pop, time)
 	o.Pop.Sort()
 }
 

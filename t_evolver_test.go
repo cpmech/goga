@@ -19,15 +19,16 @@ import (
 
 func Test_evo01(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo01")
 
 	// initialise random numbers generator
 	rnd.Init(0) // 0 => use current time as seed
 
 	// objective function
-	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
-		ind.ObjValue = 1.0 / (1.0 + (ind.GetFloat(0)+ind.GetFloat(1)+ind.GetFloat(2))/3.0)
+	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64) {
+		ov = 1.0 / (1.0 + (ind.GetFloat(0)+ind.GetFloat(1)+ind.GetFloat(2))/3.0)
+		return
 	}
 
 	// reference population
@@ -104,7 +105,7 @@ func Test_evo02(tst *testing.T) {
 	}
 
 	// objective function
-	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
+	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64) {
 		score := 0.0
 		count := 0
 		for _, val := range ind.Ints {
@@ -116,7 +117,8 @@ func Test_evo02(tst *testing.T) {
 			}
 			count++
 		}
-		ind.ObjValue = 1.0 / (1.0 + score)
+		ov = 1.0 / (1.0 + score)
+		return
 	}
 
 	// reference individual
@@ -182,15 +184,16 @@ func Test_evo03(tst *testing.T) {
 
 	// objective function
 	p := 1000.0
-	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
+	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64) {
 		x := ind.GetFloat(0)
 		y := ind.GetFloat(1)
-		ind.ObjValue = f(x, y)
-		ind.ObjValue += GtePenalty(0, c1(x, y), p)
-		ind.ObjValue += GtePenalty(0, c2(x, y), p)
-		ind.ObjValue += GtePenalty(0, c3(x, y), p)
-		ind.ObjValue += GtePenalty(0, c4(x, y), p)
-		ind.ObjValue += GtePenalty(0, c5(x, y), p)
+		ov = f(x, y)
+		oor += GtePenalty(0, c1(x, y), p)
+		oor += GtePenalty(0, c2(x, y), p)
+		oor += GtePenalty(0, c3(x, y), p)
+		oor += GtePenalty(0, c4(x, y), p)
+		oor += GtePenalty(0, c5(x, y), p)
+		return
 	}
 
 	// bingo, reference individual and evolver
