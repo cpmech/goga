@@ -99,7 +99,7 @@ func Test_evo01(tst *testing.T) {
 
 func Test_evo02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo02")
 
 	// initialise random numbers generator
@@ -215,6 +215,8 @@ func Test_evo02(tst *testing.T) {
 
 	// plot
 	if C.DoPlot {
-		evo.Islands[0].PlotOvs(".eps", "", 10, C.Tf, true, "%.6f", true, true)
+		for i := 0; i < C.Nisl; i++ {
+			evo.Islands[i].PlotOvs(".eps", "", 10, C.Tf, false, "%.6f", i == 0, i == C.Nisl-1)
+		}
 	}
 }
