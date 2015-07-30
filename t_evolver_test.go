@@ -69,7 +69,6 @@ func Test_evo01(tst *testing.T) {
 
 	// bingo
 	bingo := NewBingoInts(utl.IntVals(nvals, 0), utl.IntVals(nvals, 1))
-	bingo.UseIntRnd = true
 
 	// parameters
 	C := NewConfParams()
@@ -134,13 +133,13 @@ func Test_evo02(tst *testing.T) {
 	C.FnKey = "test_evo02"
 	C.DoPlot = true
 	C.Noise = 0
+	C.RegBest = false
 
 	// bingo
 	ndim := 2
 	vmin, vmax := -2.0, 2.0
 	xmin, xmax := utl.DblVals(ndim, vmin), utl.DblVals(ndim, vmax)
 	bingo := NewBingoFloats(xmin, xmax)
-	bingo.UseFltRnd = false
 
 	// populations
 	pops := make([]Population, C.Nisl)
@@ -189,10 +188,6 @@ func Test_evo02(tst *testing.T) {
 			plt.PlotOne(x, y, "'k.', clip_on=0")
 		}
 	}
-
-	plt.Equal()
-	plt.SaveD("/tmp/goga", "test_evo02_contour.eps")
-	return
 
 	// run
 	evo.Run(true)

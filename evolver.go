@@ -141,7 +141,7 @@ func (o *Evolver) Run(verbose bool) {
 		if (t >= treg && idxreg < o.C.RegNmax) || homogeneous {
 			reg = "best"
 			if homogeneous && !o.C.RegBest {
-				reg = "grid"
+				reg = "lims"
 			}
 			for i := 0; i < nislands; i++ {
 				go func(isl *Island) {

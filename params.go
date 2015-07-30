@@ -15,13 +15,11 @@ import (
 type ConfParams struct {
 
 	// initialisation
-	Nisl      int     // number of islands
-	Ninds     int     // number of individuals: population size
-	Nbases    int     // number of bases in chromosome
-	UseIntRnd bool    // generate random integers instead of selecting from grid
-	UseFltRnd bool    // generate random float point numbers instead of selecting from grid
-	Grid      bool    // generate individuals based on grid
-	Noise     float64 // apply noise when generate based on grid (if Noise > 0)
+	Nisl   int     // number of islands
+	Ninds  int     // number of individuals: population size
+	Nbases int     // number of bases in chromosome
+	Grid   bool    // generate individuals based on grid
+	Noise  float64 // apply noise when generate based on grid (if Noise > 0)
 
 	// time control
 	Tf    int // number of generations
@@ -84,8 +82,6 @@ func (o *ConfParams) SetDefault() {
 	o.Nisl = 1
 	o.Ninds = 20
 	o.Nbases = 10
-	o.UseIntRnd = false
-	o.UseFltRnd = false
 	o.Grid = true
 	o.Noise = 0.2
 
@@ -96,7 +92,7 @@ func (o *ConfParams) SetDefault() {
 	o.Dtreg = 60
 
 	// regeneration
-	o.RegTol = 1e-3
+	o.RegTol = 1e-2
 	o.RegNmax = -1
 	o.RegBest = false
 	o.RegPct = 0.3

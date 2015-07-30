@@ -229,6 +229,7 @@ func (o *Island) SelectAndReprod(time int) {
 func (o *Island) Regenerate(time int, basedOnBest bool) {
 	bingo := o.BingoGrid
 	if basedOnBest || o.C.RegBest {
+		//io.Pforan("based on best\n")
 		o.BingoBest.ResetBasedOnRef(time, o.Pop[0], o.C.RegMmin, o.C.RegMmax)
 		bingo = o.BingoBest
 	}
