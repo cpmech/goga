@@ -75,7 +75,7 @@ func (o *Evolver) Run(verbose bool) {
 	// best individual and index of worst individual
 	o.FindBestFromAll()
 	iworst := len(o.Islands[0].Pop) - 1
-	minrho, averho, maxrho, devrho := o.calc_stat()
+	minrho, averho, maxrho, _ := o.calc_stat()
 
 	// saving results
 	dosave := o.prepare_for_saving_results(verbose)
@@ -89,10 +89,10 @@ func (o *Evolver) Run(verbose bool) {
 	szline := lent + 6 + 6 + 11 + 11 + 11 + 11 + 25
 	if verbose {
 		io.Pf("%s", printThickLine(szline))
-		io.Pf(strt+"s%6s%6s%11s%11s%11s%11s%25s\n", "time", "mig", "reg", "min(rho)", "ave(rho)", "max(rho)", "dev(rho)", "objval")
+		io.Pf(strt+"s%6s%6s%11s%11s%11s%11s%25s\n", "time", "mig", "reg", "min(rho)", "ave(rho)", "max(rho)", "demerit", "objval")
 		io.Pf("%s", printThinLine(szline))
-		strt = strt + "d%6s%6s%11.3e%11.3e%11.3e%11.3e%25g\n"
-		io.Pf(strt, t, "", "", minrho, averho, maxrho, devrho, o.Best.Ova)
+		strt = strt + "d%6s%6s%11.3e%11.3e%11.3e%11.3f%25g\n"
+		io.Pf(strt, t, "", "", minrho, averho, maxrho, o.Best.Demerit, o.Best.Ova)
 	}
 
 	// time loop
@@ -133,7 +133,7 @@ func (o *Evolver) Run(verbose bool) {
 		}
 
 		// statistics
-		minrho, averho, maxrho, devrho = o.calc_stat()
+		minrho, averho, maxrho, _ = o.calc_stat()
 		homogeneous := averho < o.C.RegTol
 
 		// regeneration
@@ -161,7 +161,7 @@ func (o *Evolver) Run(verbose bool) {
 
 		// output
 		if verbose {
-			io.Pf(strt, t, mig, reg, minrho, averho, maxrho, devrho, o.Best.Ova)
+			io.Pf(strt, t, mig, reg, minrho, averho, maxrho, o.Best.Demerit, o.Best.Ova)
 		}
 	}
 

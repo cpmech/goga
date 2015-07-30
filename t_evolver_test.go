@@ -20,63 +20,7 @@ import (
 func Test_evo01(tst *testing.T) {
 
 	verbose()
-	chk.PrintTitle("evo01")
-
-	// initialise random numbers generator
-	rnd.Init(0) // 0 => use current time as seed
-
-	// objective function
-	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64) {
-		ov = 1.0 / (1.0 + (ind.GetFloat(0)+ind.GetFloat(1)+ind.GetFloat(2))/3.0)
-		return
-	}
-
-	// reference population
-	nbases := 8
-	pop0 := NewPopFloatChromo(nbases, [][]float64{
-		{11, 21, 31},
-		{12, 22, 32},
-		{13, 23, 33},
-		{14, 24, 34},
-		{15, 25, 35},
-		{16, 26, 36},
-	})
-	pop1 := NewPopFloatChromo(nbases, [][]float64{
-		{10, 1, 01},
-		{20, 2, 02},
-		{30, 3, 03},
-		{40, 4, 04},
-		{50, 5, 05},
-		{60, 6, 06},
-	})
-
-	// bingo
-	bingo := NewBingoFloats([]float64{-100, -200, -300}, []float64{100, 200, 300})
-
-	// parameters
-	C := NewConfParams()
-	C.Nisl = 2
-	C.Ninds = len(pop0)
-	C.Rws = true
-	C.FnKey = "test_evo01"
-
-	// evolver
-	evo := NewEvolverPop(C, []Population{pop0, pop1}, ovfunc, bingo)
-
-	// run
-	io.Pf("\n")
-	evo.Run(true)
-
-	// plot
-	if C.DoPlot {
-		evo.Islands[0].PlotOvs(".png", "", 0, C.Tf, true, "%.6f", true, true)
-	}
-}
-
-func Test_evo02(tst *testing.T) {
-
-	//verbose()
-	chk.PrintTitle("evo02. organise sequence of ints")
+	chk.PrintTitle("evo01. organise sequence of ints")
 	io.Pf("\n")
 
 	// initialise random numbers generator
@@ -131,7 +75,7 @@ func Test_evo02(tst *testing.T) {
 	C := NewConfParams()
 	C.Nisl = 3
 	C.Ninds = 6
-	C.FnKey = "test_evo02"
+	C.FnKey = "test_evo01"
 	C.MtIntFunc = mtfunc
 
 	// evolver
@@ -154,10 +98,10 @@ func Test_evo02(tst *testing.T) {
 	}
 }
 
-func Test_evo03(tst *testing.T) {
+func Test_evo02(tst *testing.T) {
 
-	//verbose()
-	chk.PrintTitle("evo03")
+	verbose()
+	chk.PrintTitle("evo02")
 
 	// initialise random numbers generator
 	rnd.Init(0) // 0 => use current time as seed
@@ -185,21 +129,27 @@ func Test_evo03(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
-	C.Nisl = 4
-	C.Ninds = 6
-	C.FnKey = "test_evo03"
+	C.Nisl = 1
+	C.Ninds = 10
+	C.FnKey = "test_evo02"
+	C.DoPlot = true
+	C.Noise = 0
 
 	// bingo
 	ndim := 2
 	vmin, vmax := -2.0, 2.0
-	bingo := NewBingoFloats(utl.DblVals(ndim, vmin), utl.DblVals(ndim, vmax))
-	bingo.UseFltRnd = true
+	xmin, xmax := utl.DblVals(ndim, vmin), utl.DblVals(ndim, vmax)
+	bingo := NewBingoFloats(xmin, xmax)
+	bingo.UseFltRnd = false
 
-	// reference individual
-	ref := NewIndividual(C.Nbases, make([]float64, ndim))
+	// populations
+	pops := make([]Population, C.Nisl)
+	for i := 0; i < C.Nisl; i++ {
+		pops[i] = NewPopFloatRandom(C, xmin, xmax)
+	}
 
 	// evolver
-	evo := NewEvolver(C, ref, ovfunc, bingo)
+	evo := NewEvolverPop(C, pops, ovfunc, bingo)
 
 	// plot contour
 	if C.DoPlot {
@@ -236,9 +186,13 @@ func Test_evo03(tst *testing.T) {
 		for _, ind := range evo.Islands[0].Pop {
 			x := ind.GetFloat(0)
 			y := ind.GetFloat(1)
-			plt.PlotOne(x, y, "'k.'")
+			plt.PlotOne(x, y, "'k.', clip_on=0")
 		}
 	}
+
+	plt.Equal()
+	plt.SaveD("/tmp/goga", "test_evo02_contour.eps")
+	return
 
 	// run
 	evo.Run(true)
@@ -257,7 +211,7 @@ func Test_evo03(tst *testing.T) {
 		y := evo.Best.GetFloat(1)
 		plt.PlotOne(x, y, "'y*', ms=8")
 		plt.Equal()
-		plt.SaveD("/tmp/goga", "fig_evo03_contour.eps")
+		plt.SaveD("/tmp/goga", "test_evo02_contour.eps")
 	}
 
 	// plot

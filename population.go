@@ -6,9 +6,12 @@ package goga
 
 import (
 	"bytes"
+	"math"
 	"sort"
 
+	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/rnd"
 )
 
 // Population holds all individuals
@@ -88,6 +91,61 @@ func NewPopRandom(ninds int, ref *Individual, bingo *Bingo) (pop Population) {
 	return
 }
 
+// NewPopFloatRandom generates a population of individuals with float point
+// numbers only genes for given grid
+//  Input:
+//   C.Ninds  -- number of individuals to be generated
+//   C.Nbases -- number of bases
+//   C.Grid   -- whether or not to calc values based on grid;
+//               otherwise select randomly between xmin and xmax
+//   C.Noise  -- if noise>0, apply noise to move points away from grid nodes
+//               noise is a multiplier; e.g. 0.2
+//   xmin     -- min values of genes
+//   xmax     -- max values of genes. len(xmin) = len(xmax) = ngenes
+func NewPopFloatRandom(C *ConfParams, xmin, xmax []float64) (pop Population) {
+	ngenes := len(xmin)
+	chk.IntAssert(len(xmax), ngenes)
+	ref := NewIndividual(C.Nbases, make([]float64, ngenes))
+	pop = NewPopReference(C.Ninds, ref)
+	npts := int(math.Pow(float64(C.Ninds), 1.0/float64(ngenes))) // num points in 'square' grid
+	ntot := int(math.Pow(float64(npts), float64(ngenes)))        // total num of individuals in grid
+	den := 1.0                                                   // denominator to calculate dx
+	if npts > 1 {
+		den = float64(npts - 1)
+	}
+	var lfto int // leftover, e.g. n % (nx*ny)
+	var rdim int // reduced dimension, e.g. (nx*ny)
+	var idx int  // index of gene in grid
+	var dx, x, mul float64
+	for i := 0; i < C.Ninds; i++ {
+		if i < ntot { // on grid
+			lfto = i
+			for j := 0; j < ngenes; j++ {
+				rdim = int(math.Pow(float64(npts), float64(ngenes-1-j)))
+				idx = lfto / rdim
+				lfto = lfto % rdim
+				dx = xmax[j] - xmin[j]
+				x = xmin[j] + float64(idx)*dx/den
+				if C.Noise > 0 {
+					mul = rnd.Float64(0, C.Noise)
+					if rnd.FlipCoin(0.5) {
+						x += mul * x
+					} else {
+						x -= mul * x
+					}
+				}
+				pop[i].SetFloat(j, x)
+			}
+		} else { // additional individuals
+			for g := 0; g < ngenes; g++ {
+				x = rnd.Float64(xmin[g], xmax[g])
+				pop[i].SetFloat(g, x)
+			}
+		}
+	}
+	return
+}
+
 // Len returns the length of the population == number of individuals
 func (o Population) Len() int {
 	return len(o)
@@ -103,12 +161,6 @@ func (o Population) Swap(i, j int) {
 func (o Population) Less(i, j int) bool {
 	return o[i].Demerit < o[j].Demerit
 }
-
-// Less returns true if 'i' is "less bad" than 'j'; therefore it can be used
-// to sort the population in decreasing order of scores: from best to worst
-//func (o Population) Less(i, j int) bool {
-//return o[i].Demerit > o[j].Demerit
-//}
 
 // Sort sorts the population from best to worst individuals; i.e. decreasing fitness values
 func (o *Population) Sort() {
