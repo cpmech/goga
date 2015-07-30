@@ -210,7 +210,7 @@ func (o *Island) SelectAndReprod(time int) {
 
 	// elitism
 	if o.C.Elite {
-		if o.Pop[0].Demerit > o.BkpPop[0].Demerit {
+		if o.Pop[0].Ova < o.BkpPop[0].Ova {
 			o.Pop[0].CopyInto(o.BkpPop[ninds-1])
 			o.BkpPop.Sort()
 		}
