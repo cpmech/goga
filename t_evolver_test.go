@@ -19,7 +19,7 @@ import (
 
 func Test_evo01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo01. organise sequence of ints")
 	io.Pf("\n")
 
@@ -72,9 +72,9 @@ func Test_evo01(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
-	C.Nisl = 3
-	C.Ninds = 6
-	C.FnKey = "test_evo01"
+	C.Nisl = 2
+	C.Ninds = 10
+	C.FnKey = "" //"test_evo01"
 	C.MtIntFunc = mtfunc
 
 	// evolver
@@ -99,7 +99,7 @@ func Test_evo01(tst *testing.T) {
 
 func Test_evo02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo02")
 
 	// initialise random numbers generator
@@ -113,7 +113,7 @@ func Test_evo02(tst *testing.T) {
 	c5 := func(x, y float64) float64 { return -y }               // ≤ 0
 
 	// objective function
-	p := 1000.0
+	p := 1.0
 	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64) {
 		x := ind.GetFloat(0)
 		y := ind.GetFloat(1)
@@ -128,12 +128,13 @@ func Test_evo02(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
-	C.Nisl = 1
-	C.Ninds = 10
-	C.FnKey = "test_evo02"
-	C.DoPlot = true
-	C.Noise = 0
+	C.Nisl = 4
+	C.Ninds = 20
+	C.FnKey = "" //"test_evo02"
+	//C.DoPlot = true
+	C.Noise = 0.5
 	C.RegBest = false
+	C.Dtout = 10
 
 	// bingo
 	ndim := 2
@@ -206,6 +207,7 @@ func Test_evo02(tst *testing.T) {
 		y := evo.Best.GetFloat(1)
 		plt.PlotOne(x, y, "'y*', ms=8")
 		plt.Equal()
+		plt.AxisLims([]float64{-2, 2, -2, 2})
 		plt.SaveD("/tmp/goga", "test_evo02_contour.eps")
 	}
 

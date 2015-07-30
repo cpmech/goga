@@ -28,6 +28,7 @@ type ConfParams struct {
 	Dtreg int // increment of time for regeneration
 
 	// regeneration
+	RegIni    bool    // regenerate initial population
 	RegTol    float64 // tolerance for ρ to activate regeneration
 	RegNmax   int     // max number of generations. use -1 for unlimited number of generations
 	RegBest   bool    // enforce that regeneration is always based on based individual, regardless the population is homogeneous or not
@@ -43,6 +44,9 @@ type ConfParams struct {
 	Rws   bool    // use Roulette-Wheel selection method
 	Rnk   bool    // ranking
 	RnkSp float64 // selective pressure for ranking
+
+	// diversity
+	StatOorSkip bool // skip oor individuals from statistics
 
 	// output
 	Json      bool   // output results as .json files; not tables
@@ -92,7 +96,8 @@ func (o *ConfParams) SetDefault() {
 	o.Dtreg = 60
 
 	// regeneration
-	o.RegTol = 1e-2
+	o.RegIni = false
+	o.RegTol = 1e-3
 	o.RegNmax = -1
 	o.RegBest = false
 	o.RegPct = 0.3
@@ -107,6 +112,9 @@ func (o *ConfParams) SetDefault() {
 	o.Rws = false
 	o.Rnk = true
 	o.RnkSp = 2.0
+
+	// diversity
+	o.StatOorSkip = false
 
 	// output
 	o.Json = false

@@ -226,10 +226,13 @@ func (o *Island) SelectAndReprod(time int) {
 }
 
 // Regenerate regenerates population with basis on best individual(s)
-func (o *Island) Regenerate(time int, basedOnBest bool) {
+//  Output:
+//   regtype -- 1=best, 2=lims
+func (o *Island) Regenerate(time int, basedOnBest bool) (regtype int) {
 	bingo := o.BingoGrid
+	regtype = 2
 	if basedOnBest || o.C.RegBest {
-		//io.Pforan("based on best\n")
+		regtype = 1
 		o.BingoBest.ResetBasedOnRef(time, o.Pop[0], o.C.RegMmin, o.C.RegMmax)
 		bingo = o.BingoBest
 	}
@@ -242,33 +245,43 @@ func (o *Island) Regenerate(time int, basedOnBest bool) {
 	}
 	o.CalcOvsAndDemerits(o.Pop, time)
 	o.Pop.Sort()
+	return
 }
 
 // Stat computes some statistic information
 //  rho (ρ) is a normalised quantity measuring the deviation of bases of each gene
+//  Note: OoR individuals are excluded
 func (o *Island) Stat() (minrho, averho, maxrho, devrho float64) {
 	ngenes := o.Pop[0].Nfltgenes
 	if ngenes < 1 {
 		return
 	}
 	nbases := o.Pop[0].Nbases
-	for k, ind := range o.Pop {
+	iova := 0
+	for _, ind := range o.Pop {
+		if ind.Oor > 0 && o.C.StatOorSkip { // skip oor individuals
+			continue
+		}
 		for i := 0; i < ngenes; i++ {
 			x := math.Abs(ind.GetFloat(i))
-			if k == 0 {
+			if iova == 0 {
 				o.maxabsgene[i] = x
 			} else {
 				o.maxabsgene[i] = max(o.maxabsgene[i], x)
 			}
 			for j := 0; j < nbases; j++ {
-				o.fltbases[i*nbases+j][k] = ind.Floats[i*nbases+j]
+				o.fltbases[i*nbases+j][iova] = ind.Floats[i*nbases+j]
 			}
 		}
+		iova++
+	}
+	if iova < 2 {
+		return
 	}
 	for i := 0; i < ngenes; i++ {
 		x := 1.0 + o.maxabsgene[i]
 		for j := 0; j < nbases; j++ {
-			o.devbases[i*nbases+j] = rnd.StatDev(o.fltbases[i*nbases+j], o.C.UseStdDev) / x
+			o.devbases[i*nbases+j] = rnd.StatDev(o.fltbases[i*nbases+j][:iova], o.C.UseStdDev) / x
 		}
 	}
 	minrho, averho, maxrho, devrho = rnd.StatBasic(o.devbases, o.C.UseStdDev)
@@ -305,9 +318,13 @@ func (o Island) PlotOvs(ext, args string, t0, tf int, withtxt bool, numfmt strin
 }
 
 // SaveReport saves report to file
-func (o Island) SaveReport(dirout, fnkey string) {
+func (o Island) SaveReport(dirout, fnkey string, verbose bool) {
 	if dirout == "" {
 		dirout = "/tmp/goga"
+	}
+	if verbose {
+		io.WriteFileVD(dirout, fnkey+".rpt", &o.Report)
+		return
 	}
 	io.WriteFileD(dirout, fnkey+".rpt", &o.Report)
 }

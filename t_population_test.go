@@ -109,17 +109,17 @@ func Test_pop02(tst *testing.T) {
 		{0, 0}, // 9
 	}
 
-	// objective values, oor and scores
+	// objective values, oor and demerits
 	//                0   1   2   3   4   5   6     7     8     9
 	ovs := []float64{11, 21, 10, 12, 13, 31, 41, 11.1, 31.5, 11.5}
-	sco := []float64{0.9, 0.4, 1, 0.6, 0.5, 0.3, 0.1, 0.8, 0.2, 0.7}
+	dem := []float64{0.2, 0.7, 0.1, 0.5, 0.6, 0.8, 1.0, 0.3, 0.9, 0.4}
 
 	// init population
 	nbases := 2
 	pop := NewPopFloatChromo(nbases, genes)
 	for i, ind := range pop {
 		ind.Ova = ovs[i]
-		ind.Demerit = sco[i]
+		ind.Demerit = dem[i]
 	}
 	io.Pforan("%v\n", pop.Output(nil, false))
 
@@ -171,6 +171,7 @@ func Test_pop03(tst *testing.T) {
 			flts[i][j] = pop[i].GetFloat(j)
 		}
 	}
+	/* grid generation removed
 	chk.Matrix(tst, "flts", 1e-13, flts, [][]float64{
 		{-123, -1, 0},
 		{-12, -0.5, 0.25},
@@ -178,4 +179,5 @@ func Test_pop03(tst *testing.T) {
 		{210, 0.5, 0.75},
 		{321, 1, 1},
 	})
+	*/
 }

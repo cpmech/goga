@@ -71,11 +71,14 @@ func (o *Evolver) Run(verbose bool) {
 	if o.C.RegNmax < 0 {
 		o.C.RegNmax = o.C.Tf + 1
 	}
+	if o.Islands[0].Pop[0].Nfltgenes == 0 {
+		o.C.RegTol = 0
+	}
 
 	// best individual and index of worst individual
 	o.FindBestFromAll()
-	iworst := len(o.Islands[0].Pop) - 1
-	minrho, averho, maxrho, _ := o.calc_stat()
+	iworst := o.C.Ninds - 1
+	_, averho, _, _ := o.Islands[0].Stat()
 
 	// saving results
 	dosave := o.prepare_for_saving_results(verbose)
@@ -86,39 +89,79 @@ func (o *Evolver) Run(verbose bool) {
 		lent = 5
 	}
 	strt := io.Sf("%%%d", lent)
-	szline := lent + 6 + 6 + 11 + 11 + 11 + 11 + 25
+	szline := lent + 6 + 6 + 11 + 25 + 25
 	if verbose {
 		io.Pf("%s", printThickLine(szline))
-		io.Pf(strt+"s%6s%6s%11s%11s%11s%11s%25s\n", "time", "mig", "reg", "min(rho)", "ave(rho)", "max(rho)", "demerit", "objval")
+		io.Pf(strt+"s%6s%6s%11s%25s%25s\n", "time", "mig", "reg", "ave(rho)", "ova", "oor")
 		io.Pf("%s", printThinLine(szline))
-		strt = strt + "d%6s%6s%11.3e%11.3e%11.3e%11.3f%25g\n"
-		io.Pf(strt, t, "", "", minrho, averho, maxrho, o.Best.Demerit, o.Best.Ova)
+		strt = strt + "d%6s%6s%11.3e%25g%25g\n"
+		io.Pf(strt, t, "", "", averho, o.Best.Ova, o.Best.Oor)
+	}
+	strreg := []string{"", "best", "lims"}
+
+	// communication data
+	type comm_t struct {
+		myaverho  float64
+		myregtype int // 0=NoReg, 1=best, 2=lims
 	}
 
 	// time loop
-	done := make(chan int, nislands)
-	for t < o.C.Tf {
+	var res comm_t
+	var regtype int
+	ch := make(chan comm_t, nislands)
+	for t := 1; t < o.C.Tf+1; t++ {
 
-		// reproduction in all islands
+		// perform regeneration?
+		doregen := false
+		if (t == 1 && o.C.RegIni) || (t >= treg && idxreg < o.C.RegNmax) {
+			doregen = true
+			treg = t + o.C.Dtreg
+			idxreg += 1
+		}
+
+		// loop over all islands
 		for i := 0; i < nislands; i++ {
 			go func(isl *Island) {
-				for j := t; j < tout; j++ {
-					isl.SelectAndReprod(j)
+
+				// reproduction
+				var comm comm_t
+				isl.SelectAndReprod(t)
+
+				// statistics
+				_, comm.myaverho, _, _ = isl.Stat()
+				homogeneous := comm.myaverho < o.C.RegTol
+
+				// regeneration
+				comm.myregtype = 0
+				if doregen || homogeneous {
+					comm.myregtype = isl.Regenerate(t, !homogeneous)
 				}
-				done <- 1
+
+				// report
+				if t >= tout {
+					io.Ff(&isl.Report, "\nt=%d averho=%g homogeneous=%v\n", t, comm.myaverho, homogeneous)
+					isl.Report.Write(isl.Pop.Output(nil, o.C.ShowBases).Bytes())
+				}
+
+				// send results
+				ch <- comm
+
 			}(o.Islands[i])
 		}
-		for i := 0; i < nislands; i++ {
-			<-done
-		}
 
-		// current time and next cycle
-		t += o.C.Dtout
-		tout = t + o.C.Dtout
+		// receive results
+		res = <-ch
+		averho = res.myaverho
+		regtype = res.myregtype
+		for i := 1; i < nislands; i++ {
+			res = <-ch
+			averho = min(averho, res.myaverho)
+			regtype = imax(regtype, res.myregtype)
+		}
 
 		// migration
 		mig := ""
-		if t >= tmig {
+		if t >= tmig && nislands > 1 {
 			for i := 0; i < nislands; i++ {
 				for j := i + 1; j < nislands; j++ {
 					o.Islands[i].Pop[0].CopyInto(o.Islands[j].Pop[iworst]) // iBest => jWorst
@@ -132,36 +175,13 @@ func (o *Evolver) Run(verbose bool) {
 			tmig = t + o.C.Dtmig
 		}
 
-		// statistics
-		minrho, averho, maxrho, _ = o.calc_stat()
-		homogeneous := averho < o.C.RegTol
-
-		// regeneration
-		reg := ""
-		if (t >= treg && idxreg < o.C.RegNmax) || homogeneous {
-			reg = "best"
-			if homogeneous && !o.C.RegBest {
-				reg = "lims"
-			}
-			for i := 0; i < nislands; i++ {
-				go func(isl *Island) {
-					isl.Regenerate(t, !homogeneous)
-					done <- 1
-				}(o.Islands[i])
-			}
-			for i := 0; i < nislands; i++ {
-				<-done
-			}
-			treg = t + o.C.Dtreg
-			idxreg += 1
-		}
-
-		// best individual
+		// best individual from all islands
 		o.FindBestFromAll()
 
 		// output
-		if verbose {
-			io.Pf(strt, t, mig, reg, minrho, averho, maxrho, o.Best.Demerit, o.Best.Ova)
+		if verbose && t >= tout {
+			io.Pf(strt, t, mig, strreg[regtype], averho, o.Best.Ova, o.Best.Oor)
+			tout += o.C.Dtout
 		}
 	}
 
@@ -173,6 +193,9 @@ func (o *Evolver) Run(verbose bool) {
 	// save results
 	if dosave {
 		o.save_results("final", t, verbose)
+		for i, isl := range o.Islands {
+			isl.SaveReport(o.C.DirOut, io.Sf("%s-isl%d", o.C.FnKey, i), verbose)
+		}
 	}
 	return
 }
