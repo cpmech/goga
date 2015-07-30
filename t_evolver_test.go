@@ -92,14 +92,14 @@ func Test_evo01(tst *testing.T) {
 		for i, isl := range evo.Islands {
 			first := i == 0
 			last := i == C.Nisl-1
-			isl.PlotOvs(".png", "", 0, C.Tf, true, "%.6f", first, last)
+			isl.PlotOvs(".eps", "", 0, C.Tf, true, "%.6f", first, last)
 		}
 	}
 }
 
 func Test_evo02(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo02")
 
 	// initialise random numbers generator
@@ -130,11 +130,13 @@ func Test_evo02(tst *testing.T) {
 	C := NewConfParams()
 	C.Nisl = 4
 	C.Ninds = 20
-	C.FnKey = "" //"test_evo02"
-	//C.DoPlot = true
+	C.FnKey = "test_evo02"
+	C.DoPlot = true
+	//C.FnKey = ""
+	//C.DoPlot = false
 	C.Noise = 0.5
 	C.RegBest = false
-	C.Dtout = 10
+	C.Dtout = 1
 
 	// bingo
 	ndim := 2
@@ -213,6 +215,6 @@ func Test_evo02(tst *testing.T) {
 
 	// plot
 	if C.DoPlot {
-		evo.Islands[0].PlotOvs(".png", "", 10, C.Tf, true, "%.6f", true, true)
+		evo.Islands[0].PlotOvs(".eps", "", 10, C.Tf, true, "%.6f", true, true)
 	}
 }

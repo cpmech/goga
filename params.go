@@ -111,7 +111,7 @@ func (o *ConfParams) SetDefault() {
 	o.Elite = true
 	o.Rws = false
 	o.Rnk = true
-	o.RnkSp = 2.0
+	o.RnkSp = 1.2
 
 	// diversity
 	o.StatOorSkip = false
