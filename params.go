@@ -37,7 +37,7 @@ type ConfParams struct {
 	RegMmax   float64 // multiplier to increase reference value; e.g. 10.0
 	UseStdDev bool    // use standard deviation (σ) instead of average deviation in Stat
 
-	// selection and reprodoution
+	// selection and reproduction
 	Pc    float64 // probability of crossover
 	Pm    float64 // probability of mutation
 	Elite bool    // use elitism
@@ -105,7 +105,7 @@ func (o *ConfParams) SetDefault() {
 	o.RegMmax = 10.0
 	o.UseStdDev = false
 
-	// selection and reprodoution
+	// selection and reproduction
 	o.Pc = 0.8
 	o.Pm = 0.01
 	o.Elite = true
