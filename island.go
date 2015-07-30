@@ -36,6 +36,7 @@ type Island struct {
 	OVS    []float64    // best objective values collected from multiple calls to SelectAndReprod
 
 	// auxiliary internal data
+	foundov bool      // found first feasible individual
 	ovas    []float64 // all ova values
 	oors    []float64 // all oor values
 	sovas   []float64 // scaled ova values
@@ -124,6 +125,7 @@ func (o *Island) CalcOvsAndDemerits(pop Population, time int) {
 			o.oors[ioor] = oor
 			ioor++
 		} else { // feasible solutions
+			o.foundov = true
 			ind.Ova = ova
 			ind.Oor = 0 // not used for feasible individuals
 			o.ovas[iova] = ova
@@ -206,10 +208,16 @@ func (o *Island) SelectAndReprod(time int) (averho float64) {
 
 	// elitism
 	if o.C.Elite {
-		if o.Pop[0].Ova < o.BkpPop[0].Ova {
-			o.Pop[0].CopyInto(o.BkpPop[ninds-1])
-			o.BkpPop.Sort()
+		if o.foundov {
+			if o.Pop[0].Ova < o.BkpPop[0].Ova {
+				o.Pop[0].CopyInto(o.BkpPop[ninds-1])
+			}
+		} else {
+			if o.Pop[0].Oor < o.BkpPop[0].Oor {
+				o.Pop[0].CopyInto(o.BkpPop[ninds-1])
+			}
 		}
+		o.BkpPop.Sort()
 	}
 
 	// swap populations (Pop will always point to current one)
