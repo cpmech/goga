@@ -42,7 +42,6 @@ type Island struct {
 	OVS    []float64    // best objective values collected from multiple calls to SelectAndReprod
 
 	// auxiliary internal data
-	foundov bool      // found first feasible individual
 	ovas    []float64 // all ova values
 	oors    []float64 // all oor values
 	sovas   []float64 // scaled ova values
@@ -121,8 +120,13 @@ func (o *Island) CalcOvs(pop Population, time int) {
 		if oor < 0 {
 			chk.Panic("out-of-range values must be positive (or zero) indicating the positive distance to constraints. oor=%g is invalid", oor)
 		}
-		ind.Ova = ova
-		ind.Oor = oor
+		if oor > 0 { // infeasible solutions (out-of-range)
+			ind.Ova = 0 // not used
+			ind.Oor = oor
+		} else { // feasible solutions
+			ind.Ova = ova
+			ind.Oor = 0 // not used
+		}
 	}
 }
 
@@ -136,7 +140,6 @@ func (o *Island) CalcDemeritsAndSort(pop Population) {
 			o.oors[ioor] = ind.Oor
 			ioor++
 		} else { // feasible solutions
-			o.foundov = true
 			o.ovas[iova] = ind.Ova
 			iova++
 		}
@@ -221,16 +224,29 @@ func (o *Island) SelectReprodAndRegen(time, tout int, doregen bool) (comm Comm_t
 
 	// elitism
 	if o.C.Elite {
-		if o.foundov {
-			if o.Pop[0].Ova < o.BkpPop[0].Ova {
-				o.Pop[0].CopyInto(o.BkpPop[ninds-1])
-				o.CalcDemeritsAndSort(o.BkpPop)
+		iold, inew := o.Pop[0], o.BkpPop[ninds-1]
+		docopy := false
+		if iold.Oor > 0 { // old best individual is infeasible
+			if inew.Oor > 0 { // new worst individual is also infeasible
+				if iold.Oor < inew.Oor { // old best individual is better than new worst individual
+					io.Ff(&o.Report, "\ntime=%d: elitism case 3: old best individual and new worst individuals are both out-of-range; but old one is 'less infeasible'\n", time)
+					docopy = true
+				}
 			}
-		} else {
-			if o.Pop[0].Oor < o.BkpPop[0].Oor {
-				o.Pop[0].CopyInto(o.BkpPop[ninds-1])
-				o.CalcDemeritsAndSort(o.BkpPop)
+		} else { // old best individual is feasible
+			if inew.Oor > 0 { // new worst individual is infeasible
+				io.Ff(&o.Report, "\ntime=%d: elitism case 2: old best individual is feasible and new worst individual is out-of-range\n", time)
+				docopy = true
+			} else { // new worst individual is also feasible
+				if iold.Ova < inew.Ova {
+					io.Ff(&o.Report, "\ntime=%d: elitism case 1: old best Individual and new worst individual are both feasible; but old one is better\n", time)
+					docopy = true
+				}
 			}
+		}
+		if docopy {
+			iold.CopyInto(inew)
+			o.CalcDemeritsAndSort(o.BkpPop)
 		}
 	}
 
@@ -255,6 +271,7 @@ func (o *Island) SelectReprodAndRegen(time, tout int, doregen bool) (comm Comm_t
 	}
 
 	// results
+	// Note: sometimes the best ova may be zero when its oor is non-zero
 	o.OVS = append(o.OVS, o.Pop[0].Ova)
 	return
 }
