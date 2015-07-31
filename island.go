@@ -19,12 +19,6 @@ import (
 // ObjFunc_t defines the template for the objective function
 type ObjFunc_t func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64)
 
-// Comm_t holds data for communication between solver and islands
-type Comm_t struct {
-	AveRho float64 // average of ρ, the diversity controller variable == deviation
-	RegIdx int     // generation type just applied: 0=none, 1=best, 2=lims
-}
-
 // Island holds one population and performs the reproduction operation
 type Island struct {
 
@@ -100,7 +94,7 @@ func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *B
 	o.CalcDemeritsAndSort(o.Pop)
 
 	// results
-	o.OVS = []float64{o.Pop[0].Ova}
+	o.OVS = make([]float64, o.C.Tf)
 
 	// for statistics
 	nfltgenes := o.Pop[0].Nfltgenes
@@ -168,7 +162,7 @@ func (o *Island) CalcDemeritsAndSort(pop Population) {
 // SelectReprodAndRegen performs the selection, reproduction and regeneration processes
 // It also peforms the output to files.
 //  Note: this function considers a SORTED population already
-func (o *Island) SelectReprodAndRegen(time, tout int, doregen bool) (comm Comm_t) {
+func (o *Island) SelectReprodAndRegen(time int, doregen, doreport bool) {
 
 	// fitness
 	ninds := len(o.Pop)
@@ -225,25 +219,7 @@ func (o *Island) SelectReprodAndRegen(time, tout int, doregen bool) (comm Comm_t
 	// elitism
 	if o.C.Elite {
 		iold, inew := o.Pop[0], o.BkpPop[ninds-1]
-		docopy := false
-		if iold.Oor > 0 { // old best individual is infeasible
-			if inew.Oor > 0 { // new worst individual is also infeasible
-				if iold.Oor < inew.Oor { // old best individual is better than new worst individual
-					io.Ff(&o.Report, "\ntime=%d: elitism case 3: old best individual and new worst individuals are both out-of-range; but old one is 'less infeasible'\n", time)
-					docopy = true
-				}
-			}
-		} else { // old best individual is feasible
-			if inew.Oor > 0 { // new worst individual is infeasible
-				io.Ff(&o.Report, "\ntime=%d: elitism case 2: old best individual is feasible and new worst individual is out-of-range\n", time)
-				docopy = true
-			} else { // new worst individual is also feasible
-				if iold.Ova < inew.Ova {
-					io.Ff(&o.Report, "\ntime=%d: elitism case 1: old best Individual and new worst individual are both feasible; but old one is better\n", time)
-					docopy = true
-				}
-			}
-		}
+		docopy := iold.Compare(inew)
 		if docopy {
 			iold.CopyInto(inew)
 			o.CalcDemeritsAndSort(o.BkpPop)
@@ -254,36 +230,36 @@ func (o *Island) SelectReprodAndRegen(time, tout int, doregen bool) (comm Comm_t
 	o.Pop, o.BkpPop = o.BkpPop, o.Pop
 
 	// statistics
-	var minrho, maxrho, devrho float64
-	minrho, comm.AveRho, maxrho, devrho = o.Stat()
+	minrho, averho, maxrho, devrho := o.Stat()
 
 	// regeneration
-	homogeneous := comm.AveRho < o.C.RegTol
+	homogeneous := averho < o.C.RegTol
 	if homogeneous || doregen {
 		basedOnBest := !homogeneous
-		comm.RegIdx = o.Regenerate(time, basedOnBest)
+		method := o.Regenerate(time, basedOnBest)
+		if doreport {
+			io.Ff(&o.Report, "time=%d: regeneration: method=%s\n", time, method)
+		}
 	}
 
 	// report
-	if time >= tout {
-		io.Ff(&o.Report, "\ntime=%d homogeneous=%v minrho=%g averho=%g maxrho=%g devrho=%g\n", time, homogeneous, minrho, comm.AveRho, maxrho, devrho)
-		o.Report.Write(o.Pop.Output(nil, o.C.ShowBases).Bytes())
+	if doreport {
+		io.Ff(&o.Report, "time=%d: homogeneous=%v minrho=%g averho=%g maxrho=%g devrho=%g\n", time, homogeneous, minrho, averho, maxrho, devrho)
+		o.WritePopToReport(time)
 	}
 
 	// results
 	// Note: sometimes the best ova may be zero when its oor is non-zero
-	o.OVS = append(o.OVS, o.Pop[0].Ova)
+	o.OVS[time] = o.Pop[0].Ova
 	return
 }
 
 // Regenerate regenerates population with basis on best individual(s)
-//  Output:
-//   regtype -- 1=best, 2=lims
-func (o *Island) Regenerate(time int, basedOnBest bool) (regtype int) {
+func (o *Island) Regenerate(time int, basedOnBest bool) (method string) {
 	bingo := o.BingoGrid
-	regtype = 2
+	method = "lims"
 	if basedOnBest || o.C.RegBest {
-		regtype = 1
+		method = "best"
 		o.BingoBest.ResetBasedOnRef(time, o.Pop[0], o.C.RegMmin, o.C.RegMmax)
 		bingo = o.BingoBest
 	}
@@ -339,14 +315,6 @@ func (o *Island) Stat() (minrho, averho, maxrho, devrho float64) {
 	return
 }
 
-// Write writes results to buffer
-func (o Island) Write(buf *bytes.Buffer, t int, json bool) {
-	if json {
-		return
-	}
-	buf.Write(o.Pop.Output(nil, o.C.ShowBases).Bytes())
-}
-
 // PlotOvs plots objective values versus time
 func (o Island) PlotOvs(ext, args string, t0, tf int, withtxt bool, numfmt string, first, last bool) {
 	if o.C.DoPlot == false || o.C.FnKey == "" {
@@ -375,14 +343,23 @@ func (o Island) PlotOvs(ext, args string, t0, tf int, withtxt bool, numfmt strin
 	}
 }
 
+// WritePopToReport writes population to report
+func (o *Island) WritePopToReport(time int) {
+	io.Ff(&o.Report, "time=%d: population:\n", time)
+	o.Report.Write(o.Pop.Output(nil, o.C.ShowBases).Bytes())
+}
+
 // SaveReport saves report to file
-func (o Island) SaveReport(dirout, fnkey string, verbose bool) {
-	if dirout == "" {
-		dirout = "/tmp/goga"
+func (o Island) SaveReport(verbose bool) {
+	dosave := o.C.FnKey != ""
+	if dosave {
+		if o.C.DirOut == "" {
+			o.C.DirOut = "/tmp/goga"
+		}
+		if verbose {
+			io.WriteFileVD(o.C.DirOut, io.Sf("%s-%d.rpt", o.C.FnKey, o.Id), &o.Report)
+			return
+		}
+		io.WriteFileD(o.C.DirOut, io.Sf("%s-%d.rpt", o.C.FnKey, o.Id), &o.Report)
 	}
-	if verbose {
-		io.WriteFileVD(dirout, fnkey+".rpt", &o.Report)
-		return
-	}
-	io.WriteFileD(dirout, fnkey+".rpt", &o.Report)
 }

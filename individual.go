@@ -162,6 +162,30 @@ func (o Individual) CopyInto(x *Individual) {
 	return
 }
 
+// Compare compares this individual 'A' with another one 'B'
+func (A Individual) Compare(B *Individual) (A_is_better bool) {
+
+	// A is infeasible
+	if A.Oor > 0 {
+		// B is also infeasible; but A is 'less infeasible' than B
+		if B.Oor > 0 && A.Oor < B.Oor {
+			return true // A is better
+		}
+		return false // B is better
+	}
+
+	// A is feasible and B is infeasible
+	if B.Oor > 0 {
+		return true // A is better
+	}
+
+	// A and B are both feasible
+	if A.Ova < B.Ova {
+		return true // A is better
+	}
+	return false // B is better
+}
+
 // genetic algorithm routines //////////////////////////////////////////////////////////////////////
 
 // crossover functions
