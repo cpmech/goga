@@ -15,6 +15,7 @@ import (
 type ConfParams struct {
 
 	// initialisation
+	Pll    bool    // allow running islands in parallel (go-routines)
 	Nisl   int     // number of islands
 	Ninds  int     // number of individuals: population size
 	Nbases int     // number of bases in chromosome
@@ -83,6 +84,7 @@ type ConfParams struct {
 func (o *ConfParams) SetDefault() {
 
 	// initialisation
+	o.Pll = true
 	o.Nisl = 1
 	o.Ninds = 20
 	o.Nbases = 10

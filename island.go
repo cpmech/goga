@@ -21,8 +21,8 @@ type ObjFunc_t func(ind *Individual, idIsland, time int, report *bytes.Buffer) (
 
 // Comm_t holds data for communication between solver and islands
 type Comm_t struct {
-	AveRho  float64 // average of ρ, the diversity controller variable == deviation
-	RegType int     // generation type just applied: 0=none, 1=best, 2=lims
+	AveRho float64 // average of ρ, the diversity controller variable == deviation
+	RegIdx int     // generation type just applied: 0=none, 1=best, 2=lims
 }
 
 // Island holds one population and performs the reproduction operation
@@ -238,18 +238,19 @@ func (o *Island) SelectReprodAndRegen(time, tout int, doregen bool) (comm Comm_t
 	o.Pop, o.BkpPop = o.BkpPop, o.Pop
 
 	// statistics
-	_, comm.AveRho, _, _ = o.Stat()
+	var minrho, maxrho, devrho float64
+	minrho, comm.AveRho, maxrho, devrho = o.Stat()
 
 	// regeneration
 	homogeneous := comm.AveRho < o.C.RegTol
 	if homogeneous || doregen {
 		basedOnBest := !homogeneous
-		comm.RegType = o.Regenerate(time, basedOnBest)
+		comm.RegIdx = o.Regenerate(time, basedOnBest)
 	}
 
 	// report
 	if time >= tout {
-		io.Ff(&o.Report, "\ntime=%d averho=%g homogeneous=%v\n", time, comm.AveRho, homogeneous)
+		io.Ff(&o.Report, "\ntime=%d homogeneous=%v minrho=%g averho=%g maxrho=%g devrho=%g\n", time, homogeneous, minrho, comm.AveRho, maxrho, devrho)
 		o.Report.Write(o.Pop.Output(nil, o.C.ShowBases).Bytes())
 	}
 

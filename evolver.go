@@ -101,7 +101,7 @@ func (o *Evolver) Run(verbose bool) {
 
 	// time loop
 	var res Comm_t
-	var regtype int
+	var regidx int
 	ch := make(chan Comm_t, nislands)
 	for t := 1; t < o.C.Tf+1; t++ {
 
@@ -114,26 +114,32 @@ func (o *Evolver) Run(verbose bool) {
 		}
 
 		// selection, reproduction, regeneration and reporting
-		for i := 0; i < nislands; i++ {
-
-			isl := o.Islands[i]
-
-			//go func(isl *Island) {
-
-			comm := isl.SelectReprodAndRegen(t, tout, doregen)
-			ch <- comm
-
-			//}(o.Islands[i])
-		}
-
-		// receive results
-		res = <-ch
-		averho = res.AveRho
-		regtype = res.RegType
-		for i := 1; i < nislands; i++ {
+		if o.C.Pll {
+			for i := 0; i < nislands; i++ {
+				go func(isl *Island) {
+					comm := isl.SelectReprodAndRegen(t, tout, doregen)
+					ch <- comm
+				}(o.Islands[i])
+			}
 			res = <-ch
-			averho = min(averho, res.AveRho)
-			regtype = imax(regtype, res.RegType)
+			averho = res.AveRho
+			regidx = res.RegIdx
+			for i := 1; i < nislands; i++ {
+				res = <-ch
+				averho = min(averho, res.AveRho)
+				regidx = imax(regidx, res.RegIdx)
+			}
+		} else {
+			for i, isl := range o.Islands {
+				comm := isl.SelectReprodAndRegen(t, tout, doregen)
+				if i == 0 {
+					averho = comm.AveRho
+					regidx = comm.RegIdx
+				} else {
+					averho = min(averho, comm.AveRho)
+					regidx = imin(regidx, comm.RegIdx)
+				}
+			}
 		}
 
 		// migration
@@ -157,7 +163,7 @@ func (o *Evolver) Run(verbose bool) {
 
 		// output
 		if verbose && t >= tout {
-			io.Pf(strt, t, mig, strreg[regtype], averho, o.Best.Ova, o.Best.Oor)
+			io.Pf(strt, t, mig, strreg[regidx], averho, o.Best.Ova, o.Best.Oor)
 			tout += o.C.Dtout
 		}
 	}
@@ -192,30 +198,6 @@ func (o *Evolver) FindBestFromAll() {
 }
 
 // auxiliary ///////////////////////////////////////////////////////////////////////////////////////
-
-// calc_stat computes some statistical data from float bases
-//  Note: avedev is actually the maximum average among all islands
-func (o Evolver) calc_stat() (minrho, averho, maxrho, devrho float64) {
-	nislands := len(o.Islands)
-	type res_t struct{ xmin, xave, xmax, xdev float64 }
-	results := make(chan res_t, nislands)
-	for i := 0; i < nislands; i++ {
-		go func(isl *Island) {
-			xmin, xave, xmax, xdev := isl.Stat()
-			results <- res_t{xmin, xave, xmax, xdev}
-		}(o.Islands[i])
-	}
-	res := <-results
-	minrho, averho, maxrho, devrho = res.xmin, res.xave, res.xmax, res.xdev
-	for i := 1; i < nislands; i++ {
-		res = <-results
-		minrho = min(minrho, res.xmin)
-		averho = min(averho, res.xave)
-		maxrho = min(maxrho, res.xmax)
-		devrho = min(devrho, res.xdev)
-	}
-	return
-}
 
 func (o *Evolver) prepare_for_saving_results(verbose bool) (dosave bool) {
 	dosave = o.C.FnKey != ""
