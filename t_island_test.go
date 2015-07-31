@@ -52,13 +52,13 @@ func Test_island01(tst *testing.T) {
 	io.Pforan("best = %v\n", isl.Pop[0].Output(nil, false))
 	chk.Vector(tst, "best", 1e-17, isl.Pop[0].Floats, []float64{13, 23, 33})
 
-	isl.SelectAndReprod(0)
+	isl.SelectReprodAndRegen(0, false, false)
 	io.Pfcyan("%v\n", isl.Pop.Output(nil, false))
 
-	isl.SelectAndReprod(1)
+	isl.SelectReprodAndRegen(1, false, false)
 	io.Pforan("%v\n", isl.Pop.Output(nil, false))
 
-	isl.SelectAndReprod(2)
+	isl.SelectReprodAndRegen(2, false, false)
 	io.Pfcyan("%v\n", isl.Pop.Output(nil, false))
 
 	// TODO: more tests required

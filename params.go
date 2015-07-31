@@ -29,9 +29,8 @@ type ConfParams struct {
 	Dtreg int // increment of time for regeneration
 
 	// regeneration
-	RegIni    bool    // regenerate initial population
+	RegIni    int     // time index for initial regeneration. use -1 for none
 	RegTol    float64 // tolerance for ρ to activate regeneration
-	RegNmax   int     // max number of generations. use -1 for unlimited number of generations
 	RegBest   bool    // enforce that regeneration is always based on based individual, regardless the population is homogeneous or not
 	RegPct    float64 // percentage of individuals to be regenerated
 	RegMmin   float64 // multiplier to decrease reference value; e.g. 0.1
@@ -98,9 +97,8 @@ func (o *ConfParams) SetDefault() {
 	o.Dtreg = 60
 
 	// regeneration
-	o.RegIni = false
+	o.RegIni = -1
 	o.RegTol = 1e-3
-	o.RegNmax = -1
 	o.RegBest = false
 	o.RegPct = 0.3
 	o.RegMmin = 0.1

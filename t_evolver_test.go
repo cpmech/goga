@@ -81,7 +81,7 @@ func Test_evo01(tst *testing.T) {
 	evo := NewEvolver(C, ref, ovfunc, bingo)
 
 	// run
-	evo.Run(true)
+	evo.Run(true, false)
 
 	// results
 	ideal := 1.0 / (1.0 + float64(nvals))
@@ -99,11 +99,12 @@ func Test_evo01(tst *testing.T) {
 
 func Test_evo02(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo02")
 
 	// initialise random numbers generator
-	rnd.Init(0) // 0 => use current time as seed
+	//rnd.Init(0) // 0 => use current time as seed
+	rnd.Init(1111) // 0 => use current time as seed
 
 	f := func(x, y float64) float64 { return x*x/2.0 + y*y - x*y - 2.0*x - 6.0*y }
 	c1 := func(x, y float64) float64 { return x + y - 2.0 }      // ≤ 0
@@ -128,6 +129,8 @@ func Test_evo02(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
+	//C.Pll = true
+	C.Pll = false
 	C.Nisl = 4
 	C.Ninds = 20
 	if chk.Verbose {
@@ -136,7 +139,11 @@ func Test_evo02(tst *testing.T) {
 	}
 	C.Noise = 0.5
 	C.RegBest = false
-	C.Dtout = 1
+	C.RegIni = 3
+	C.RegTol = 0
+	C.Dtreg = 40
+	//C.Dtmig = 1000
+	C.Dtout = 15
 
 	// bingo
 	ndim := 2
@@ -193,13 +200,19 @@ func Test_evo02(tst *testing.T) {
 	}
 
 	// run
-	evo.Run(true)
+	verbose := true
+	doreport := true
+	evo.Run(verbose, doreport)
+
+	//return
+
+	// results
 	io.PfGreen("\nx=%g (%g)\n", evo.Best.GetFloat(0), 2.0/3.0)
 	io.PfGreen("y=%g (%g)\n", evo.Best.GetFloat(1), 4.0/3.0)
 	io.PfGreen("BestOV=%g (%g)\n", evo.Best.Ova, f(2.0/3.0, 4.0/3.0))
 
 	// plot population on contour
-	if C.DoPlot {
+	if C.DoPlot && false {
 		for _, ind := range evo.Islands[0].Pop {
 			x := ind.GetFloat(0)
 			y := ind.GetFloat(1)
@@ -216,7 +229,7 @@ func Test_evo02(tst *testing.T) {
 	// plot
 	if C.DoPlot {
 		for i := 0; i < C.Nisl; i++ {
-			evo.Islands[i].PlotOvs(".eps", "", 10, C.Tf, false, "%.6f", i == 0, i == C.Nisl-1)
+			evo.Islands[i].PlotOvs(".eps", io.Sf("label='island %d'", i), 0, -1, false, "%.6f", i == 0, i == C.Nisl-1)
 		}
 	}
 }

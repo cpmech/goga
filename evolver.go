@@ -5,11 +5,9 @@
 package goga
 
 import (
-	"bytes"
-	"os"
-
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/utl"
 )
 
 // Evolver realises the evolutionary process
@@ -52,132 +50,108 @@ func NewEvolverPop(C *ConfParams, pops []Population, ovfunc ObjFunc_t, bingo *Bi
 }
 
 // Run runs the evolution process
-func (o *Evolver) Run(verbose bool) {
+func (o *Evolver) Run(verbose, doreport bool) {
 
 	// check
 	nislands := len(o.Islands)
 	if nislands < 1 {
 		return
 	}
+	if o.C.Ninds < nislands {
+		chk.Panic("number of individuals must be greater than the number of islands")
+	}
 
-	// time control
+	// first output
 	t := 0
-	tout := o.C.Dtout
-	tmig := o.C.Dtmig
-	treg := o.C.Dtreg
-
-	// regeneration control
-	idxreg := 0
-	if o.C.RegNmax < 0 {
-		o.C.RegNmax = o.C.Tf + 1
+	for _, isl := range o.Islands {
+		isl.WritePopToReport(t)
 	}
-	if o.Islands[0].Pop[0].Nfltgenes == 0 {
-		o.C.RegTol = 0
-	}
-
-	// best individual and index of worst individual
-	o.FindBestFromAll()
-	iworst := o.C.Ninds - 1
-	_, averho, _, _ := o.Islands[0].Stat()
-
-	// saving results
-	dosave := o.prepare_for_saving_results(verbose)
-
-	// header
-	lent := len(io.Sf("%d", o.C.Tf))
-	if lent < 5 {
-		lent = 5
-	}
-	strt := io.Sf("%%%d", lent)
-	szline := lent + 6 + 6 + 11 + 25 + 25
 	if verbose {
-		io.Pf("%s", printThickLine(szline))
-		io.Pf(strt+"s%6s%6s%11s%25s%25s\n", "time", "mig", "reg", "ave(rho)", "ova", "oor")
-		io.Pf("%s", printThinLine(szline))
-		strt = strt + "d%6s%6s%11.3e%25g%25g\n"
-		io.Pf(strt, t, "", "", averho, o.Best.Ova, o.Best.Oor)
+		io.Pf("\nrunning ...\n")
 	}
-	strreg := []string{"", "best", "lims"}
+
+	// for migration
+	iworst := o.C.Ninds - 1
+	receiveFrom := utl.IntsAlloc(nislands, nislands-1)
 
 	// time loop
-	var res Comm_t
-	var regidx int
-	ch := make(chan Comm_t, nislands)
-	for t := 1; t < o.C.Tf+1; t++ {
+	t = 1
+	tmig := o.C.Dtmig
+	for t < o.C.Tf {
 
-		// perform regeneration?
-		doregen := false
-		if (t == 1 && o.C.RegIni) || (t >= treg && idxreg < o.C.RegNmax) {
-			doregen = true
-			treg = t + o.C.Dtreg
-			idxreg += 1
-		}
-
-		// selection, reproduction, regeneration and reporting
+		// evolve up to migration time
 		if o.C.Pll {
-			for i := 0; i < nislands; i++ {
-				go func(isl *Island) {
-					comm := isl.SelectReprodAndRegen(t, tout, doregen)
-					ch <- comm
-				}(o.Islands[i])
-			}
-			res = <-ch
-			averho = res.AveRho
-			regidx = res.RegIdx
-			for i := 1; i < nislands; i++ {
-				res = <-ch
-				averho = min(averho, res.AveRho)
-				regidx = imax(regidx, res.RegIdx)
-			}
 		} else {
 			for i, isl := range o.Islands {
-				comm := isl.SelectReprodAndRegen(t, tout, doregen)
-				if i == 0 {
-					averho = comm.AveRho
-					regidx = comm.RegIdx
-				} else {
-					averho = min(averho, comm.AveRho)
-					regidx = imin(regidx, comm.RegIdx)
+				for time := t; time < tmig; time++ {
+					regen := o.calc_regen(time)
+					report := o.calc_report(time)
+					isl.SelectReprodAndRegen(time, regen, report)
+					if verbose && i == 0 {
+						o.print_time(time, regen, report)
+					}
+				}
+			}
+		}
+
+		// update time
+		t = tmig
+		tmig += o.C.Dtmig
+		if tmig > o.C.Tf {
+			tmig = o.C.Tf
+		}
+
+		// reset receiveFrom matrix
+		for i := 0; i < nislands; i++ {
+			for j := 0; j < nislands-1; j++ {
+				receiveFrom[i][j] = -1
+			}
+		}
+
+		// compute destinations
+		for i := 0; i < nislands; i++ {
+			Aworst := o.Islands[i].Pop[iworst]
+			k := 0
+			for j := 0; j < nislands; j++ {
+				if i != j {
+					Bbest := o.Islands[j].Pop[0]
+					send := Bbest.Compare(Aworst)
+					if send {
+						receiveFrom[i][k] = j // i gets individual from j
+						k++
+					}
 				}
 			}
 		}
 
 		// migration
-		mig := ""
-		if t >= tmig && nislands > 1 {
-			for i := 0; i < nislands; i++ {
-				for j := i + 1; j < nislands; j++ {
-					o.Islands[i].Pop[0].CopyInto(o.Islands[j].Pop[iworst]) // iBest => jWorst
-					o.Islands[j].Pop[0].CopyInto(o.Islands[i].Pop[iworst]) // jBest => iWorst
+		if verbose {
+			io.Pfyel("\n%d : migration\n", t)
+		}
+		for i, from := range receiveFrom {
+			k := 0
+			for _, j := range from {
+				if j >= 0 {
+					o.Islands[j].Pop[0].CopyInto(o.Islands[i].Pop[iworst-k])
+					k++
 				}
 			}
-			for _, isl := range o.Islands {
-				isl.CalcDemeritsAndSort(isl.Pop)
-			}
-			mig = "true"
-			tmig = t + o.C.Dtmig
-		}
-
-		// best individual from all islands
-		o.FindBestFromAll()
-
-		// output
-		if verbose && t >= tout {
-			io.Pf(strt, t, mig, strreg[regidx], averho, o.Best.Ova, o.Best.Oor)
-			tout += o.C.Dtout
+			o.Islands[i].CalcDemeritsAndSort(o.Islands[i].Pop)
 		}
 	}
 
-	// footer
+	// best individual
+	o.FindBestFromAll()
+
+	// message
 	if verbose {
-		io.Pf("%s", printThickLine(szline))
+		io.Pf("... end\n\n")
 	}
 
-	// save results
-	if dosave {
-		o.save_results("final", t, verbose)
-		for i, isl := range o.Islands {
-			isl.SaveReport(o.C.DirOut, io.Sf("%s-isl%d", o.C.FnKey, i), verbose)
+	// write reports
+	if doreport {
+		for _, isl := range o.Islands {
+			isl.SaveReport(verbose)
 		}
 	}
 	return
@@ -189,7 +163,7 @@ func (o *Evolver) FindBestFromAll() {
 	if len(o.Islands) < 1 {
 		return
 	}
-	o.Best = o.Islands[0].Pop[0]
+	o.Best = o.Islands[0].Pop[0] // TODO: check case of oor individuals
 	for _, isl := range o.Islands {
 		if isl.Pop[0].Ova < o.Best.Ova {
 			o.Best = isl.Pop[0]
@@ -197,51 +171,26 @@ func (o *Evolver) FindBestFromAll() {
 	}
 }
 
-// auxiliary ///////////////////////////////////////////////////////////////////////////////////////
-
-func (o *Evolver) prepare_for_saving_results(verbose bool) (dosave bool) {
-	dosave = o.C.FnKey != ""
-	if dosave {
-		if o.C.DirOut == "" {
-			o.C.DirOut = "/tmp/goga"
-		}
-		err := os.MkdirAll(o.C.DirOut, 0777)
-		if err != nil {
-			chk.Panic("cannot create directory:%v", err)
-		}
-		io.RemoveAll(io.Sf("%s/%s*", o.C.DirOut, o.C.FnKey))
-		o.save_results("initial", 0, verbose)
+func (o Evolver) calc_regen(t int) bool {
+	if t == o.C.RegIni {
+		return true
 	}
-	return
+	return t%o.C.Dtreg == 0
 }
 
-func (o Evolver) save_results(key string, t int, verbose bool) {
-	var b bytes.Buffer
-	for i, isl := range o.Islands {
-		if i > 0 {
-			if o.C.Json {
-				io.Ff(&b, ",\n")
-			} else {
-				io.Ff(&b, "\n")
-			}
-		}
-		isl.Write(&b, t, o.C.Json)
+func (o Evolver) calc_report(t int) bool {
+	return t%o.C.Dtout == 0
+}
+
+func (o Evolver) print_time(time int, regen, report bool) {
+	io.Pf(" ")
+	if regen {
+		io.Pf("%v", time)
+		return
 	}
-	ext := "res"
-	if o.C.Json {
-		ext = "json"
+	if report {
+		io.Pfblue("%v", time)
+		return
 	}
-	write := io.WriteFile
-	if t > 0 && verbose {
-		write = io.WriteFileV
-		io.Pf("\n")
-	}
-	write(io.Sf("%s/%s-%s.%s", o.C.DirOut, o.C.FnKey, key, ext), &b)
-	if t > 0 {
-		for i, isl := range o.Islands {
-			if isl.Report.Len() > 0 {
-				write(io.Sf("%s/%s-isl%d.rpt", o.C.DirOut, o.C.FnKey, i), &isl.Report)
-			}
-		}
-	}
+	io.Pfgrey("%v", time)
 }
