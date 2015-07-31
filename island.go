@@ -317,12 +317,19 @@ func (o Island) PlotOvs(ext, args string, t0, tf int, withtxt bool, numfmt strin
 	if first {
 		plt.SetForEps(0.75, 250)
 	}
-	n := len(o.OVS) - t0
+	var y []float64
+	if tf == -1 {
+		y = o.OVS[t0:]
+		tf = len(o.OVS)
+	} else {
+		y = o.OVS[t0:tf]
+	}
+	n := len(y)
 	T := utl.LinSpace(float64(t0), float64(tf), n)
-	plt.Plot(T, o.OVS[:n], args)
+	plt.Plot(T, y, args)
 	if withtxt {
-		plt.Text(T[0], o.OVS[0], io.Sf(numfmt, o.OVS[0]), "ha='left'")
-		plt.Text(T[n-1], o.OVS[n-1], io.Sf(numfmt, o.OVS[n-1]), "ha='right'")
+		plt.Text(T[0], y[0], io.Sf(numfmt, y[0]), "ha='left'")
+		plt.Text(T[n-1], y[n-1], io.Sf(numfmt, y[n-1]), "ha='right'")
 	}
 	if last {
 		plt.Gll("time", "objective value", "")
