@@ -99,16 +99,10 @@ func (o *Evolver) Run(verbose bool) {
 	}
 	strreg := []string{"", "best", "lims"}
 
-	// communication data
-	type comm_t struct {
-		myaverho  float64
-		myregtype int // 0=NoReg, 1=best, 2=lims
-	}
-
 	// time loop
-	var res comm_t
+	var res Comm_t
 	var regtype int
-	ch := make(chan comm_t, nislands)
+	ch := make(chan Comm_t, nislands)
 	for t := 1; t < o.C.Tf+1; t++ {
 
 		// perform regeneration?
@@ -119,31 +113,14 @@ func (o *Evolver) Run(verbose bool) {
 			idxreg += 1
 		}
 
-		// loop over all islands
+		// selection, reproduction, regeneration and reporting
 		for i := 0; i < nislands; i++ {
 
 			isl := o.Islands[i]
 
 			//go func(isl *Island) {
 
-			// reproduction
-			var comm comm_t
-			comm.myaverho = isl.SelectAndReprod(t)
-			homogeneous := comm.myaverho < o.C.RegTol
-
-			// regeneration
-			comm.myregtype = 0
-			if doregen || homogeneous {
-				comm.myregtype = isl.Regenerate(t, !homogeneous)
-			}
-
-			// report
-			if t >= tout {
-				io.Ff(&isl.Report, "\nt=%d averho=%g homogeneous=%v\n", t, comm.myaverho, homogeneous)
-				isl.Report.Write(isl.Pop.Output(nil, o.C.ShowBases).Bytes())
-			}
-
-			// send results
+			comm := isl.SelectReprodAndRegen(t, tout, doregen)
 			ch <- comm
 
 			//}(o.Islands[i])
@@ -151,12 +128,12 @@ func (o *Evolver) Run(verbose bool) {
 
 		// receive results
 		res = <-ch
-		averho = res.myaverho
-		regtype = res.myregtype
+		averho = res.AveRho
+		regtype = res.RegType
 		for i := 1; i < nislands; i++ {
 			res = <-ch
-			averho = min(averho, res.myaverho)
-			regtype = imax(regtype, res.myregtype)
+			averho = min(averho, res.AveRho)
+			regtype = imax(regtype, res.RegType)
 		}
 
 		// migration

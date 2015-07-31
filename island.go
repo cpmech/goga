@@ -19,6 +19,12 @@ import (
 // ObjFunc_t defines the template for the objective function
 type ObjFunc_t func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64)
 
+// Comm_t holds data for communication between solver and islands
+type Comm_t struct {
+	AveRho  float64 // average of ρ, the diversity controller variable == deviation
+	RegType int     // generation type just applied: 0=none, 1=best, 2=lims
+}
+
 // Island holds one population and performs the reproduction operation
 type Island struct {
 
@@ -156,9 +162,10 @@ func (o *Island) CalcDemeritsAndSort(pop Population) {
 	pop.Sort()
 }
 
-// SelectAndReprod performs the selection and reproduction processes
+// SelectReprodAndRegen performs the selection, reproduction and regeneration processes
+// It also peforms the output to files.
 //  Note: this function considers a SORTED population already
-func (o *Island) SelectAndReprod(time int) (averho float64) {
+func (o *Island) SelectReprodAndRegen(time, tout int, doregen bool) (comm Comm_t) {
 
 	// fitness
 	ninds := len(o.Pop)
@@ -231,7 +238,20 @@ func (o *Island) SelectAndReprod(time int) (averho float64) {
 	o.Pop, o.BkpPop = o.BkpPop, o.Pop
 
 	// statistics
-	_, averho, _, _ = o.Stat()
+	_, comm.AveRho, _, _ = o.Stat()
+
+	// regeneration
+	homogeneous := comm.AveRho < o.C.RegTol
+	if homogeneous || doregen {
+		basedOnBest := !homogeneous
+		comm.RegType = o.Regenerate(time, basedOnBest)
+	}
+
+	// report
+	if time >= tout {
+		io.Ff(&o.Report, "\ntime=%d averho=%g homogeneous=%v\n", time, comm.AveRho, homogeneous)
+		o.Report.Write(o.Pop.Output(nil, o.C.ShowBases).Bytes())
+	}
 
 	// results
 	o.OVS = append(o.OVS, o.Pop[0].Ova)
