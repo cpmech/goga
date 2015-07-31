@@ -92,8 +92,7 @@ func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *B
 
 	// compute objective values, demerits, and sort population
 	o.CalcOvs(o.Pop, 0)
-	o.CalcDemerits(o.Pop)
-	o.Pop.Sort()
+	o.CalcDemeritsAndSort(o.Pop)
 
 	// results
 	o.OVS = []float64{o.Pop[0].Ova}
@@ -121,8 +120,8 @@ func (o *Island) CalcOvs(pop Population, time int) {
 	}
 }
 
-// CalcDemerits computes demerits
-func (o *Island) CalcDemerits(pop Population) {
+// CalcDemeritsAndSort computes demerits and sort population
+func (o *Island) CalcDemeritsAndSort(pop Population) {
 
 	// ovs and oors
 	var iova, ioor int // indices of individuals with ova and with oor, respectively
@@ -152,6 +151,9 @@ func (o *Island) CalcDemerits(pop Population) {
 			iova++
 		}
 	}
+
+	// sort population
+	pop.Sort()
 }
 
 // SelectAndReprod performs the selection and reproduction processes
@@ -208,21 +210,21 @@ func (o *Island) SelectAndReprod(time int) (averho float64) {
 
 	// compute objective values, demerits, and sort population
 	o.CalcOvs(o.BkpPop, time+1) // +1 => this is an updated generation
-	o.CalcDemerits(o.BkpPop)
-	o.BkpPop.Sort()
+	o.CalcDemeritsAndSort(o.BkpPop)
 
 	// elitism
 	if o.C.Elite {
 		if o.foundov {
 			if o.Pop[0].Ova < o.BkpPop[0].Ova {
 				o.Pop[0].CopyInto(o.BkpPop[ninds-1])
+				o.CalcDemeritsAndSort(o.BkpPop)
 			}
 		} else {
 			if o.Pop[0].Oor < o.BkpPop[0].Oor {
 				o.Pop[0].CopyInto(o.BkpPop[ninds-1])
+				o.CalcDemeritsAndSort(o.BkpPop)
 			}
 		}
-		o.BkpPop.Sort()
 	}
 
 	// swap populations (Pop will always point to current one)
@@ -255,8 +257,7 @@ func (o *Island) Regenerate(time int, basedOnBest bool) (regtype int) {
 		}
 	}
 	o.CalcOvs(o.Pop, time)
-	o.CalcDemerits(o.Pop)
-	o.Pop.Sort()
+	o.CalcDemeritsAndSort(o.Pop)
 	return
 }
 

@@ -169,8 +169,7 @@ func (o *Evolver) Run(verbose bool) {
 				}
 			}
 			for _, isl := range o.Islands {
-				isl.CalcDemerits(isl.Pop)
-				isl.Pop.Sort()
+				isl.CalcDemeritsAndSort(isl.Pop)
 			}
 			mig = "true"
 			tmig = t + o.C.Dtmig
