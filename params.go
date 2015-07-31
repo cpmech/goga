@@ -124,6 +124,15 @@ func (o *ConfParams) SetDefault() {
 	o.ShowBases = true
 }
 
+// CalcDerived calculates derived quantities
+func (o *ConfParams) CalcDerived() {
+
+	// set probabilities
+	pc, pm := o.Pc, o.Pm
+	o.CxProbs = map[string]float64{"int": pc, "flt": pc, "str": pc, "key": pc, "byt": pc, "fun": pc}
+	o.MtProbs = map[string]float64{"int": pm, "flt": pm, "str": pm, "key": pm, "byt": pm, "fun": pm}
+}
+
 // NewConfParams returns a new ConfParams structure, with default values set
 func NewConfParams() *ConfParams {
 	var o ConfParams
@@ -149,11 +158,6 @@ func ReadConfParams(filenamepath string) *ConfParams {
 	if err != nil {
 		chk.Panic("cannot unmarshal parameters file %q", filenamepath)
 	}
-
-	// set probabilities
-	pc, pm := o.Pc, o.Pm
-	o.CxProbs = map[string]float64{"int": pc, "flt": pc, "str": pc, "key": pc, "byt": pc, "fun": pc}
-	o.MtProbs = map[string]float64{"int": pm, "flt": pm, "str": pm, "key": pm, "byt": pm, "fun": pm}
 
 	// results
 	return &o
