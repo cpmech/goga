@@ -18,6 +18,8 @@ import (
 
 func main() {
 
+	rnd.Init(0)
+
 	// Simply supported beam
 	// Analyse the max deflection at mid-span of simply supported beam
 	// with uniform distributed load q and concentrated load at midspan
@@ -62,11 +64,13 @@ func main() {
 	form.TolB = 0.005
 	verbose := false // show messages
 	βtrial := 3.0
-	βform, _, _, _ := form.Run(βtrial, verbose)
+	βform, _, _, xform := form.Run(βtrial, verbose)
 	io.Pforan("βform = %v\n", βform)
+	io.Pforan("xform = %v\n", xform)
 
 	// objective function
-	x := make([]float64, 2)
+	x := make([]float64, 2) // original random variables
+	y := make([]float64, 2) // normalised random variables
 	ovfunc := func(ind *goga.Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
 		x[0], x[1] = ind.GetFloat(0), ind.GetFloat(1)
 		gx, err := gfcn(x)
@@ -74,7 +78,10 @@ func main() {
 			oor = 1e3
 			return
 		}
-		ova = la.VecDot(x, x)
+		for i := 0; i < len(x); i++ {
+			y[i] = (x[i] - μ[i]) / σ[i]
+		}
+		ova = la.VecDot(y, y)
 		oor = math.Abs(gx) // gx must be equal to zero
 		return
 	}
@@ -82,10 +89,11 @@ func main() {
 	// parameters
 	C := goga.NewConfParams()
 	C.Pll = false
-	C.Nisl = 1
-	C.Ninds = 10
+	C.Nisl = 4
+	C.Ninds = 20
 	C.FnKey = "rel-simple-beam-form"
 	C.DoPlot = true
+	C.PltTi = 20
 	C.CalcDerived()
 
 	// bingo
@@ -105,6 +113,14 @@ func main() {
 	verbose = true
 	doreport := true
 	evo.Run(verbose, doreport)
-	io.PfGreen("\nx0=%g x1=%g\n", evo.Best.GetFloat(0), evo.Best.GetFloat(1))
+
+	// results
+	x[0], x[1] = evo.Best.GetFloat(0), evo.Best.GetFloat(1)
+	for i := 0; i < len(x); i++ {
+		y[i] = (x[i] - μ[i]) / σ[i]
+	}
+	β := math.Sqrt(la.VecDot(y, y))
+	io.Pfgreen("\nx=%g\n", x)
+	io.Pfgreen("β = %g\n", β)
 	io.PfGreen("BestOV=%g\n", evo.Best.Ova)
 }

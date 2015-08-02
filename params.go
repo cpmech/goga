@@ -53,6 +53,8 @@ type ConfParams struct {
 	DirOut    string // directory to save output files. "" means "/tmp/goga"
 	FnKey     string // filename key for output files. "" means no output files
 	DoPlot    bool   // plot results
+	PltTi     int    // initial time for plot
+	PltTf     int    // final time for plot
 	ShowBases bool   // show also bases when printing results (if any)
 
 	// crossover
@@ -121,6 +123,8 @@ func (o *ConfParams) SetDefault() {
 	o.DirOut = "/tmp/goga"
 	o.FnKey = ""
 	o.DoPlot = false
+	o.PltTi = 0
+	o.PltTf = -1
 	o.ShowBases = false
 
 	// number of cuts in chromossome

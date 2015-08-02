@@ -350,7 +350,6 @@ func (o Island) PlotOvs(ext, args string, t0, tf int, withtxt bool, numfmt strin
 
 // PlotOor plots out-of-range values versus time
 func (o Island) PlotOor(ext, args string, t0, tf int, withtxt bool, numfmt string, first, last bool) {
-	io.Pforan("OOR = %v\n", o.OOR)
 	if o.C.DoPlot == false || o.C.FnKey == "" {
 		return
 	}
