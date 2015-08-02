@@ -99,7 +99,7 @@ func Test_evo01(tst *testing.T) {
 
 func Test_evo02(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo02")
 
 	// initialise random numbers generator
@@ -145,14 +145,8 @@ func Test_evo02(tst *testing.T) {
 	xmin, xmax := utl.DblVals(ndim, vmin), utl.DblVals(ndim, vmax)
 	bingo := NewBingoFloats(xmin, xmax)
 
-	// populations
-	pops := make([]Population, C.Nisl)
-	for i := 0; i < C.Nisl; i++ {
-		pops[i] = NewPopFloatRandom(C, xmin, xmax)
-	}
-
 	// evolver
-	evo := NewEvolverPop(C, pops, ovfunc, bingo)
+	evo := NewEvolverFloatChromo(C, xmin, xmax, ovfunc, bingo)
 
 	// plot contour
 	if C.DoPlot {

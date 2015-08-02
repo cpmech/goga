@@ -7,9 +7,13 @@
 package main
 
 import (
+	"bytes"
 	"math"
 
+	"github.com/cpmech/goga"
+	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 )
 
@@ -57,10 +61,49 @@ func main() {
 	form.Init(μ, σ, lrv, gfcn, hfcn)
 	form.TolA = 0.005
 	form.TolB = 0.005
-
-	// run FORM
 	verbose := false // show messages
 	βtrial := 3.0
-	β, _, _, _ := form.Run(βtrial, verbose)
-	io.Pforan("β(final) = %v\n", β)
+	βform, _, _, _ := form.Run(βtrial, verbose)
+	io.Pforan("βform = %v\n", βform)
+
+	// objective function
+	x := make([]float64, 2)
+	ovfunc := func(ind *goga.Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64) {
+		x[0], x[1] = ind.GetFloat(0), ind.GetFloat(1)
+		gx := gfcn(x)
+		ova = la.VecDot(x, x)
+		oor = math.Abs(gx) // gx must be equal to zero
+	}
+
+	// parameters
+	C := NewConfParams()
+	C.Pll = false
+	C.Nisl = 1
+	C.Ninds = 10
+	if chk.Verbose {
+		C.FnKey = "rel-simple-beam-form"
+		C.DoPlot = true
+	}
+	C.CalcDerived()
+
+	// bingo
+	cf := 2.0
+	xmin := []float64{
+		μ[0] - cf*μ[0],
+		μ[1] - cf*μ[1],
+	}
+	xmax := []float64{
+		μ[0] + cf*μ[0],
+		μ[1] + cf*μ[1],
+	}
+	bingo := NewBingoFloats(xmin, xmax)
+
+	// populations
+	pops := make([]Population, C.Nisl)
+	for i := 0; i < C.Nisl; i++ {
+		pops[i] = NewPopFloatRandom(C, xmin, xmax)
+	}
+
+	// evolver
+	evo := NewEvolverPop(C, pops, ovfunc, bingo)
 }

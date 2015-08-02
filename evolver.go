@@ -49,6 +49,24 @@ func NewEvolverPop(C *ConfParams, pops []Population, ovfunc ObjFunc_t, bingo *Bi
 	return
 }
 
+// NewEvolverFloatChromo creates a new evolver with float point individuals
+//  Input:
+//   C.Ninds  -- number of individuals to be generated
+//   C.Nbases -- number of bases
+//   C.Grid   -- whether or not to calc values based on grid;
+//               otherwise select randomly between xmin and xmax
+//   C.Noise  -- if noise>0, apply noise to move points away from grid nodes
+//               noise is a multiplier; e.g. 0.2
+//   xmin     -- min values of genes
+//   xmax     -- max values of genes. len(xmin) = len(xmax) = ngenes
+func NewEvolverFloatChromo(C *ConfParams, xmin, xmax []float64, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver) {
+	pops := make([]Population, C.Nisl)
+	for i := 0; i < C.Nisl; i++ {
+		pops[i] = NewPopFloatRandom(C, xmin, xmax)
+	}
+	return NewEvolverPop(C, pops, ovfunc, bingo)
+}
+
 // Run runs the evolution process
 func (o *Evolver) Run(verbose, doreport bool) {
 
