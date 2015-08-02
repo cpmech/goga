@@ -44,7 +44,7 @@ func Test_evo01(tst *testing.T) {
 	}
 
 	// objective function
-	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64) {
+	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
 		score := 0.0
 		count := 0
 		for _, val := range ind.Ints {
@@ -56,7 +56,7 @@ func Test_evo01(tst *testing.T) {
 			}
 			count++
 		}
-		ov = 1.0 / (1.0 + score)
+		ova = 1.0 / (1.0 + score)
 		return
 	}
 
@@ -86,15 +86,6 @@ func Test_evo01(tst *testing.T) {
 	// results
 	ideal := 1.0 / (1.0 + float64(nvals))
 	io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.Ova, ideal)
-
-	// plot
-	if C.DoPlot {
-		for i, isl := range evo.Islands {
-			first := i == 0
-			last := i == C.Nisl-1
-			isl.PlotOvs(".eps", "", 0, C.Tf, true, "%.6f", first, last)
-		}
-	}
 }
 
 func Test_evo02(tst *testing.T) {
@@ -115,10 +106,10 @@ func Test_evo02(tst *testing.T) {
 
 	// objective function
 	p := 1.0
-	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64) {
+	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
 		x := ind.GetFloat(0)
 		y := ind.GetFloat(1)
-		ov = f(x, y)
+		ova = f(x, y)
 		oor += utl.GtePenalty(0, c1(x, y), p)
 		oor += utl.GtePenalty(0, c2(x, y), p)
 		oor += utl.GtePenalty(0, c3(x, y), p)
@@ -212,12 +203,5 @@ func Test_evo02(tst *testing.T) {
 		plt.Equal()
 		plt.AxisLims([]float64{-2, 2, -2, 2})
 		plt.SaveD("/tmp/goga", "test_evo02_contour.eps")
-	}
-
-	// plot
-	if C.DoPlot {
-		for i := 0; i < C.Nisl; i++ {
-			evo.Islands[i].PlotOvs(".eps", io.Sf("label='island %d'", i), 0, -1, false, "%.6f", i == 0, i == C.Nisl-1)
-		}
 	}
 }

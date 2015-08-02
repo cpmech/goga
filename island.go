@@ -33,7 +33,8 @@ type Island struct {
 
 	// results
 	Report bytes.Buffer // buffer to report results
-	OVS    []float64    // best objective values collected from multiple calls to SelectAndReprod
+	OVA    []float64    // best objective values collected from multiple calls to SelectReprodAndRegen
+	OOR    []float64    // best out-of-range values collected from multiple calls to SelectReprodAndRegen
 
 	// auxiliary internal data
 	ovas    []float64 // all ova values
@@ -94,7 +95,10 @@ func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *B
 	o.CalcDemeritsAndSort(o.Pop)
 
 	// results
-	o.OVS = make([]float64, o.C.Tf)
+	o.OVA = make([]float64, o.C.Tf)
+	o.OOR = make([]float64, o.C.Tf)
+	o.OVA[0] = o.Pop[0].Ova
+	o.OOR[0] = o.Pop[0].Oor
 
 	// for statistics
 	nfltgenes := o.Pop[0].Nfltgenes
@@ -250,7 +254,8 @@ func (o *Island) SelectReprodAndRegen(time int, doregen, doreport bool) {
 
 	// results
 	// Note: sometimes the best ova may be zero when its oor is non-zero
-	o.OVS[time] = o.Pop[0].Ova
+	o.OVA[time] = o.Pop[0].Ova
+	o.OOR[time] = o.Pop[0].Oor
 	return
 }
 
@@ -325,10 +330,10 @@ func (o Island) PlotOvs(ext, args string, t0, tf int, withtxt bool, numfmt strin
 	}
 	var y []float64
 	if tf == -1 {
-		y = o.OVS[t0:]
-		tf = len(o.OVS)
+		y = o.OVA[t0:]
+		tf = len(o.OVA)
 	} else {
-		y = o.OVS[t0:tf]
+		y = o.OVA[t0:tf]
 	}
 	n := len(y)
 	T := utl.LinSpace(float64(t0), float64(tf), n)
@@ -339,7 +344,36 @@ func (o Island) PlotOvs(ext, args string, t0, tf int, withtxt bool, numfmt strin
 	}
 	if last {
 		plt.Gll("time", "objective value", "")
-		plt.SaveD(o.C.DirOut, o.C.FnKey+ext)
+		plt.SaveD(o.C.DirOut, o.C.FnKey+"_ova"+ext)
+	}
+}
+
+// PlotOor plots out-of-range values versus time
+func (o Island) PlotOor(ext, args string, t0, tf int, withtxt bool, numfmt string, first, last bool) {
+	io.Pforan("OOR = %v\n", o.OOR)
+	if o.C.DoPlot == false || o.C.FnKey == "" {
+		return
+	}
+	if first {
+		plt.SetForEps(0.75, 250)
+	}
+	var y []float64
+	if tf == -1 {
+		y = o.OOR[t0:]
+		tf = len(o.OOR)
+	} else {
+		y = o.OOR[t0:tf]
+	}
+	n := len(y)
+	T := utl.LinSpace(float64(t0), float64(tf), n)
+	plt.Plot(T, y, args)
+	if withtxt {
+		plt.Text(T[0], y[0], io.Sf(numfmt, y[0]), "ha='left'")
+		plt.Text(T[n-1], y[n-1], io.Sf(numfmt, y[n-1]), "ha='right'")
+	}
+	if last {
+		plt.Gll("time", "out-of-range value", "")
+		plt.SaveD(o.C.DirOut, o.C.FnKey+"_oor"+ext)
 	}
 }
 

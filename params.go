@@ -121,7 +121,7 @@ func (o *ConfParams) SetDefault() {
 	o.DirOut = "/tmp/goga"
 	o.FnKey = ""
 	o.DoPlot = false
-	o.ShowBases = true
+	o.ShowBases = false
 
 	// number of cuts in chromossome
 	o.CxNcuts = map[string]int{"int": 2, "flt": 2, "str": 2, "key": 2, "byt": 2, "fun": 2}

@@ -172,6 +172,16 @@ func (o *Evolver) Run(verbose, doreport bool) {
 			isl.SaveReport(verbose)
 		}
 	}
+
+	// plot evolution
+	if o.C.DoPlot {
+		for i, isl := range o.Islands {
+			isl.PlotOvs(".eps", io.Sf("label='island %d'", i), 0, -1, false, "%.6f", i == 0, i == o.C.Nisl-1)
+		}
+		for i, isl := range o.Islands {
+			isl.PlotOor(".eps", io.Sf("label='island %d'", i), 0, -1, false, "%.6f", i == 0, i == o.C.Nisl-1)
+		}
+	}
 	return
 }
 

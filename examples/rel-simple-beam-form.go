@@ -11,7 +11,6 @@ import (
 	"math"
 
 	"github.com/cpmech/goga"
-	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
@@ -68,22 +67,25 @@ func main() {
 
 	// objective function
 	x := make([]float64, 2)
-	ovfunc := func(ind *goga.Individual, idIsland, time int, report *bytes.Buffer) (ov, oor float64) {
+	ovfunc := func(ind *goga.Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
 		x[0], x[1] = ind.GetFloat(0), ind.GetFloat(1)
-		gx := gfcn(x)
+		gx, err := gfcn(x)
+		if err != nil {
+			oor = 1e3
+			return
+		}
 		ova = la.VecDot(x, x)
 		oor = math.Abs(gx) // gx must be equal to zero
+		return
 	}
 
 	// parameters
-	C := NewConfParams()
+	C := goga.NewConfParams()
 	C.Pll = false
 	C.Nisl = 1
 	C.Ninds = 10
-	if chk.Verbose {
-		C.FnKey = "rel-simple-beam-form"
-		C.DoPlot = true
-	}
+	C.FnKey = "rel-simple-beam-form"
+	C.DoPlot = true
 	C.CalcDerived()
 
 	// bingo
@@ -96,14 +98,13 @@ func main() {
 		μ[0] + cf*μ[0],
 		μ[1] + cf*μ[1],
 	}
-	bingo := NewBingoFloats(xmin, xmax)
-
-	// populations
-	pops := make([]Population, C.Nisl)
-	for i := 0; i < C.Nisl; i++ {
-		pops[i] = NewPopFloatRandom(C, xmin, xmax)
-	}
+	bingo := goga.NewBingoFloats(xmin, xmax)
 
 	// evolver
-	evo := NewEvolverPop(C, pops, ovfunc, bingo)
+	evo := goga.NewEvolverFloatChromo(C, xmin, xmax, ovfunc, bingo)
+	verbose = true
+	doreport := true
+	evo.Run(verbose, doreport)
+	io.PfGreen("\nx0=%g x1=%g\n", evo.Best.GetFloat(0), evo.Best.GetFloat(1))
+	io.PfGreen("BestOV=%g\n", evo.Best.Ova)
 }
