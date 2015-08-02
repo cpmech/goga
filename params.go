@@ -88,17 +88,17 @@ func (o *ConfParams) SetDefault() {
 	o.Ninds = 20
 	o.Nbases = 10
 	o.Grid = true
-	o.Noise = 0.2
+	o.Noise = 0.5
 
 	// time control
 	o.Tf = 100
 	o.Dtout = 10
-	o.Dtmig = 30
-	o.Dtreg = 60
+	o.Dtmig = 40
+	o.Dtreg = 30
 
 	// regeneration
-	o.RegIni = -1
-	o.RegTol = 1e-3
+	o.RegIni = 3
+	o.RegTol = 1e-2
 	o.RegBest = false
 	o.RegPct = 0.3
 	o.RegMmin = 0.1
@@ -122,6 +122,9 @@ func (o *ConfParams) SetDefault() {
 	o.FnKey = ""
 	o.DoPlot = false
 	o.ShowBases = true
+
+	// number of cuts in chromossome
+	o.CxNcuts = map[string]int{"int": 2, "flt": 2, "str": 2, "key": 2, "byt": 2, "fun": 2}
 }
 
 // CalcDerived calculates derived quantities

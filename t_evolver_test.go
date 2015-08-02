@@ -137,18 +137,7 @@ func Test_evo02(tst *testing.T) {
 		C.FnKey = "test_evo02"
 		C.DoPlot = true
 	}
-	C.Nbases = 10
-	C.Noise = 0.5
-	C.RegBest = false
-	C.RegIni = 3
-	C.RegTol = 1e-2
-	C.RegPct = 0.3
-	C.Dtreg = 30
-	C.Pm = 0.01
-	C.Dtmig = 40
-	C.Dtout = 15
 	C.CalcDerived()
-	C.CxNcuts = map[string]int{"flt": 2}
 
 	// bingo
 	ndim := 2
