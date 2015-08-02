@@ -124,3 +124,24 @@ func main() {
 	io.Pfgreen("β = %g\n", β)
 	io.PfGreen("BestOV=%g\n", evo.Best.Ova)
 }
+
+// calc_normal_vars finds equivalent normal mean and std deviation for lognormal variables
+func calc_normal_vars(μN, σN, x []float64, lrv []bool, μ, σ []float64) {
+	var lnd rnd.DistLogNormal
+	for i := 0; i < len(x); i++ {
+		if lrv[i] {
+			if true { // TODO: replace the following 2 hard-wired calculations
+				lnd.Sig = σ[i] / μ[i]
+				lnd.Mu = math.Log(μ[i]) - lnd.Sig*lnd.Sig/2.0
+			} else {
+				lnd.Init(μ[i], σ[i])
+			}
+			lnd.CalcDerived()
+			Fi := lnd.Cdf(x[i])
+			fi := lnd.Pdf(x[i])
+			z := rnd.StdInvPhi(Fi)
+			σN[i] = rnd.Stdphi(z) / fi
+			μN[i] = x[i] - z*σN[i]
+		}
+	}
+}
