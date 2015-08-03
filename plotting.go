@@ -79,5 +79,6 @@ func PlotTwoVarsSave(dirout, fname string, xmin, xmax []float64, isl *Island, be
 	if xmin != nil {
 		plt.AxisRange(xmin[0], xmax[0], xmin[1], xmax[1])
 	}
+	plt.Cross()
 	plt.SaveD(dirout, fname)
 }
