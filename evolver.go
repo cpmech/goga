@@ -179,10 +179,10 @@ func (o *Evolver) Run(verbose, doreport bool) {
 	// plot evolution
 	if o.C.DoPlot {
 		for i, isl := range o.Islands {
-			isl.PlotOvs(".eps", io.Sf("label='island %d'", i), o.C.PltTi, o.C.PltTf, false, "%.6f", i == 0, i == o.C.Nisl-1)
+			PlotOvs(isl, ".eps", io.Sf("label='island %d'", i), o.C.PltTi, o.C.PltTf, false, "%.6f", i == 0, i == o.C.Nisl-1)
 		}
 		for i, isl := range o.Islands {
-			isl.PlotOor(".eps", io.Sf("label='island %d'", i), o.C.PltTi, o.C.PltTf, false, "%.6f", i == 0, i == o.C.Nisl-1)
+			PlotOor(isl, ".eps", io.Sf("label='island %d'", i), o.C.PltTi, o.C.PltTf, false, "%.6f", i == 0, i == o.C.Nisl-1)
 		}
 	}
 	return
@@ -219,7 +219,7 @@ func (o Evolver) print_legend() {
 	io.Pfblue(" 00 -- reporting time\n")
 	io.Pf(" 00 -- prescribed regeneration time\n")
 	io.Pfyel(" 00 -- migration time\n")
-	io.Pfred("  . -- automatic regeneration time to improve diversity\n")
+	io.Pfmag("  . -- automatic regeneration time to improve diversity\n")
 }
 
 func (o Evolver) print_time(time int, regen, report bool) {

@@ -11,7 +11,6 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
-	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
@@ -245,7 +244,7 @@ func (o *Island) SelectReprodAndRegen(time int, doregen, doreport, verbose bool)
 			io.Ff(&o.Report, "time=%d: regeneration: method=%s\n", time, method)
 		}
 		if verbose {
-			io.Pfred(" .")
+			io.Pfmag(" .")
 		}
 	}
 
@@ -321,62 +320,6 @@ func (o *Island) Stat() (minrho, averho, maxrho, devrho float64) {
 	}
 	minrho, averho, maxrho, devrho = rnd.StatBasic(o.devbases, o.C.UseStdDev)
 	return
-}
-
-// PlotOvs plots objective values versus time
-func (o Island) PlotOvs(ext, args string, t0, tf int, withtxt bool, numfmt string, first, last bool) {
-	if o.C.DoPlot == false || o.C.FnKey == "" {
-		return
-	}
-	if first {
-		plt.SetForEps(0.75, 250)
-	}
-	var y []float64
-	if tf == -1 {
-		y = o.OVA[t0:]
-		tf = len(o.OVA)
-	} else {
-		y = o.OVA[t0:tf]
-	}
-	n := len(y)
-	T := utl.LinSpace(float64(t0), float64(tf), n)
-	plt.Plot(T, y, args)
-	if withtxt {
-		plt.Text(T[0], y[0], io.Sf(numfmt, y[0]), "ha='left'")
-		plt.Text(T[n-1], y[n-1], io.Sf(numfmt, y[n-1]), "ha='right'")
-	}
-	if last {
-		plt.Gll("time", "objective value", "")
-		plt.SaveD(o.C.DirOut, o.C.FnKey+"_ova"+ext)
-	}
-}
-
-// PlotOor plots out-of-range values versus time
-func (o Island) PlotOor(ext, args string, t0, tf int, withtxt bool, numfmt string, first, last bool) {
-	if o.C.DoPlot == false || o.C.FnKey == "" {
-		return
-	}
-	if first {
-		plt.SetForEps(0.75, 250)
-	}
-	var y []float64
-	if tf == -1 {
-		y = o.OOR[t0:]
-		tf = len(o.OOR)
-	} else {
-		y = o.OOR[t0:tf]
-	}
-	n := len(y)
-	T := utl.LinSpace(float64(t0), float64(tf), n)
-	plt.Plot(T, y, args)
-	if withtxt {
-		plt.Text(T[0], y[0], io.Sf(numfmt, y[0]), "ha='left'")
-		plt.Text(T[n-1], y[n-1], io.Sf(numfmt, y[n-1]), "ha='right'")
-	}
-	if last {
-		plt.Gll("time", "out-of-range value", "")
-		plt.SaveD(o.C.DirOut, o.C.FnKey+"_oor"+ext)
-	}
 }
 
 // WritePopToReport writes population to report

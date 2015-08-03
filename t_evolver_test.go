@@ -184,8 +184,6 @@ func Test_evo02(tst *testing.T) {
 	doreport := true
 	evo.Run(verbose, doreport)
 
-	//return
-
 	// results
 	io.PfGreen("\nx=%g (%g)\n", evo.Best.GetFloat(0), 2.0/3.0)
 	io.PfGreen("y=%g (%g)\n", evo.Best.GetFloat(1), 4.0/3.0)
@@ -209,7 +207,7 @@ func Test_evo02(tst *testing.T) {
 
 func Test_evo03(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo03")
 
 	//rnd.Init(0)
@@ -249,10 +247,9 @@ func Test_evo03(tst *testing.T) {
 	C.Ninds = 20
 	if chk.Verbose {
 		C.FnKey = "test_evo03"
-		C.DoPlot = false
+		C.DoPlot = chk.Verbose
 	}
 	C.CalcDerived()
-	contour := chk.Verbose
 
 	// bingo
 	ndim := 2
@@ -262,15 +259,7 @@ func Test_evo03(tst *testing.T) {
 
 	// evolver
 	evo := NewEvolverFloatChromo(C, xmin, xmax, ovfunc, bingo)
-
-	// plot contour and initial population
-	if contour {
-		PlotTwoVarsContour(xmin, xmax, f, c, evo.Islands[0], func() {
-			plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
-		})
-	}
-
-	// run
+	pop0 := evo.Islands[0].Pop.GetCopy()
 	verbose := true
 	doreport := true
 	evo.Run(verbose, doreport)
@@ -279,10 +268,14 @@ func Test_evo03(tst *testing.T) {
 	xbest := []float64{evo.Best.GetFloat(0), evo.Best.GetFloat(1)}
 	io.PfGreen("\nx=%g (%g)\n", xbest[0], ys)
 	io.PfGreen("y=%g (%g)\n", xbest[1], ys)
-	io.PfGreen("BestOV=%g (%g)\n", evo.Best.Ova, le)
+	io.PfGreen("BestOV=%g (%g)\n\n", evo.Best.Ova, le)
 
-	// plot final population and best individual
-	if contour {
-		PlotTwoVarsSave("/tmp/goga", "fig_evo03.eps", xmin, xmax, evo.Islands[0], evo.Best)
+	// plot contour
+	if C.DoPlot {
+		extra := func() {
+			plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
+		}
+		PlotTwoVarsContour("/tmp/goga", "contour_evo03", pop0, evo.Islands[0].Pop, evo.Best,
+			xmin, xmax, 41, true, extra, f, c)
 	}
 }
