@@ -6,6 +6,7 @@ package goga
 
 import (
 	"bytes"
+	"math"
 	"math/rand"
 	"testing"
 
@@ -203,5 +204,113 @@ func Test_evo02(tst *testing.T) {
 		plt.Equal()
 		plt.AxisLims([]float64{-2, 2, -2, 2})
 		plt.SaveD("/tmp/goga", "test_evo02_contour.eps")
+	}
+}
+
+func Test_evo03(tst *testing.T) {
+
+	//rnd.Init(0)
+
+	//verbose()
+	chk.PrintTitle("evo03")
+
+	// geometry
+	xe := 1.0                      // centre of circle
+	le := -0.4                     // selected level of f(x)
+	ys := xe - (1.0+le)/math.Sqrt2 // coordinates of minimum point with level=le
+	y0 := 2.0*ys + xe              // vertical axis intersect of straight line defined by c(x)
+	xc := []float64{xe, xe}        // centre
+	nx := len(xc)
+	f := func(x []float64) (res float64) {
+		for i := 0; i < nx; i++ {
+			res += (x[i] - xc[i]) * (x[i] - xc[i])
+		}
+		return math.Sqrt(res) - 1
+	}
+	c := func(x []float64) (res float64) {
+		return x[0] + x[1] + xe - y0
+	}
+
+	// objective function
+	p := 1.0
+	x := make([]float64, nx)
+	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
+		x[0], x[1] = ind.GetFloat(0), ind.GetFloat(1)
+		fp := utl.GtePenalty(1e-2, math.Abs(c(x)), p)
+		ova = f(x) + fp
+		oor = fp
+		return
+	}
+
+	// parameters
+	C := NewConfParams()
+	C.Pll = false
+	C.Nisl = 4
+	C.Ninds = 20
+	if chk.Verbose {
+		C.FnKey = "test_evo03"
+		C.DoPlot = chk.Verbose
+	}
+	C.CalcDerived()
+	contour := false
+
+	// bingo
+	ndim := 2
+	vmin, vmax := -1.0, 3.0
+	xmin, xmax := utl.DblVals(ndim, vmin), utl.DblVals(ndim, vmax)
+	bingo := NewBingoFloats(xmin, xmax)
+
+	// evolver
+	evo := NewEvolverFloatChromo(C, xmin, xmax, ovfunc, bingo)
+
+	// plot contour and initial population
+	if contour {
+		plt.Reset()
+		plt.SetForEps(0.8, 350)
+		np := 41
+		X, Y := utl.MeshGrid2D(-1, 3, -1, 3, np, np)
+		Z := la.MatAlloc(np, np)
+		C := la.MatAlloc(np, np)
+		for i := 0; i < np; i++ {
+			for j := 0; j < np; j++ {
+				x[0], x[1] = X[i][j], Y[i][j]
+				Z[i][j] = f(x)
+				C[i][j] = c(x)
+			}
+		}
+		plt.Contour(X, Y, Z, "")
+		plt.ContourSimple(X, Y, C, "levels=[0], colors=['yellow'], linewidths=[2]")
+		plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
+		for _, ind := range evo.Islands[0].Pop {
+			x := ind.GetFloat(0)
+			y := ind.GetFloat(1)
+			plt.PlotOne(x, y, "'k.'")
+		}
+	}
+
+	// run
+	verbose := true
+	doreport := true
+	evo.Run(verbose, doreport)
+
+	// results
+	xbest := []float64{evo.Best.GetFloat(0), evo.Best.GetFloat(1)}
+	io.PfGreen("\nx=%g (%g)\n", xbest[0], ys)
+	io.PfGreen("y=%g (%g)\n", xbest[1], ys)
+	io.PfGreen("BestOV=%g (%g)\n", evo.Best.Ova, le)
+
+	// plot final population and best individual
+	if contour {
+		for _, ind := range evo.Islands[0].Pop {
+			x := ind.GetFloat(0)
+			y := ind.GetFloat(1)
+			plt.PlotOne(x, y, "'m*'")
+		}
+		x := evo.Best.GetFloat(0)
+		y := evo.Best.GetFloat(1)
+		plt.PlotOne(x, y, "'g*', ms=8")
+		plt.Equal()
+		plt.AxisRange(-1, 3, -1, 3)
+		plt.SaveD("/tmp/goga", "fig_evo03.eps")
 	}
 }

@@ -85,6 +85,7 @@ func (o *Evolver) Run(verbose, doreport bool) {
 		isl.WritePopToReport(t)
 	}
 	if verbose {
+		o.print_legend()
 		io.Pf("\nrunning ...\n")
 	}
 
@@ -104,7 +105,7 @@ func (o *Evolver) Run(verbose, doreport bool) {
 				for time := t; time < tmig; time++ {
 					regen := o.calc_regen(time)
 					report := o.calc_report(time)
-					isl.SelectReprodAndRegen(time, regen, report)
+					isl.SelectReprodAndRegen(time, regen, report, (verbose && i == 0))
 					if verbose && i == 0 {
 						o.print_time(time, regen, report)
 					}
@@ -144,7 +145,7 @@ func (o *Evolver) Run(verbose, doreport bool) {
 
 		// migration
 		if verbose {
-			io.Pfyel("\n%d : migration\n", t)
+			io.Pfyel(" %d", t)
 		}
 		for i, from := range receiveFrom {
 			k := 0
@@ -163,7 +164,7 @@ func (o *Evolver) Run(verbose, doreport bool) {
 
 	// message
 	if verbose {
-		io.Pf("... end\n\n")
+		io.Pf("\n... end\n\n")
 	}
 
 	// write reports
@@ -208,6 +209,15 @@ func (o Evolver) calc_regen(t int) bool {
 
 func (o Evolver) calc_report(t int) bool {
 	return t%o.C.Dtout == 0
+}
+
+func (o Evolver) print_legend() {
+	io.Pf("\nLEGEND\n")
+	io.Pfgrey(" 00 -- generation number (time)\n")
+	io.Pfblue(" 00 -- reporting time\n")
+	io.Pf(" 00 -- prescribed regeneration time\n")
+	io.Pfyel(" 00 -- migration time\n")
+	io.Pfred("  . -- automatic regeneration time to improve diversity\n")
 }
 
 func (o Evolver) print_time(time int, regen, report bool) {
