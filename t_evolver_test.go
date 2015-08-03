@@ -12,7 +12,6 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
-	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
@@ -98,24 +97,24 @@ func Test_evo02(tst *testing.T) {
 	//rnd.Init(0) // 0 => use current time as seed
 	rnd.Init(1111) // 0 => use current time as seed
 
-	f := func(x, y float64) float64 { return x*x/2.0 + y*y - x*y - 2.0*x - 6.0*y }
-	c1 := func(x, y float64) float64 { return x + y - 2.0 }      // ≤ 0
-	c2 := func(x, y float64) float64 { return -x + 2.0*y - 2.0 } // ≤ 0
-	c3 := func(x, y float64) float64 { return 2.0*x + y - 3.0 }  // ≤ 0
-	c4 := func(x, y float64) float64 { return -x }               // ≤ 0
-	c5 := func(x, y float64) float64 { return -y }               // ≤ 0
+	f := func(x []float64) float64 { return x[0]*x[0]/2.0 + x[1]*x[1] - x[0]*x[1] - 2.0*x[0] - 6.0*x[1] }
+	c1 := func(x []float64) float64 { return x[0] + x[1] - 2.0 }      // ≤ 0
+	c2 := func(x []float64) float64 { return -x[0] + 2.0*x[1] - 2.0 } // ≤ 0
+	c3 := func(x []float64) float64 { return 2.0*x[0] + x[1] - 3.0 }  // ≤ 0
+	c4 := func(x []float64) float64 { return -x[0] }                  // ≤ 0
+	c5 := func(x []float64) float64 { return -x[1] }                  // ≤ 0
 
 	// objective function
 	p := 1.0
+	x := make([]float64, 2)
 	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
-		x := ind.GetFloat(0)
-		y := ind.GetFloat(1)
-		ova = f(x, y)
-		oor += utl.GtePenalty(0, c1(x, y), p)
-		oor += utl.GtePenalty(0, c2(x, y), p)
-		oor += utl.GtePenalty(0, c3(x, y), p)
-		oor += utl.GtePenalty(0, c4(x, y), p)
-		oor += utl.GtePenalty(0, c5(x, y), p)
+		x[0], x[1] = ind.GetFloat(0), ind.GetFloat(1)
+		ova = f(x)
+		oor += utl.GtePenalty(0, c1(x), p)
+		oor += utl.GtePenalty(0, c2(x), p)
+		oor += utl.GtePenalty(0, c3(x), p)
+		oor += utl.GtePenalty(0, c4(x), p)
+		oor += utl.GtePenalty(0, c5(x), p)
 		return
 	}
 
@@ -139,75 +138,26 @@ func Test_evo02(tst *testing.T) {
 
 	// evolver
 	evo := NewEvolverFloatChromo(C, xmin, xmax, ovfunc, bingo)
-
-	// plot contour
-	if C.DoPlot {
-		plt.SetForEps(0.8, 300)
-		n, nn := 41, 7
-		X, Y := utl.MeshGrid2D(vmin, vmax, vmin, vmax, n, n)
-		Z := la.MatAlloc(n, n)
-		xx, yy := utl.MeshGrid2D(vmin, vmax, vmin, vmax, nn, nn)
-		z1 := la.MatAlloc(nn, nn)
-		z2 := la.MatAlloc(nn, nn)
-		z3 := la.MatAlloc(nn, nn)
-		z4 := la.MatAlloc(nn, nn)
-		z5 := la.MatAlloc(nn, nn)
-		for i := 0; i < n; i++ {
-			for j := 0; j < n; j++ {
-				Z[i][j] = f(X[i][j], Y[i][j])
-			}
-		}
-		for i := 0; i < nn; i++ {
-			for j := 0; j < nn; j++ {
-				z1[i][j] = c1(xx[i][j], yy[i][j])
-				z2[i][j] = c2(xx[i][j], yy[i][j])
-				z3[i][j] = c3(xx[i][j], yy[i][j])
-				z4[i][j] = c4(xx[i][j], yy[i][j])
-				z5[i][j] = c5(xx[i][j], yy[i][j])
-			}
-		}
-		plt.Contour(X, Y, Z, "")
-		plt.ContourSimple(xx, yy, z1, "levels=[0], colors=['yellow']")
-		plt.ContourSimple(xx, yy, z2, "levels=[0], colors=['yellow']")
-		plt.ContourSimple(xx, yy, z3, "levels=[0], colors=['yellow']")
-		plt.ContourSimple(xx, yy, z4, "levels=[0], colors=['yellow'], linestyles=['--']")
-		plt.ContourSimple(xx, yy, z5, "levels=[0], colors=['yellow'], linestyles=['--']")
-		for _, ind := range evo.Islands[0].Pop {
-			x := ind.GetFloat(0)
-			y := ind.GetFloat(1)
-			plt.PlotOne(x, y, "'k.', clip_on=0")
-		}
-	}
-
-	// run
 	verbose := true
 	doreport := true
+	pop0 := evo.Islands[0].Pop.GetCopy()
 	evo.Run(verbose, doreport)
 
 	// results
 	io.PfGreen("\nx=%g (%g)\n", evo.Best.GetFloat(0), 2.0/3.0)
 	io.PfGreen("y=%g (%g)\n", evo.Best.GetFloat(1), 4.0/3.0)
-	io.PfGreen("BestOV=%g (%g)\n", evo.Best.Ova, f(2.0/3.0, 4.0/3.0))
+	io.PfGreen("BestOV=%g (%g)\n", evo.Best.Ova, f([]float64{2.0 / 3.0, 4.0 / 3.0}))
 
-	// plot population on contour
-	if C.DoPlot && false {
-		for _, ind := range evo.Islands[0].Pop {
-			x := ind.GetFloat(0)
-			y := ind.GetFloat(1)
-			plt.PlotOne(x, y, "'g*'")
-		}
-		x := evo.Best.GetFloat(0)
-		y := evo.Best.GetFloat(1)
-		plt.PlotOne(x, y, "'y*', ms=8")
-		plt.Equal()
-		plt.AxisLims([]float64{-2, 2, -2, 2})
-		plt.SaveD("/tmp/goga", "test_evo02_contour.eps")
+	// plot contour
+	if C.DoPlot {
+		PlotTwoVarsContour("/tmp/goga", "contour_evo02", pop0, evo.Islands[0].Pop, evo.Best,
+			xmin, xmax, 41, true, nil, f, c1, c2, c3, c4, c5)
 	}
 }
 
 func Test_evo03(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo03")
 
 	//rnd.Init(0)
