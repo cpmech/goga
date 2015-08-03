@@ -209,10 +209,10 @@ func Test_evo02(tst *testing.T) {
 
 func Test_evo03(tst *testing.T) {
 
-	//rnd.Init(0)
-
 	//verbose()
 	chk.PrintTitle("evo03")
+
+	//rnd.Init(0)
 
 	// geometry
 	xe := 1.0                      // centre of circle
@@ -249,10 +249,10 @@ func Test_evo03(tst *testing.T) {
 	C.Ninds = 20
 	if chk.Verbose {
 		C.FnKey = "test_evo03"
-		C.DoPlot = chk.Verbose
+		C.DoPlot = false
 	}
 	C.CalcDerived()
-	contour := false
+	contour := chk.Verbose
 
 	// bingo
 	ndim := 2
@@ -265,27 +265,9 @@ func Test_evo03(tst *testing.T) {
 
 	// plot contour and initial population
 	if contour {
-		plt.Reset()
-		plt.SetForEps(0.8, 350)
-		np := 41
-		X, Y := utl.MeshGrid2D(-1, 3, -1, 3, np, np)
-		Z := la.MatAlloc(np, np)
-		C := la.MatAlloc(np, np)
-		for i := 0; i < np; i++ {
-			for j := 0; j < np; j++ {
-				x[0], x[1] = X[i][j], Y[i][j]
-				Z[i][j] = f(x)
-				C[i][j] = c(x)
-			}
-		}
-		plt.Contour(X, Y, Z, "")
-		plt.ContourSimple(X, Y, C, "levels=[0], colors=['yellow'], linewidths=[2]")
-		plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
-		for _, ind := range evo.Islands[0].Pop {
-			x := ind.GetFloat(0)
-			y := ind.GetFloat(1)
-			plt.PlotOne(x, y, "'k.'")
-		}
+		PlotTwoVarsContour(xmin, xmax, f, c, evo.Islands[0], func() {
+			plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
+		})
 	}
 
 	// run
@@ -301,16 +283,6 @@ func Test_evo03(tst *testing.T) {
 
 	// plot final population and best individual
 	if contour {
-		for _, ind := range evo.Islands[0].Pop {
-			x := ind.GetFloat(0)
-			y := ind.GetFloat(1)
-			plt.PlotOne(x, y, "'m*'")
-		}
-		x := evo.Best.GetFloat(0)
-		y := evo.Best.GetFloat(1)
-		plt.PlotOne(x, y, "'g*', ms=8")
-		plt.Equal()
-		plt.AxisRange(-1, 3, -1, 3)
-		plt.SaveD("/tmp/goga", "fig_evo03.eps")
+		PlotTwoVarsSave("/tmp/goga", "fig_evo03.eps", xmin, xmax, evo.Islands[0], evo.Best)
 	}
 }
