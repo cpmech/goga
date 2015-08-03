@@ -107,6 +107,28 @@ func NewPopFloatRandom(C *ConfParams, xmin, xmax []float64) (pop Population) {
 	chk.IntAssert(len(xmax), ngenes)
 	ref := NewIndividual(C.Nbases, make([]float64, ngenes))
 	pop = NewPopReference(C.Ninds, ref)
+	pop.GenFloatRandom(C, xmin, xmax)
+	return
+}
+
+// GenFloatRandom generates a population of individuals with float point
+// numbers only genes for given grid
+//  Input:
+//   C.Ninds  -- number of individuals to be generated
+//   C.Nbases -- number of bases
+//   C.Grid   -- whether or not to calc values based on grid;
+//               otherwise select randomly between xmin and xmax
+//   C.Noise  -- if noise>0, apply noise to move points away from grid nodes
+//               noise is a multiplier; e.g. 0.2
+//   xmin     -- min values of genes
+//   xmax     -- max values of genes. len(xmin) = len(xmax) = ngenes
+func (o *Population) GenFloatRandom(C *ConfParams, xmin, xmax []float64) {
+	if len(*o) < 2 {
+		return
+	}
+	ngenes := len(xmin)
+	chk.IntAssert(len(xmax), ngenes)
+	chk.IntAssert(ngenes, (*o)[0].Nfltgenes)
 	npts := int(math.Pow(float64(C.Ninds), 1.0/float64(ngenes))) // num points in 'square' grid
 	ntot := int(math.Pow(float64(npts), float64(ngenes)))        // total num of individuals in grid
 	den := 1.0                                                   // denominator to calculate dx
@@ -134,16 +156,15 @@ func NewPopFloatRandom(C *ConfParams, xmin, xmax []float64) (pop Population) {
 						x -= mul * x
 					}
 				}
-				pop[i].SetFloat(j, x)
+				(*o)[i].SetFloat(j, x)
 			}
 		} else { // additional individuals
 			for g := 0; g < ngenes; g++ {
 				x = rnd.Float64(xmin[g], xmax[g])
-				pop[i].SetFloat(g, x)
+				(*o)[i].SetFloat(g, x)
 			}
 		}
 	}
-	return
 }
 
 // Len returns the length of the population == number of individuals
