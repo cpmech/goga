@@ -31,6 +31,7 @@ func NewEvolver(C *ConfParams, ref *Individual, ovfunc ObjFunc_t, bingo *Bingo) 
 	for i := 0; i < o.C.Nisl; i++ {
 		o.Islands[i] = NewIsland(i, o.C, NewPopRandom(o.C.Ninds, ref, bingo), ovfunc, bingo)
 	}
+	o.Best = o.Islands[0].Pop[0]
 	return
 }
 
@@ -46,6 +47,7 @@ func NewEvolverPop(C *ConfParams, pops []Population, ovfunc ObjFunc_t, bingo *Bi
 	for i, pop := range pops {
 		o.Islands[i] = NewIsland(i, o.C, pop, ovfunc, bingo)
 	}
+	o.Best = o.Islands[0].Pop[0]
 	return
 }
 
