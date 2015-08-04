@@ -119,7 +119,7 @@ func main() {
 		xref = []float64{-βref * math.Sqrt2 / 2, βref * math.Sqrt2 / 2}
 
 	// problem # 7 from [1] and example # 1 (case1) from [5]
-	// x1 and x2 are normally distributed and statiscally independent with
+	// x1 and x2 are normally distributed and statistically independent with
 	case 6:
 		g = func(x []float64) float64 {
 			return math.Pow(x[0], 3) + math.Pow(x[1], 3) - 18
@@ -131,7 +131,7 @@ func main() {
 		ds = []string{"nrm", "nrm"}
 
 	// problem # 8 from [1] and example # 1 (case2) from [5]
-	// x1 and x2 are normally distributed and statiscally independent with
+	// x1 and x2 are normally distributed and statistically independent with
 	case 7:
 		g = func(x []float64) float64 {
 			return math.Pow(x[0], 3) + math.Pow(x[1], 3) - 18
@@ -143,7 +143,7 @@ func main() {
 		ds = []string{"nrm", "nrm"}
 
 	// problem # 9 from [1] and case 7 of [3]
-	// x1 and x2 are normally distributed and statiscally independent with
+	// x1 and x2 are normally distributed and statistically independent with
 	case 8:
 		g = func(x []float64) float64 {
 			return 2.5 - 0.2357*(x[0]-x[1]) + 0.0046*math.Pow(x[0]+x[1]-20, 4)
@@ -154,7 +154,7 @@ func main() {
 		ds = []string{"nrm", "nrm"}
 
 	// problem # 10 from [1] and example # 2 from [5]
-	// x1 and x2 are normally distributed and statiscally independent with
+	// x1 and x2 are normally distributed and statistically independent with
 	case 9:
 		g = func(x []float64) float64 {
 			return math.Pow(x[0], 3) + math.Pow(x[1], 3) - 67.5
@@ -165,7 +165,7 @@ func main() {
 		ds = []string{"nrm", "nrm"}
 
 	// problem # 11 from [1] and case 2 of [3]
-	// x1 and x2 are normally distributed and statiscally independent with
+	// x1 and x2 are normally distributed and statistically independent with
 	case 10:
 		g = func(x []float64) float64 {
 			return x[0]*x[1] - 146.14
@@ -179,7 +179,7 @@ func main() {
 		vmax = []float64{6, 6}   // x or y max. default is standard vars; thus x==y
 
 	// problem # 12 from [1] and example 2 of [4]
-	// x1 and x2 are normally distributed and statiscally independent with
+	// x1 and x2 are normally distributed and statistically independent with
 	case 11:
 		g = func(x []float64) float64 {
 			return 2.2257 - 0.025*math.Sqrt2*math.Pow(x[0]+x[1]-20, 3)/27 + 0.2357*(x[0]-x[1])
@@ -191,7 +191,7 @@ func main() {
 		ds = []string{"nrm", "nrm"}
 
 	// problem # 14 from [1]
-	// x1 and x2 are lognormally distributed and statiscally independent with
+	// x1 and x2 are log-normally distributed and statistically independent with
 	case 12:
 		g = func(x []float64) float64 {
 			return x[0]*x[1] - 1140
@@ -216,6 +216,7 @@ func main() {
 
 	// objective value function
 	ovfunc := func(ind *goga.Individual, idIsland, t int, report *bytes.Buffer) (ova, oor float64) {
+
 		switch C.Strategy {
 
 		// argmin_x{ β(y(x)) | g(x) ≤ 0 }
