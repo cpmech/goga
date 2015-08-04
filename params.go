@@ -15,6 +15,7 @@ import (
 type ConfParams struct {
 
 	// initialisation
+	Seed   int     // seed to initialise random numbers generator. Seed ≤ 0 means use current time
 	Pll    bool    // allow running islands in parallel (go-routines)
 	Nisl   int     // number of islands
 	Ninds  int     // number of individuals: population size
@@ -85,8 +86,9 @@ type ConfParams struct {
 func (o *ConfParams) SetDefault() {
 
 	// initialisation
+	o.Seed = 0
 	o.Pll = true
-	o.Nisl = 1
+	o.Nisl = 4
 	o.Ninds = 20
 	o.Nbases = 10
 	o.Grid = true
@@ -144,6 +146,7 @@ func (o *ConfParams) CalcDerived() {
 func NewConfParams() *ConfParams {
 	var o ConfParams
 	o.SetDefault()
+	o.CalcDerived()
 	return &o
 }
 
@@ -167,5 +170,6 @@ func ReadConfParams(filenamepath string) *ConfParams {
 	}
 
 	// results
+	o.CalcDerived()
 	return &o
 }

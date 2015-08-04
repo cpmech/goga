@@ -73,9 +73,11 @@ func Test_evo01(tst *testing.T) {
 	// parameters
 	C := NewConfParams()
 	C.Nisl = 2
-	C.Ninds = 10
+	C.Ninds = 20
 	C.FnKey = "" //"test_evo01"
 	C.MtIntFunc = mtfunc
+	C.RegTol = 0
+	C.CalcDerived()
 
 	// evolver
 	evo := NewEvolver(C, ref, ovfunc, bingo)

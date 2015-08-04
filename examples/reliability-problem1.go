@@ -9,6 +9,7 @@ package main
 import (
 	"bytes"
 	"math"
+	"time"
 
 	"github.com/cpmech/goga"
 	"github.com/cpmech/gosl/io"
@@ -17,31 +18,25 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-func calc_beta(best *goga.Individual, βref float64, verbose bool) (β float64) {
-	xs := make([]float64, best.Nfltgenes)
-	for i := 0; i < best.Nfltgenes; i++ {
-		xs[i] = best.GetFloat(i)
-	}
-	β = math.Sqrt(la.VecDot(xs, xs))
-	if verbose {
-		io.Pf("\nova = %g  oor = %g\n", best.Ova, best.Oor)
-		io.Pf("x   = %v\n", xs)
-		io.PfYel("β   = %g", β)
-		io.Pf(" (%g)\n", βref)
-	}
-	return
-}
-
 func main() {
 
-	rnd.Init(0)
+	// Problem # 1:
+	//  All variables are standard variables => μ=0 and σ=1 => y = x
 
-	// standard variables => μ=0 and σ=1 => y = x
+	// read parameters
+	fn := "reliability-problem1.json"
+	fn = io.ArgToFilename(0, fn, ".json", true)
+	C := ReadConfParams(fn)
 
+	// initialise random numbers generator
+	rnd.Init(C.Seed)
+
+	// limit state function
 	g := func(x []float64) float64 {
 		return 0.1*math.Pow(x[0]-x[1], 2.0) - (x[0]+x[1])/math.Sqrt2 + 2.5
 	}
 
+	// objective value function
 	x := make([]float64, 2)
 	ovfunc := func(ind *goga.Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
 		x[0], x[1] = ind.GetFloat(0), ind.GetFloat(1)
@@ -50,14 +45,6 @@ func main() {
 		oor = fp
 		return
 	}
-
-	// parameters
-	C := goga.NewConfParams()
-	C.Pll = false
-	C.Nisl = 4
-	C.Ninds = 20
-	C.DoPlot = true
-	C.CalcDerived()
 
 	// bingo
 	ndim := 2
@@ -68,6 +55,9 @@ func main() {
 	// evolver
 	βref := 2.5
 	evo := goga.NewEvolverFloatChromo(C, xmin, xmax, ovfunc, bingo)
+
+	// benchmarking
+	cpu0 := time.Now()
 
 	// for a number of trials
 	ntrials := 100
@@ -101,6 +91,9 @@ func main() {
 		}
 	}
 
+	// benchmarking
+	io.Pfcyan("\nelapsed time = %v\n", time.Now().Sub(cpu0))
+
 	// analysis
 	βmin, βave, βmax, βdev := rnd.StatBasic(betas, true)
 	io.Pf("\nβmin = %v\n", βmin)
@@ -113,4 +106,19 @@ func main() {
 func nice_num(x float64) float64 {
 	s := io.Sf("%.2f", x)
 	return io.Atof(s)
+}
+
+func calc_beta(best *goga.Individual, βref float64, verbose bool) (β float64) {
+	xs := make([]float64, best.Nfltgenes)
+	for i := 0; i < best.Nfltgenes; i++ {
+		xs[i] = best.GetFloat(i)
+	}
+	β = math.Sqrt(la.VecDot(xs, xs))
+	if verbose {
+		io.Pf("\nova = %g  oor = %g\n", best.Ova, best.Oor)
+		io.Pf("x   = %v\n", xs)
+		io.PfYel("β   = %g", β)
+		io.Pf(" (%g)\n", βref)
+	}
+	return
 }
