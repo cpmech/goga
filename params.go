@@ -59,7 +59,8 @@ type ConfParams struct {
 	ShowBases bool   // show also bases when printing results (if any)
 
 	// auxiliary
-	ProbId int // problem ID
+	Problem  int // problem ID
+	Strategy int // strategy for implementing constraints
 
 	// crossover
 	CxNcuts   map[string]int         // crossover number of cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
@@ -133,7 +134,8 @@ func (o *ConfParams) SetDefault() {
 	o.ShowBases = false
 
 	// auxiliary
-	o.ProbId = 1
+	o.Problem = 1
+	o.Strategy = 1
 
 	// number of cuts in chromossome
 	o.CxNcuts = map[string]int{"int": 2, "flt": 2, "str": 2, "key": 2, "byt": 2, "fun": 2}
