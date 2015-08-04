@@ -61,7 +61,7 @@ func main() {
 
 	// bingo
 	ndim := 2
-	vmin, vmax := -1.0, 1.0
+	vmin, vmax := -2.0, 2.0
 	xmin, xmax := utl.DblVals(ndim, vmin), utl.DblVals(ndim, vmax)
 	bingo := goga.NewBingoFloats(xmin, xmax)
 
