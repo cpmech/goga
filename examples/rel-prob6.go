@@ -12,10 +12,8 @@ import (
 	"time"
 
 	"github.com/cpmech/goga"
-	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
-	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
@@ -45,75 +43,28 @@ func main() {
 	}()
 
 	// read parameters
-	fn := "rel-prob1to5"
+	fn := "rel-prob6"
 	fn, _ = io.ArgToFilename(0, fn, ".json", true)
 	C := goga.ReadConfParams(fn)
-	io.Pf("\n%s\nproblem # %v\n", utl.PrintThickLine(80), C.Problem)
 
 	// initialise random numbers generator
 	rnd.Init(C.Seed)
 
-	// problems's data: limit state function
-	npts := 41
-	var g func(x []float64) float64
-	var βref float64
-	var xref, xmin, xmax []float64
-	switch C.Problem {
-
-	// problem # 1 of [1] and Eq. (A.5) of [2]
-	case 1:
-		g = func(x []float64) float64 {
-			return 0.1*math.Pow(x[0]-x[1], 2.0) - (x[0]+x[1])/math.Sqrt2 + 2.5
+	// problem # 6 of [1] and case # 3 of [3]
+	g := func(x []float64) float64 {
+		sum := 0.0
+		for i := 0; i < 9; i++ {
+			sum += x[i] * x[i]
 		}
-		βref = 2.5 // from [1]
-		xref = []float64{1.7677, 1.7677}
-		xmin, xmax = []float64{-5, -5}, []float64{5, 5}
-
-	// problem # 2 of [1] and Eq. (A.6) of [2]
-	case 2:
-		g = func(x []float64) float64 {
-			return -0.5*math.Pow(x[0]-x[1], 2.0) - (x[0]+x[1])/math.Sqrt2 + 3.0
-		}
-		βref = 1.658 // from [2]
-		xref = []float64{-0.7583, 1.4752}
-		xmin, xmax = []float64{-5, -5}, []float64{5, 5}
-
-	// problem # 3 from [1] and # 6 from [3]
-	case 3:
-		g = func(x []float64) float64 {
-			return 2.0 - x[1] - 0.1*math.Pow(x[0], 2) + 0.06*math.Pow(x[0], 3)
-		}
-		βref = 2.0 // from [1]
-		xref = []float64{0, 2}
-		xmin, xmax = []float64{-5, -5}, []float64{5, 5}
-
-	// problem # 4 from [1] and # 8 from [3]
-	case 4:
-		g = func(x []float64) float64 {
-			return 3.0 - x[1] + 256.0*math.Pow(x[0], 4.0)
-		}
-		npts = 101
-		βref = 3.0 // from [1]
-		xref = []float64{0, 3}
-		xmin, xmax = []float64{-5, -5}, []float64{5, 5}
-
-	// problem # 5 from [1] and # 1 from [4] (modified)
-	case 5:
-		shift := 0.1
-		g = func(x []float64) float64 {
-			return 1.0 + math.Pow(x[0]+x[1]+shift, 2.0)/4.0 - 4.0*math.Pow(x[0]-x[1]+shift, 2.0)
-		}
-		βref = 0.3536 // from [1]
-		xref = []float64{-βref * math.Sqrt2 / 2.0, βref * math.Sqrt2 / 2.0}
-		xmin, xmax = []float64{-1, -1}, []float64{1, 1}
-
-	default:
-		chk.Panic("problem number %d is invalid", C.Problem)
+		return 2.0 - 0.015*sum - x[9]
 	}
+	βref := 2.0 // from [1]
+	xmin := utl.DblVals(10, -5)
+	xmax := utl.DblVals(10, 5)
 
 	// objective value function
 	ovfunc := func(ind *goga.Individual, idIsland, t int, report *bytes.Buffer) (ova, oor float64) {
-		x := ind.GetFloats() // must be inside ovfunc to avoid data race problems
+		x := ind.GetFloats()
 		if C.Strategy == 1 {
 			ova = la.VecDot(x, x)
 			oor = utl.GtePenalty(0, g(x), 1)
@@ -141,24 +92,14 @@ func main() {
 				isl.Pop.GenFloatRandom(C, xmin, xmax)
 			}
 		}
-		pop0 := evo.Islands[0].Pop.GetCopy()
 
 		// run
 		check := i == C.Ntrials-1
 		verbose := check
 		doreport := check
 		evo.Run(verbose, doreport)
-		β := calc_beta(evo.Best, βref, xref, verbose)
+		β := calc_beta(evo.Best, βref, verbose)
 		betas[i] = β
-
-		// plot contour
-		if check {
-			if C.DoPlot {
-				pop1 := evo.Islands[0].Pop
-				goga.PlotTwoVarsContour("/tmp/goga", io.Sf("rel-prob%d", C.Problem), pop0, pop1, evo.Best,
-					xmin, xmax, npts, true, func() { plt.SetXnticks(11); plt.SetYnticks(11) }, g, g)
-			}
-		}
 	}
 
 	// benchmarking
@@ -178,13 +119,11 @@ func nice_num(x float64) float64 {
 	return io.Atof(s)
 }
 
-func calc_beta(best *goga.Individual, βref float64, xref []float64, verbose bool) (β float64) {
+func calc_beta(best *goga.Individual, βref float64, verbose bool) (β float64) {
 	xs := best.GetFloats()
 	β = math.Sqrt(la.VecDot(xs, xs))
 	if verbose {
 		io.Pf("\nova  = %g  oor = %g\n", best.Ova, best.Oor)
-		io.Pf("x    = %v\n", xs)
-		io.Pf("xref = %v\n", xref)
 		io.PfYel("β    = %g", β)
 		io.Pf(" (%g)\n", βref)
 	}
