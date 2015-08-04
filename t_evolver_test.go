@@ -120,8 +120,7 @@ func Test_evo02(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
-	//C.Pll = true
-	C.Pll = false
+	C.Pll = true
 	C.Nisl = 4
 	C.Ninds = 20
 	if chk.Verbose {
@@ -192,7 +191,7 @@ func Test_evo03(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
-	C.Pll = false
+	C.Pll = true
 	C.Nisl = 4
 	C.Ninds = 20
 	if chk.Verbose {

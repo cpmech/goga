@@ -1,8 +1,8 @@
 #!/bin/bash
 
-FILE="t_evolver_test.go"
-#FILE="evolver.go"
-TEST="evo03"
+#FILE="t_evolver_test.go"
+FILE="evolver.go"
+TEST="evo02"
 
 refresh(){
     go test -test.run="$TEST"

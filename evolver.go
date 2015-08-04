@@ -98,17 +98,34 @@ func (o *Evolver) Run(verbose, doreport bool) {
 	// time loop
 	t = 1
 	tmig := o.C.Dtmig
+	done := make(chan int, nislands)
 	for t < o.C.Tf {
 
 		// evolve up to migration time
 		if o.C.Pll {
+			for i := 0; i < nislands; i++ {
+				go func(isl *Island) {
+					for time := t; time < tmig; time++ {
+						regen := o.calc_regen(time)
+						report := o.calc_report(time)
+						isl.SelectReprodAndRegen(time, regen, report, (verbose && isl.Id == 0))
+						if verbose && isl.Id == 0 {
+							o.print_time(time, regen, report)
+						}
+					}
+					done <- 1
+				}(o.Islands[i])
+			}
+			for i := 0; i < nislands; i++ {
+				<-done
+			}
 		} else {
-			for i, isl := range o.Islands {
+			for _, isl := range o.Islands {
 				for time := t; time < tmig; time++ {
 					regen := o.calc_regen(time)
 					report := o.calc_report(time)
-					isl.SelectReprodAndRegen(time, regen, report, (verbose && i == 0))
-					if verbose && i == 0 {
+					isl.SelectReprodAndRegen(time, regen, report, (verbose && isl.Id == 0))
+					if verbose && isl.Id == 0 {
 						o.print_time(time, regen, report)
 					}
 				}
