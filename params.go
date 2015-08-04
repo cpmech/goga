@@ -61,6 +61,7 @@ type ConfParams struct {
 	// auxiliary
 	Problem  int // problem ID
 	Strategy int // strategy for implementing constraints
+	Ntrials  int // number of trials
 
 	// crossover
 	CxNcuts   map[string]int         // crossover number of cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
@@ -136,6 +137,7 @@ func (o *ConfParams) SetDefault() {
 	// auxiliary
 	o.Problem = 1
 	o.Strategy = 1
+	o.Ntrials = 100
 
 	// number of cuts in chromossome
 	o.CxNcuts = map[string]int{"int": 2, "flt": 2, "str": 2, "key": 2, "byt": 2, "fun": 2}

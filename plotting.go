@@ -63,20 +63,20 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 		plt.Contour(X, Y, Zf, "")
 	}
 	for k, _ := range gfs {
-		plt.ContourSimple(X, Y, Zg[k], "levels=[0], colors=['yellow'], linewidths=[2]")
+		plt.ContourSimple(X, Y, Zg[k], "levels=[0], colors=['yellow'], linewidths=[2], clip_on=0")
 	}
 	if pop0 != nil {
 		for _, ind := range pop0 {
 			x := ind.GetFloat(0)
 			y := ind.GetFloat(1)
-			plt.PlotOne(x, y, "'k.'")
+			plt.PlotOne(x, y, "'k.', zorder=20, clip_on=0")
 		}
 	}
 	if pop1 != nil {
 		for _, ind := range pop1 {
 			x := ind.GetFloat(0)
 			y := ind.GetFloat(1)
-			plt.PlotOne(x, y, "'m*'")
+			plt.PlotOne(x, y, "'m*', zorder=30, clip_on=0")
 		}
 	}
 	if extra != nil {
@@ -85,16 +85,18 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 	if best != nil {
 		x := best.GetFloat(0)
 		y := best.GetFloat(1)
-		plt.PlotOne(x, y, "'g*', ms=8")
+		plt.PlotOne(x, y, "'g*', ms=8, clip_on=0")
 	}
 	if dirout == "" {
 		dirout = "/tmp/goga"
 	}
+	plt.Cross("clr='grey'")
+	plt.SetXnticks(11)
+	plt.SetYnticks(11)
 	plt.Equal()
 	if axrange {
 		plt.AxisRange(xmin[0], xmax[0], xmin[1], xmax[1])
 	}
-	plt.Cross()
 	plt.SaveD(dirout, fnkey+".eps")
 }
 
