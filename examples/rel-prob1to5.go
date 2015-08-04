@@ -64,8 +64,8 @@ func main() {
 	var xref []float64              // reference x (if available)
 	var μ, σ []float64              // mean and std deviation (if not standard)
 	var ds []string                 // distribution. <nil> means standard with μ=0, σ=1
-	vmin := []float64{-5, -5}       // x or y min. default is standard vars; thus x==y
-	vmax := []float64{5, 5}         // x or y max. default is standard vars; thus x==y
+	vmin := []float64{-4, -4}       // x or y min. default is standard vars; thus x==y
+	vmax := []float64{4, 4}         // x or y max. default is standard vars; thus x==y
 
 	// set problem
 	switch C.Problem {
