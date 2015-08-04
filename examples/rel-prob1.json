@@ -1,5 +1,7 @@
 {
-  "pll"   : false,
-  "nisl"  : 4,
-  "ninds" : 20
+  "pll"    : true,
+  "nisl"   : 4,
+  "ninds"  : 20,
+  "probId" : 1,
+  "doplot" : true
 }
