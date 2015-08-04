@@ -58,6 +58,9 @@ type ConfParams struct {
 	PltTf     int    // final time for plot
 	ShowBases bool   // show also bases when printing results (if any)
 
+	// auxiliary
+	ProbId int // problem ID
+
 	// crossover
 	CxNcuts   map[string]int         // crossover number of cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
 	CxCuts    map[string][]int       // crossover specific cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
@@ -128,6 +131,9 @@ func (o *ConfParams) SetDefault() {
 	o.PltTi = 0
 	o.PltTf = -1
 	o.ShowBases = false
+
+	// auxiliary
+	o.ProbId = 1
 
 	// number of cuts in chromossome
 	o.CxNcuts = map[string]int{"int": 2, "flt": 2, "str": 2, "key": 2, "byt": 2, "fun": 2}
