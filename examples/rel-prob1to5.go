@@ -39,6 +39,8 @@ func main() {
 	//  [5] Santosh TV, Saraf RK, Ghosh AK and KushwahaHS. Optimum step length selection rule in
 	//      modified HL–RF method for structural reliability. International Journal of Pressure
 	//      Vessels and Piping, 83(10):742-748; 2006 doi:10.1016/j.ijpvp.2006.07.004
+	//  [6] Haldar and Mahadevan. Probability, reliability and statistical methods in engineering
+	//      and design. John Wiley & Sons. 304p; 2000.
 
 	// catch errors
 	defer func() {
@@ -66,6 +68,7 @@ func main() {
 	var ds []string                 // distribution. <nil> means standard with μ=0, σ=1
 	vmin := []float64{-4, -4}       // x or y min. default is standard vars; thus x==y
 	vmax := []float64{4, 4}         // x or y max. default is standard vars; thus x==y
+	axequal := true                 // plot with axis.equal
 
 	// set problem
 	switch C.Problem {
@@ -73,7 +76,7 @@ func main() {
 	// problem # 1 of [1] and Eq. (A.5) of [2]
 	case 1:
 		g = func(x []float64) float64 {
-			return 0.1*math.Pow(x[0]-x[1], 2.0) - (x[0]+x[1])/math.Sqrt2 + 2.5
+			return 0.1*math.Pow(x[0]-x[1], 2) - (x[0]+x[1])/math.Sqrt2 + 2.5
 		}
 		βref = 2.5 // from [1]
 		xref = []float64{1.7677, 1.7677}
@@ -84,7 +87,7 @@ func main() {
 	// problem # 2 of [1] and Eq. (A.6) of [2]
 	case 2:
 		g = func(x []float64) float64 {
-			return -0.5*math.Pow(x[0]-x[1], 2.0) - (x[0]+x[1])/math.Sqrt2 + 3.0
+			return -0.5*math.Pow(x[0]-x[1], 2) - (x[0]+x[1])/math.Sqrt2 + 3
 		}
 		βref = 1.658 // from [2]
 		xref = []float64{-0.7583, 1.4752}
@@ -92,51 +95,123 @@ func main() {
 	// problem # 3 from [1] and # 6 from [3]
 	case 3:
 		g = func(x []float64) float64 {
-			return 2.0 - x[1] - 0.1*math.Pow(x[0], 2) + 0.06*math.Pow(x[0], 3)
+			return 2 - x[1] - 0.1*math.Pow(x[0], 2) + 0.06*math.Pow(x[0], 3)
 		}
-		βref = 2.0 // from [1]
+		βref = 2 // from [1]
 		xref = []float64{0, 2}
 
 	// problem # 4 from [1] and # 8 from [3]
 	case 4:
 		g = func(x []float64) float64 {
-			return 3.0 - x[1] + 256.0*math.Pow(x[0], 4.0)
+			return 3 - x[1] + 256*math.Pow(x[0], 4)
 		}
 		npts = 101
-		βref = 3.0 // from [1]
+		βref = 3 // from [1]
 		xref = []float64{0, 3}
 
 	// problem # 5 from [1] and # 1 from [4] (modified)
 	case 5:
 		shift := 0.1
 		g = func(x []float64) float64 {
-			return 1.0 + math.Pow(x[0]+x[1]+shift, 2.0)/4.0 - 4.0*math.Pow(x[0]-x[1]+shift, 2.0)
+			return 1 + math.Pow(x[0]+x[1]+shift, 2)/4 - 4*math.Pow(x[0]-x[1]+shift, 2)
 		}
 		βref = 0.3536 // from [1]
-		xref = []float64{-βref * math.Sqrt2 / 2.0, βref * math.Sqrt2 / 2.0}
+		xref = []float64{-βref * math.Sqrt2 / 2, βref * math.Sqrt2 / 2}
 
-	// problem # 7 from [1] and example # 1 from [5]
+	// problem # 7 from [1] and example # 1 (case1) from [5]
 	// x1 and x2 are normally distributed and statiscally independent with
 	case 6:
 		g = func(x []float64) float64 {
-			return math.Pow(x[0], 3.0) + math.Pow(x[1], 3.0) - 18.0
+			return math.Pow(x[0], 3) + math.Pow(x[1], 3) - 18
 		}
 		ϵ = 0.1
 		βref = 2.2401 // from [1]
-		xref = []float64{0, 0}
 		μ = []float64{10, 10}
 		σ = []float64{5, 5}
-		if C.Strategy < 3 { // use original variables
-			vmin, vmax = make([]float64, 2), make([]float64, 2)
-			for i := 0; i < 2; i++ {
-				vmin[i] = μ[i] - 2*μ[i]
-				vmax[i] = μ[i] + 2*μ[i]
-			}
-		}
 		ds = []string{"nrm", "nrm"}
+
+	// problem # 8 from [1] and example # 1 (case2) from [5]
+	// x1 and x2 are normally distributed and statiscally independent with
+	case 7:
+		g = func(x []float64) float64 {
+			return math.Pow(x[0], 3) + math.Pow(x[1], 3) - 18
+		}
+		ϵ = 0.1
+		βref = 2.2260 // from [1]
+		μ = []float64{10, 9.9}
+		σ = []float64{5, 5}
+		ds = []string{"nrm", "nrm"}
+
+	// problem # 9 from [1] and case 7 of [3]
+	// x1 and x2 are normally distributed and statiscally independent with
+	case 8:
+		g = func(x []float64) float64 {
+			return 2.5 - 0.2357*(x[0]-x[1]) + 0.0046*math.Pow(x[0]+x[1]-20, 4)
+		}
+		βref = 2.5 // from [1]
+		μ = []float64{10, 10}
+		σ = []float64{3, 3}
+		ds = []string{"nrm", "nrm"}
+
+	// problem # 10 from [1] and example # 2 from [5]
+	// x1 and x2 are normally distributed and statiscally independent with
+	case 9:
+		g = func(x []float64) float64 {
+			return math.Pow(x[0], 3) + math.Pow(x[1], 3) - 67.5
+		}
+		βref = 1.9003 // from [1]
+		μ = []float64{10, 10}
+		σ = []float64{5, 5}
+		ds = []string{"nrm", "nrm"}
+
+	// problem # 11 from [1] and case 2 of [3]
+	// x1 and x2 are normally distributed and statiscally independent with
+	case 10:
+		g = func(x []float64) float64 {
+			return x[0]*x[1] - 146.14
+		}
+		βref = 5.4280 // from [1]
+		μ = []float64{78064.4, 0.0104}
+		σ = []float64{11709.7, 0.00156}
+		ds = []string{"nrm", "nrm"}
+		axequal = false
+		vmin = []float64{-6, -6} // x or y min. default is standard vars; thus x==y
+		vmax = []float64{6, 6}   // x or y max. default is standard vars; thus x==y
+
+	// problem # 12 from [1] and example 2 of [4]
+	// x1 and x2 are normally distributed and statiscally independent with
+	case 11:
+		g = func(x []float64) float64 {
+			return 2.2257 - 0.025*math.Sqrt2*math.Pow(x[0]+x[1]-20, 3)/27 + 0.2357*(x[0]-x[1])
+		}
+		//ϵ = 0.5
+		βref = 2.2257 // from [1]
+		μ = []float64{10, 10}
+		σ = []float64{3, 3}
+		ds = []string{"nrm", "nrm"}
+
+	// problem # 14 from [1]
+	// x1 and x2 are lognormally distributed and statiscally independent with
+	case 12:
+		g = func(x []float64) float64 {
+			return x[0]*x[1] - 1140
+		}
+		βref = 5.2127 // from [1]
+		μ = []float64{38, 54}
+		σ = []float64{3.8, 2.7}
+		ds = []string{"log", "log"}
 
 	default:
 		chk.Panic("problem number %d is invalid", C.Problem)
+	}
+
+	// use original variables
+	if C.Strategy < 3 && μ != nil {
+		vmin, vmax = make([]float64, 2), make([]float64, 2)
+		for i := 0; i < 2; i++ {
+			vmin[i] = μ[i] - 2*μ[i]
+			vmax[i] = μ[i] + 2*μ[i]
+		}
 	}
 
 	// objective value function
@@ -167,6 +242,15 @@ func main() {
 			b := la.VecDot(y, y)             // squared distance from origin in normalised space
 			ova = b                          // ova ← y dot y
 			oor = utl.GtePenalty(0, g(x), 1) // oor ← 0 ≥ g(x)
+
+		// argmin_y{ β(y) + c(y(x)) | |g(x(y))| ≤ ϵ }
+		case 4:
+			y := ind.GetFloats()                      // must be inside ovfunc to avoid data race problems
+			x := calc_orig_vars(ds, μ, σ, y)          // standard normal variables => original
+			b := la.VecDot(y, y)                      // squared distance from origin in normalised space
+			c := utl.GtePenalty(ϵ, math.Abs(g(x)), 1) // c ← ϵ ≥ |g(x)|
+			ova = b + c                               // ova ← y dot y + c
+			oor = c                                   // oor ← c
 
 		default:
 			chk.Panic("strategy %d is invalid", C.Strategy)
@@ -206,11 +290,11 @@ func main() {
 		if check && C.DoPlot {
 			pop1 := evo.Islands[0].Pop
 			extra := func() { plt.SetXnticks(11); plt.SetYnticks(11) }
-			istrans := C.Strategy == 3
-			goga.PlotTwoVarsContour("/tmp/goga", io.Sf("rel-prob%d-ST%d-orig", C.Problem, C.Strategy), pop0, pop1, evo.Best, npts, extra,
+			istrans := C.Strategy > 2
+			goga.PlotTwoVarsContour("/tmp/goga", io.Sf("rel-prob%d-ST%d-orig", C.Problem, C.Strategy), pop0, pop1, evo.Best, npts, extra, axequal,
 				vmin, vmax, istrans, false, Tfcn, Tifcn, g, g)
 			if len(ds) > 0 {
-				goga.PlotTwoVarsContour("/tmp/goga", io.Sf("rel-prob%d-ST%d-tran", C.Problem, C.Strategy), pop0, pop1, evo.Best, npts, extra,
+				goga.PlotTwoVarsContour("/tmp/goga", io.Sf("rel-prob%d-ST%d-tran", C.Problem, C.Strategy), pop0, pop1, evo.Best, npts, extra, axequal,
 					vmin, vmax, istrans, true, Tfcn, Tifcn, g, g)
 			}
 		}
@@ -239,6 +323,10 @@ func calc_orig_vars(ds []string, μ, σ, y []float64) (x []float64) {
 		switch typ {
 		case "nrm":
 			x[i] = μ[i] + σ[i]*y[i]
+		case "log": // TODO: check this
+			σN := σ[i] * x[i]
+			μN := (1 - math.Log(x[i]) + μ[i]) * x[i]
+			x[i] = μN + σN*y[i]
 		default:
 			chk.Panic("distribution %q is not available", typ)
 		}
@@ -257,6 +345,10 @@ func calc_norm_vars(ds []string, μ, σ, x []float64) (y []float64) {
 		switch typ {
 		case "nrm":
 			y[i] = (x[i] - μ[i]) / σ[i]
+		case "log": // TODO: check this
+			σN := σ[i] * x[i]
+			μN := (1 - math.Log(x[i]) + μ[i]) * x[i]
+			y[i] = (x[i] - μN) / σN
 		default:
 			chk.Panic("distribution %q is not available", typ)
 		}

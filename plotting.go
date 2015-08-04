@@ -27,6 +27,7 @@ type TwoVarsTrans_t func(x []float64) (y []float64)
 //   best    -- best individual. can be <nil>
 //   np      -- number of points for contour
 //   extra   -- called just before saving figure
+//   axequal -- axis.equal
 //   vmin    -- min 0 values
 //   vmax    -- max 1 values
 //   istrans -- vmin, vmax and individuals are transformed y-values; otherwise they are x-values
@@ -36,7 +37,7 @@ type TwoVarsTrans_t func(x []float64) (y []float64)
 //   f       -- function to plot filled contour. can be <nil>
 //   gs      -- functions to plot contour @ level 0. can be <nil>
 //  Note: g(x) operates on original x values
-func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Individual, np int, extra func(),
+func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Individual, np int, extra func(), axequal bool,
 	vmin, vmax []float64, istrans, tplot bool, T, Ti TwoVarsTrans_t, f TwoVarsFunc_t, gs ...TwoVarsFunc_t) {
 	if fnkey == "" {
 		return
@@ -134,7 +135,9 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 	plt.Cross("clr='grey'")
 	plt.SetXnticks(11)
 	plt.SetYnticks(11)
-	plt.Equal()
+	if axequal {
+		plt.Equal()
+	}
 	umin, umax := vmin, vmax
 	if istrans && !tplot {
 		xmin := Ti(vmin)
