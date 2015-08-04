@@ -24,9 +24,9 @@ func main() {
 	//  All variables are standard variables => μ=0 and σ=1 => y = x
 
 	// read parameters
-	fn := "reliability-problem1.json"
-	fn = io.ArgToFilename(0, fn, ".json", true)
-	C := ReadConfParams(fn)
+	fn := "reliability-problem1"
+	fn, fnkey := io.ArgToFilename(0, fn, ".json", true)
+	C := goga.ReadConfParams(fn)
 
 	// initialise random numbers generator
 	rnd.Init(C.Seed)
@@ -85,7 +85,7 @@ func main() {
 			if C.DoPlot {
 				xmin := []float64{-1, -1}
 				xmax := []float64{5, 5}
-				goga.PlotTwoVarsContour("/tmp/goga", "reliability-problem1", pop0, evo.Islands[0].Pop, evo.Best,
+				goga.PlotTwoVarsContour("/tmp/goga", fnkey, pop0, evo.Islands[0].Pop, evo.Best,
 					xmin, xmax, 41, true, nil, g, g)
 			}
 		}
