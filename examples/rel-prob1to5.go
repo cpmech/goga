@@ -45,7 +45,7 @@ func main() {
 	}()
 
 	// read parameters
-	fn := "rel-prob1to6"
+	fn := "rel-prob1to5"
 	fn, _ = io.ArgToFilename(0, fn, ".json", true)
 	C := goga.ReadConfParams(fn)
 	io.Pf("\n%s\nproblem # %v\n", utl.PrintThickLine(80), C.Problem)
@@ -113,7 +113,7 @@ func main() {
 
 	// objective value function
 	ovfunc := func(ind *goga.Individual, idIsland, t int, report *bytes.Buffer) (ova, oor float64) {
-		x := []float64{ind.GetFloat(0), ind.GetFloat(1)} // must be inside ovfunc to avoid data race problems
+		x := ind.GetFloats() // must be inside ovfunc to avoid data race problems
 		if C.Strategy == 1 {
 			ova = la.VecDot(x, x)
 			oor = utl.GtePenalty(0, g(x), 1)

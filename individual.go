@@ -375,6 +375,15 @@ func (o Individual) GetFloat(igene int) (x float64) {
 	return o.Floats[igene]
 }
 
+// GetFloats returns all float genes
+func (o Individual) GetFloats() (x []float64) {
+	x = make([]float64, o.Nfltgenes)
+	for i := 0; i < o.Nfltgenes; i++ {
+		x[i] = o.GetFloat(i)
+	}
+	return
+}
+
 // output //////////////////////////////////////////////////////////////////////////////////////////
 
 // GetStringSizes returns the sizes of strings representing each gene type

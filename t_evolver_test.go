@@ -109,7 +109,7 @@ func Test_evo02(tst *testing.T) {
 	// objective function
 	p := 1.0
 	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
-		x := []float64{ind.GetFloat(0), ind.GetFloat(1)}
+		x := ind.GetFloats()
 		ova = f(x)
 		oor += utl.GtePenalty(0, c1(x), p)
 		oor += utl.GtePenalty(0, c2(x), p)
@@ -121,7 +121,7 @@ func Test_evo02(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
-	C.Pll = true
+	C.Pll = false
 	C.Nisl = 4
 	C.Ninds = 20
 	if chk.Verbose {
@@ -182,7 +182,7 @@ func Test_evo03(tst *testing.T) {
 	// objective function
 	p := 1.0
 	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
-		x := []float64{ind.GetFloat(0), ind.GetFloat(1)}
+		x := ind.GetFloats()
 		fp := utl.GtePenalty(1e-2, math.Abs(c(x)), p)
 		ova = f(x) + fp
 		oor = fp

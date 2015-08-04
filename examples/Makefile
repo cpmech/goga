@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-FNKEY=rel-prob1to6
+#FNKEY=rel-prob1to5
+FNKEY=rel-prob6
 
 all: $(FNKEY)
 
