@@ -85,7 +85,7 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 	if best != nil {
 		x := best.GetFloat(0)
 		y := best.GetFloat(1)
-		plt.PlotOne(x, y, "'g*', ms=8, clip_on=0")
+		plt.PlotOne(x, y, "'g*', ms=8, zorder=50, clip_on=0")
 	}
 	if dirout == "" {
 		dirout = "/tmp/goga"

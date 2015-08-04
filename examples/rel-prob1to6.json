@@ -1,10 +1,11 @@
 {
-  "pll"     : true,
-  "nisl"    : 4,
-  "ninds"   : 20,
-  "noise"   : 0.2,
-  "tf"      : 100,
-  "problem" : 1,
-  "ntrials" : 1,
-  "doplot"  : true
+  "pll"      : true,
+  "nisl"     : 4,
+  "ninds"    : 20,
+  "noise"    : 0.5,
+  "tf"       : 100,
+  "problem"  : 5,
+  "strategy" : 1,
+  "ntrials"  : 100,
+  "doplot"   : true
 }

@@ -97,10 +97,11 @@ func main() {
 		xref = []float64{0, 3}
 		xmin, xmax = []float64{-5, -5}, []float64{5, 5}
 
-	// problem # 5 from [1] and # 1 from [4]
+	// problem # 5 from [1] and # 1 from [4] (modified)
 	case 5:
+		shift := 0.1
 		g = func(x []float64) float64 {
-			return 1.0 + math.Pow(x[0]+x[1], 2.0)/4.0 - 4.0*math.Pow(x[0]-x[1], 2.0)
+			return 1.0 + math.Pow(x[0]+x[1]+shift, 2.0)/4.0 - 4.0*math.Pow(x[0]-x[1]+shift, 2.0)
 		}
 		βref = 0.3536 // from [1]
 		xref = []float64{-βref * math.Sqrt2 / 2.0, βref * math.Sqrt2 / 2.0}
@@ -113,9 +114,14 @@ func main() {
 	// objective value function
 	ovfunc := func(ind *goga.Individual, idIsland, t int, report *bytes.Buffer) (ova, oor float64) {
 		x := []float64{ind.GetFloat(0), ind.GetFloat(1)} // must be inside ovfunc to avoid data race problems
-		fp := utl.GtePenalty(1e-2, math.Abs(g(x)), 1)
-		ova = la.VecDot(x, x) + fp
-		oor = fp
+		if C.Strategy == 1 {
+			ova = la.VecDot(x, x)
+			oor = utl.GtePenalty(0, g(x), 1)
+		} else {
+			fp := utl.GtePenalty(1e-2, math.Abs(g(x)), 1)
+			ova = la.VecDot(x, x) + fp
+			oor = fp
+		}
 		return
 	}
 
