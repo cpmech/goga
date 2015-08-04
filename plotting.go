@@ -14,6 +14,7 @@ import (
 
 // TwoVarsFunc_t defines a function to plot contours (len(x)==2)
 type TwoVarsFunc_t func(x []float64) float64
+type TwoVarsMap_t func(x0, x1 float64) (y0, y1 float64)
 
 // PlotTwoVarsContour plots contour for two variables problem. len(x) == 2
 // dirout  -- directory to save files
@@ -26,11 +27,13 @@ type TwoVarsFunc_t func(x []float64) float64
 // np      -- number of points for contour
 // axrange -- axes range: if true, use xmin and xmax
 // extra   -- called just before saving figure
+// Tg      -- transformation to be applied to **grid** x values. can be <nil>
+//            g(x) still operates on original x values
 // f       -- function to plot filled contour. can be <nil>
 // gfs     -- functions to plot contour @ level 0. can be <nil>
 func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Individual,
 	xmin, xmax []float64, np int, axrange bool, extra func(),
-	f TwoVarsFunc_t, gfs ...TwoVarsFunc_t) {
+	Tg TwoVarsMap_t, f TwoVarsFunc_t, gfs ...TwoVarsFunc_t) {
 	if fnkey == "" {
 		return
 	}
@@ -55,28 +58,39 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 			for k, g := range gfs {
 				Zg[k][i][j] = g(x)
 			}
+			if Tg != nil {
+				X[i][j], Y[i][j] = Tg(X[i][j], Y[i][j])
+			}
 		}
 	}
 	plt.Reset()
-	plt.SetForEps(0.8, 400)
+	plt.SetForEps(0.8, 350)
 	if f != nil {
-		plt.Contour(X, Y, Zf, "")
+		plt.Contour(X, Y, Zf, "fsz=7")
 	}
 	for k, _ := range gfs {
-		plt.ContourSimple(X, Y, Zg[k], "levels=[0], colors=['yellow'], linewidths=[2], clip_on=0")
+		plt.ContourSimple(X, Y, Zg[k], "zorder=5, levels=[0], colors=['yellow'], linewidths=[2], clip_on=0")
 	}
 	if pop0 != nil {
-		for _, ind := range pop0 {
+		for i, ind := range pop0 {
 			x := ind.GetFloat(0)
 			y := ind.GetFloat(1)
-			plt.PlotOne(x, y, "'k.', zorder=20, clip_on=0")
+			l := ""
+			if i == 0 {
+				l = "initial population"
+			}
+			plt.PlotOne(x, y, io.Sf("'k.', zorder=20, clip_on=0, label='%s'", l))
 		}
 	}
 	if pop1 != nil {
-		for _, ind := range pop1 {
+		for i, ind := range pop1 {
 			x := ind.GetFloat(0)
 			y := ind.GetFloat(1)
-			plt.PlotOne(x, y, "'m*', zorder=30, clip_on=0")
+			l := ""
+			if i == 0 {
+				l = "final population"
+			}
+			plt.PlotOne(x, y, io.Sf("'ko', ms=6, zorder=30, clip_on=0, label='%s', markerfacecolor='none'", l))
 		}
 	}
 	if extra != nil {
@@ -85,7 +99,7 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 	if best != nil {
 		x := best.GetFloat(0)
 		y := best.GetFloat(1)
-		plt.PlotOne(x, y, "'g*', ms=8, zorder=50, clip_on=0")
+		plt.PlotOne(x, y, "'m*', zorder=50, clip_on=0, label='best', markeredgecolor='m'")
 	}
 	if dirout == "" {
 		dirout = "/tmp/goga"
@@ -96,6 +110,12 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 	plt.Equal()
 	if axrange {
 		plt.AxisRange(xmin[0], xmax[0], xmin[1], xmax[1])
+	}
+	args := "leg_out='1', leg_ncol=4, leg_hlen=1.5"
+	if Tg == nil {
+		plt.Gll("$x_0$", "$x_1$", args)
+	} else {
+		plt.Gll("$y_0$", "$y_1$", args)
 	}
 	plt.SaveD(dirout, fnkey+".eps")
 }

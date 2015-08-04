@@ -155,6 +155,12 @@ func (o *Population) GenFloatRandom(C *ConfParams, xmin, xmax []float64) {
 					} else {
 						x -= mul * x
 					}
+					if x < xmin[j] {
+						x = xmin[j] + (xmin[j] - x)
+					}
+					if x > xmax[j] {
+						x = xmax[j] - (x - xmax[j])
+					}
 				}
 				(*o)[i].SetFloat(j, x)
 			}
