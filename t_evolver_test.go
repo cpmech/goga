@@ -150,8 +150,8 @@ func Test_evo02(tst *testing.T) {
 
 	// plot contour
 	if C.DoPlot {
-		PlotTwoVarsContour("/tmp/goga", "contour_evo02", pop0, evo.Islands[0].Pop, evo.Best,
-			xmin, xmax, 41, true, nil, f, c1, c2, c3, c4, c5)
+		PlotTwoVarsContour("/tmp/goga", "contour_evo02", pop0, evo.Islands[0].Pop, evo.Best, 41, nil,
+			xmin, xmax, false, false, nil, nil, f, c1, c2, c3, c4, c5)
 	}
 }
 
@@ -160,7 +160,7 @@ func Test_evo03(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("evo03")
 
-	//rnd.Init(0)
+	rnd.Init(111)
 
 	// geometry
 	xe := 1.0                      // centre of circle
@@ -191,7 +191,7 @@ func Test_evo03(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
-	C.Pll = true
+	C.Pll = false
 	C.Nisl = 4
 	C.Ninds = 20
 	if chk.Verbose {
@@ -224,7 +224,7 @@ func Test_evo03(tst *testing.T) {
 		extra := func() {
 			plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
 		}
-		PlotTwoVarsContour("/tmp/goga", "contour_evo03", pop0, evo.Islands[0].Pop, evo.Best,
-			xmin, xmax, 41, true, extra, f, c)
+		PlotTwoVarsContour("/tmp/goga", "contour_evo03", pop0, evo.Islands[0].Pop, evo.Best, 41, extra,
+			xmin, xmax, false, false, nil, nil, f, c)
 	}
 }

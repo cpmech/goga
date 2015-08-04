@@ -14,108 +14,145 @@ import (
 
 // TwoVarsFunc_t defines a function to plot contours (len(x)==2)
 type TwoVarsFunc_t func(x []float64) float64
-type TwoVarsMap_t func(x0, x1 float64) (y0, y1 float64)
+
+// TwoVarsTrans_t defines a tranformation x → y (len(x)==len(y)==2)
+type TwoVarsTrans_t func(x []float64) (y []float64)
 
 // PlotTwoVarsContour plots contour for two variables problem. len(x) == 2
-// dirout  -- directory to save files
-// fnkey   -- file name key for eps figure
-// pop0    -- initial population. can be <nil> if individuals are not to be plotted
-// pop1    -- final population. can be <nil> if individuals are not to be plotted
-// best    -- best individual. can be <nil>
-// xmin    -- min x[0] and x[1]. use <nil>for automatic values
-// xmax    -- max x[0] and x[1]. use <nil>for automatic values
-// np      -- number of points for contour
-// axrange -- axes range: if true, use xmin and xmax
-// extra   -- called just before saving figure
-// Tg      -- transformation to be applied to **grid** x values. can be <nil>
-//            g(x) still operates on original x values
-// f       -- function to plot filled contour. can be <nil>
-// gfs     -- functions to plot contour @ level 0. can be <nil>
-func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Individual,
-	xmin, xmax []float64, np int, axrange bool, extra func(),
-	Tg TwoVarsMap_t, f TwoVarsFunc_t, gfs ...TwoVarsFunc_t) {
+//  Input:
+//   dirout  -- directory to save files
+//   fnkey   -- file name key for eps figure
+//   pop0    -- initial population. can be <nil> if individuals are not to be plotted
+//   pop1    -- final population. can be <nil> if individuals are not to be plotted
+//   best    -- best individual. can be <nil>
+//   np      -- number of points for contour
+//   extra   -- called just before saving figure
+//   vmin    -- min 0 values
+//   vmax    -- max 1 values
+//   istrans -- vmin, vmax and individuals are transformed y-values; otherwise they are x-values
+//   tplot   -- plot transformed plot; needs T and Ti.
+//   T       -- transformation: x → y
+//   Ti      -- transformation: y → x
+//   f       -- function to plot filled contour. can be <nil>
+//   gs      -- functions to plot contour @ level 0. can be <nil>
+//  Note: g(x) operates on original x values
+func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Individual, np int, extra func(),
+	vmin, vmax []float64, istrans, tplot bool, T, Ti TwoVarsTrans_t, f TwoVarsFunc_t, gs ...TwoVarsFunc_t) {
 	if fnkey == "" {
 		return
 	}
-	chk.IntAssert(len(xmin), 2)
-	chk.IntAssert(len(xmax), 2)
-	X, Y := utl.MeshGrid2D(xmin[0], xmax[0], xmin[1], xmax[1], np, np)
+	chk.IntAssert(len(vmin), 2)
+	chk.IntAssert(len(vmax), 2)
+	V0, V1 := utl.MeshGrid2D(vmin[0], vmax[0], vmin[1], vmax[1], np, np)
 	var Zf [][]float64
 	var Zg [][][]float64
 	if f != nil {
 		Zf = la.MatAlloc(np, np)
 	}
-	if len(gfs) > 0 {
-		Zg = utl.Deep3alloc(len(gfs), np, np)
+	if len(gs) > 0 {
+		Zg = utl.Deep3alloc(len(gs), np, np)
 	}
+	dotrans := !istrans && tplot // do transform
 	x := make([]float64, 2)
 	for i := 0; i < np; i++ {
 		for j := 0; j < np; j++ {
-			x[0], x[1] = X[i][j], Y[i][j]
+			if istrans {
+				x = Ti([]float64{V0[i][j], V1[i][j]}) // x ← T⁻¹(y)
+				if !tplot {
+					V0[i][j], V1[i][j] = x[0], x[1]
+				}
+			} else {
+				x[0], x[1] = V0[i][j], V1[i][j]
+				if tplot {
+					y := T(x) // v ← y = T(x)
+					V0[i][j], V1[i][j] = y[0], y[1]
+				}
+			}
 			if f != nil {
 				Zf[i][j] = f(x)
 			}
-			for k, g := range gfs {
+			for k, g := range gs {
 				Zg[k][i][j] = g(x)
-			}
-			if Tg != nil {
-				X[i][j], Y[i][j] = Tg(X[i][j], Y[i][j])
 			}
 		}
 	}
 	plt.Reset()
 	plt.SetForEps(0.8, 350)
 	if f != nil {
-		plt.Contour(X, Y, Zf, "fsz=7")
+		cmapidx := 0
+		if tplot {
+			cmapidx = 4
+		}
+		plt.Contour(V0, V1, Zf, io.Sf("fsz=7, cmapidx=%d", cmapidx))
 	}
-	for k, _ := range gfs {
-		plt.ContourSimple(X, Y, Zg[k], "zorder=5, levels=[0], colors=['yellow'], linewidths=[2], clip_on=0")
+	for k, _ := range gs {
+		plt.ContourSimple(V0, V1, Zg[k], "zorder=5, levels=[0], colors=['yellow'], linewidths=[2], clip_on=0")
 	}
 	if pop0 != nil {
 		for i, ind := range pop0 {
-			x := ind.GetFloat(0)
-			y := ind.GetFloat(1)
+			v := ind.GetFloats()
+			if dotrans {
+				y := T(v)
+				v[0], v[1] = y[0], y[1]
+			}
 			l := ""
 			if i == 0 {
 				l = "initial population"
 			}
-			plt.PlotOne(x, y, io.Sf("'k.', zorder=20, clip_on=0, label='%s'", l))
+			plt.PlotOne(v[0], v[1], io.Sf("'k.', zorder=20, clip_on=0, label='%s'", l))
 		}
 	}
 	if pop1 != nil {
 		for i, ind := range pop1 {
-			x := ind.GetFloat(0)
-			y := ind.GetFloat(1)
+			v := ind.GetFloats()
+			if dotrans {
+				y := T(v)
+				v[0], v[1] = y[0], y[1]
+			}
 			l := ""
 			if i == 0 {
 				l = "final population"
 			}
-			plt.PlotOne(x, y, io.Sf("'ko', ms=6, zorder=30, clip_on=0, label='%s', markerfacecolor='none'", l))
+			plt.PlotOne(v[0], v[1], io.Sf("'ko', ms=6, zorder=30, clip_on=0, label='%s', markerfacecolor='none'", l))
 		}
 	}
 	if extra != nil {
 		extra()
 	}
 	if best != nil {
-		x := best.GetFloat(0)
-		y := best.GetFloat(1)
-		plt.PlotOne(x, y, "'m*', zorder=50, clip_on=0, label='best', markeredgecolor='m'")
+		v := best.GetFloats()
+		if dotrans {
+			y := T(v)
+			v[0], v[1] = y[0], y[1]
+		}
+		plt.PlotOne(v[0], v[1], "'m*', zorder=50, clip_on=0, label='best', markeredgecolor='m'")
 	}
 	if dirout == "" {
-		dirout = "/tmp/goga"
+		dirout = "."
 	}
 	plt.Cross("clr='grey'")
 	plt.SetXnticks(11)
 	plt.SetYnticks(11)
 	plt.Equal()
-	if axrange {
-		plt.AxisRange(xmin[0], xmax[0], xmin[1], xmax[1])
+	umin, umax := vmin, vmax
+	if istrans && !tplot {
+		xmin := Ti(vmin)
+		xmax := Ti(vmax)
+		umin[0], umin[1] = xmin[0], xmin[1]
+		umax[0], umax[1] = xmax[0], xmax[1]
 	}
+	if !istrans && tplot {
+		ymin := T(vmin)
+		ymax := T(vmax)
+		umin[0], umin[1] = ymin[0], ymin[1]
+		umax[0], umax[1] = ymax[0], ymax[1]
+	}
+	plt.AxisRange(umin[0], umax[0], umin[1], umax[1])
 	args := "leg_out='1', leg_ncol=4, leg_hlen=1.5"
-	if Tg == nil {
-		plt.Gll("$x_0$", "$x_1$", args)
-	} else {
+	if tplot {
 		plt.Gll("$y_0$", "$y_1$", args)
+	} else {
+		plt.Gll("$x_0$", "$x_1$", args)
 	}
 	plt.SaveD(dirout, fnkey+".eps")
 }
