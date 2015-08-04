@@ -97,7 +97,7 @@ func (o *ConfParams) SetDefault() {
 	o.Ninds = 20
 	o.Nbases = 10
 	o.Grid = true
-	o.Noise = 0.5
+	o.Noise = 0.3
 
 	// time control
 	o.Tf = 100

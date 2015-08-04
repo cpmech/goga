@@ -53,6 +53,7 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 		Zg = utl.Deep3alloc(len(gs), np, np)
 	}
 	dotrans := !istrans && tplot // do transform
+	untrans := istrans && !tplot // un-transform
 	x := make([]float64, 2)
 	for i := 0; i < np; i++ {
 		for j := 0; j < np; j++ {
@@ -88,31 +89,35 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 	for k, _ := range gs {
 		plt.ContourSimple(V0, V1, Zg[k], "zorder=5, levels=[0], colors=['yellow'], linewidths=[2], clip_on=0")
 	}
+	get_v := func(ind *Individual) (v []float64) {
+		v = ind.GetFloats()
+		if dotrans {
+			y := T(v)
+			v[0], v[1] = y[0], y[1]
+		}
+		if untrans {
+			x := Ti(v)
+			v[0], v[1] = x[0], x[1]
+		}
+		return
+	}
 	if pop0 != nil {
 		for i, ind := range pop0 {
-			v := ind.GetFloats()
-			if dotrans {
-				y := T(v)
-				v[0], v[1] = y[0], y[1]
-			}
 			l := ""
 			if i == 0 {
 				l = "initial population"
 			}
+			v := get_v(ind)
 			plt.PlotOne(v[0], v[1], io.Sf("'k.', zorder=20, clip_on=0, label='%s'", l))
 		}
 	}
 	if pop1 != nil {
 		for i, ind := range pop1 {
-			v := ind.GetFloats()
-			if dotrans {
-				y := T(v)
-				v[0], v[1] = y[0], y[1]
-			}
 			l := ""
 			if i == 0 {
 				l = "final population"
 			}
+			v := get_v(ind)
 			plt.PlotOne(v[0], v[1], io.Sf("'ko', ms=6, zorder=30, clip_on=0, label='%s', markerfacecolor='none'", l))
 		}
 	}
@@ -120,11 +125,7 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 		extra()
 	}
 	if best != nil {
-		v := best.GetFloats()
-		if dotrans {
-			y := T(v)
-			v[0], v[1] = y[0], y[1]
-		}
+		v := get_v(best)
 		plt.PlotOne(v[0], v[1], "'m*', zorder=50, clip_on=0, label='best', markeredgecolor='m'")
 	}
 	if dirout == "" {
@@ -138,14 +139,14 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 	if istrans && !tplot {
 		xmin := Ti(vmin)
 		xmax := Ti(vmax)
-		umin[0], umin[1] = xmin[0], xmin[1]
-		umax[0], umax[1] = xmax[0], xmax[1]
+		umin = []float64{xmin[0], xmin[1]}
+		umax = []float64{xmax[0], xmax[1]}
 	}
 	if !istrans && tplot {
 		ymin := T(vmin)
 		ymax := T(vmax)
-		umin[0], umin[1] = ymin[0], ymin[1]
-		umax[0], umax[1] = ymax[0], ymax[1]
+		umin = []float64{ymin[0], ymin[1]}
+		umax = []float64{ymax[0], ymax[1]}
 	}
 	plt.AxisRange(umin[0], umax[0], umin[1], umax[1])
 	args := "leg_out='1', leg_ncol=4, leg_hlen=1.5"
