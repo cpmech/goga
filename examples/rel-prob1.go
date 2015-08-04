@@ -20,11 +20,18 @@ import (
 
 func main() {
 
+	// catch errors
+	defer func() {
+		if err := recover(); err != nil {
+			io.PfRed("ERROR: %v\n", err)
+		}
+	}()
+
 	// Problem # 1:
 	//  All variables are standard variables => μ=0 and σ=1 => y = x
 
 	// read parameters
-	fn := "reliability-problem1"
+	fn := "rel-prob1"
 	fn, fnkey := io.ArgToFilename(0, fn, ".json", true)
 	C := goga.ReadConfParams(fn)
 
