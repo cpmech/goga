@@ -15,14 +15,18 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
+	"github.com/cpmech/gosl/num"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
 
+const TOLMINLOG = 1e-15
+
 func main() {
 
 	// Problems 1 to 5 have all variables as standard variables => μ=0 and σ=1 => y = x
+	//
 	// References
 	//  [1] Santos SR, Matioli LC and Beck AT. New optimization algorithms for structural
 	//      reliability analysis. Computer Modeling in Engineering & Sciences, 83(1):23-56; 2012
@@ -41,13 +45,23 @@ func main() {
 	//      Vessels and Piping, 83(10):742-748; 2006 doi:10.1016/j.ijpvp.2006.07.004
 	//  [6] Haldar and Mahadevan. Probability, reliability and statistical methods in engineering
 	//      and design. John Wiley & Sons. 304p; 2000.
-
-	// catch errors
-	defer func() {
-		if err := recover(); err != nil {
-			io.PfRed("ERROR: %v\n", err)
-		}
-	}()
+	//
+	// Strategies
+	//  1: operates on x:
+	//       argmin_x{ β(y(x)) | g(x) ≤ 0 }
+	//  2: operates on x with equality constraint:
+	//       argmin_x{ β(y(x)) + c(x) | |g(x)| ≤ ϵ }
+	//  3: operates on y:
+	//       argmin_y{ β(y) | g(x(y)) ≤ 0 }
+	//  4: operates on y with equality constraint:
+	//       argmin_y{ β(y) + c(y(x)) | |g(x(y))| ≤ ϵ }
+	//  1 and 3:
+	//       ova ← y dot y
+	//       oor ← 0 ≥ g(x)
+	//  2 and 4, equality constraint:
+	//       c ← ϵ ≥ |g(x)|
+	//       ova ← y dot y + c
+	//       oor ← c
 
 	// read parameters
 	fn := "rel-prob1to5"
@@ -196,72 +210,103 @@ func main() {
 		g = func(x []float64) float64 {
 			return x[0]*x[1] - 1140
 		}
-		βref = 5.2127 // from [1]
+		ϵ = 0.5
+		βref = 5.2127 // from [1] // from here: 5.210977819456551
 		μ = []float64{38, 54}
 		σ = []float64{3.8, 2.7}
-		ds = []string{"log", "log"}
+		ds = []string{"nrm", "nrm"}
+		ds = []string{"logMuSig", "logMuSig"}
+		vmin = []float64{0.01, 0.01}
+		vmax = []float64{20, 20}
 
 	default:
 		chk.Panic("problem number %d is invalid", C.Problem)
 	}
 
+	// check
+	//μN, σN := lognormal_calc_equiv_prms_from_musig(μ[0], σ[0], 38.0)
+	//io.Pforan("μN=%v σN=%v\n", μN, σN)
+	//return
+
 	// use original variables
 	if C.Strategy < 3 && μ != nil {
 		vmin, vmax = make([]float64, 2), make([]float64, 2)
 		for i := 0; i < 2; i++ {
-			vmin[i] = μ[i] - 2*μ[i]
-			vmax[i] = μ[i] + 2*μ[i]
+			vmin[i] = μ[i] - 1.3*μ[i]
+			vmax[i] = μ[i] + 1.3*μ[i]
+			if ds[i][:3] == "log" && vmin[i] < TOLMINLOG {
+				vmin[i] = TOLMINLOG
+			}
 		}
 	}
+
+	//vmin = []float64{20, 42}
+	//vmax = []float64{30, 50}
+	//vmax = []float64{15, 15}
 
 	// objective value function
 	ovfunc := func(ind *goga.Individual, idIsland, t int, report *bytes.Buffer) (ova, oor float64) {
 
+		// get original and normalised variables
+		var x, y []float64
+		var invalid bool
 		switch C.Strategy {
 
-		// argmin_x{ β(y(x)) | g(x) ≤ 0 }
-		case 1:
-			x := ind.GetFloats()             // must be inside ovfunc to avoid data race problems
-			y := calc_norm_vars(ds, μ, σ, x) // original => standard normal variables
-			b := la.VecDot(y, y)             // squared distance from origin in normalised space
-			ova = b                          // ova ← y dot y
-			oor = utl.GtePenalty(0, g(x), 1) // oor ← 0 ≥ g(x)
+		// operates on x (original)
+		case 1, 2:
+			x = ind.GetFloats()
+			y, invalid = calc_norm_vars(ds, μ, σ, x)
 
-		// argmin_x{ β(y(x)) + c(x) | |g(x)| ≤ ϵ }
-		case 2:
-			x := ind.GetFloats()                      // must be inside ovfunc to avoid data race problems
-			y := calc_norm_vars(ds, μ, σ, x)          // original => standard normal variables
-			b := la.VecDot(y, y)                      // squared distance from origin in normalised space
-			c := utl.GtePenalty(ϵ, math.Abs(g(x)), 1) // c ← ϵ ≥ |g(x)|
-			ova = b + c                               // ova ← y dot y + c
-			oor = c                                   // oor ← c
-
-		// argmin_y{ β(y) | g(x(y)) ≤ 0 }
-		case 3:
-			y := ind.GetFloats()             // must be inside ovfunc to avoid data race problems
-			x := calc_orig_vars(ds, μ, σ, y) // standard normal variables => original
-			b := la.VecDot(y, y)             // squared distance from origin in normalised space
-			ova = b                          // ova ← y dot y
-			oor = utl.GtePenalty(0, g(x), 1) // oor ← 0 ≥ g(x)
-
-		// argmin_y{ β(y) + c(y(x)) | |g(x(y))| ≤ ϵ }
-		case 4:
-			y := ind.GetFloats()                      // must be inside ovfunc to avoid data race problems
-			x := calc_orig_vars(ds, μ, σ, y)          // standard normal variables => original
-			b := la.VecDot(y, y)                      // squared distance from origin in normalised space
-			c := utl.GtePenalty(ϵ, math.Abs(g(x)), 1) // c ← ϵ ≥ |g(x)|
-			ova = b + c                               // ova ← y dot y + c
-			oor = c                                   // oor ← c
+		// operates on y (normalised)
+		case 3, 4:
+			y = ind.GetFloats()
+			x, invalid = calc_orig_vars(ds, μ, σ, y)
 
 		default:
 			chk.Panic("strategy %d is invalid", C.Strategy)
+		}
+
+		// handle invalid variable; e.g. yi<0 where yi is lognormal
+		if invalid {
+			oor = 1e+8
+			return
+		}
+
+		// squared distance from origin to limit state curve in normalised space
+		b := la.VecDot(y, y)
+
+		// compute objective value
+		switch C.Strategy {
+
+		// argmin_{x,y}{ β(y(x)) | g(x) ≤ 0 }
+		case 1, 3:
+			ova = b                          // ova ← y dot y
+			oor = utl.GtePenalty(0, g(x), 1) // oor ← 0 ≥ g(x)
+
+		// argmin_{x,y}{ β(y(x)) + c(x) | |g(x)| ≤ ϵ }
+		case 2, 4:
+			c := utl.GtePenalty(ϵ, math.Abs(g(x)), 1) // c ← ϵ ≥ |g(x)|
+			ova = b + c                               // ova ← y dot y + c
+			oor = c                                   // oor ← c
 		}
 		return
 	}
 
 	// transformation functions (for plotting)
-	Tfcn := func(x []float64) (y []float64) { return calc_norm_vars(ds, μ, σ, x) }
-	Tifcn := func(y []float64) (x []float64) { return calc_orig_vars(ds, μ, σ, y) }
+	Tfcn := func(x []float64) (y []float64) {
+		y, invalid := calc_norm_vars(ds, μ, σ, x)
+		if invalid {
+			chk.Panic("Tfcn: invalid value")
+		}
+		return
+	}
+	Tifcn := func(y []float64) (x []float64) {
+		x, invalid := calc_orig_vars(ds, μ, σ, y)
+		if invalid {
+			chk.Panic("Tifcn: invalid value")
+		}
+		return
+	}
 
 	// evolver
 	evo := goga.NewEvolverFloatChromo(C, vmin, vmax, ovfunc, goga.NewBingoFloats(vmin, vmax))
@@ -313,30 +358,26 @@ func main() {
 	io.Pf(rnd.BuildTextHist(nice_num(βmin-0.005), nice_num(βmax+0.005), 11, betas, "%.3f", 60))
 }
 
-// calc_orig_vars computes original variables from normal variables
-func calc_orig_vars(ds []string, μ, σ, y []float64) (x []float64) {
-	x = make([]float64, len(y))
-	copy(x, y)
-	if len(ds) == 0 { // all standard normal variables
-		return
+func lognormal_calc_equiv_prms(μ, σ, x float64, μσ_are_ms bool) (μN, σN float64) {
+	if x < TOLMINLOG {
+		chk.Panic("cannot compute μN and σN because x<0. x=%g", x)
 	}
-	for i, typ := range ds {
-		switch typ {
-		case "nrm":
-			x[i] = μ[i] + σ[i]*y[i]
-		case "log": // TODO: check this
-			σN := σ[i] * x[i]
-			μN := (1 - math.Log(x[i]) + μ[i]) * x[i]
-			x[i] = μN + σN*y[i]
-		default:
-			chk.Panic("distribution %q is not available", typ)
-		}
+	m, s := μ, σ
+	if !μσ_are_ms { // compute lognormal variables from statistics of x
+		δ := σ / μ
+		s = math.Sqrt(math.Log(1 + δ*δ))
+		m = math.Log(μ) - s*s/2
 	}
+	σN = s * x
+	μN = (1 - math.Log(x) + m) * x
+	//io.Pfpink("μ=%v σ=%v x=%v\n", μ, σ, x)
+	//io.Pfpink("δ=%v s=%v m=%v\n", δ, s, m)
+	//io.Pfpink("μN=%v σN=%v\n", μN, σN)
 	return
 }
 
 // calc_norm_vars computes normal variables from original variables
-func calc_norm_vars(ds []string, μ, σ, x []float64) (y []float64) {
+func calc_norm_vars(ds []string, μ, σ, x []float64) (y []float64, invalid bool) {
 	y = make([]float64, len(x))
 	copy(y, x)
 	if len(ds) == 0 { // all standard normal variables
@@ -346,10 +387,51 @@ func calc_norm_vars(ds []string, μ, σ, x []float64) (y []float64) {
 		switch typ {
 		case "nrm":
 			y[i] = (x[i] - μ[i]) / σ[i]
-		case "log": // TODO: check this
-			σN := σ[i] * x[i]
-			μN := (1 - math.Log(x[i]) + μ[i]) * x[i]
+		case "logMS", "logMuSig":
+			if x[i] < TOLMINLOG {
+				return nil, true
+			}
+			μN, σN := lognormal_calc_equiv_prms(μ[i], σ[i], x[i], typ == "logMS")
 			y[i] = (x[i] - μN) / σN
+		default:
+			chk.Panic("distribution %q is not available", typ)
+		}
+	}
+	return
+}
+
+// calc_orig_vars computes original variables from normal variables
+func calc_orig_vars(ds []string, μ, σ, y []float64) (x []float64, invalid bool) {
+	x = make([]float64, len(y))
+	copy(x, y)
+	if len(ds) == 0 { // all standard normal variables
+		return
+	}
+	for i, typ := range ds {
+		switch typ {
+		case "nrm":
+			x[i] = μ[i] + σ[i]*y[i]
+		case "logMS", "logMuSig":
+			if y[i] < TOLMINLOG {
+				return nil, true
+			}
+
+			// nonlinear problem for lognormal variable u[0] = x[i]
+			var nls num.NlSolver
+			nls.Init(1, func(fu, u []float64) error {
+				μNtmp, σNtmp := lognormal_calc_equiv_prms(μ[i], σ[i], u[0], typ == "logMS")
+				fu[0] = u[0] - (μNtmp + σNtmp*y[i])
+				return nil
+			}, nil, nil, false, true, nil)
+			u := []float64{μ[i] + σ[i]*y[i]}
+			nls.SetTols(1e-4, 1e-4, 1e-4, 1e-15)
+			nls.Lsearch = false
+			err := nls.Solve(u, true)
+			if err != nil {
+				chk.Panic("nonlinear solver failed:\n%v", err)
+			}
+			x[i] = u[0]
+
 		default:
 			chk.Panic("distribution %q is not available", typ)
 		}
@@ -360,12 +442,16 @@ func calc_norm_vars(ds []string, μ, σ, x []float64) (y []float64) {
 // calc_beta calculates reliability index
 func calc_beta(best *goga.Individual, βref float64, ds []string, μ, σ, xref []float64, strategy int, verbose bool) (β float64) {
 	var xs, ys []float64
+	var invalid bool
 	if strategy < 3 {
-		xs = best.GetFloats()             // check point
-		ys = calc_norm_vars(ds, μ, σ, xs) // standard normal variables
+		xs = best.GetFloats()                      // check point
+		ys, invalid = calc_norm_vars(ds, μ, σ, xs) // standard normal variables
 	} else {
-		ys = best.GetFloats()             // normal variables
-		xs = calc_orig_vars(ds, μ, σ, ys) // check point
+		ys = best.GetFloats()                      // normal variables
+		xs, invalid = calc_orig_vars(ds, μ, σ, ys) // check point
+	}
+	if invalid {
+		chk.Panic("calc_beta: invalid value")
 	}
 	b := la.VecDot(ys, ys) // squared distance from origin in normalised space
 	β = math.Sqrt(b)

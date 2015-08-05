@@ -5,7 +5,7 @@
   "noise"    : 0.5,
   "tf"       : 100,
   "problem"  : 12,
-  "strategy" : 3,
+  "strategy" : 1,
   "ntrials"  : 100,
   "doplot"   : true
 }
