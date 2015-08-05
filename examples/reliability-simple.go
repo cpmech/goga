@@ -33,17 +33,23 @@ func main() {
 	//  [2] Borri A and Speranzini E. Structural reliability analysis using a standard deterministic
 	//      finite element code. Structural Safety, 19(4):361-382; 1997
 	//      doi:10.1016/S0167-4730(97)00017-9
-	//  [3] Grooteman F.  Adaptive radial-based importance sampling method or structural
+	//  [3] Grooteman F. Adaptive radial-based importance sampling method or structural
 	//      reliability. Structural safety, 30:533-542; 2008
 	//      doi:10.1016/j.strusafe.2007.10.002
 	//  [4] Wang L and Grandhi RV. Higher-order failure probability calculation using nonlinear
 	//      approximations. Computer Methods in Applied Mechanics and Engineering, 168(1-4):185-206;
 	//      1999 doi:10.1016/S0045-7825(98)00140-6
 	//  [5] Santosh TV, Saraf RK, Ghosh AK and KushwahaHS. Optimum step length selection rule in
-	//      modified HL–RF method for structural reliability. International Journal of Pressure
+	//      modified HL-RF method for structural reliability. International Journal of Pressure
 	//      Vessels and Piping, 83(10):742-748; 2006 doi:10.1016/j.ijpvp.2006.07.004
 	//  [6] Haldar and Mahadevan. Probability, reliability and statistical methods in engineering
 	//      and design. John Wiley & Sons. 304p; 2000.
+	//  [7] Der Kiureghian A, Lin H and Hwang S. Second‐Order Reliability Approximations.
+	//      Journal of Engineering Mechanics 113(8):1208-1225; 1987
+	//      doi:10.1061/(ASCE)0733-9399(1987)113:8(1208)
+	//  [8] Cheng J and Xiao RC. Serviceability reliability analysis of cable-stayed bridges.
+	//      Structural Engineering and Mechanics, 20(6):609-630; 2005
+	//      doi:10.12989/sem.2005.20.6.609
 	//
 	// Strategies
 	//  1: operates on x:
@@ -238,6 +244,21 @@ func main() {
 			vars[i] = &rnd.VarData{D: rnd.D_Normal, M: 0, S: 1}
 		}
 
+	// example # 1 of [7] and [8]; also problem # 15 of [1] with 3rd coefficient different
+	case 14:
+		g = func(x []float64) float64 {
+			return x[0] + 2.0*x[1] + 2.0*x[2] + x[3] - 5.0*x[4] - 5.0*x[5]
+		}
+		βref = 2.348 // from [8]
+		vars = rnd.Variables{
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12, Std: true},
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12, Std: true},
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12, Std: true},
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12, Std: true},
+			&rnd.VarData{D: rnd.D_Log, M: 50, S: 15, Std: true},
+			&rnd.VarData{D: rnd.D_Log, M: 40, S: 12, Std: true},
+		}
+
 	default:
 		chk.Panic("problem number %d is invalid", C.Problem)
 	}
@@ -317,7 +338,7 @@ func main() {
 		β := math.Sqrt(la.VecDot(y, y))
 		betas[i] = β
 		if check {
-			io.Pf("β = %g (%g)\n\n", β, βref)
+			io.PfGreen("β = %g (%g)\n\n", β, βref)
 		}
 
 		// plot contour
