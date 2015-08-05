@@ -16,7 +16,7 @@ import (
 type TwoVarsFunc_t func(x []float64) float64
 
 // TwoVarsTrans_t defines a tranformation x → y (len(x)==len(y)==2)
-type TwoVarsTrans_t func(x []float64) (y []float64)
+type TwoVarsTrans_t func(x []float64) (y []float64, invalid bool)
 
 // PlotTwoVarsContour plots contour for two variables problem. len(x) == 2
 //  Input:
@@ -59,14 +59,20 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 	for i := 0; i < np; i++ {
 		for j := 0; j < np; j++ {
 			if istrans {
-				x = Ti([]float64{V0[i][j], V1[i][j]}) // x ← T⁻¹(y)
+				x, invalid := Ti([]float64{V0[i][j], V1[i][j]}) // x ← T⁻¹(y)
+				if invalid {
+					chk.Panic("cannot plot contour due to invalid transformation")
+				}
 				if !tplot {
 					V0[i][j], V1[i][j] = x[0], x[1]
 				}
 			} else {
 				x[0], x[1] = V0[i][j], V1[i][j]
 				if tplot {
-					y := T(x) // v ← y = T(x)
+					y, invalid := T(x) // v ← y = T(x)
+					if invalid {
+						chk.Panic("cannot plot contour due to invalid transformation")
+					}
 					V0[i][j], V1[i][j] = y[0], y[1]
 				}
 			}
@@ -93,11 +99,17 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 	get_v := func(ind *Individual) (v []float64) {
 		v = ind.GetFloats()
 		if dotrans {
-			y := T(v)
+			y, invalid := T(v)
+			if invalid {
+				chk.Panic("cannot plot contour due to invalid transformation")
+			}
 			v[0], v[1] = y[0], y[1]
 		}
 		if untrans {
-			x := Ti(v)
+			x, invalid := Ti(v)
+			if invalid {
+				chk.Panic("cannot plot contour due to invalid transformation")
+			}
 			v[0], v[1] = x[0], x[1]
 		}
 		return
@@ -140,14 +152,26 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 	}
 	umin, umax := vmin, vmax
 	if istrans && !tplot {
-		xmin := Ti(vmin)
-		xmax := Ti(vmax)
+		xmin, invalid := Ti(vmin)
+		if invalid {
+			chk.Panic("cannot plot contour due to invalid transformation")
+		}
+		xmax, invalid := Ti(vmax)
+		if invalid {
+			chk.Panic("cannot plot contour due to invalid transformation")
+		}
 		umin = []float64{xmin[0], xmin[1]}
 		umax = []float64{xmax[0], xmax[1]}
 	}
 	if !istrans && tplot {
-		ymin := T(vmin)
-		ymax := T(vmax)
+		ymin, invalid := T(vmin)
+		if invalid {
+			chk.Panic("cannot plot contour due to invalid transformation")
+		}
+		ymax, invalid := T(vmax)
+		if invalid {
+			chk.Panic("cannot plot contour due to invalid transformation")
+		}
 		umin = []float64{ymin[0], ymin[1]}
 		umax = []float64{ymax[0], ymax[1]}
 	}
