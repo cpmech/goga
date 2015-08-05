@@ -64,7 +64,7 @@ func main() {
 	//       oor ← c
 
 	// read parameters
-	fn := "rel-prob1to5"
+	fn := "rel-2d-simple"
 	fn, _ = io.ArgToFilename(0, fn, ".json", true)
 	C := goga.ReadConfParams(fn)
 	io.Pf("\n%s\nproblem # %v\n", utl.PrintThickLine(80), C.Problem)

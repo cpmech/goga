@@ -1,9 +1,0 @@
-{
-  "pll"      : true,
-  "nisl"     : 4,
-  "ninds"    : 20,
-  "noise"    : 0.5,
-  "tf"       : 100,
-  "strategy" : 1,
-  "ntrials"  : 100
-}
