@@ -2,7 +2,7 @@
   "pll"      : true,
   "nisl"     : 4,
   "ninds"    : 20,
-  "noise"    : 0.5,
+  "noise"    : 0.3,
   "tf"       : 100,
   "problem"  : 12,
   "strategy" : 1,
