@@ -1,7 +1,6 @@
 #!/bin/bash
 
-#FILE="rel-simple-beam-form.go"
-FILE="rel-2d-simple.go"
+FILE="reliability-simple.go"
 
 while true; do
     inotifywait -q -e modify $FILE

@@ -63,7 +63,7 @@ func main() {
 	//       oor ← c
 
 	// read parameters
-	fn := "rel-2d-simple"
+	fn := "reliability-simple"
 	fn, _ = io.ArgToFilename(0, fn, ".json", true)
 	C := goga.ReadConfParams(fn)
 	io.Pf("\n%s\nproblem # %v\n", utl.PrintThickLine(80), C.Problem)
@@ -120,7 +120,6 @@ func main() {
 		g = func(x []float64) float64 {
 			return 3 - x[1] + 256*math.Pow(x[0], 4)
 		}
-		npts = 101
 		βref = 3 // from [1] xref = []float64{0, 3}
 		vars = rnd.Variables{
 			&rnd.VarData{D: rnd.D_Normal, M: 0, S: 1},
@@ -224,6 +223,21 @@ func main() {
 			&rnd.VarData{D: rnd.D_Log, M: 54, S: 2.7, Std: true},
 		}
 
+	// problem # 6 of [1] and case # 3 of [3]
+	case 13:
+		g = func(x []float64) float64 {
+			sum := 0.0
+			for i := 0; i < 9; i++ {
+				sum += x[i] * x[i]
+			}
+			return 2.0 - 0.015*sum - x[9]
+		}
+		βref = 2.0 // from [1]
+		vars = make([]*rnd.VarData, 10)
+		for i := 0; i < 10; i++ {
+			vars[i] = &rnd.VarData{D: rnd.D_Normal, M: 0, S: 1}
+		}
+
 	default:
 		chk.Panic("problem number %d is invalid", C.Problem)
 	}
@@ -307,7 +321,7 @@ func main() {
 		}
 
 		// plot contour
-		if check && C.DoPlot {
+		if check && C.DoPlot && len(vars) == 2 {
 			pop1 := evo.Islands[0].Pop
 			extra := func() { plt.SetXnticks(11); plt.SetYnticks(11) }
 			goga.PlotTwoVarsContour("/tmp/goga", io.Sf("rel-prob%d-ST%d-orig", C.Problem, C.Strategy), pop0, pop1, evo.Best, npts, extra, axequal,
