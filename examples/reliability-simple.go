@@ -50,6 +50,9 @@ func main() {
 	//  [8] Cheng J and Xiao RC. Serviceability reliability analysis of cable-stayed bridges.
 	//      Structural Engineering and Mechanics, 20(6):609-630; 2005
 	//      doi:10.12989/sem.2005.20.6.609
+	//  [9] Mahadevan S and Shi P. Multiple Linearization Method for Nonlinear Reliability Analysis.
+	//      Journal of Engineering Mechanics, 127(11):1165-1173; 2001
+	//      doi:10.1061/(ASCE)0733-9399(2001)127:11(1165)
 	//
 	// Strategies
 	//  1: operates on x:
@@ -95,8 +98,8 @@ func main() {
 		}
 		βref = 2.5 // from [1] xref = []float64{1.7677, 1.7677}
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 0, S: 1},
-			&rnd.VarData{D: rnd.D_Normal, M: 0, S: 1},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0, S: 1},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0, S: 1},
 		}
 
 	// problem # 2 of [1] and Eq. (A.6) of [2]
@@ -106,8 +109,8 @@ func main() {
 		}
 		βref = 1.658 // from [2] xref = []float64{-0.7583, 1.4752}
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 0, S: 1},
-			&rnd.VarData{D: rnd.D_Normal, M: 0, S: 1},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0, S: 1},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0, S: 1},
 		}
 
 	// problem # 3 from [1] and # 6 from [3]
@@ -117,8 +120,8 @@ func main() {
 		}
 		βref = 2 // from [1] xref = []float64{0, 2}
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 0, S: 1},
-			&rnd.VarData{D: rnd.D_Normal, M: 0, S: 1},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0, S: 1},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0, S: 1},
 		}
 
 	// problem # 4 from [1] and # 8 from [3]
@@ -128,8 +131,8 @@ func main() {
 		}
 		βref = 3 // from [1] xref = []float64{0, 3}
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 0, S: 1},
-			&rnd.VarData{D: rnd.D_Normal, M: 0, S: 1},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0, S: 1},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0, S: 1},
 		}
 
 	// problem # 5 from [1] and # 1 from [4] (modified)
@@ -140,8 +143,8 @@ func main() {
 		}
 		βref = 0.3536 // from [1] xref = []float64{-βref * math.Sqrt2 / 2, βref * math.Sqrt2 / 2}
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 0, S: 1},
-			&rnd.VarData{D: rnd.D_Normal, M: 0, S: 1},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0, S: 1},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0, S: 1},
 		}
 
 	// problem # 7 from [1] and example # 1 (case1) from [5]
@@ -152,8 +155,8 @@ func main() {
 		}
 		βref = 2.2401 // from [1]
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 5},
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 5},
+			&rnd.VarData{D: rnd.D_Nrm, M: 10, S: 5},
+			&rnd.VarData{D: rnd.D_Nrm, M: 10, S: 5},
 		}
 
 	// problem # 8 from [1] and example # 1 (case2) from [5]
@@ -164,8 +167,8 @@ func main() {
 		}
 		βref = 2.2260 // from [1]
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 5},
-			&rnd.VarData{D: rnd.D_Normal, M: 9.9, S: 5},
+			&rnd.VarData{D: rnd.D_Nrm, M: 10, S: 5},
+			&rnd.VarData{D: rnd.D_Nrm, M: 9.9, S: 5},
 		}
 
 	// problem # 9 from [1] and case 7 of [3]
@@ -176,8 +179,8 @@ func main() {
 		}
 		βref = 2.5 // from [1]
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3},
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3},
+			&rnd.VarData{D: rnd.D_Nrm, M: 10, S: 3},
+			&rnd.VarData{D: rnd.D_Nrm, M: 10, S: 3},
 		}
 
 	// problem # 10 from [1] and example # 2 from [5]
@@ -188,8 +191,8 @@ func main() {
 		}
 		βref = 1.9003 // from [1]
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 5},
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 5},
+			&rnd.VarData{D: rnd.D_Nrm, M: 10, S: 5},
+			&rnd.VarData{D: rnd.D_Nrm, M: 10, S: 5},
 		}
 
 	// problem # 11 from [1] and case 2 of [3]
@@ -200,8 +203,8 @@ func main() {
 		}
 		βref = 5.4280 // from [1]
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 78064.4, S: 11709.7},
-			&rnd.VarData{D: rnd.D_Normal, M: 0.0104, S: 0.00156},
+			&rnd.VarData{D: rnd.D_Nrm, M: 78064.4, S: 11709.7},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0.0104, S: 0.00156},
 		}
 		axequal = false
 
@@ -213,8 +216,8 @@ func main() {
 		}
 		βref = 2.2257 // from [1]
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3},
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3},
+			&rnd.VarData{D: rnd.D_Nrm, M: 10, S: 3},
+			&rnd.VarData{D: rnd.D_Nrm, M: 10, S: 3},
 		}
 
 	// problem # 14 from [1]
@@ -225,8 +228,8 @@ func main() {
 		}
 		βref = 5.2127 // from [1] // from here: 5.210977819456551
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Log, M: 38, S: 3.8, Std: true},
-			&rnd.VarData{D: rnd.D_Log, M: 54, S: 2.7, Std: true},
+			&rnd.VarData{D: rnd.D_Log, M: 38, S: 3.8},
+			&rnd.VarData{D: rnd.D_Log, M: 54, S: 2.7},
 		}
 
 	// problem # 6 of [1] and case # 3 of [3]
@@ -241,7 +244,7 @@ func main() {
 		βref = 2.0 // from [1]
 		vars = make([]*rnd.VarData, 10)
 		for i := 0; i < 10; i++ {
-			vars[i] = &rnd.VarData{D: rnd.D_Normal, M: 0, S: 1}
+			vars[i] = &rnd.VarData{D: rnd.D_Nrm, M: 0, S: 1}
 		}
 
 	// example # 1 of [7] and [8]; also problem # 15 of [1] with 3rd coefficient different
@@ -251,12 +254,86 @@ func main() {
 		}
 		βref = 2.348 // from [8]
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12, Std: true},
-			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12, Std: true},
-			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12, Std: true},
-			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12, Std: true},
-			&rnd.VarData{D: rnd.D_Log, M: 50, S: 15, Std: true},
-			&rnd.VarData{D: rnd.D_Log, M: 40, S: 12, Std: true},
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12},
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12},
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12},
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12},
+			&rnd.VarData{D: rnd.D_Log, M: 50, S: 15},
+			&rnd.VarData{D: rnd.D_Log, M: 40, S: 12},
+		}
+
+	// example # 2 of [7] and problem # 16 of [1]
+	case 15:
+		g = func(x []float64) float64 {
+			s := x[0] + 2.0*x[1] + 2.0*x[2] + x[3] - 5.0*x[4] - 5.0*x[5]
+			for i := 0; i < 6; i++ {
+				s += 0.001 * math.Sin(100*x[i])
+			}
+			return s
+		}
+		βref = 2.3482 // from [1]
+		vars = rnd.Variables{
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12},
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12},
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12},
+			&rnd.VarData{D: rnd.D_Log, M: 120, S: 12},
+			&rnd.VarData{D: rnd.D_Log, M: 50, S: 15},
+			&rnd.VarData{D: rnd.D_Log, M: 40, S: 12},
+		}
+
+	// example # 6 of [9] and # 17 of [1]
+	case 16:
+		g = func(x []float64) float64 {
+			return -240758.1777 + 10467.364*x[0] + 11410.63*x[1] +
+				3505.3015*x[2] - 246.81*x[0]*x[0] - 285.3275*x[1]*x[1] - 195.46*x[2]*x[2]
+		}
+		βref = 0.8292 // from [1]
+		vars = rnd.Variables{
+			&rnd.VarData{D: rnd.D_Log, M: 21.2, S: 0.1},
+			&rnd.VarData{D: rnd.D_Log, M: 20.0, S: 0.2},
+			&rnd.VarData{D: rnd.D_Log, M: 9.2, S: 0.1},
+		}
+
+	// example # 4 (case 1) of [5] and # 18 of [1]
+	case 17:
+		g = func(x []float64) float64 {
+			return x[0]*x[1] - 78.12*x[2]
+		}
+		βref = 3.3221 // from [1] or 3.31819 from [5]
+		vars = rnd.Variables{
+			&rnd.VarData{D: rnd.D_Nrm, M: 2e7, S: 5e6},
+			&rnd.VarData{D: rnd.D_Nrm, M: 1e-4, S: 2e-5},
+			&rnd.VarData{D: rnd.D_Gev, M: 4, S: 1.0, K: 0}, // ξ=0 means Gumbel/Type-I
+		}
+
+	// example # 4 (case 2) of [5] and # 19 of [1]
+	case 18:
+		g = func(x []float64) float64 {
+			return x[0]*x[1] - 78.12*x[2]
+		}
+		βref = 4.4282 // from [1] or 4.45272 from [5]
+		vars = rnd.Variables{
+			&rnd.VarData{D: rnd.D_Log, M: 2e7, S: 5e6},
+			&rnd.VarData{D: rnd.D_Log, M: 1e-4, S: 2e-5},
+			&rnd.VarData{D: rnd.D_Gev, M: 4, S: 1.0, K: 0}, // ξ=0 means Gumbel/Type-I
+		}
+
+	// problem # 20 of [1] and example 5 of [5]
+	// TODO: this test does not work because Type-II distribution is not available
+	case 19:
+		chk.Panic("this test does not work because Type-II distribution is not available")
+		g = func(x []float64) float64 {
+			return 1.1 - 0.00115*x[0]*x[1] + 0.00157*x[1]*x[1] + 0.00117*x[0]*x[0] +
+				+0.0135*x[1]*x[2] - 0.0705*x[1] - 0.00534*x[0] - 0.0149*x[0]*x[2] +
+				-0.0611*x[1]*x[3] + 0.0717*x[0]*x[3] - 0.226*x[2] + 0.0333*x[2]*x[2] +
+				-0.558*x[2]*x[3] + 0.998*x[3] - 1.339*x[3]*x[3]
+		}
+		βref = 1.3651 // from [1] or 2.42031 from [5]
+		vars = rnd.Variables{
+			&rnd.VarData{D: rnd.D_Gev, M: 10, S: 5, K: 1}, // TODO: find ξ
+			&rnd.VarData{D: rnd.D_Nrm, M: 25, S: 5},
+			&rnd.VarData{D: rnd.D_Nrm, M: 0.8, S: 0.2},
+			&rnd.VarData{D: rnd.D_Log, M: 0.0625, S: 0.0625},
 		}
 
 	default:

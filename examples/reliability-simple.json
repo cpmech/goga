@@ -4,7 +4,7 @@
   "ninds"    : 20,
   "noise"    : 0.3,
   "tf"       : 100,
-  "problem"  : 14,
+  "problem"  : 18,
   "strategy" : 1,
   "ntrials"  : 100,
   "doplot"   : true
