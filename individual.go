@@ -8,6 +8,7 @@ import (
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
+	"github.com/cpmech/gosl/utl"
 )
 
 // Func_t defines a type for a generic function to be used as a gene value
@@ -394,7 +395,7 @@ func (o *Individual) GetStringSizes() (sizes [][]int) {
 	if o.Ints != nil {
 		sizes[0] = make([]int, len(o.Ints))
 		for i, x := range o.Ints {
-			sizes[0][i] = imax(sizes[0][i], len(io.Sf("%v", x)))
+			sizes[0][i] = utl.Imax(sizes[0][i], len(io.Sf("%v", x)))
 		}
 	}
 
@@ -408,35 +409,35 @@ func (o *Individual) GetStringSizes() (sizes [][]int) {
 					x += o.Floats[i*o.Nbases+j]
 				}
 			}
-			sizes[1][i] = imax(sizes[1][i], len(io.Sf("%v", x)))
+			sizes[1][i] = utl.Imax(sizes[1][i], len(io.Sf("%v", x)))
 		}
 	}
 
 	if o.Strings != nil {
 		sizes[2] = make([]int, len(o.Strings))
 		for i, x := range o.Strings {
-			sizes[2][i] = imax(sizes[2][i], len(io.Sf("%v", x)))
+			sizes[2][i] = utl.Imax(sizes[2][i], len(io.Sf("%v", x)))
 		}
 	}
 
 	if o.Keys != nil {
 		sizes[3] = make([]int, len(o.Keys))
 		for i, x := range o.Keys {
-			sizes[3][i] = imax(sizes[3][i], len(io.Sf("%v", x)))
+			sizes[3][i] = utl.Imax(sizes[3][i], len(io.Sf("%v", x)))
 		}
 	}
 
 	if o.Bytes != nil {
 		sizes[4] = make([]int, len(o.Bytes))
 		for i, x := range o.Bytes {
-			sizes[4][i] = imax(sizes[4][i], len(io.Sf("%v", string(x))))
+			sizes[4][i] = utl.Imax(sizes[4][i], len(io.Sf("%v", string(x))))
 		}
 	}
 
 	if o.Funcs != nil {
 		sizes[5] = make([]int, len(o.Funcs))
 		for i, x := range o.Funcs {
-			sizes[5][i] = imax(sizes[5][i], len(io.Sf("%v", x(o))))
+			sizes[5][i] = utl.Imax(sizes[5][i], len(io.Sf("%v", x(o))))
 		}
 	}
 	return

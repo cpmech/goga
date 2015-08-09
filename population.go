@@ -12,6 +12,7 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/rnd"
+	"github.com/cpmech/gosl/utl"
 )
 
 // Population holds all individuals
@@ -216,7 +217,7 @@ func (o Population) Output(fmts [][]string, showBases bool) (buf *bytes.Buffer) 
 					sizes[i] = make([]int, len(sz[i]))
 				}
 				for j, s := range sz[i] {
-					sizes[i][j] = imax(sizes[i][j], s)
+					sizes[i][j] = utl.Imax(sizes[i][j], s)
 				}
 			}
 		}
@@ -232,13 +233,13 @@ func (o Population) Output(fmts [][]string, showBases bool) (buf *bytes.Buffer) 
 	// compute sizes of header items
 	szova, szoor, szdem := 0, 0, 0
 	for _, ind := range o {
-		szova = imax(szova, len(io.Sf("%g", ind.Ova)))
-		szoor = imax(szoor, len(io.Sf("%g", ind.Oor)))
-		szdem = imax(szdem, len(io.Sf("%g", ind.Demerit)))
+		szova = utl.Imax(szova, len(io.Sf("%g", ind.Ova)))
+		szoor = utl.Imax(szoor, len(io.Sf("%g", ind.Oor)))
+		szdem = utl.Imax(szdem, len(io.Sf("%g", ind.Demerit)))
 	}
-	szova = imax(szova, 3) // 3 ==> len("Ova")
-	szoor = imax(szoor, 3) // 3 ==> len("Oor")
-	szdem = imax(szdem, 7) // 7 ==> len("Demerit")
+	szova = utl.Imax(szova, 3) // 3 ==> len("Ova")
+	szoor = utl.Imax(szoor, 3) // 3 ==> len("Oor")
+	szdem = utl.Imax(szdem, 7) // 7 ==> len("Demerit")
 
 	// print individuals
 	fmtova := io.Sf("%%%d", szova+1)
@@ -265,14 +266,14 @@ func (o Population) Output(fmts [][]string, showBases bool) (buf *bytes.Buffer) 
 	fmtgenes := io.Sf(" %%%d.%ds\n", szb, szb)
 	n := sza + szb
 	buf = new(bytes.Buffer)
-	io.Ff(buf, printThickLine(n))
+	io.Ff(buf, io.StrThickLine(n))
 	io.Ff(buf, fmtova+"s", "Ova")
 	io.Ff(buf, fmtoor+"s", "Oor")
 	io.Ff(buf, fmtdem+"s", "Demerit")
 	io.Ff(buf, fmtgenes, "Genes")
-	io.Ff(buf, printThinLine(n))
+	io.Ff(buf, io.StrThinLine(n))
 	io.Ff(buf, line)
-	io.Ff(buf, printThickLine(n))
+	io.Ff(buf, io.StrThickLine(n))
 	return
 }
 

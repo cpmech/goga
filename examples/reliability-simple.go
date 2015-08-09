@@ -75,7 +75,7 @@ func main() {
 	fn := "reliability-simple"
 	fn, _ = io.ArgToFilename(0, fn, ".json", true)
 	C := goga.ReadConfParams(fn)
-	io.Pf("\n%s\nproblem # %v\n", utl.PrintThickLine(80), C.Problem)
+	io.Pf("\n%s\nproblem # %v\n", io.StrThickLine(80), C.Problem)
 
 	// initialise random numbers generator
 	rnd.Init(C.Seed)

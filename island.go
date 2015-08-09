@@ -180,8 +180,8 @@ func (o *Island) SelectReprodAndRegen(time int, doregen, doreport, verbose bool)
 		mindem := o.Pop[0].Demerit
 		maxdem := mindem
 		for i := 0; i < ninds; i++ {
-			mindem = min(mindem, o.Pop[i].Demerit)
-			maxdem = max(maxdem, o.Pop[i].Demerit)
+			mindem = utl.Min(mindem, o.Pop[i].Demerit)
+			maxdem = utl.Max(maxdem, o.Pop[i].Demerit)
 		}
 		for i, ind := range o.Pop {
 			o.fitness[i] = (maxdem - ind.Demerit) / (maxdem - mindem)
@@ -301,7 +301,7 @@ func (o *Island) Stat() (minrho, averho, maxrho, devrho float64) {
 			if iova == 0 {
 				o.maxabsgene[i] = x
 			} else {
-				o.maxabsgene[i] = max(o.maxabsgene[i], x)
+				o.maxabsgene[i] = utl.Max(o.maxabsgene[i], x)
 			}
 			for j := 0; j < nbases; j++ {
 				o.fltbases[i*nbases+j][iova] = ind.Floats[i*nbases+j]
