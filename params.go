@@ -59,9 +59,10 @@ type ConfParams struct {
 	ShowBases bool   // show also bases when printing results (if any)
 
 	// auxiliary
-	Problem  int // problem ID
-	Strategy int // strategy for implementing constraints
-	Ntrials  int // number of trials
+	Problem  int     // problem ID
+	Strategy int     // strategy for implementing constraints
+	Ntrials  int     // number of trials
+	Eps1     float64 // tolerance # 1; e.g. for strategy # 2 in reliability analyses
 
 	// crossover
 	CxNcuts   map[string]int         // crossover number of cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
@@ -138,6 +139,7 @@ func (o *ConfParams) SetDefault() {
 	o.Problem = 1
 	o.Strategy = 1
 	o.Ntrials = 100
+	o.Eps1 = 0.1
 
 	// number of cuts in chromossome
 	o.CxNcuts = map[string]int{"int": 2, "flt": 2, "str": 2, "key": 2, "byt": 2, "fun": 2}
