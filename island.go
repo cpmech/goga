@@ -303,7 +303,9 @@ func (o *Island) Regenerate(time int, basedOnBest bool) (method string) {
 	start := ninds - int(o.C.RegPct*float64(ninds))
 	for i := start; i < ninds; i++ {
 		if o.C.IntOrd {
-			rnd.IntShuffle(o.Pop[i].Ints)
+			//rnd.IntShuffle(o.Pop[i].Ints)
+			copy(o.Pop[i].Ints, o.Pop[0].Ints)
+			IntOrdMutation(o.Pop[i].Ints, 0, 1, nil)
 		}
 		for j := 0; j < o.Pop[i].Nfltgenes; j++ {
 			o.Pop[i].SetFloat(j, bingo.DrawFloat(i, j, ninds))

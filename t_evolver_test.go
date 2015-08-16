@@ -265,12 +265,12 @@ func Test_evo04(tst *testing.T) {
 	C := NewConfParams()
 	C.Nisl = 4
 	C.Ninds = 40
-	C.RegTol = 0.2
-	C.RegPct = 0.1
+	C.RegTol = 0.3
+	C.RegPct = 0.2
 	C.IntOrd = true
 	C.DoPlot = false //chk.Verbose
 	C.RegIni = 0
-	C.Dtreg = 30
+	C.Dtreg = 60
 	//C.Rws = true
 	C.CalcDerived()
 
@@ -308,13 +308,19 @@ func Test_evo04(tst *testing.T) {
 	evo.Run(verbose, doreport)
 	//io.Pf("%v\n", pop.Output(nil, false))
 	io.Pfgreen("best = %v\n", evo.Best.Ints)
-	io.Pfgreen("best OVA = %v\n\n", evo.Best.Ova)
+	io.Pfgreen("best OVA = %v  (871.117353844847)\n\n", evo.Best.Ova)
 
 	// best = [18 17 14 11 8 4 0 2 5 9 12 7 6 1 3 10 16 13 19 15]
 	// best OVA = 953.4643474956656
 
 	// best = [8 11 14 17 18 15 12 19 16 13 10 6 1 3 7 9 5 2 0 4]
 	// best OVA = 871.117353844847
+
+	// best = [5 2 0 4 8 11 14 17 18 15 12 19 16 13 10 6 1 3 7 9]
+	// best OVA = 871.1173538448469
+
+	// best = [6 10 13 16 19 15 18 17 14 11 8 4 0 2 5 9 12 7 3 1]
+	// best OVA = 880.7760751923065
 
 	// check final population
 	if false {
