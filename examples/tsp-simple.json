@@ -1,0 +1,12 @@
+{
+  "intord" : true,
+  "pll"    : true,
+  "nisl"   : 4,
+  "ninds"  : 40,
+  "tf"     : 100,
+  "dtreg"  : 60,
+  "regini" : 0,
+  "regtol" : 0.3,
+  "regpct" : 0.2,
+  "doplot" : true
+}
