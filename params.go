@@ -22,6 +22,7 @@ type ConfParams struct {
 	Nbases int     // number of bases in chromosome
 	Grid   bool    // generate individuals based on grid
 	Noise  float64 // apply noise when generate based on grid (if Noise > 0)
+	IntOrd bool    // integer chromossome is ordered list
 
 	// time control
 	Tf    int // number of generations
@@ -33,7 +34,7 @@ type ConfParams struct {
 	RegIni    int     // time index for initial regeneration. use -1 for none
 	RegTol    float64 // tolerance for ρ to activate regeneration
 	RegBest   bool    // enforce that regeneration is always based on based individual, regardless the population is homogeneous or not
-	RegPct    float64 // percentage of individuals to be regenerated
+	RegPct    float64 // percentage of individuals to be regenerated; e.g. 0.3
 	RegMmin   float64 // multiplier to decrease reference value; e.g. 0.1
 	RegMmax   float64 // multiplier to increase reference value; e.g. 10.0
 	UseStdDev bool    // use standard deviation (σ) instead of average deviation in Stat
@@ -99,6 +100,7 @@ func (o *ConfParams) SetDefault() {
 	o.Nbases = 10
 	o.Grid = true
 	o.Noise = 0.3
+	o.IntOrd = false
 
 	// time control
 	o.Tf = 100
@@ -152,6 +154,12 @@ func (o *ConfParams) CalcDerived() {
 	pc, pm := o.Pc, o.Pm
 	o.CxProbs = map[string]float64{"int": pc, "flt": pc, "str": pc, "key": pc, "byt": pc, "fun": pc}
 	o.MtProbs = map[string]float64{"int": pm, "flt": pm, "str": pm, "key": pm, "byt": pm, "fun": pm}
+
+	// set specific crossover and mutation functions
+	if o.IntOrd {
+		o.CxIntFunc = IntOrdCrossover
+		o.MtIntFunc = IntOrdMutation
+	}
 }
 
 // NewConfParams returns a new ConfParams structure, with default values set

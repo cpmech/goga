@@ -48,7 +48,7 @@ type Island struct {
 
 	// for statistics
 	maxabsgene []float64   // [ngenes] max absolute values of genes
-	fltbases   [][]float64 // [ngenes*nbases][ninds] all bases
+	allbases   [][]float64 // [ngenes*nbases][ninds] all bases
 	devbases   []float64   // [ngenes*nbases] deviations of bases
 }
 
@@ -74,8 +74,10 @@ func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *B
 	o.Pop = pop
 	o.BkpPop = pop.GetCopy()
 	o.OvOorFunc = ovfunc
-	o.BingoGrid = bingo
-	o.BingoBest = bingo.GetCopy()
+	if bingo != nil {
+		o.BingoGrid = bingo
+		o.BingoBest = bingo.GetCopy()
+	}
 
 	// auxiliary data
 	o.ovas = make([]float64, ninds)
@@ -99,13 +101,25 @@ func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *B
 	o.OVA[0] = o.Pop[0].Ova
 	o.OOR[0] = o.Pop[0].Oor
 
+	// ints chromosome
+	ngenes := len(o.Pop[0].Ints)
+	nbases := 1
+	hasints := false
+	if ngenes > 0 {
+		hasints = true
+	}
+
+	// floats chromosome. TODO: implement handling of combined ints_floats chromosome
+	if !hasints {
+		ngenes = o.Pop[0].Nfltgenes
+		nbases = o.Pop[0].Nbases
+	}
+
 	// for statistics
-	nfltgenes := o.Pop[0].Nfltgenes
-	if nfltgenes > 0 {
-		nbases := o.Pop[0].Nbases
-		o.maxabsgene = make([]float64, nfltgenes)
-		o.fltbases = la.MatAlloc(nfltgenes*nbases, ninds)
-		o.devbases = make([]float64, nfltgenes*nbases)
+	if ngenes > 0 {
+		o.maxabsgene = make([]float64, ngenes)
+		o.allbases = la.MatAlloc(ngenes*nbases, ninds)
+		o.devbases = make([]float64, ngenes*nbases)
 	}
 	return
 }
@@ -263,6 +277,21 @@ func (o *Island) SelectReprodAndRegen(time int, doregen, doreport, verbose bool)
 
 // Regenerate regenerates population with basis on best individual(s)
 func (o *Island) Regenerate(time int, basedOnBest bool) (method string) {
+	if o.C.IntOrd {
+		// TODO: organise this
+		// regeneration of ordered integers based on best using mutation algorithm
+		if basedOnBest || o.C.RegBest {
+			ninds := len(o.Pop)
+			start := ninds - int(o.C.RegPct*float64(ninds))
+			for i := start; i < ninds; i++ {
+				copy(o.Pop[i].Ints, o.Pop[0].Ints)
+				IntOrdMutation(o.Pop[i].Ints, 0, 1, nil)
+			}
+			o.CalcOvs(o.Pop, time)
+			o.CalcDemeritsAndSort(o.Pop)
+			return
+		}
+	}
 	bingo := o.BingoGrid
 	method = "lims"
 	if basedOnBest || o.C.RegBest {
@@ -273,6 +302,9 @@ func (o *Island) Regenerate(time int, basedOnBest bool) (method string) {
 	ninds := len(o.Pop)
 	start := ninds - int(o.C.RegPct*float64(ninds))
 	for i := start; i < ninds; i++ {
+		if o.C.IntOrd {
+			rnd.IntShuffle(o.Pop[i].Ints)
+		}
 		for j := 0; j < o.Pop[i].Nfltgenes; j++ {
 			o.Pop[i].SetFloat(j, bingo.DrawFloat(i, j, ninds))
 		}
@@ -286,36 +318,74 @@ func (o *Island) Regenerate(time int, basedOnBest bool) (method string) {
 //  rho (ρ) is a normalised quantity measuring the deviation of bases of each gene
 //  Note: OoR individuals are excluded
 func (o *Island) Stat() (minrho, averho, maxrho, devrho float64) {
-	ngenes := o.Pop[0].Nfltgenes
+
+	// ints chromosome
+	ngenes := len(o.Pop[0].Ints)
+	nbases := 1
+	hasints := false
+	if ngenes > 0 {
+		hasints = true
+	}
+
+	// floats chromosome. TODO: implement handling of combined ints_floats chromosome
+	if !hasints {
+		ngenes = o.Pop[0].Nfltgenes
+		nbases = o.Pop[0].Nbases
+	}
+
+	// check
 	if ngenes < 1 {
 		return
 	}
-	nbases := o.Pop[0].Nbases
+
+	// collect bases values
 	iova := 0
-	for _, ind := range o.Pop {
-		if ind.Oor > 0 && o.C.StatOorSkip { // skip oor individuals
-			continue
-		}
-		for i := 0; i < ngenes; i++ {
-			x := math.Abs(ind.GetFloat(i))
-			if iova == 0 {
-				o.maxabsgene[i] = x
-			} else {
-				o.maxabsgene[i] = utl.Max(o.maxabsgene[i], x)
+	if hasints {
+		for _, ind := range o.Pop {
+			if ind.Oor > 0 && o.C.StatOorSkip { // skip oor individuals
+				continue
 			}
-			for j := 0; j < nbases; j++ {
-				o.fltbases[i*nbases+j][iova] = ind.Floats[i*nbases+j]
+			for i := 0; i < ngenes; i++ {
+				x := math.Abs(float64(ind.Ints[i]))
+				if iova == 0 {
+					o.maxabsgene[i] = x
+				} else {
+					o.maxabsgene[i] = utl.Max(o.maxabsgene[i], x)
+				}
+				o.allbases[i][iova] = x
 			}
+			iova++
 		}
-		iova++
+	} else {
+		for _, ind := range o.Pop {
+			if ind.Oor > 0 && o.C.StatOorSkip { // skip oor individuals
+				continue
+			}
+			for i := 0; i < ngenes; i++ {
+				x := math.Abs(ind.GetFloat(i))
+				if iova == 0 {
+					o.maxabsgene[i] = x
+				} else {
+					o.maxabsgene[i] = utl.Max(o.maxabsgene[i], x)
+				}
+				for j := 0; j < nbases; j++ {
+					o.allbases[i*nbases+j][iova] = ind.Floats[i*nbases+j]
+				}
+			}
+			iova++
+		}
 	}
+
+	// check
 	if iova < 2 {
 		return
 	}
+
+	// stat
 	for i := 0; i < ngenes; i++ {
 		x := 1.0 + o.maxabsgene[i]
 		for j := 0; j < nbases; j++ {
-			o.devbases[i*nbases+j] = rnd.StatDev(o.fltbases[i*nbases+j][:iova], o.C.UseStdDev) / x
+			o.devbases[i*nbases+j] = rnd.StatDev(o.allbases[i*nbases+j][:iova], o.C.UseStdDev) / x
 		}
 	}
 	minrho, averho, maxrho, devrho = rnd.StatBasic(o.devbases, o.C.UseStdDev)

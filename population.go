@@ -174,6 +174,22 @@ func (o *Population) GenFloatRandom(C *ConfParams, xmin, xmax []float64) {
 	}
 }
 
+// NewPopIntOrdRandom generates a population of individuals with ordered integers
+//  Input:
+//   C.Ninds   -- number of individuals to be generated
+//   nstations -- number of stations/integers == ngenes
+func NewPopIntOrdRandom(C *ConfParams, nstations int) (pop Population) {
+	ref := NewIndividual(1, make([]int, nstations))
+	pop = NewPopReference(C.Ninds, ref)
+	for i := 0; i < C.Ninds; i++ {
+		for j := 0; j < nstations; j++ {
+			pop[i].Ints[j] = j
+		}
+		rnd.IntShuffle(pop[i].Ints)
+	}
+	return
+}
+
 // Len returns the length of the population == number of individuals
 func (o Population) Len() int {
 	return len(o)

@@ -69,6 +69,18 @@ func NewEvolverFloatChromo(C *ConfParams, xmin, xmax []float64, ovfunc ObjFunc_t
 	return NewEvolverPop(C, pops, ovfunc, bingo)
 }
 
+// NewEvolverIntOrdChromo creates a new evolver with ordered integer individuals
+//  Input:
+//   C.Ninds   -- number of individuals to be generated
+//   nstations -- number of stations/integers == ngenes
+func NewEvolverIntOrdChromo(C *ConfParams, nstations int, ovfunc ObjFunc_t) (o *Evolver) {
+	pops := make([]Population, C.Nisl)
+	for i := 0; i < C.Nisl; i++ {
+		pops[i] = NewPopIntOrdRandom(C, nstations)
+	}
+	return NewEvolverPop(C, pops, ovfunc, nil)
+}
+
 // Run runs the evolution process
 func (o *Evolver) Run(verbose, doreport bool) {
 
