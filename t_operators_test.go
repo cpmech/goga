@@ -432,10 +432,10 @@ func Test_mut01(tst *testing.T) {
 	io.Pf("\n")
 }
 
-func Test_intord01(tst *testing.T) {
+func Test_intordcx01(tst *testing.T) {
 
 	//verbose()
-	chk.PrintTitle("intord01")
+	chk.PrintTitle("intordcx01")
 
 	rnd.Init(0)
 
@@ -501,4 +501,28 @@ func Test_intord01(tst *testing.T) {
 	sort.Ints(d)
 	chk.Ints(tst, "csorted = 123", c, []int{1, 2, 3})
 	chk.Ints(tst, "dsorted = 123", d, []int{1, 2, 3})
+}
+
+func Test_intordmut01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("intordmut01")
+
+	rnd.Init(0)
+
+	a := []int{1, 2, 3, 4, 5, 6, 7, 8}
+	io.Pforan("before: a = %v\n", a)
+	IntOrdMutation(a, 0, 1, []int{2, 5, 4})
+	io.Pfcyan("after:  a = %v\n", a)
+	chk.Ints(tst, "a", a, []int{1, 2, 6, 7, 3, 4, 5, 8})
+	nums := utl.IntRange2(1, 9)
+	sort.Ints(a)
+	chk.Ints(tst, "asorted = 12345678", a, nums)
+
+	a = []int{1, 2, 3, 4, 5, 6, 7, 8}
+	io.Pforan("\nbefore: a = %v\n", a)
+	IntOrdMutation(a, 0, 1, nil)
+	io.Pfcyan("after:  a = %v\n", a)
+	sort.Ints(a)
+	chk.Ints(tst, "asorted = 12345678", a, nums)
 }

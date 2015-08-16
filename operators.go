@@ -10,7 +10,6 @@ import (
 	"sort"
 
 	"github.com/cpmech/gosl/chk"
-	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 )
@@ -222,13 +221,13 @@ func IntCrossover(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []i
 //    pc      -- probability of crossover
 //  Output:
 //    a and b -- offspring chromosomes
-//  Note: using OX1 method as proposed in [1] and explained in [2]
+//  Note: using OX1 method explained in [1] (proposed in [2])
 //  References:
-//   [1] Davis L. Applying Adaptive Algorithms to Epistatic Domains. Proceedings of International
-//       Joint Conference on Artificial Intelligence, 162-164; 1985.
-//   [2] Larrañaga P, Kuijpers CMH, Murga RH, Inza I and Dizdarevic S. Genetic Algorithms for the
+//   [1] Larrañaga P, Kuijpers CMH, Murga RH, Inza I and Dizdarevic S. Genetic Algorithms for the
 //       Travelling Salesman Problem: A Review of Representations and Operators. Artificial
 //       Intelligence Review, 13:129-170; 1999. doi:10.1023/A:1006529012972
+//   [2] Davis L. Applying Adaptive Algorithms to Epistatic Domains. Proceedings of International
+//       Joint Conference on Artificial Intelligence, 162-164; 1985.
 //  Example:
 //   data:
 //         0 1   2 3 4   5 6 7
@@ -260,7 +259,6 @@ func IntOrdCrossover(a, b, A, B []int, dum int, cuts []int, pc float64) (notused
 		t = rnd.Int(s+1, size-1)
 	}
 	chk.IntAssertLessThan(s, t)
-	io.Pforan("s=%d t=%d\n", s, t)
 	acore := B[s:t]
 	bcore := A[s:t]
 	ncore := t - s
@@ -578,7 +576,7 @@ func GenerateCxEnds(size, ncuts int, cuts []int) (ends []int) {
 //  Input:
 //   A        -- individual
 //   nchanges -- number of changes of genes
-//   pc       -- probability of mutation
+//   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
 func IntMutation(A []int, nchanges int, pm float64, extra interface{}) {
@@ -601,11 +599,90 @@ func IntMutation(A []int, nchanges int, pm float64, extra interface{}) {
 	}
 }
 
+// IntOrdMutation performs the mutation of genetic data from a ordered list of integers A
+//  Input:
+//   A     -- individual
+//   dum1  -- not used
+//   pm    -- probability of mutation
+//   sti   -- if []int{start, end, insertPoint} != nil, use it; otherwise, use random
+//  Output: modified individual 'A'
+//  Note: using DM method as explained in [1] (citing [2])
+//  References:
+//   [1] Larrañaga P, Kuijpers CMH, Murga RH, Inza I and Dizdarevic S. Genetic Algorithms for the
+//       Travelling Salesman Problem: A Review of Representations and Operators. Artificial
+//       Intelligence Review, 13:129-170; 1999. doi:10.1023/A:1006529012972
+//   [2] Michalewicz Z. Genetic Algorithms + Data Structures = Evolution Programs. Berlin
+//       Heidelberg: Springer Verlag; 1992
+//       Joint Conference on Artificial Intelligence, 162-164; 1985.
+//
+//  DM displacement mutation method:
+//   Ex:
+//           0 1 2 3 4 5 6 7
+//       A = a b c d e f g h   s = 2
+//              ↑     ↑        t = 5
+//              2     5
+//
+//       core = c d e  (subtour)  ncore = t - s = 5 - 2 = 3
+//
+//                0 1 2 3 4
+//       remain = a b f g h  (remaining)  nrem = size - ncore = 8 - 3 = 5
+//                       ↑
+//                       4 = ins
+func IntOrdMutation(A []int, dum1 int, pm float64, sti interface{}) {
+	size := len(A)
+	if !rnd.FlipCoin(pm) || size < 3 {
+		if size == 2 {
+			A[0], A[1] = A[1], A[0]
+		}
+		return
+	}
+	var s, t, ncore, nrem, ins int
+	if sti != nil {
+		res := sti.([]int)
+		s, t, ins = res[0], res[1], res[2]
+		ncore = t - s
+		nrem = size - ncore
+	} else {
+		s = rnd.Int(1, size-2)
+		t = rnd.Int(s+1, size-1)
+		ncore = t - s
+		nrem = size - ncore
+		ins = rnd.Int(1, nrem)
+	}
+	core := make([]int, ncore)
+	remain := make([]int, nrem)
+	var jc, jr int
+	for i := 0; i < size; i++ {
+		if i >= s && i < t {
+			core[jc] = A[i]
+			jc++
+		} else {
+			remain[jr] = A[i]
+			jr++
+		}
+	}
+	jc, jr = 0, 0
+	for i := 0; i < size; i++ {
+		if i < ins {
+			A[i] = remain[jr]
+			jr++
+		} else {
+			if jc < ncore {
+				A[i] = core[jc]
+				jc++
+			} else {
+				A[i] = remain[jr]
+				jr++
+			}
+		}
+	}
+}
+
 // FltMutation performs the mutation of genetic data from A
 //  Input:
 //   A        -- individual
 //   nchanges -- number of changes of genes
-//   pc       -- probability of mutation
+//   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
 func FltMutation(A []float64, nchanges int, pm float64, extra interface{}) {
@@ -632,7 +709,7 @@ func FltMutation(A []float64, nchanges int, pm float64, extra interface{}) {
 //  Input:
 //   A        -- individual
 //   nchanges -- number of changes of genes
-//   pc       -- probability of mutation
+//   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
 func StrMutation(A []string, nchanges int, pm float64, extra interface{}) {
@@ -650,7 +727,7 @@ func StrMutation(A []string, nchanges int, pm float64, extra interface{}) {
 //  Input:
 //   A        -- individual
 //   nchanges -- number of changes of genes
-//   pc       -- probability of mutation
+//   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
 func KeyMutation(A []byte, nchanges int, pm float64, extra interface{}) {
@@ -669,7 +746,7 @@ func KeyMutation(A []byte, nchanges int, pm float64, extra interface{}) {
 //  Input:
 //   A        -- individual
 //   nchanges -- number of changes of genes
-//   pc       -- probability of mutation
+//   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
 func BytMutation(A [][]byte, nchanges int, pm float64, extra interface{}) {
@@ -688,7 +765,7 @@ func BytMutation(A [][]byte, nchanges int, pm float64, extra interface{}) {
 //  Input:
 //   A        -- individual
 //   nchanges -- number of changes of genes
-//   pc       -- probability of mutation
+//   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
 func FunMutation(A []Func_t, nchanges int, pm float64, extra interface{}) {
