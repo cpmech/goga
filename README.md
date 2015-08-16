@@ -19,9 +19,9 @@ It depends on [Gosl that is available here](https://github.com/cpmech/gosl).
 
 After installing Go (golang) and [Gosl](https://github.com/cpmech/gosl), use the type the following commands
 
-'''
+```
 go get github.com/cpmech/goga
-'''
+```
 
 The documentation of Goga, automatically generated with `go doc`,
 [is available here](http://rawgit.com/cpmech/goga/master/doc/index.html).
