@@ -5,6 +5,7 @@
 package goga
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/cpmech/gosl/chk"
@@ -429,4 +430,75 @@ func Test_mut01(tst *testing.T) {
 	}
 	io.Pf("\n")
 	io.Pf("\n")
+}
+
+func Test_intord01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("intord01")
+
+	rnd.Init(0)
+
+	A := []int{1, 2, 3, 4, 5, 6, 7, 8}
+	B := []int{2, 4, 6, 8, 7, 5, 3, 1}
+	a := make([]int, len(A))
+	b := make([]int, len(A))
+	IntOrdCrossover(a, b, A, B, 0, []int{2, 5}, 1)
+	io.Pforan("A = %v\n", A)
+	io.Pfblue2("B = %v\n", B)
+	io.Pfgreen("a = %v\n", a)
+	io.Pfyel("b = %v\n", b)
+	chk.Ints(tst, "A", A, []int{1, 2, 3, 4, 5, 6, 7, 8})
+	chk.Ints(tst, "B", B, []int{2, 4, 6, 8, 7, 5, 3, 1})
+	chk.Ints(tst, "a", a, []int{4, 5, 6, 8, 7, 1, 2, 3})
+	chk.Ints(tst, "b", b, []int{8, 7, 3, 4, 5, 1, 2, 6})
+	sort.Ints(a)
+	sort.Ints(b)
+	nums := utl.IntRange2(1, 9)
+	chk.Ints(tst, "asorted = 12345678", a, nums)
+	chk.Ints(tst, "bsorted = 12345678", b, nums)
+
+	A = []int{1, 3, 5, 7, 6, 2, 4, 8}
+	B = []int{5, 6, 3, 8, 2, 1, 4, 7}
+	IntOrdCrossover(a, b, A, B, 0, []int{3, 6}, 1)
+	io.Pforan("\nA = %v\n", A)
+	io.Pfblue2("B = %v\n", B)
+	io.Pfgreen("a = %v\n", a)
+	io.Pfyel("b = %v\n", b)
+	chk.Ints(tst, "A", A, []int{1, 3, 5, 7, 6, 2, 4, 8})
+	chk.Ints(tst, "B", B, []int{5, 6, 3, 8, 2, 1, 4, 7})
+	chk.Ints(tst, "a", a, []int{5, 7, 6, 8, 2, 1, 4, 3})
+	chk.Ints(tst, "b", b, []int{3, 8, 1, 7, 6, 2, 4, 5})
+	sort.Ints(a)
+	sort.Ints(b)
+	chk.Ints(tst, "asorted = 12345678", a, nums)
+	chk.Ints(tst, "bsorted = 12345678", b, nums)
+
+	A = []int{1, 2, 3, 4, 5, 6, 7, 8}
+	B = []int{2, 4, 6, 8, 7, 5, 3, 1}
+	IntOrdCrossover(a, b, A, B, 0, nil, 1)
+	io.Pforan("\nA = %v\n", A)
+	io.Pfblue2("B = %v\n", B)
+	io.Pfgreen("a = %v\n", a)
+	io.Pfyel("b = %v\n", b)
+	sort.Ints(a)
+	sort.Ints(b)
+	chk.Ints(tst, "asorted = 12345678", a, nums)
+	chk.Ints(tst, "bsorted = 12345678", b, nums)
+
+	C := []int{1, 2, 3}
+	D := []int{3, 1, 2}
+	c := make([]int, len(C))
+	d := make([]int, len(D))
+	IntOrdCrossover(c, d, C, D, 0, nil, 1)
+	io.Pforan("\nC = %v\n", C)
+	io.Pfblue2("D = %v\n", D)
+	io.Pfgreen("c = %v\n", c)
+	io.Pfyel("d = %v\n", d)
+	chk.Ints(tst, "c", c, []int{2, 1, 3})
+	chk.Ints(tst, "d", d, []int{1, 2, 3})
+	sort.Ints(c)
+	sort.Ints(d)
+	chk.Ints(tst, "csorted = 123", c, []int{1, 2, 3})
+	chk.Ints(tst, "dsorted = 123", d, []int{1, 2, 3})
 }

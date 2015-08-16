@@ -10,6 +10,7 @@ import (
 	"sort"
 
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 )
@@ -208,6 +209,86 @@ func IntCrossover(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []i
 		}
 		start = end
 		swap = !swap
+	}
+	return
+}
+
+// IntOrdCrossover performs the crossover in a pair of individuals with integer numbers
+// that correspond to a ordered sequence, e.g. for traveling salesman problem
+//  Input:
+//    A and B -- parents' chromosomes
+//    dum     -- not used
+//    cuts    -- 2 cut positions. if len(cuts) != 2, 2 cuts are randomly generated
+//    pc      -- probability of crossover
+//  Output:
+//    a and b -- offspring chromosomes
+//  Note: using OX1 method as proposed in [1] and explained in [2]
+//  References:
+//   [1] Davis L. Applying Adaptive Algorithms to Epistatic Domains. Proceedings of International
+//       Joint Conference on Artificial Intelligence, 162-164; 1985.
+//   [2] Larrañaga P, Kuijpers CMH, Murga RH, Inza I and Dizdarevic S. Genetic Algorithms for the
+//       Travelling Salesman Problem: A Review of Representations and Operators. Artificial
+//       Intelligence Review, 13:129-170; 1999. doi:10.1023/A:1006529012972
+//  Example:
+//   data:
+//         0 1   2 3 4   5 6 7
+//     A = a b | c d e | f g h        size = 8
+//     B = b d | f h g | e c a        cuts = [2, 5]
+//             ↑       ↑       ↑      ends = [2, 5, 8]
+//             2       5       8
+//   first step: copy subtours
+//     a = . . | f h g | . . .
+//     b = . . | c d e | . . .
+//   second step: copy unique from subtour's end, position 5
+//               start adding here
+//                       ↓                           5 6 7   0 1   2 3 4
+//     a = d e | f h g | a b c         get from A: | f̶ g̶ h̶ | a b | c d e
+//     b = h g | c d e | a b f         get from B: | e̶ c̶ a | b d̶ | f h g
+func IntOrdCrossover(a, b, A, B []int, dum int, cuts []int, pc float64) (notused []int) {
+	size := len(A)
+	if !rnd.FlipCoin(pc) || size < 3 {
+		for i := 0; i < len(A); i++ {
+			a[i], b[i] = A[i], B[i]
+		}
+		return
+	}
+	var s, t int
+	if len(cuts) == 2 {
+		s, t = cuts[0], cuts[1]
+	} else {
+		s = rnd.Int(1, size-2)
+		t = rnd.Int(s+1, size-1)
+	}
+	chk.IntAssertLessThan(s, t)
+	io.Pforan("s=%d t=%d\n", s, t)
+	acore := B[s:t]
+	bcore := A[s:t]
+	ncore := t - s
+	acorehas := make(map[int]bool) // TODO: check if map can be replaced => improve efficiency
+	bcorehas := make(map[int]bool)
+	for i := 0; i < ncore; i++ {
+		a[s+i] = acore[i]
+		b[s+i] = bcore[i]
+		acorehas[acore[i]] = true
+		bcorehas[bcore[i]] = true
+	}
+	ja, jb := t, t
+	for i := 0; i < size; i++ {
+		k := (i + t) % size
+		if !acorehas[A[k]] {
+			a[ja] = A[k]
+			ja++
+			if ja == size {
+				ja = 0
+			}
+		}
+		if !bcorehas[B[k]] {
+			b[jb] = B[k]
+			jb++
+			if jb == size {
+				jb = 0
+			}
+		}
 	}
 	return
 }
