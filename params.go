@@ -51,6 +51,8 @@ type ConfParams struct {
 	StatOorSkip bool // skip oor individuals from statistics
 
 	// output
+	Verbose   bool   // show messages during optimisation
+	DoReport  bool   // generate report
 	Json      bool   // output results as .json files; not tables
 	DirOut    string // directory to save output files. "" means "/tmp/goga"
 	FnKey     string // filename key for output files. "" means no output files
@@ -64,6 +66,9 @@ type ConfParams struct {
 	Strategy int     // strategy for implementing constraints
 	Ntrials  int     // number of trials
 	Eps1     float64 // tolerance # 1; e.g. for strategy # 2 in reliability analyses
+
+	// objective function
+	OvaOor ObjFunc_t // compute objective value (ova) and out-of-range value (oor)
 
 	// crossover
 	CxNcuts   map[string]int         // crossover number of cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
@@ -87,6 +92,25 @@ type ConfParams struct {
 	MtKeyFunc  MtKeyFunc_t            // mutation function
 	MtBytFunc  MtBytFunc_t            // mutation function
 	MtFunFunc  MtFunFunc_t            // mutation function
+
+	// generation of individuals
+	OrdNints   int         // ordered integer populations: number of integers
+	RangeInt   [][]int     // [ngene][2] min and max integers
+	RangeFlt   [][]float64 // [ngene][2] min and max float point numbers
+	PoolStr    [][]string  // [ngene][nsamples] pool of words to be used in Gene.String
+	PoolKey    [][]byte    // [ngene][nsamples] pool of bytes to be used in Gene.Byte
+	PoolByt    [][]string  // [ngene][nsamples] pool of byte-words to be used in Gene.Bytes
+	PoolFun    [][]Func_t  // [ngene][nsamples] pool of functions
+	PopGenArgs interface{} // extra arguments for generation of populations
+
+	// generation of populations
+	PopIntGen PopIntGen_t // generate population of integers
+	PopOrdGen PopOrdGen_t // generate population of ordered integers
+	PopFltGen PopFltGen_t // generate population of float point numbers
+	PopStrGen PopStrGen_t // generate population of strings
+	PopKeyGen PopKeyGen_t // generate population of keys (bytes)
+	PopBytGen PopBytGen_t // generate population of bytes
+	PopFunGen PopFunGen_t // generate population of functions
 }
 
 // SetDefault sets default parameters
@@ -129,6 +153,8 @@ func (o *ConfParams) SetDefault() {
 	o.StatOorSkip = false
 
 	// output
+	o.Verbose = true
+	o.DoReport = false
 	o.Json = false
 	o.DirOut = "/tmp/goga"
 	o.FnKey = ""

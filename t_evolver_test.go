@@ -27,8 +27,15 @@ func Test_evo01(tst *testing.T) {
 	// initialise random numbers generator
 	rnd.Init(0) // 0 => use current time as seed
 
+	// parameters
+	C := NewConfParams()
+	C.Nisl = 2
+	C.Ninds = 20
+	C.RegTol = 0
+	C.CalcDerived()
+
 	// mutation function
-	mtfunc := func(A []int, nchanges int, pm float64, extra interface{}) {
+	C.MtIntFunc = func(A []int, nchanges int, pm float64, extra interface{}) {
 		size := len(A)
 		if !rnd.FlipCoin(pm) || size < 1 {
 			return
@@ -44,8 +51,22 @@ func Test_evo01(tst *testing.T) {
 		}
 	}
 
+	// generation function
+	nvals := 20
+	C.PopIntGen = func(pop Population, ninds, nbases int, noise float64, args interface{}, irange [][]int) Population {
+		o := make([]*Individual, ninds)
+		genes := make([]int, nvals)
+		for i := 0; i < ninds; i++ {
+			for j := 0; j < nvals; j++ {
+				genes[j] = rand.Intn(2)
+			}
+			o[i] = NewIndividual(nbases, genes)
+		}
+		return o
+	}
+
 	// objective function
-	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
+	C.OvaOor = func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
 		score := 0.0
 		count := 0
 		for _, val := range ind.Ints {
@@ -61,30 +82,9 @@ func Test_evo01(tst *testing.T) {
 		return
 	}
 
-	// reference individual
-	nvals := 20
-	ref := NewIndividual(1, utl.IntVals(nvals, 1))
-	for i := 0; i < nvals; i++ {
-		ref.Ints[i] = rand.Intn(2)
-	}
-
-	// bingo
-	bingo := NewBingoInts(utl.IntVals(nvals, 0), utl.IntVals(nvals, 1))
-
-	// parameters
-	C := NewConfParams()
-	C.Nisl = 2
-	C.Ninds = 20
-	C.FnKey = "" //"test_evo01"
-	C.MtIntFunc = mtfunc
-	C.RegTol = 0
-	C.CalcDerived()
-
-	// evolver
-	evo := NewEvolver(C, ref, ovfunc, bingo)
-
-	// run
-	evo.Run(true, false)
+	// run optimisation
+	evo := NewEvolver(C)
+	evo.Run()
 
 	// results
 	ideal := 1.0 / (1.0 + float64(nvals))
@@ -100,6 +100,22 @@ func Test_evo02(tst *testing.T) {
 	//rnd.Init(0) // 0 => use current time as seed
 	rnd.Init(1111) // 0 => use current time as seed
 
+	// parameters
+	C := NewConfParams()
+	C.Pll = false
+	C.Nisl = 4
+	C.Ninds = 20
+	C.RangeFlt = [][]float64{
+		{-2, 2}, // gene # 0: min and max
+		{-2, 2}, // gene # 1: min and max
+	}
+	C.PopFltGen = PopFltGen
+	if chk.Verbose {
+		C.FnKey = "test_evo02"
+		C.DoPlot = true
+	}
+	C.CalcDerived()
+
 	f := func(x []float64) float64 { return x[0]*x[0]/2.0 + x[1]*x[1] - x[0]*x[1] - 2.0*x[0] - 6.0*x[1] }
 	c1 := func(x []float64) float64 { return x[0] + x[1] - 2.0 }      // ≤ 0
 	c2 := func(x []float64) float64 { return -x[0] + 2.0*x[1] - 2.0 } // ≤ 0
@@ -109,7 +125,7 @@ func Test_evo02(tst *testing.T) {
 
 	// objective function
 	p := 1.0
-	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
+	C.OvaOor = func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
 		x := ind.GetFloats()
 		ova = f(x)
 		oor += utl.GtePenalty(0, c1(x), p)
@@ -120,29 +136,10 @@ func Test_evo02(tst *testing.T) {
 		return
 	}
 
-	// parameters
-	C := NewConfParams()
-	C.Pll = false
-	C.Nisl = 4
-	C.Ninds = 20
-	if chk.Verbose {
-		C.FnKey = "test_evo02"
-		C.DoPlot = true
-	}
-	C.CalcDerived()
-
-	// bingo
-	ndim := 2
-	vmin, vmax := -2.0, 2.0
-	xmin, xmax := utl.DblVals(ndim, vmin), utl.DblVals(ndim, vmax)
-	bingo := NewBingoFloats(xmin, xmax)
-
 	// evolver
-	evo := NewEvolverFloatChromo(C, xmin, xmax, ovfunc, bingo)
-	verbose := true
-	doreport := true
+	evo := NewEvolver(C)
 	pop0 := evo.Islands[0].Pop.GetCopy()
-	evo.Run(verbose, doreport)
+	evo.Run()
 
 	// results
 	io.PfGreen("\nx=%g (%g)\n", evo.Best.GetFloat(0), 2.0/3.0)
@@ -151,6 +148,8 @@ func Test_evo02(tst *testing.T) {
 
 	// plot contour
 	if C.DoPlot {
+		xmin := []float64{-2, -2}
+		xmax := []float64{2, 2}
 		PlotTwoVarsContour("/tmp/goga", "contour_evo02", pop0, evo.Islands[0].Pop, evo.Best, 41, nil, true,
 			xmin, xmax, false, false, nil, nil, f, c1, c2, c3, c4, c5)
 	}
@@ -162,6 +161,22 @@ func Test_evo03(tst *testing.T) {
 	chk.PrintTitle("evo03")
 
 	rnd.Init(111)
+
+	// parameters
+	C := NewConfParams()
+	C.Pll = false
+	C.Nisl = 4
+	C.Ninds = 20
+	C.RangeFlt = [][]float64{
+		{-1, 3}, // gene # 0: min and max
+		{-1, 3}, // gene # 1: min and max
+	}
+	C.PopFltGen = PopFltGen
+	if chk.Verbose {
+		C.FnKey = "test_evo03"
+		C.DoPlot = chk.Verbose
+	}
+	C.CalcDerived()
 
 	// geometry
 	xe := 1.0                      // centre of circle
@@ -182,7 +197,7 @@ func Test_evo03(tst *testing.T) {
 
 	// objective function
 	p := 1.0
-	ovfunc := func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
+	C.OvaOor = func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ova, oor float64) {
 		x := ind.GetFloats()
 		fp := utl.GtePenalty(1e-2, math.Abs(c(x)), p)
 		ova = f(x) + fp
@@ -190,29 +205,10 @@ func Test_evo03(tst *testing.T) {
 		return
 	}
 
-	// parameters
-	C := NewConfParams()
-	C.Pll = false
-	C.Nisl = 4
-	C.Ninds = 20
-	if chk.Verbose {
-		C.FnKey = "test_evo03"
-		C.DoPlot = chk.Verbose
-	}
-	C.CalcDerived()
-
-	// bingo
-	ndim := 2
-	vmin, vmax := -1.0, 3.0
-	xmin, xmax := utl.DblVals(ndim, vmin), utl.DblVals(ndim, vmax)
-	bingo := NewBingoFloats(xmin, xmax)
-
 	// evolver
-	evo := NewEvolverFloatChromo(C, xmin, xmax, ovfunc, bingo)
+	evo := NewEvolver(C)
 	pop0 := evo.Islands[0].Pop.GetCopy()
-	verbose := true
-	doreport := true
-	evo.Run(verbose, doreport)
+	evo.Run()
 
 	// results
 	xbest := []float64{evo.Best.GetFloat(0), evo.Best.GetFloat(1)}
@@ -225,6 +221,8 @@ func Test_evo03(tst *testing.T) {
 		extra := func() {
 			plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
 		}
+		xmin := []float64{-1, -1}
+		xmax := []float64{3, 3}
 		PlotTwoVarsContour("/tmp/goga", "contour_evo03", pop0, evo.Islands[0].Pop, evo.Best, 41, extra, true,
 			xmin, xmax, false, false, nil, nil, f, c)
 	}
@@ -235,9 +233,6 @@ func Test_evo04(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("evo04. TSP")
 
-	// initialise random numbers generator
-	rnd.Init(0)
-
 	// location / coordinates of stations
 	locations := [][]float64{
 		{60, 200}, {180, 200}, {80, 180}, {140, 180}, {20, 160}, {100, 160}, {200, 160},
@@ -246,8 +241,26 @@ func Test_evo04(tst *testing.T) {
 	}
 	nstations := len(locations)
 
+	// parameters
+	C := NewConfParams()
+	C.Nisl = 4
+	C.Ninds = 40
+	C.RegTol = 0.3
+	C.RegPct = 0.2
+	C.IntOrd = true
+	C.DoPlot = false //chk.Verbose
+	C.RegIni = 0
+	C.Dtreg = 60
+	C.PopOrdGen = PopOrdGen
+	C.OrdNints = nstations
+	//C.Rws = true
+	C.CalcDerived()
+
+	// initialise random numbers generator
+	rnd.Init(0)
+
 	// objective value function
-	ovfunc := func(ind *Individual, idIsland, t int, report *bytes.Buffer) (ova, oor float64) {
+	C.OvaOor = func(ind *Individual, idIsland, t int, report *bytes.Buffer) (ova, oor float64) {
 		L := locations
 		ids := ind.Ints
 		dist := 0.0
@@ -261,21 +274,8 @@ func Test_evo04(tst *testing.T) {
 		return
 	}
 
-	// parameters
-	C := NewConfParams()
-	C.Nisl = 4
-	C.Ninds = 40
-	C.RegTol = 0.3
-	C.RegPct = 0.2
-	C.IntOrd = true
-	C.DoPlot = false //chk.Verbose
-	C.RegIni = 0
-	C.Dtreg = 60
-	//C.Rws = true
-	C.CalcDerived()
-
 	// evolver
-	evo := NewEvolverIntOrdChromo(C, nstations, ovfunc)
+	evo := NewEvolver(C)
 
 	// print initial population
 	pop := evo.Islands[0].Pop
@@ -303,9 +303,7 @@ func Test_evo04(tst *testing.T) {
 	}
 
 	// run
-	verbose := true
-	doreport := true
-	evo.Run(verbose, doreport)
+	evo.Run()
 	//io.Pf("%v\n", pop.Output(nil, false))
 	io.Pfgreen("best = %v\n", evo.Best.Ints)
 	io.Pfgreen("best OVA = %v  (871.117353844847)\n\n", evo.Best.Ova)

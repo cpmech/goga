@@ -9,7 +9,6 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
-	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 )
 
@@ -33,10 +32,13 @@ func Test_pop01(tst *testing.T) {
 	ovs := []float64{11, 21, 10, 12, 13}
 
 	// init population
+	ninds := len(genes)
 	nbases := 2
-	pop := NewPopFloatChromo(nbases, genes)
-	for i, ind := range pop {
-		ind.Ova = ovs[i]
+	var pop Population
+	pop = make([]*Individual, ninds)
+	for i := 0; i < ninds; i++ {
+		pop[i] = NewIndividual(nbases, genes[i])
+		pop[i].Ova = ovs[i]
 	}
 	io.Pforan("%v\n", pop.Output(nil, false))
 
@@ -115,11 +117,14 @@ func Test_pop02(tst *testing.T) {
 	dem := []float64{0.2, 0.7, 0.1, 0.5, 0.6, 0.8, 1.0, 0.3, 0.9, 0.4}
 
 	// init population
+	ninds := len(genes)
 	nbases := 2
-	pop := NewPopFloatChromo(nbases, genes)
-	for i, ind := range pop {
-		ind.Ova = ovs[i]
-		ind.Demerit = dem[i]
+	var pop Population
+	pop = make([]*Individual, ninds)
+	for i := 0; i < ninds; i++ {
+		pop[i] = NewIndividual(nbases, genes[i])
+		pop[i].Ova = ovs[i]
+		pop[i].Demerit = dem[i]
 	}
 	io.Pforan("%v\n", pop.Output(nil, false))
 
@@ -145,39 +150,4 @@ func Test_pop02(tst *testing.T) {
 			chk.Scalar(tst, io.Sf("i%dg%d", i, j), 1e-14, ind.GetFloat(j), genes_sorted[i][j])
 		}
 	}
-}
-
-func Test_pop03(tst *testing.T) {
-
-	//verbose()
-	chk.PrintTitle("pop03")
-
-	rnd.Init(0)
-
-	nbases := 3
-	ind := get_individual(0, nbases)
-
-	fmts := [][]string{{"%4d"}, {"%8.2f"}, {" %6.6s"}, {" %x"}, {"%6.6s"}, {"%3s"}}
-
-	ninds := 5
-	bingo := NewExampleBingo()
-	pop := NewPopRandom(ninds, ind, bingo)
-	io.Pf("\n%v\n", pop.Output(fmts, false))
-
-	ngenes := 3
-	flts := la.MatAlloc(ninds, ngenes)
-	for i := 0; i < ninds; i++ {
-		for j := 0; j < ngenes; j++ {
-			flts[i][j] = pop[i].GetFloat(j)
-		}
-	}
-	/* grid generation removed
-	chk.Matrix(tst, "flts", 1e-13, flts, [][]float64{
-		{-123, -1, 0},
-		{-12, -0.5, 0.25},
-		{99, 0, 0.5},
-		{210, 0.5, 0.75},
-		{321, 1, 1},
-	})
-	*/
 }

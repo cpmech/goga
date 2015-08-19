@@ -17,72 +17,20 @@ type Evolver struct {
 	Best    *Individual // best individual among all in all islands
 }
 
-// NewEvolver creates a new evolver
-//  Input:
-//   nislands -- number of islands
-//   ninds    -- number of individuals to be generated
-//   ref      -- reference individual with chromosome structure already set
-//   bingo    -- Bingo structure set with pool of values to draw gene values
-//   ovfunc   -- objective function
-func NewEvolver(C *ConfParams, ref *Individual, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver) {
+// NewEvolverPop creates a new evolver based on given populations
+func NewEvolver(C *ConfParams) (o *Evolver) {
 	o = new(Evolver)
 	o.C = C
 	o.Islands = make([]*Island, o.C.Nisl)
 	for i := 0; i < o.C.Nisl; i++ {
-		o.Islands[i] = NewIsland(i, o.C, NewPopRandom(o.C.Ninds, ref, bingo), ovfunc, bingo)
+		o.Islands[i] = NewIsland(i, o.C)
 	}
 	o.Best = o.Islands[0].Pop[0]
 	return
-}
-
-// NewEvolverPop creates a new evolver based on a given population
-//  Input:
-//   pops   -- populations. len(pop) == nislands
-//   ovfunc -- objective function
-func NewEvolverPop(C *ConfParams, pops []Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver) {
-	o = new(Evolver)
-	o.C = C
-	chk.IntAssert(C.Nisl, len(pops))
-	o.Islands = make([]*Island, o.C.Nisl)
-	for i, pop := range pops {
-		o.Islands[i] = NewIsland(i, o.C, pop, ovfunc, bingo)
-	}
-	o.Best = o.Islands[0].Pop[0]
-	return
-}
-
-// NewEvolverFloatChromo creates a new evolver with float point individuals
-//  Input:
-//   C.Ninds  -- number of individuals to be generated
-//   C.Nbases -- number of bases
-//   C.Grid   -- whether or not to calc values based on grid;
-//               otherwise select randomly between xmin and xmax
-//   C.Noise  -- if noise>0, apply noise to move points away from grid nodes
-//               noise is a multiplier; e.g. 0.2
-//   xmin     -- min values of genes
-//   xmax     -- max values of genes. len(xmin) = len(xmax) = ngenes
-func NewEvolverFloatChromo(C *ConfParams, xmin, xmax []float64, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver) {
-	pops := make([]Population, C.Nisl)
-	for i := 0; i < C.Nisl; i++ {
-		pops[i] = NewPopFloatRandom(C, xmin, xmax)
-	}
-	return NewEvolverPop(C, pops, ovfunc, bingo)
-}
-
-// NewEvolverIntOrdChromo creates a new evolver with ordered integer individuals
-//  Input:
-//   C.Ninds   -- number of individuals to be generated
-//   nstations -- number of stations/integers == ngenes
-func NewEvolverIntOrdChromo(C *ConfParams, nstations int, ovfunc ObjFunc_t) (o *Evolver) {
-	pops := make([]Population, C.Nisl)
-	for i := 0; i < C.Nisl; i++ {
-		pops[i] = NewPopIntOrdRandom(C, nstations)
-	}
-	return NewEvolverPop(C, pops, ovfunc, nil)
 }
 
 // Run runs the evolution process
-func (o *Evolver) Run(verbose, doreport bool) {
+func (o *Evolver) Run() {
 
 	// check
 	nislands := len(o.Islands)
@@ -98,7 +46,7 @@ func (o *Evolver) Run(verbose, doreport bool) {
 	for _, isl := range o.Islands {
 		isl.WritePopToReport(t)
 	}
-	if verbose {
+	if o.C.Verbose {
 		o.print_legend()
 		io.Pf("\nrunning ...\n")
 	}
@@ -120,8 +68,8 @@ func (o *Evolver) Run(verbose, doreport bool) {
 					for time := t; time < tmig; time++ {
 						regen := o.calc_regen(time)
 						report := o.calc_report(time)
-						isl.SelectReprodAndRegen(time, regen, report, (verbose && isl.Id == 0))
-						if verbose && isl.Id == 0 {
+						isl.SelectReprodAndRegen(time, regen, report, (o.C.Verbose && isl.Id == 0))
+						if o.C.Verbose && isl.Id == 0 {
 							o.print_time(time, regen, report)
 						}
 					}
@@ -136,8 +84,8 @@ func (o *Evolver) Run(verbose, doreport bool) {
 				for time := t; time < tmig; time++ {
 					regen := o.calc_regen(time)
 					report := o.calc_report(time)
-					isl.SelectReprodAndRegen(time, regen, report, (verbose && isl.Id == 0))
-					if verbose && isl.Id == 0 {
+					isl.SelectReprodAndRegen(time, regen, report, (o.C.Verbose && isl.Id == 0))
+					if o.C.Verbose && isl.Id == 0 {
 						o.print_time(time, regen, report)
 					}
 				}
@@ -175,7 +123,7 @@ func (o *Evolver) Run(verbose, doreport bool) {
 		}
 
 		// migration
-		if verbose {
+		if o.C.Verbose {
 			io.Pfyel(" %d", t)
 		}
 		for i, from := range receiveFrom {
@@ -194,14 +142,14 @@ func (o *Evolver) Run(verbose, doreport bool) {
 	o.FindBestFromAll()
 
 	// message
-	if verbose {
+	if o.C.Verbose {
 		io.Pf("\n... end\n\n")
 	}
 
 	// write reports
-	if doreport {
+	if o.C.DoReport {
 		for _, isl := range o.Islands {
-			isl.SaveReport(verbose)
+			isl.SaveReport(o.C.Verbose)
 		}
 	}
 

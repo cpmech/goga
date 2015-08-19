@@ -22,13 +22,10 @@ type ObjFunc_t func(ind *Individual, idIsland, time int, report *bytes.Buffer) (
 type Island struct {
 
 	// input
-	Id        int         // index of this island
-	C         *ConfParams // configuration parameters
-	Pop       Population  // pointer to current population
-	BkpPop    Population  // backup population
-	OvOorFunc ObjFunc_t   // function to compute objective and out-of-range values
-	BingoGrid *Bingo      // bingo for regeneration with initial values from grid
-	BingoBest *Bingo      // bingo for regeneration with values recomputed based on best individual
+	Id     int         // index of this island
+	C      *ConfParams // configuration parameters
+	Pop    Population  // pointer to current population
+	BkpPop Population  // backup population
 
 	// results
 	Report bytes.Buffer // buffer to report results
@@ -52,44 +49,62 @@ type Island struct {
 	devbases   []float64   // [ngenes*nbases] deviations of bases
 }
 
-// NewIsland allocates a new island but with a give population already allocated
-// Input:
-//  id     -- index of this island
-//  pop    -- the population
-//  ovfunc -- objective function
-//  bingo  -- structure needed for regeneration of individuals
-func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Island) {
+// NewIsland creates a new island
+func NewIsland(id int, C *ConfParams) (o *Island) {
 
 	// check
-	ninds := len(pop)
-	chk.IntAssert(C.Ninds, ninds)
-	if ninds%2 != 0 {
-		chk.Panic("size of population must be even")
+	if C.Ninds < 2 || (C.Ninds%2 != 0) {
+		chk.Panic("size of population must be even and greater than 2. C.Ninds = %d is invalid", C.Ninds)
+	}
+	if C.OvaOor == nil {
+		chk.Panic("objective function (OvaOor) must be non nil")
 	}
 
-	// allocate
+	// allocate island
 	o = new(Island)
 	o.Id = id
 	o.C = C
-	o.Pop = pop
-	o.BkpPop = pop.GetCopy()
-	o.OvOorFunc = ovfunc
-	if bingo != nil {
-		o.BingoGrid = bingo
-		o.BingoBest = bingo.GetCopy()
+
+	// create population
+	if o.C.PopIntGen != nil {
+		o.Pop = o.C.PopIntGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeInt)
+	}
+	if o.C.PopOrdGen != nil {
+		o.Pop = o.C.PopOrdGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.OrdNints)
+	}
+	if o.C.PopFltGen != nil {
+		o.Pop = o.C.PopFltGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeFlt)
+	}
+	if o.C.PopStrGen != nil {
+		o.Pop = o.C.PopStrGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolStr)
+	}
+	if o.C.PopKeyGen != nil {
+		o.Pop = o.C.PopKeyGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolKey)
+	}
+	if o.C.PopBytGen != nil {
+		o.Pop = o.C.PopBytGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolByt)
+	}
+	if o.C.PopFunGen != nil {
+		o.Pop = o.C.PopFunGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolFun)
+	}
+	if len(o.Pop) != o.C.Ninds {
+		chk.Panic("generation of population failed:\nat least one generator function in Params must be non nil")
 	}
 
+	// copy population
+	o.BkpPop = o.Pop.GetCopy()
+
 	// auxiliary data
-	o.ovas = make([]float64, ninds)
-	o.oors = make([]float64, ninds)
-	o.sovas = make([]float64, ninds)
-	o.soors = make([]float64, ninds)
-	o.fitness = make([]float64, ninds)
-	o.prob = make([]float64, ninds)
-	o.cumprob = make([]float64, ninds)
-	o.selinds = make([]int, ninds)
-	o.A = make([]int, ninds/2)
-	o.B = make([]int, ninds/2)
+	o.ovas = make([]float64, o.C.Ninds)
+	o.oors = make([]float64, o.C.Ninds)
+	o.sovas = make([]float64, o.C.Ninds)
+	o.soors = make([]float64, o.C.Ninds)
+	o.fitness = make([]float64, o.C.Ninds)
+	o.prob = make([]float64, o.C.Ninds)
+	o.cumprob = make([]float64, o.C.Ninds)
+	o.selinds = make([]int, o.C.Ninds)
+	o.A = make([]int, o.C.Ninds/2)
+	o.B = make([]int, o.C.Ninds/2)
 
 	// compute objective values, demerits, and sort population
 	o.CalcOvs(o.Pop, 0)
@@ -118,7 +133,7 @@ func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *B
 	// for statistics
 	if ngenes > 0 {
 		o.maxabsgene = make([]float64, ngenes)
-		o.allbases = la.MatAlloc(ngenes*nbases, ninds)
+		o.allbases = la.MatAlloc(ngenes*nbases, o.C.Ninds)
 		o.devbases = make([]float64, ngenes*nbases)
 	}
 	return
@@ -127,7 +142,7 @@ func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *B
 // CalcOvs computes objective and out-of-range values
 func (o *Island) CalcOvs(pop Population, time int) {
 	for _, ind := range pop {
-		ova, oor := o.OvOorFunc(ind, o.Id, time, &o.Report)
+		ova, oor := o.C.OvaOor(ind, o.Id, time, &o.Report)
 		if oor < 0 {
 			chk.Panic("out-of-range values must be positive (or zero) indicating the positive distance to constraints. oor=%g is invalid", oor)
 		}
@@ -292,25 +307,27 @@ func (o *Island) Regenerate(time int, basedOnBest bool) (method string) {
 			return
 		}
 	}
-	bingo := o.BingoGrid
-	method = "lims"
-	if basedOnBest || o.C.RegBest {
-		method = "best"
-		o.BingoBest.ResetBasedOnRef(time, o.Pop[0], o.C.RegMmin, o.C.RegMmax)
-		bingo = o.BingoBest
-	}
-	ninds := len(o.Pop)
-	start := ninds - int(o.C.RegPct*float64(ninds))
-	for i := start; i < ninds; i++ {
-		if o.C.IntOrd {
-			//rnd.IntShuffle(o.Pop[i].Ints)
-			copy(o.Pop[i].Ints, o.Pop[0].Ints)
-			IntOrdMutation(o.Pop[i].Ints, 0, 1, nil)
+	/*
+		bingo := o.BingoGrid
+		method = "lims"
+		if basedOnBest || o.C.RegBest {
+			method = "best"
+			o.BingoBest.ResetBasedOnRef(time, o.Pop[0], o.C.RegMmin, o.C.RegMmax)
+			bingo = o.BingoBest
 		}
-		for j := 0; j < o.Pop[i].Nfltgenes; j++ {
-			o.Pop[i].SetFloat(j, bingo.DrawFloat(i, j, ninds))
+		ninds := len(o.Pop)
+		start := ninds - int(o.C.RegPct*float64(ninds))
+		for i := start; i < ninds; i++ {
+			if o.C.IntOrd {
+				//rnd.IntShuffle(o.Pop[i].Ints)
+				copy(o.Pop[i].Ints, o.Pop[0].Ints)
+				IntOrdMutation(o.Pop[i].Ints, 0, 1, nil)
+			}
+			for j := 0; j < o.Pop[i].Nfltgenes; j++ {
+				o.Pop[i].SetFloat(j, bingo.DrawFloat(i, j, ninds))
+			}
 		}
-	}
+	*/
 	o.CalcOvs(o.Pop, time)
 	o.CalcDemeritsAndSort(o.Pop)
 	return

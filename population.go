@@ -9,7 +9,6 @@ import (
 	"math"
 	"sort"
 
-	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
@@ -18,174 +17,114 @@ import (
 // Population holds all individuals
 type Population []*Individual
 
-// GetCopy returns a copy of this population
-func (o Population) GetCopy() (pop Population) {
-	ninds := len(o)
-	pop = make([]*Individual, ninds)
+// generation functions
+type PopIntGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, irange [][]int) Population     // generate population of integers
+type PopOrdGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, nints int) Population          // generate population of ordered integers
+type PopFltGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, frange [][]float64) Population // generate population of float point numbers
+type PopStrGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, pool [][]string) Population    // generate population of strings
+type PopKeyGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, pool [][]byte) Population      // generate population of keys (bytes)
+type PopBytGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, pool [][]string) Population    // generate population of bytes
+type PopFunGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, pool [][]Func_t) Population    // generate population of functions
+
+// PopFltGen generates a population of individuals with float point numbers
+// Notes: (1) ngenes = len(frange)
+//        (2) this function can be used with existent population
+func PopFltGen(pop Population, ninds, nbases int, noise float64, args interface{}, frange [][]float64) Population {
+	o := pop
+	if len(o) != ninds {
+		o = make([]*Individual, ninds)
+	}
+	ngenes := len(frange)
 	for i := 0; i < ninds; i++ {
-		pop[i] = o[i].GetCopy()
-	}
-	return
-}
-
-// NewPopFloatChromo allocates a population made entirely of float point numbers
-//  Input:
-//   nbases -- number of bases in each float point gene
-//   genes  -- all genes of all individuals [ninds][ngenes]
-//  Output:
-//   new population
-func NewPopFloatChromo(nbases int, genes [][]float64) (pop Population) {
-	ninds := len(genes)
-	pop = make([]*Individual, ninds)
-	for i := 0; i < ninds; i++ {
-		pop[i] = NewIndividual(nbases, genes[i])
-	}
-	return
-}
-
-// NewPopReference creates a population based on a reference individual
-//  Input:
-//   ninds -- number of individuals to be generated
-//   ref   -- reference individual with chromosome structure already set
-//  Output:
-//   new population
-func NewPopReference(ninds int, ref *Individual) (pop Population) {
-	pop = make([]*Individual, ninds)
-	for i := 0; i < ninds; i++ {
-		pop[i] = ref.GetCopy()
-	}
-	return
-}
-
-// NewPopRandom generates random population with individuals based on reference individual
-// and gene values randomly drawn from Bingo.
-//  Input:
-//   ninds -- number of individuals to be generated
-//   ref   -- reference individual with chromosome structure already set
-//   bingo -- Bingo structure set with pool of values to draw gene values
-//  Output:
-//   new population
-func NewPopRandom(ninds int, ref *Individual, bingo *Bingo) (pop Population) {
-	pop = NewPopReference(ninds, ref)
-	for i, ind := range pop {
-		for j := 0; j < len(ind.Ints); j++ {
-			ind.Ints[j] = bingo.DrawInt(i, j, ninds)
+		if o[i] == nil {
+			o[i] = new(Individual)
 		}
-		if ind.Floats != nil {
-			for j := 0; j < ind.Nfltgenes; j++ {
-				ind.SetFloat(j, bingo.DrawFloat(i, j, ninds))
-			}
-		}
-		for j := 0; j < len(ind.Strings); j++ {
-			ind.Strings[j] = bingo.DrawString(j)
-		}
-		for j := 0; j < len(ind.Keys); j++ {
-			ind.Keys[j] = bingo.DrawKey(j)
-		}
-		for j := 0; j < len(ind.Bytes); j++ {
-			copy(ind.Bytes[j], bingo.DrawBytes(j))
-		}
-		for j := 0; j < len(ind.Funcs); j++ {
-			ind.Funcs[j] = bingo.DrawFunc(j)
+		if o[i].Nfltgenes != ngenes {
+			o[i].Nfltgenes = ngenes
+			o[i].Floats = make([]float64, ngenes)
 		}
 	}
-	return
-}
-
-// NewPopFloatRandom generates a population of individuals with float point
-// numbers only genes for given grid
-//  Input:
-//   C.Ninds  -- number of individuals to be generated
-//   C.Nbases -- number of bases
-//   C.Grid   -- whether or not to calc values based on grid;
-//               otherwise select randomly between xmin and xmax
-//   C.Noise  -- if noise>0, apply noise to move points away from grid nodes
-//               noise is a multiplier; e.g. 0.2
-//   xmin     -- min values of genes
-//   xmax     -- max values of genes. len(xmin) = len(xmax) = ngenes
-func NewPopFloatRandom(C *ConfParams, xmin, xmax []float64) (pop Population) {
-	ngenes := len(xmin)
-	chk.IntAssert(len(xmax), ngenes)
-	ref := NewIndividual(C.Nbases, make([]float64, ngenes))
-	pop = NewPopReference(C.Ninds, ref)
-	pop.GenFloatRandom(C, xmin, xmax)
-	return
-}
-
-// GenFloatRandom generates a population of individuals with float point
-// numbers only genes for given grid
-//  Input:
-//   C.Ninds  -- number of individuals to be generated
-//   C.Nbases -- number of bases
-//   C.Grid   -- whether or not to calc values based on grid;
-//               otherwise select randomly between xmin and xmax
-//   C.Noise  -- if noise>0, apply noise to move points away from grid nodes
-//               noise is a multiplier; e.g. 0.2
-//   xmin     -- min values of genes
-//   xmax     -- max values of genes. len(xmin) = len(xmax) = ngenes
-func (o *Population) GenFloatRandom(C *ConfParams, xmin, xmax []float64) {
-	if len(*o) < 2 {
-		return
-	}
-	ngenes := len(xmin)
-	chk.IntAssert(len(xmax), ngenes)
-	chk.IntAssert(ngenes, (*o)[0].Nfltgenes)
-	npts := int(math.Pow(float64(C.Ninds), 1.0/float64(ngenes))) // num points in 'square' grid
-	ntot := int(math.Pow(float64(npts), float64(ngenes)))        // total num of individuals in grid
-	den := 1.0                                                   // denominator to calculate dx
+	npts := int(math.Pow(float64(ninds), 1.0/float64(ngenes))) // num points in 'square' grid
+	ntot := int(math.Pow(float64(npts), float64(ngenes)))      // total num of individuals in grid
+	den := 1.0                                                 // denominator to calculate dx
 	if npts > 1 {
 		den = float64(npts - 1)
 	}
 	var lfto int // leftover, e.g. n % (nx*ny)
 	var rdim int // reduced dimension, e.g. (nx*ny)
 	var idx int  // index of gene in grid
-	var dx, x, mul float64
-	for i := 0; i < C.Ninds; i++ {
+	var dx, x, mul, xmin, xmax float64
+	for i := 0; i < ninds; i++ {
 		if i < ntot { // on grid
 			lfto = i
 			for j := 0; j < ngenes; j++ {
 				rdim = int(math.Pow(float64(npts), float64(ngenes-1-j)))
 				idx = lfto / rdim
 				lfto = lfto % rdim
-				dx = xmax[j] - xmin[j]
-				x = xmin[j] + float64(idx)*dx/den
-				if C.Noise > 0 {
-					mul = rnd.Float64(0, C.Noise)
+				xmin = frange[j][0]
+				xmax = frange[j][1]
+				dx = xmax - xmin
+				x = xmin + float64(idx)*dx/den
+				if noise > 0 {
+					mul = rnd.Float64(0, noise)
 					if rnd.FlipCoin(0.5) {
 						x += mul * x
 					} else {
 						x -= mul * x
 					}
-					if x < xmin[j] {
-						x = xmin[j] + (xmin[j] - x)
+					if x < xmin {
+						x = xmin + (xmin - x)
 					}
-					if x > xmax[j] {
-						x = xmax[j] - (x - xmax[j])
+					if x > xmax {
+						x = xmax - (x - xmax)
 					}
 				}
-				(*o)[i].SetFloat(j, x)
+				o[i].SetFloat(j, x)
 			}
 		} else { // additional individuals
-			for g := 0; g < ngenes; g++ {
-				x = rnd.Float64(xmin[g], xmax[g])
-				(*o)[i].SetFloat(g, x)
+			for j := 0; j < ngenes; j++ {
+				xmin = frange[j][0]
+				xmax = frange[j][1]
+				x = rnd.Float64(xmin, xmax)
+				o[i].SetFloat(j, x)
 			}
 		}
 	}
+	return o
 }
 
-// NewPopIntOrdRandom generates a population of individuals with ordered integers
-//  Input:
-//   C.Ninds   -- number of individuals to be generated
-//   nstations -- number of stations/integers == ngenes
-func NewPopIntOrdRandom(C *ConfParams, nstations int) (pop Population) {
-	ref := NewIndividual(1, make([]int, nstations))
-	pop = NewPopReference(C.Ninds, ref)
-	for i := 0; i < C.Ninds; i++ {
-		for j := 0; j < nstations; j++ {
-			pop[i].Ints[j] = j
+// PopOrdGen generates a population of individuals with ordered integers
+// Notes: (1) ngenes = len(frange)
+//        (2) this function can be used with existent population
+func PopOrdGen(pop Population, ninds, nbases int, noise float64, args interface{}, nints int) Population {
+	o := pop
+	if len(o) != ninds {
+		o = make([]*Individual, ninds)
+	}
+	ngenes := nints
+	for i := 0; i < ninds; i++ {
+		if o[i] == nil {
+			o[i] = new(Individual)
 		}
-		rnd.IntShuffle(pop[i].Ints)
+		if len(o[i].Ints) != ngenes {
+			o[i].Ints = make([]int, ngenes)
+		}
+		for j := 0; j < nints; j++ {
+			o[i].Ints[j] = j
+		}
+		rnd.IntShuffle(o[i].Ints)
+	}
+	return o
+}
+
+// methods of Population ///////////////////////////////////////////////////////////////////////////
+
+// GetCopy returns a copy of this population
+func (o Population) GetCopy() (pop Population) {
+	ninds := len(o)
+	pop = make([]*Individual, ninds)
+	for i := 0; i < ninds; i++ {
+		pop[i] = o[i].GetCopy()
 	}
 	return
 }
