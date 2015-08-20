@@ -20,7 +20,7 @@ import (
 
 func Test_evo01(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo01. organise sequence of ints")
 	io.Pf("\n")
 
@@ -29,9 +29,13 @@ func Test_evo01(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
-	C.Nisl = 2
+	C.Nisl = 1
 	C.Ninds = 20
 	C.RegTol = 0
+	C.GAtype = "crowd"
+	C.CrowdSize = 2
+	C.Tf = 2
+	C.Verbose = false
 	C.CalcDerived()
 
 	// mutation function

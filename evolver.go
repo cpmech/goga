@@ -58,6 +58,11 @@ func (o *Evolver) Run() {
 	// time loop
 	t = 1
 	tmig := o.C.Dtmig
+	nomig := false
+	if tmig > o.C.Tf {
+		tmig = o.C.Tf
+		nomig = true
+	}
 	done := make(chan int, nislands)
 	for t < o.C.Tf {
 
@@ -97,6 +102,11 @@ func (o *Evolver) Run() {
 			tmig = o.C.Tf
 		}
 
+		// skip migration
+		if nomig {
+			continue
+		}
+
 		// reset receiveFrom matrix
 		for i := 0; i < nislands; i++ {
 			for j := 0; j < nislands-1; j++ {
@@ -111,7 +121,7 @@ func (o *Evolver) Run() {
 			for j := 0; j < nislands; j++ {
 				if i != j {
 					Bbest := o.Islands[j].Pop[0]
-					send, _ := Bbest.Compare(Aworst)
+					send, _ := IndCompare(Bbest, Aworst)
 					if send {
 						receiveFrom[i][k] = j // i gets individual from j
 						k++
@@ -171,7 +181,7 @@ func (o *Evolver) FindBestFromAll() {
 	}
 	o.Best = o.Islands[0].Pop[0]
 	for i := 1; i < o.C.Nisl; i++ {
-		_, other_dominates := o.Best.Compare(o.Islands[i].Pop[0])
+		_, other_dominates := IndCompare(o.Best, o.Islands[i].Pop[0])
 		if other_dominates {
 			o.Best = o.Islands[i].Pop[0]
 		}

@@ -35,13 +35,14 @@ type ConfParams struct {
 	UseStdDev bool    // use standard deviation (σ) instead of average deviation in Stat
 
 	// selection and reproduction
-	Pc     float64 // probability of crossover
-	Pm     float64 // probability of mutation
-	Elite  bool    // use elitism
-	Rws    bool    // use Roulette-Wheel selection method
-	Rnk    bool    // ranking
-	RnkSp  float64 // selective pressure for ranking
-	GAtype string  // type of GA; e.g. "std", "crowd"
+	Pc        float64 // probability of crossover
+	Pm        float64 // probability of mutation
+	Elite     bool    // use elitism
+	Rws       bool    // use Roulette-Wheel selection method
+	Rnk       bool    // ranking
+	RnkSp     float64 // selective pressure for ranking
+	GAtype    string  // type of GA; e.g. "std", "crowd"
+	CrowdSize int     // crowd size
 
 	// output
 	Verbose   bool   // show messages during optimisation
@@ -137,6 +138,7 @@ func (o *ConfParams) SetDefault() {
 	o.Rnk = true
 	o.RnkSp = 1.2
 	o.GAtype = "std"
+	o.CrowdSize = 2
 
 	// output
 	o.Verbose = true

@@ -47,6 +47,10 @@ type Island struct {
 	allbases [][]float64 // [ngenes*nbases][ninds] all bases
 	devbases []float64   // [ngenes*nbases] deviations of bases
 	larbases []float64   // [ngenes*nbases] largest bases; max(abs(bases))
+
+	// for crowding
+	indices []int   // [ninds]
+	crowds  [][]int // [ninds/crowd_size][crowd_size]
 }
 
 // NewIsland creates a new island
@@ -130,6 +134,10 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 		o.devbases = make([]float64, size)
 		o.larbases = make([]float64, size)
 	}
+
+	// for crowding
+	o.indices = utl.IntRange(o.C.Ninds)
+	o.crowds = utl.IntsAlloc(o.C.Ninds/o.C.CrowdSize, o.C.CrowdSize)
 	return
 }
 
@@ -206,7 +214,32 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 	o.OutTimes[time] = float64(time)
 }
 
+// RunCrowding runs the evolutionary process with niching via crowding and tournament selection
 func (o *Island) RunCrowding(time int, doreport, verbose bool) {
+	rnd.IntGetGroups(o.crowds, o.indices)
+	io.Pforan("\ncrowds = %v\n", o.crowds)
+	//dist := la.MatAlloc(o.C.CrowdSize, o.C.CrowdSize)
+	//parents := make([]*Individual, o.C.CrowdSize)
+	//children := make([]*Individual, o.C.CrowdSize)
+	for _, crowd := range o.crowds {
+		for i := 1; i < o.C.CrowdSize; i++ {
+			io.Pforan("%d with %d\n", crowd[i-1], crowd[i])
+			A, B := o.Pop[crowd[i-1]], o.Pop[crowd[i]]
+			a, b := o.BkpPop[crowd[i-1]], o.BkpPop[crowd[i]]
+			Crossover(a, b, A, B, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
+			Mutation(a, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+			Mutation(b, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+		}
+		for i := 0; i < o.C.CrowdSize; i++ {
+			A := o.Pop[crowd[i]]
+			for j := 0; j < o.C.CrowdSize; j++ {
+				a := o.BkpPop[crowd[i]]
+				io.Pfcyan("A=%v a=%v\n", A.Ints, a.Ints)
+				//dist[i][j] = A.Distance(a)
+			}
+		}
+		io.Pf("\n")
+	}
 }
 
 // RunStandard performs the selection, reproduction and regeneration processes
@@ -268,7 +301,7 @@ func (o *Island) RunStandard(time int, doreport, verbose bool) {
 	// elitism
 	if o.C.Elite {
 		iold, inew := o.Pop[0], o.BkpPop[ninds-1]
-		old_dominates, _ := iold.Compare(inew)
+		old_dominates, _ := IndCompare(iold, inew)
 		if old_dominates {
 			iold.CopyInto(inew)
 			o.CalcDemeritsAndSort(o.BkpPop)

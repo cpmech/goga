@@ -164,8 +164,8 @@ func (o Individual) CopyInto(x *Individual) {
 	return
 }
 
-// Compare compares this individual 'A' with another one 'B'
-func (A Individual) Compare(B *Individual) (A_dominates, B_dominates bool) {
+// IndCompare compares individual 'A' with another one 'B'
+func IndCompare(A, B *Individual) (A_dominates, B_dominates bool) {
 	var A_is_unfeasible, B_is_unfeasible bool
 	for i := 0; i < len(A.Oors); i++ {
 		if A.Oors[i] > 0 {
