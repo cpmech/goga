@@ -206,7 +206,7 @@ func IndCompare(A, B *Individual) (A_dominates, B_dominates bool) {
 //   cxfucns -- crossover functions. use nil for default ones
 //  Output:
 //   a and b -- offspring
-func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64,
+func IndCrossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64,
 	cxint CxIntFunc_t, cxflt CxFltFunc_t, cxstr CxStrFunc_t, cxkey CxKeyFunc_t, cxbyt CxBytFunc_t, cxfun CxFunFunc_t) {
 
 	// default values
@@ -267,7 +267,7 @@ func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]i
 //   extra    -- extra arguments for each 'int', 'flt', 'str', 'key', 'byt', 'fun'
 //   mutfucns -- mutation functions. use nil for default ones
 //  Output: modified individual
-func Mutation(A *Individual, nchanges map[string]int, probs map[string]float64, extra map[string]interface{},
+func IndMutation(A *Individual, nchanges map[string]int, probs map[string]float64, extra map[string]interface{},
 	mtint MtIntFunc_t, mtflt MtFltFunc_t, mtstr MtStrFunc_t, mtkey MtKeyFunc_t, mtbyt MtBytFunc_t, mtfun MtFunFunc_t) {
 
 	// default values

@@ -120,7 +120,7 @@ func Test_ind02(tst *testing.T) {
 
 	a := A.GetCopy()
 	b := A.GetCopy()
-	Crossover(a, b, A, B, nil, cuts, pc, nil, nil, nil, nil, nil, nil)
+	IndCrossover(a, b, A, B, nil, cuts, pc, nil, nil, nil, nil, nil, nil)
 
 	io.Pforan("a = %v\n", a.Output(fmts, false))
 	io.Pfblue2("b = %v\n", b.Output(fmts, false))
@@ -156,7 +156,7 @@ func Test_ind03(tst *testing.T) {
 	nbases := 1
 	A := get_individual(0, nbases)
 	B := get_individual(1, nbases)
-	A_dominates, B_dominates := A.Compare(B)
+	A_dominates, B_dominates := IndCompare(A, B)
 	io.Pfblue2("A: ovas = %v\n", A.Ovas)
 	io.Pfblue2("A: oors = %v\n", A.Oors)
 	io.Pfcyan("B: ovas = %v\n", B.Ovas)
@@ -174,7 +174,7 @@ func Test_ind03(tst *testing.T) {
 
 	A.Oors = []float64{0, 0, 0}
 	B.Oors = []float64{0, 0, 0}
-	A_dominates, B_dominates = A.Compare(B)
+	A_dominates, B_dominates = IndCompare(A, B)
 	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
 	io.Pfblue2("A: oors = %v\n", A.Oors)
 	io.Pfcyan("B: ovas = %v\n", B.Ovas)
@@ -191,7 +191,7 @@ func Test_ind03(tst *testing.T) {
 	}
 
 	A.Ovas = []float64{200, 100}
-	A_dominates, B_dominates = A.Compare(B)
+	A_dominates, B_dominates = IndCompare(A, B)
 	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
 	io.Pfblue2("A: oors = %v\n", A.Oors)
 	io.Pfcyan("B: ovas = %v\n", B.Ovas)
@@ -208,7 +208,7 @@ func Test_ind03(tst *testing.T) {
 	}
 
 	A.Ovas = []float64{200, 99}
-	A_dominates, B_dominates = A.Compare(B)
+	A_dominates, B_dominates = IndCompare(A, B)
 	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
 	io.Pfblue2("A: oors = %v\n", A.Oors)
 	io.Pfcyan("B: ovas = %v\n", B.Ovas)
@@ -226,7 +226,7 @@ func Test_ind03(tst *testing.T) {
 
 	A.Ovas = []float64{200, 100}
 	B.Ovas = []float64{199, 100}
-	A_dominates, B_dominates = A.Compare(B)
+	A_dominates, B_dominates = IndCompare(A, B)
 	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
 	io.Pfblue2("A: oors = %v\n", A.Oors)
 	io.Pfcyan("B: ovas = %v\n", B.Ovas)
