@@ -181,10 +181,37 @@ func (o *Island) CalcDemeritsAndSort(pop Population) {
 	pop.Sort()
 }
 
-// SelectReprodAndRegen performs the selection, reproduction and regeneration processes
-// It also peforms the output to files.
+// Run runs evolutionary process
+func (o *Island) Run(time int, doreport, verbose bool) {
+
+	// run
+	if o.C.GAtype == "crowd" {
+		o.RunCrowding(time, doreport, verbose)
+	} else {
+		o.RunStandard(time, doreport, verbose)
+	}
+
+	// report
+	if doreport {
+		o.WritePopToReport(time)
+	}
+
+	// results
+	for i := 0; i < o.Nova; i++ {
+		o.OutOvas[i][time] = o.Pop[0].Ovas[i]
+	}
+	for i := 0; i < o.Noor; i++ {
+		o.OutOors[i][time] = o.Pop[0].Oors[i]
+	}
+	o.OutTimes[time] = float64(time)
+}
+
+func (o *Island) RunCrowding(time int, doreport, verbose bool) {
+}
+
+// RunStandard performs the selection, reproduction and regeneration processes
 //  Note: this function considers a SORTED population already
-func (o *Island) SelectReprodAndRegen(time int, doreport, verbose bool) {
+func (o *Island) RunStandard(time int, doreport, verbose bool) {
 
 	// fitness
 	ninds := len(o.Pop)
@@ -252,11 +279,9 @@ func (o *Island) SelectReprodAndRegen(time int, doreport, verbose bool) {
 	o.Pop, o.BkpPop = o.BkpPop, o.Pop
 
 	// statistics and regeneration of float-point individuals
-	homogeneous := false
-	minrho, averho, maxrho, devrho := -1.0, -1.0, -1.0, -1.0 // -1 means not used
 	if o.Pop[0].Nfltgenes > 0 {
-		minrho, averho, maxrho, devrho = o.FltStat()
-		homogeneous = averho < o.C.RegTol
+		_, averho, _, _ := o.FltStat()
+		homogeneous := averho < o.C.RegTol
 		if homogeneous {
 			o.Regenerate(time)
 			if doreport {
@@ -267,23 +292,9 @@ func (o *Island) SelectReprodAndRegen(time int, doreport, verbose bool) {
 			}
 		}
 	}
-
-	// report
-	if doreport {
-		io.Ff(&o.Report, "time=%d: homogeneous=%v minrho=%g averho=%g maxrho=%g devrho=%g\n", time, homogeneous, minrho, averho, maxrho, devrho)
-		o.WritePopToReport(time)
-	}
-
-	// results
-	for i := 0; i < o.Nova; i++ {
-		o.OutOvas[i][time] = o.Pop[0].Ovas[i]
-	}
-	for i := 0; i < o.Noor; i++ {
-		o.OutOors[i][time] = o.Pop[0].Oors[i]
-	}
-	o.OutTimes[time] = float64(time)
-	return
 }
+
+// auxiliary //////////////////////////////////////////////////////////////////////////////////////
 
 // Regenerate regenerates population with basis on best individual(s)
 func (o *Island) Regenerate(time int) {

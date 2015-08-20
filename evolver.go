@@ -67,7 +67,7 @@ func (o *Evolver) Run() {
 				go func(isl *Island) {
 					for time := t; time < tmig; time++ {
 						report := o.calc_report(time)
-						isl.SelectReprodAndRegen(time, report, (o.C.Verbose && isl.Id == 0))
+						isl.Run(time, report, (o.C.Verbose && isl.Id == 0))
 						if o.C.Verbose && isl.Id == 0 {
 							o.print_time(time, report)
 						}
@@ -82,7 +82,7 @@ func (o *Evolver) Run() {
 			for _, isl := range o.Islands {
 				for time := t; time < tmig; time++ {
 					report := o.calc_report(time)
-					isl.SelectReprodAndRegen(time, report, (o.C.Verbose && isl.Id == 0))
+					isl.Run(time, report, (o.C.Verbose && isl.Id == 0))
 					if o.C.Verbose && isl.Id == 0 {
 						o.print_time(time, report)
 					}
