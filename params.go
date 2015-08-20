@@ -30,11 +30,8 @@ type ConfParams struct {
 	Dtmig int // increment of time for migration
 
 	// regeneration
-	RegIni    int     // time index for initial regeneration. use -1 for none
 	RegTol    float64 // tolerance for ρ to activate regeneration
 	RegPct    float64 // percentage of individuals to be regenerated; e.g. 0.3
-	RegMmin   float64 // multiplier to decrease reference value; e.g. 0.1
-	RegMmax   float64 // multiplier to increase reference value; e.g. 10.0
 	UseStdDev bool    // use standard deviation (σ) instead of average deviation in Stat
 
 	// selection and reproduction
@@ -44,9 +41,6 @@ type ConfParams struct {
 	Rws   bool    // use Roulette-Wheel selection method
 	Rnk   bool    // ranking
 	RnkSp float64 // selective pressure for ranking
-
-	// diversity
-	StatOorSkip bool // skip oor individuals from statistics
 
 	// output
 	Verbose   bool   // show messages during optimisation
@@ -130,11 +124,8 @@ func (o *ConfParams) SetDefault() {
 	o.Dtmig = 40
 
 	// regeneration
-	o.RegIni = 3
 	o.RegTol = 1e-2
 	o.RegPct = 0.3
-	o.RegMmin = 0.1
-	o.RegMmax = 10.0
 	o.UseStdDev = false
 
 	// selection and reproduction
@@ -144,9 +135,6 @@ func (o *ConfParams) SetDefault() {
 	o.Rws = false
 	o.Rnk = true
 	o.RnkSp = 1.2
-
-	// diversity
-	o.StatOorSkip = false
 
 	// output
 	o.Verbose = true

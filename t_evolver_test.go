@@ -253,7 +253,6 @@ func Test_evo04(tst *testing.T) {
 	C.RegPct = 0.2
 	C.IntOrd = true
 	C.DoPlot = false //chk.Verbose
-	C.RegIni = 0
 	C.PopOrdGen = PopOrdGen
 	C.OrdNints = nstations
 	//C.Rws = true
