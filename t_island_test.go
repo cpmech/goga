@@ -31,6 +31,11 @@ func Test_island01(tst *testing.T) {
 	C.Ninds = len(genes)
 	C.Nbases = 1
 	C.Rnk = false
+	C.RangeFlt = [][]float64{
+		{10, 20},
+		{20, 30},
+		{30, 40},
+	}
 
 	// generator
 	C.PopFltGen = func(pop Population, ninds, nbases int, noise float64, args interface{}, frange [][]float64) Population {

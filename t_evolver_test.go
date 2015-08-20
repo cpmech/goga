@@ -172,10 +172,8 @@ func Test_evo03(tst *testing.T) {
 		{-1, 3}, // gene # 1: min and max
 	}
 	C.PopFltGen = PopFltGen
-	if chk.Verbose {
-		C.FnKey = "test_evo03"
-		C.DoPlot = chk.Verbose
-	}
+	C.FnKey = "test_evo03"
+	C.DoPlot = chk.Verbose
 	C.CalcDerived()
 
 	// geometry

@@ -267,7 +267,8 @@ func (o *Island) SelectReprodAndRegen(time int, doregen, doreport, verbose bool)
 	// regeneration
 	homogeneous := averho < o.C.RegTol
 	if homogeneous || doregen {
-		basedOnBest := !homogeneous
+		//basedOnBest := !homogeneous
+		basedOnBest := false
 		method := o.Regenerate(time, basedOnBest)
 		if doreport {
 			io.Ff(&o.Report, "time=%d: regeneration: method=%s\n", time, method)
@@ -292,42 +293,19 @@ func (o *Island) SelectReprodAndRegen(time int, doregen, doreport, verbose bool)
 
 // Regenerate regenerates population with basis on best individual(s)
 func (o *Island) Regenerate(time int, basedOnBest bool) (method string) {
-	if o.C.IntOrd {
-		// TODO: organise this
-		// regeneration of ordered integers based on best using mutation algorithm
-		if basedOnBest || o.C.RegBest {
-			ninds := len(o.Pop)
-			start := ninds - int(o.C.RegPct*float64(ninds))
-			for i := start; i < ninds; i++ {
-				copy(o.Pop[i].Ints, o.Pop[0].Ints)
-				IntOrdMutation(o.Pop[i].Ints, 0, 1, nil)
-			}
-			o.CalcOvs(o.Pop, time)
-			o.CalcDemeritsAndSort(o.Pop)
-			return
+	method = "lims"
+	if basedOnBest || o.C.RegBest {
+		chk.Panic("regeneration based-on-best is disabled")
+		method = "best"
+	}
+	ninds := len(o.Pop)
+	start := ninds - int(o.C.RegPct*float64(ninds))
+	for i := start; i < ninds; i++ {
+		for j := 0; j < o.Pop[i].Nfltgenes; j++ {
+			xmin, xmax := o.C.RangeFlt[j][0], o.C.RangeFlt[j][1]
+			o.Pop[i].SetFloat(j, rnd.Float64(xmin, xmax))
 		}
 	}
-	/*
-		bingo := o.BingoGrid
-		method = "lims"
-		if basedOnBest || o.C.RegBest {
-			method = "best"
-			o.BingoBest.ResetBasedOnRef(time, o.Pop[0], o.C.RegMmin, o.C.RegMmax)
-			bingo = o.BingoBest
-		}
-		ninds := len(o.Pop)
-		start := ninds - int(o.C.RegPct*float64(ninds))
-		for i := start; i < ninds; i++ {
-			if o.C.IntOrd {
-				//rnd.IntShuffle(o.Pop[i].Ints)
-				copy(o.Pop[i].Ints, o.Pop[0].Ints)
-				IntOrdMutation(o.Pop[i].Ints, 0, 1, nil)
-			}
-			for j := 0; j < o.Pop[i].Nfltgenes; j++ {
-				o.Pop[i].SetFloat(j, bingo.DrawFloat(i, j, ninds))
-			}
-		}
-	*/
 	o.CalcOvs(o.Pop, time)
 	o.CalcDemeritsAndSort(o.Pop)
 	return
