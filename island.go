@@ -184,7 +184,7 @@ func (o *Island) CalcDemeritsAndSort(pop Population) {
 // SelectReprodAndRegen performs the selection, reproduction and regeneration processes
 // It also peforms the output to files.
 //  Note: this function considers a SORTED population already
-func (o *Island) SelectReprodAndRegen(time int, doregen, doreport, verbose bool) {
+func (o *Island) SelectReprodAndRegen(time int, doreport, verbose bool) {
 
 	// fitness
 	ninds := len(o.Pop)
@@ -257,7 +257,7 @@ func (o *Island) SelectReprodAndRegen(time int, doregen, doreport, verbose bool)
 	if o.Pop[0].Nfltgenes > 0 {
 		minrho, averho, maxrho, devrho = o.FltStat()
 		homogeneous = averho < o.C.RegTol
-		if homogeneous || doregen {
+		if homogeneous {
 			o.Regenerate(time)
 			if doreport {
 				io.Ff(&o.Report, "time=%d: regeneration\n", time)

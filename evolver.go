@@ -66,11 +66,10 @@ func (o *Evolver) Run() {
 			for i := 0; i < nislands; i++ {
 				go func(isl *Island) {
 					for time := t; time < tmig; time++ {
-						regen := o.calc_regen(time)
 						report := o.calc_report(time)
-						isl.SelectReprodAndRegen(time, regen, report, (o.C.Verbose && isl.Id == 0))
+						isl.SelectReprodAndRegen(time, report, (o.C.Verbose && isl.Id == 0))
 						if o.C.Verbose && isl.Id == 0 {
-							o.print_time(time, regen, report)
+							o.print_time(time, report)
 						}
 					}
 					done <- 1
@@ -82,11 +81,10 @@ func (o *Evolver) Run() {
 		} else {
 			for _, isl := range o.Islands {
 				for time := t; time < tmig; time++ {
-					regen := o.calc_regen(time)
 					report := o.calc_report(time)
-					isl.SelectReprodAndRegen(time, regen, report, (o.C.Verbose && isl.Id == 0))
+					isl.SelectReprodAndRegen(time, report, (o.C.Verbose && isl.Id == 0))
 					if o.C.Verbose && isl.Id == 0 {
-						o.print_time(time, regen, report)
+						o.print_time(time, report)
 					}
 				}
 			}
@@ -180,13 +178,6 @@ func (o *Evolver) FindBestFromAll() {
 	}
 }
 
-func (o Evolver) calc_regen(t int) bool {
-	if t == o.C.RegIni {
-		return true
-	}
-	return t%o.C.Dtreg == 0
-}
-
 func (o Evolver) calc_report(t int) bool {
 	return t%o.C.Dtout == 0
 }
@@ -200,12 +191,8 @@ func (o Evolver) print_legend() {
 	io.Pfmag("  . -- automatic regeneration time to improve diversity\n")
 }
 
-func (o Evolver) print_time(time int, regen, report bool) {
+func (o Evolver) print_time(time int, report bool) {
 	io.Pf(" ")
-	if regen {
-		io.Pf("%v", time)
-		return
-	}
 	if report {
 		io.Pfblue("%v", time)
 		return

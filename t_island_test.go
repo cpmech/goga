@@ -113,13 +113,13 @@ func Test_island01(tst *testing.T) {
 	io.Pforan("maxrho = %v\n", maxrho)
 	io.Pforan("devrho = %v\n", devrho)
 
-	isl.SelectReprodAndRegen(0, false, false, false)
+	isl.SelectReprodAndRegen(0, false, false)
 	io.Pf("\n%v\n", isl.Pop.Output(nil, false))
 
-	isl.SelectReprodAndRegen(1, false, false, false)
+	isl.SelectReprodAndRegen(1, false, false)
 	io.Pforan("%v\n", isl.Pop.Output(nil, false))
 
-	isl.SelectReprodAndRegen(2, false, false, false)
+	isl.SelectReprodAndRegen(2, false, false)
 	io.Pf("%v\n", isl.Pop.Output(nil, false))
 
 	// TODO: more tests required
