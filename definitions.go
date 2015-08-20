@@ -9,8 +9,9 @@ import "bytes"
 // Func_t defines a type for a generic function to be used as a gene value
 type Func_t func(ind *Individual) string
 
-// Objectives_t defines the template for the objective functions and constraints
-type Objectives_t func(ind *Individual, idIsland, time int, report *bytes.Buffer) (ovas, oors []float64)
+// Objectives_t defines the template for the objective functions and constraints.
+// ind is set with ovas and oors
+type Objectives_t func(ind *Individual, idIsland, time int, report *bytes.Buffer)
 
 // PopIntGen_t defines function to generate population of integers
 type PopIntGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, irange [][]int) Population
