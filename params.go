@@ -68,7 +68,7 @@ type ConfParams struct {
 	Eps1     float64 // tolerance # 1; e.g. for strategy # 2 in reliability analyses
 
 	// objective function
-	OvaOor ObjFunc_t // compute objective value (ova) and out-of-range value (oor)
+	OvaOor Objectives_t // compute objective value (ova) and out-of-range value (oor)
 
 	// crossover
 	CxNcuts   map[string]int         // crossover number of cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag

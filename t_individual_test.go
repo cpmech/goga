@@ -12,10 +12,12 @@ import (
 	"github.com/cpmech/gosl/rnd"
 )
 
-func get_individual(id, nbases int) *Individual {
+func get_individual(id, nbases int) (ind *Individual) {
+	nova := 2
+	noor := 3
 	switch id {
 	case 0:
-		return NewIndividual(nbases,
+		ind = NewIndividual(nova, noor, nbases,
 			[]int{1, 20, 300},
 			[]float64{4.4, 5.5, 666},
 			[]string{"abc", "b", "c"},
@@ -27,8 +29,13 @@ func get_individual(id, nbases int) *Individual {
 				func(g *Individual) string { return "f2" },
 			},
 		)
+		ind.Ovas[0] = 123
+		ind.Ovas[1] = 345
+		ind.Oors[0] = 10
+		ind.Oors[1] = 20
+		ind.Oors[2] = 30
 	case 1:
-		return NewIndividual(nbases,
+		ind = NewIndividual(nova, noor, nbases,
 			[]int{-1, -20, -300},
 			[]float64{104.4, 105.5, 6.66},
 			[]string{"X", "Y", "Z"},
@@ -40,20 +47,30 @@ func get_individual(id, nbases int) *Individual {
 				func(g *Individual) string { return "g2" },
 			},
 		)
+		ind.Ovas[0] = 200
+		ind.Ovas[1] = 100
+		ind.Oors[0] = 15
+		ind.Oors[1] = 25
+		ind.Oors[2] = 35
 	}
-	return nil
+	return
 }
 
 func Test_ind01(tst *testing.T) {
 
 	//verbose()
-	chk.PrintTitle("ind01")
+	chk.PrintTitle("ind01. representation and copying")
 
 	rnd.Init(0)
 
 	nbases := 3
 	A := get_individual(0, nbases)
 	B := A.GetCopy()
+	chk.Scalar(tst, "ova0", 1e-17, B.Ovas[0], 123)
+	chk.Scalar(tst, "ova1", 1e-17, B.Ovas[1], 345)
+	chk.Scalar(tst, "oor0", 1e-17, B.Oors[0], 10)
+	chk.Scalar(tst, "oor1", 1e-17, B.Oors[1], 20)
+	chk.Scalar(tst, "oor2", 1e-17, B.Oors[2], 30)
 
 	fmts := [][]string{{" %d"}, {" %.1f"}, {" %q"}, {" %x"}, {" %q"}, {" %q"}}
 	oA := A.Output(fmts, false)
@@ -73,7 +90,7 @@ func Test_ind01(tst *testing.T) {
 func Test_ind02(tst *testing.T) {
 
 	//verbose()
-	chk.PrintTitle("ind02")
+	chk.PrintTitle("ind02. copy into")
 
 	rnd.Init(0)
 
@@ -116,8 +133,112 @@ func Test_ind02(tst *testing.T) {
 	io.Pf("\n")
 
 	x := get_individual(0, nbases)
+	x.Ovas = []float64{0, 0}
+	x.Oors = []float64{0, 0, 0}
 	io.Pfblue2("x = %v\n", x.Output(fmts, false))
 	B.CopyInto(x)
+
+	chk.Scalar(tst, "ova0", 1e-17, x.Ovas[0], 200)
+	chk.Scalar(tst, "ova1", 1e-17, x.Ovas[1], 100)
+	chk.Scalar(tst, "oor0", 1e-17, x.Oors[0], 15)
+	chk.Scalar(tst, "oor1", 1e-17, x.Oors[1], 25)
+	chk.Scalar(tst, "oor2", 1e-17, x.Oors[2], 35)
+
 	io.Pforan("x = %v\n", x.Output(fmts, false))
 	chk.String(tst, x.Output(fmts, false), B.Output(fmts, false))
+}
+
+func Test_ind03(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("ind03. comparing")
+
+	nbases := 1
+	A := get_individual(0, nbases)
+	B := get_individual(1, nbases)
+	A_dominates, B_dominates := A.Compare(B)
+	io.Pfblue2("A: ovas = %v\n", A.Ovas)
+	io.Pfblue2("A: oors = %v\n", A.Oors)
+	io.Pfcyan("B: ovas = %v\n", B.Ovas)
+	io.Pfcyan("B: oors = %v\n", B.Oors)
+	io.Pforan("A_dominates = %v\n", A_dominates)
+	io.Pforan("B_dominates = %v\n", B_dominates)
+	if !A_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+	if B_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+
+	A.Oors = []float64{0, 0, 0}
+	B.Oors = []float64{0, 0, 0}
+	A_dominates, B_dominates = A.Compare(B)
+	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
+	io.Pfblue2("A: oors = %v\n", A.Oors)
+	io.Pfcyan("B: ovas = %v\n", B.Ovas)
+	io.Pfcyan("B: oors = %v\n", B.Oors)
+	io.Pforan("A_dominates = %v\n", A_dominates)
+	io.Pforan("B_dominates = %v\n", B_dominates)
+	if A_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+	if B_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+
+	A.Ovas = []float64{200, 100}
+	A_dominates, B_dominates = A.Compare(B)
+	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
+	io.Pfblue2("A: oors = %v\n", A.Oors)
+	io.Pfcyan("B: ovas = %v\n", B.Ovas)
+	io.Pfcyan("B: oors = %v\n", B.Oors)
+	io.Pforan("A_dominates = %v\n", A_dominates)
+	io.Pforan("B_dominates = %v\n", B_dominates)
+	if A_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+	if B_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+
+	A.Ovas = []float64{200, 99}
+	A_dominates, B_dominates = A.Compare(B)
+	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
+	io.Pfblue2("A: oors = %v\n", A.Oors)
+	io.Pfcyan("B: ovas = %v\n", B.Ovas)
+	io.Pfcyan("B: oors = %v\n", B.Oors)
+	io.Pforan("A_dominates = %v\n", A_dominates)
+	io.Pforan("B_dominates = %v\n", B_dominates)
+	if !A_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+	if B_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+
+	A.Ovas = []float64{200, 100}
+	B.Ovas = []float64{199, 100}
+	A_dominates, B_dominates = A.Compare(B)
+	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
+	io.Pfblue2("A: oors = %v\n", A.Oors)
+	io.Pfcyan("B: ovas = %v\n", B.Ovas)
+	io.Pfcyan("B: oors = %v\n", B.Oors)
+	io.Pforan("A_dominates = %v\n", A_dominates)
+	io.Pforan("B_dominates = %v\n", B_dominates)
+	if A_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+	if !B_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
 }

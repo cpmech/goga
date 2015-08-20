@@ -11,18 +11,15 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-// Func_t defines a type for a generic function to be used as a gene value
-type Func_t func(ind *Individual) string
-
 // Individual implements one individual in a population
 type Individual struct {
 
 	// data
-	Ova       float64 // objective value
-	Oor       float64 // out-of-range: sum of positive distances from constraints
-	Demerit   float64 // quantity for comparing individuals. 0=good 1=bad 2=worse(oor) 3=worst(oor)
-	Nfltgenes int     // number of floats == number of float64 genes
-	Nbases    int     // number of bases to split Floats
+	Ovas      []float64 // objective values
+	Oors      []float64 // out-of-range values: sum of positive distances from constraints
+	Demerit   float64   // quantity for comparing individuals. 0=good 1=bad 2=worse(oor) 3=worst(oor)
+	Nfltgenes int       // number of floats == number of float64 genes
+	Nbases    int       // number of bases to split Floats
 
 	// chromosome
 	Ints    []int     // integers
@@ -40,8 +37,10 @@ type Individual struct {
 //  Notes:
 //   1) the slices in 'genes' can all be combined to define genes with mixed data;
 //   2) the slices can also be nil, except for one of them.
-func NewIndividual(nbases int, slices ...interface{}) (o *Individual) {
+func NewIndividual(nova, noor, nbases int, slices ...interface{}) (o *Individual) {
 	o = new(Individual)
+	o.Ovas = make([]float64, nova)
+	o.Oors = make([]float64, noor)
 	for _, slice := range slices {
 		switch s := slice.(type) {
 		case []int:
@@ -85,8 +84,10 @@ func NewIndividual(nbases int, slices ...interface{}) (o *Individual) {
 func (o Individual) GetCopy() (x *Individual) {
 
 	x = new(Individual)
-	x.Ova = o.Ova
-	x.Oor = o.Oor
+	x.Ovas = make([]float64, len(o.Ovas))
+	x.Oors = make([]float64, len(o.Oors))
+	copy(x.Ovas, o.Ovas)
+	copy(x.Oors, o.Oors)
 	x.Demerit = o.Demerit
 	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
@@ -129,8 +130,8 @@ func (o Individual) GetCopy() (x *Individual) {
 // CopyInto copies this individual's data into another individual
 func (o Individual) CopyInto(x *Individual) {
 
-	x.Ova = o.Ova
-	x.Oor = o.Oor
+	copy(x.Ovas, o.Ovas)
+	copy(x.Oors, o.Oors)
 	x.Demerit = o.Demerit
 	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
@@ -164,38 +165,33 @@ func (o Individual) CopyInto(x *Individual) {
 }
 
 // Compare compares this individual 'A' with another one 'B'
-func (A Individual) Compare(B *Individual) (A_is_better bool) {
-
-	// A is infeasible
-	if A.Oor > 0 {
-		// B is also infeasible; but A is 'less infeasible' than B
-		if B.Oor > 0 && A.Oor < B.Oor {
-			return true // A is better
+func (A Individual) Compare(B *Individual) (A_dominates, B_dominates bool) {
+	var A_is_unfeasible, B_is_unfeasible bool
+	for i := 0; i < len(A.Oors); i++ {
+		if A.Oors[i] > 0 {
+			A_is_unfeasible = true
 		}
-		return false // B is better
+		if B.Oors[i] > 0 {
+			B_is_unfeasible = true
+		}
 	}
-
-	// A is feasible and B is infeasible
-	if B.Oor > 0 {
-		return true // A is better
+	if A_is_unfeasible {
+		if B_is_unfeasible {
+			A_dominates, B_dominates = utl.DblsParetoMin(A.Oors, B.Oors)
+			return
+		}
+		B_dominates = true
+		return
 	}
-
-	// A and B are both feasible
-	if A.Ova < B.Ova {
-		return true // A is better
+	if B_is_unfeasible {
+		A_dominates = true
+		return
 	}
-	return false // B is better
+	A_dominates, B_dominates = utl.DblsParetoMin(A.Ovas, B.Ovas)
+	return
 }
 
 // genetic algorithm routines //////////////////////////////////////////////////////////////////////
-
-// crossover functions
-type CxIntFunc_t func(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []int)
-type CxFltFunc_t func(a, b, A, B []float64, ncuts int, cuts []int, pc float64) (ends []int)
-type CxStrFunc_t func(a, b, A, B []string, ncuts int, cuts []int, pc float64) (ends []int)
-type CxKeyFunc_t func(a, b, A, B []byte, ncuts int, cuts []int, pc float64) (ends []int)
-type CxBytFunc_t func(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64) (ends []int)
-type CxFunFunc_t func(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64) (ends []int)
 
 // Crossover performs the crossover between chromosomes of two individuals A and B
 // resulting in the chromosomes of other two individuals a and b
@@ -211,12 +207,7 @@ type CxFunFunc_t func(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64) (e
 //  Output:
 //   a and b -- offspring
 func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64,
-	cxint CxIntFunc_t,
-	cxflt CxFltFunc_t,
-	cxstr CxStrFunc_t,
-	cxkey CxKeyFunc_t,
-	cxbyt CxBytFunc_t,
-	cxfun CxFunFunc_t) {
+	cxint CxIntFunc_t, cxflt CxFltFunc_t, cxstr CxStrFunc_t, cxkey CxKeyFunc_t, cxbyt CxBytFunc_t, cxfun CxFunFunc_t) {
 
 	// default values
 	pc := func(t string) float64 {
@@ -267,14 +258,6 @@ func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]i
 	}
 }
 
-// mutation functions
-type MtIntFunc_t func(a []int, nchanges int, pm float64, extra interface{})
-type MtFltFunc_t func(a []float64, nchanges int, pm float64, extra interface{})
-type MtStrFunc_t func(a []string, nchanges int, pm float64, extra interface{})
-type MtKeyFunc_t func(a []byte, nchanges int, pm float64, extra interface{})
-type MtBytFunc_t func(a [][]byte, nchanges int, pm float64, extra interface{})
-type MtFunFunc_t func(a []Func_t, nchanges int, pm float64, extra interface{})
-
 // Mutation performs the mutation operation in the chromosomes of an individual
 //  Input:
 //   A        -- individual
@@ -285,12 +268,7 @@ type MtFunFunc_t func(a []Func_t, nchanges int, pm float64, extra interface{})
 //   mutfucns -- mutation functions. use nil for default ones
 //  Output: modified individual
 func Mutation(A *Individual, nchanges map[string]int, probs map[string]float64, extra map[string]interface{},
-	mtint MtIntFunc_t,
-	mtflt MtFltFunc_t,
-	mtstr MtStrFunc_t,
-	mtkey MtKeyFunc_t,
-	mtbyt MtBytFunc_t,
-	mtfun MtFunFunc_t) {
+	mtint MtIntFunc_t, mtflt MtFltFunc_t, mtstr MtStrFunc_t, mtkey MtKeyFunc_t, mtbyt MtBytFunc_t, mtfun MtFunFunc_t) {
 
 	// default values
 	nc := func(t string) int {

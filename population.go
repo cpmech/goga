@@ -17,15 +17,6 @@ import (
 // Population holds all individuals
 type Population []*Individual
 
-// generation functions
-type PopIntGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, irange [][]int) Population     // generate population of integers
-type PopOrdGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, nints int) Population          // generate population of ordered integers
-type PopFltGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, frange [][]float64) Population // generate population of float point numbers
-type PopStrGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, pool [][]string) Population    // generate population of strings
-type PopKeyGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, pool [][]byte) Population      // generate population of keys (bytes)
-type PopBytGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, pool [][]string) Population    // generate population of bytes
-type PopFunGen_t func(pop Population, ninds, nbases int, noise float64, args interface{}, pool [][]Func_t) Population    // generate population of functions
-
 // PopFltGen generates a population of individuals with float point numbers
 // Notes: (1) ngenes = len(frange)
 //        (2) this function can be used with existent population
@@ -186,34 +177,56 @@ func (o Population) Output(fmts [][]string, showBases bool) (buf *bytes.Buffer) 
 	}
 
 	// compute sizes of header items
-	szova, szoor, szdem := 0, 0, 0
+	nova := len(o[0].Ovas)
+	noor := len(o[0].Oors)
+	szova, szoor, szdem := make([]int, nova), make([]int, noor), 0
 	for _, ind := range o {
-		szova = utl.Imax(szova, len(io.Sf("%g", ind.Ova)))
-		szoor = utl.Imax(szoor, len(io.Sf("%g", ind.Oor)))
+		for i := 0; i < nova; i++ {
+			szova[i] = utl.Imax(szova[i], len(io.Sf("%g", ind.Ovas[i])))
+		}
+		for i := 0; i < noor; i++ {
+			szoor[i] = utl.Imax(szoor[i], len(io.Sf("%g", ind.Oors[i])))
+		}
 		szdem = utl.Imax(szdem, len(io.Sf("%g", ind.Demerit)))
 	}
-	szova = utl.Imax(szova, 3) // 3 ==> len("Ova")
-	szoor = utl.Imax(szoor, 3) // 3 ==> len("Oor")
+	for i := 0; i < nova; i++ {
+		szova[i] = utl.Imax(szova[i], 5) // 5 ==> len("Ova##")
+	}
+	for i := 0; i < noor; i++ {
+		szoor[i] = utl.Imax(szoor[i], 5) // 5 ==> len("Oor####")
+	}
 	szdem = utl.Imax(szdem, 7) // 7 ==> len("Demerit")
 
 	// print individuals
-	fmtova := io.Sf("%%%d", szova+1)
-	fmtoor := io.Sf("%%%d", szoor+1)
+	fmtova := make([]string, nova)
+	fmtoor := make([]string, noor)
+	for i := 0; i < nova; i++ {
+		fmtova[i] = io.Sf("%%%d", szova[i]+1)
+	}
+	for i := 0; i < noor; i++ {
+		fmtoor[i] = io.Sf("%%%d", szoor[i]+1)
+	}
 	fmtdem := io.Sf("%%%d", szdem+1)
 	line, sza, szb := "", 0, 0
-	for i, ind := range o {
-		stra := io.Sf(fmtova+"g", ind.Ova)
-		if ind.Oor > 0 {
-			stra = io.Sf(fmtova+"s", "n/a")
-			stra += io.Sf(fmtoor+"g", ind.Oor)
-		} else {
-			stra += io.Sf(fmtoor+"s", "n/a")
+	first := true
+	for _, ind := range o {
+		stra := ""
+		for j := 0; j < nova; j++ {
+			stra += io.Sf(fmtova[j]+"g", ind.Ovas[j])
+		}
+		for j := 0; j < noor; j++ {
+			if ind.Oors[j] > 0 {
+				stra += io.Sf(fmtoor[j]+"g", ind.Oors[j])
+			} else {
+				stra += io.Sf(fmtoor[j]+"s", "n/a")
+			}
 		}
 		stra += io.Sf(fmtdem+"g", ind.Demerit) + " "
 		strb := ind.Output(fmts, showBases)
 		line += stra + strb + "\n"
-		if i == 0 {
+		if first {
 			sza, szb = len(stra), len(strb)
+			first = false
 		}
 	}
 
@@ -222,8 +235,12 @@ func (o Population) Output(fmts [][]string, showBases bool) (buf *bytes.Buffer) 
 	n := sza + szb
 	buf = new(bytes.Buffer)
 	io.Ff(buf, io.StrThickLine(n))
-	io.Ff(buf, fmtova+"s", "Ova")
-	io.Ff(buf, fmtoor+"s", "Oor")
+	for i := 0; i < nova; i++ {
+		io.Ff(buf, fmtova[i]+"s", io.Sf("Ova%d", i))
+	}
+	for i := 0; i < noor; i++ {
+		io.Ff(buf, fmtoor[i]+"s", io.Sf("Oor%d", i))
+	}
 	io.Ff(buf, fmtdem+"s", "Demerit")
 	io.Ff(buf, fmtgenes, "Genes")
 	io.Ff(buf, io.StrThinLine(n))
