@@ -32,10 +32,10 @@ func Test_evo01(tst *testing.T) {
 	C.Nisl = 1
 	C.Ninds = 20
 	C.RegTol = 0
-	C.GAtype = "crowd"
+	//C.GAtype = "crowd"
 	C.CrowdSize = 2
-	C.Tf = 2
-	C.Verbose = false
+	C.Tf = 100
+	C.Verbose = true
 	C.CalcDerived()
 
 	// mutation function

@@ -9,6 +9,7 @@ import (
 	"math"
 
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/graph"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
@@ -49,8 +50,10 @@ type Island struct {
 	larbases []float64   // [ngenes*nbases] largest bases; max(abs(bases))
 
 	// for crowding
-	indices []int   // [ninds]
-	crowds  [][]int // [ninds/crowd_size][crowd_size]
+	indices []int       // [ninds]
+	crowds  [][]int     // [ninds/crowd_size][crowd_size]
+	dist    [][]float64 // [crowd_size][cowd_size]
+	pairs   [][]int     // [crowd_size][2]
 }
 
 // NewIsland creates a new island
@@ -138,6 +141,8 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 	// for crowding
 	o.indices = utl.IntRange(o.C.Ninds)
 	o.crowds = utl.IntsAlloc(o.C.Ninds/o.C.CrowdSize, o.C.CrowdSize)
+	o.dist = la.MatAlloc(o.C.CrowdSize, o.C.CrowdSize)
+	o.pairs = utl.IntsAlloc(o.C.CrowdSize, 2)
 	return
 }
 
@@ -216,14 +221,16 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 
 // RunCrowding runs the evolutionary process with niching via crowding and tournament selection
 func (o *Island) RunCrowding(time int, doreport, verbose bool) {
+
+	// selection, reproduction and tournament
+	//io.Pforan("%v\n", o.Pop.Output(nil, true))
 	rnd.IntGetGroups(o.crowds, o.indices)
-	io.Pforan("\ncrowds = %v\n", o.crowds)
-	//dist := la.MatAlloc(o.C.CrowdSize, o.C.CrowdSize)
+	//io.Pforan("\ncrowds = %v\n", o.crowds)
 	//parents := make([]*Individual, o.C.CrowdSize)
 	//children := make([]*Individual, o.C.CrowdSize)
 	for _, crowd := range o.crowds {
 		for i := 1; i < o.C.CrowdSize; i++ {
-			io.Pforan("%d with %d\n", crowd[i-1], crowd[i])
+			//io.Pforan("%d with %d\n", crowd[i-1], crowd[i])
 			A, B := o.Pop[crowd[i-1]], o.Pop[crowd[i]]
 			a, b := o.BkpPop[crowd[i-1]], o.BkpPop[crowd[i]]
 			IndCrossover(a, b, A, B, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
@@ -233,13 +240,41 @@ func (o *Island) RunCrowding(time int, doreport, verbose bool) {
 		for i := 0; i < o.C.CrowdSize; i++ {
 			A := o.Pop[crowd[i]]
 			for j := 0; j < o.C.CrowdSize; j++ {
-				a := o.BkpPop[crowd[i]]
-				io.Pfcyan("A=%v a=%v\n", A.Ints, a.Ints)
-				//dist[i][j] = A.Distance(a)
+				a := o.BkpPop[crowd[j]]
+				//io.Pfcyan("A=%v a=%v\n", A.Ints, a.Ints)
+				o.dist[i][j] = IndDistance(A, a)
 			}
 		}
-		io.Pf("\n")
+		graph.Match(o.pairs, o.dist)
+		//io.Pfblue2("dist = %v\n", dist)
+		//io.Pforan("pairs = %v\n", pairs)
+		//io.Pf("\n")
+		for i := 0; i < o.C.CrowdSize; i++ {
+			A := o.Pop[o.pairs[i][0]]
+			a := o.BkpPop[o.pairs[i][1]]
+			if IndTournament(A, a) {
+				A.CopyInto(a) // parent wins
+			}
+		}
+		return
 	}
+
+	// compute objective values, demerits, and sort population
+	o.CalcOvs(o.BkpPop, time+1) // +1 => this is an updated generation
+	o.CalcDemeritsAndSort(o.BkpPop)
+
+	// elitism
+	if o.C.Elite {
+		iold, inew := o.Pop[0], o.BkpPop[o.C.Ninds-1]
+		old_dominates, _ := IndCompare(iold, inew)
+		if old_dominates {
+			iold.CopyInto(inew)
+			o.CalcDemeritsAndSort(o.BkpPop)
+		}
+	}
+
+	// swap populations (Pop will always point to current one)
+	o.Pop, o.BkpPop = o.BkpPop, o.Pop
 }
 
 // RunStandard performs the selection, reproduction and regeneration processes

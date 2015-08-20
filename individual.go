@@ -5,6 +5,8 @@
 package goga
 
 import (
+	"math"
+
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
@@ -191,9 +193,35 @@ func IndCompare(A, B *Individual) (A_dominates, B_dominates bool) {
 	return
 }
 
+// IndDistance computes a distance measure from individual 'A' to another individual 'B'
+func IndDistance(A, B *Individual) (dist float64) {
+	nints := len(A.Ints)
+	for i := 0; i < nints; i++ {
+		dist += math.Abs(float64(A.Ints[i] - B.Ints[i]))
+	}
+	if nints > 0 {
+		dist /= float64(nints)
+	}
+	return
+}
+
+// IndTournament executes a tournament between A and B
+func IndTournament(A, B *Individual) (A_wins bool) {
+	A_dominates, B_dominates := IndCompare(A, B)
+	if A_dominates {
+		A_wins = true
+		return
+	}
+	if B_dominates {
+		return
+	}
+	A_wins = rnd.FlipCoin(0.5)
+	return
+}
+
 // genetic algorithm routines //////////////////////////////////////////////////////////////////////
 
-// Crossover performs the crossover between chromosomes of two individuals A and B
+// IndCrossover performs the crossover between chromosomes of two individuals A and B
 // resulting in the chromosomes of other two individuals a and b
 //  Input:
 //   A and B -- parents
@@ -258,7 +286,7 @@ func IndCrossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string]
 	}
 }
 
-// Mutation performs the mutation operation in the chromosomes of an individual
+// IndMutation performs the mutation operation in the chromosomes of an individual
 //  Input:
 //   A        -- individual
 //   nchanges -- number of changes. keys are: 'int', 'flt', 'str', 'key', 'byt', 'fun'
