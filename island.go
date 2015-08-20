@@ -6,6 +6,7 @@ package goga
 
 import (
 	"bytes"
+	"math"
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
@@ -42,9 +43,9 @@ type Island struct {
 	A, B    []int       // indices of selected parents
 
 	// for statistics
-	maxabsgene []float64   // [ngenes] max absolute values of genes
-	allbases   [][]float64 // [ngenes*nbases][ninds] all bases
-	devbases   []float64   // [ngenes*nbases] deviations of bases
+	allbases [][]float64 // [ngenes*nbases][ninds] all bases
+	devbases []float64   // [ngenes*nbases] deviations of bases
+	larbases []float64   // [ngenes*nbases] largest bases; max(abs(bases))
 }
 
 // NewIsland creates a new island
@@ -119,6 +120,14 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	for i := 0; i < o.Noor; i++ {
 		o.OutOors[i][0] = o.Pop[0].Oors[i]
 	}
+
+	// stat
+	if o.Pop[0].Nfltgenes > 0 {
+		size := o.Pop[0].Nfltgenes * o.Pop[0].Nbases
+		o.allbases = la.MatAlloc(size, o.C.Ninds)
+		o.devbases = make([]float64, size)
+		o.larbases = make([]float64, size)
+	}
 	return
 }
 
@@ -153,10 +162,7 @@ func (o *Island) CalcDemeritsAndSort(pop Population) {
 	for i, ind := range pop {
 		ind.Demerit = 0
 		for j := 0; j < o.Nova; j++ {
-			//shift = float64(2 * j)
-			//ind.Demerit += shift + o.sovas[j][i]
 			ind.Demerit += o.sovas[j][i]
-			//io.Pf("ova=%10.4f oor=%10.4f shift=%v demerit=%v\n", ind.Ovas[j], ind.Oors[j], shift, ind.Demerit)
 		}
 	}
 	shift := 2.0
@@ -243,20 +249,20 @@ func (o *Island) SelectReprodAndRegen(time int, doregen, doreport, verbose bool)
 	// swap populations (Pop will always point to current one)
 	o.Pop, o.BkpPop = o.BkpPop, o.Pop
 
-	// statistics
-	minrho, averho, maxrho, devrho := o.Stat()
-
-	// regeneration
-	homogeneous := averho < o.C.RegTol
-	if homogeneous || doregen {
-		//basedOnBest := !homogeneous
-		basedOnBest := false
-		method := o.Regenerate(time, basedOnBest)
-		if doreport {
-			io.Ff(&o.Report, "time=%d: regeneration: method=%s\n", time, method)
-		}
-		if verbose {
-			io.Pfmag(" .")
+	// statistics and regeneration of float-point individuals
+	homogeneous := false
+	minrho, averho, maxrho, devrho := -1.0, -1.0, -1.0, -1.0 // -1 means not used
+	if o.Pop[0].Nfltgenes > 0 {
+		minrho, averho, maxrho, devrho = o.FltStat()
+		homogeneous = averho < o.C.RegTol
+		if homogeneous || doregen {
+			o.Regenerate(time)
+			if doreport {
+				io.Ff(&o.Report, "time=%d: regeneration\n", time)
+			}
+			if verbose {
+				io.Pfmag(" .")
+			}
 		}
 	}
 
@@ -277,12 +283,7 @@ func (o *Island) SelectReprodAndRegen(time int, doregen, doreport, verbose bool)
 }
 
 // Regenerate regenerates population with basis on best individual(s)
-func (o *Island) Regenerate(time int, basedOnBest bool) (method string) {
-	method = "lims"
-	if basedOnBest || o.C.RegBest {
-		chk.Panic("regeneration based-on-best is disabled")
-		method = "best"
-	}
+func (o *Island) Regenerate(time int) {
 	ninds := len(o.Pop)
 	start := ninds - int(o.C.RegPct*float64(ninds))
 	for i := start; i < ninds; i++ {
@@ -296,10 +297,30 @@ func (o *Island) Regenerate(time int, basedOnBest bool) (method string) {
 	return
 }
 
-// Stat computes some statistic information
+// FltStat computes some statistic information with float-point individuals
 //  rho (ρ) is a normalised quantity measuring the deviation of bases of each gene
-//  Note: OoR individuals are excluded
-func (o *Island) Stat() (minrho, averho, maxrho, devrho float64) {
+func (o *Island) FltStat() (minrho, averho, maxrho, devrho float64) {
+	ngenes, nbases := o.Pop[0].Nfltgenes, o.Pop[0].Nbases
+	for k, ind := range o.Pop {
+		for i := 0; i < ngenes; i++ {
+			for j := 0; j < nbases; j++ {
+				x := ind.Floats[i*nbases+j]
+				o.allbases[i*nbases+j][k] = x
+				if k == 0 {
+					o.larbases[i*nbases+j] = math.Abs(x)
+				} else {
+					o.larbases[i*nbases+j] = utl.Max(o.larbases[i*nbases+j], math.Abs(x))
+				}
+			}
+		}
+	}
+	for i := 0; i < ngenes; i++ {
+		for j := 0; j < nbases; j++ {
+			normfactor := 1.0 + o.larbases[i*nbases+j]
+			o.devbases[i*nbases+j] = rnd.StatDev(o.allbases[i*nbases+j], o.C.UseStdDev) / normfactor
+		}
+	}
+	minrho, averho, maxrho, devrho = rnd.StatBasic(o.devbases, o.C.UseStdDev)
 	return
 }
 

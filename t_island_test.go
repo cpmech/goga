@@ -75,9 +75,16 @@ func Test_island01(tst *testing.T) {
 	isl := NewIsland(0, C)
 	io.Pf("%v", isl.Pop.Output(nil, false))
 	io.Pf("best = %v\n", isl.Pop[0].Output(nil, false))
-	chk.Vector(tst, "best", 1e-17, isl.Pop[0].Floats, []float64{13, 23, 33})
+	vals := make([]float64, 3)
+	for i := 0; i < 3; i++ {
+		vals[i] = isl.Pop[0].GetFloat(i)
+	}
+	chk.Vector(tst, "best", 1e-14, vals, []float64{13, 23, 33})
 	for i, ind := range isl.Pop {
-		chk.Vector(tst, io.Sf("ind%d", i), 1e-17, ind.Floats, sorted_genes[i])
+		for j := 0; j < 3; j++ {
+			vals[j] = ind.GetFloat(j)
+		}
+		chk.Vector(tst, io.Sf("ind%d", i), 1e-14, vals, sorted_genes[i])
 	}
 	/*
 		io.Pforan("sovas0 = %.4f\n", isl.sovas[0])
@@ -87,6 +94,23 @@ func Test_island01(tst *testing.T) {
 		io.Pfcyan("soors2 = %.4f\n", isl.soors[2])
 	*/
 
+	// stat
+	minrho, averho, maxrho, devrho := isl.FltStat()
+	io.Pforan("allbases[0] = %.6f\n", isl.allbases[0])
+	io.Pforan("allbases[1] = %.6f\n", isl.allbases[1])
+	io.Pforan("allbases[2] = %.6f\n", isl.allbases[2])
+	if C.Nbases > 1 {
+		io.Pforan("allbases[3] = %.6f\n", isl.allbases[3])
+		io.Pforan("allbases[4] = %.6f\n", isl.allbases[4])
+		io.Pforan("allbases[5] = %.6f\n", isl.allbases[5])
+	}
+	io.Pfcyan("devbases[0] = %.6f\n", isl.devbases[0])
+	io.Pfcyan("devbases[1] = %.6f\n", isl.devbases[1])
+	io.Pfcyan("devbases[2] = %.6f\n", isl.devbases[2])
+	io.Pforan("minrho = %v\n", minrho)
+	io.Pforan("averho = %v\n", averho)
+	io.Pforan("maxrho = %v\n", maxrho)
+	io.Pforan("devrho = %v\n", devrho)
 	return
 
 	isl.SelectReprodAndRegen(0, false, false, false)
