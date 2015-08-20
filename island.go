@@ -25,11 +25,12 @@ type Island struct {
 	BkpPop Population  // backup population
 
 	// results
-	Report  bytes.Buffer // buffer to report results
-	Nova    int          // number of ovas
-	Noor    int          // number of oors
-	OutOvas [][]float64  // [nova][ntimes] best objective values collected from multiple calls to SelectReprodAndRegen
-	OutOors [][]float64  // [noor][ntimes] best out-of-range values collected from multiple calls to SelectReprodAndRegen
+	Report   bytes.Buffer // buffer to report results
+	Nova     int          // number of ovas
+	Noor     int          // number of oors
+	OutOvas  [][]float64  // [nova][ntimes] best objective values collected from multiple calls to SelectReprodAndRegen
+	OutOors  [][]float64  // [noor][ntimes] best out-of-range values collected from multiple calls to SelectReprodAndRegen
+	OutTimes []float64    // [ntimes] times corresponding to OutOvas and OutOors
 
 	// auxiliary internal data
 	ovas    [][]float64 // all ova values
@@ -49,7 +50,7 @@ type Island struct {
 }
 
 // NewIsland creates a new island
-func NewIsland(id int, C *ConfParams) (o *Island) {
+func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 
 	// check
 	if C.Ninds < 2 || (C.Ninds%2 != 0) {
@@ -66,25 +67,25 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 
 	// create population
 	if o.C.PopIntGen != nil {
-		o.Pop = o.C.PopIntGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeInt)
+		o.Pop = o.C.PopIntGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeInt)
 	}
 	if o.C.PopOrdGen != nil {
-		o.Pop = o.C.PopOrdGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.OrdNints)
+		o.Pop = o.C.PopOrdGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.OrdNints)
 	}
 	if o.C.PopFltGen != nil {
-		o.Pop = o.C.PopFltGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeFlt)
+		o.Pop = o.C.PopFltGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeFlt)
 	}
 	if o.C.PopStrGen != nil {
-		o.Pop = o.C.PopStrGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolStr)
+		o.Pop = o.C.PopStrGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolStr)
 	}
 	if o.C.PopKeyGen != nil {
-		o.Pop = o.C.PopKeyGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolKey)
+		o.Pop = o.C.PopKeyGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolKey)
 	}
 	if o.C.PopBytGen != nil {
-		o.Pop = o.C.PopBytGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolByt)
+		o.Pop = o.C.PopBytGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolByt)
 	}
 	if o.C.PopFunGen != nil {
-		o.Pop = o.C.PopFunGen(o.Pop, o.C.Ninds, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolFun)
+		o.Pop = o.C.PopFunGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolFun)
 	}
 	if len(o.Pop) != o.C.Ninds {
 		chk.Panic("generation of population failed:\nat least one generator function in Params must be non nil")
@@ -114,6 +115,7 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	// results
 	o.OutOvas = la.MatAlloc(o.Nova, o.C.Tf)
 	o.OutOors = la.MatAlloc(o.Noor, o.C.Tf)
+	o.OutTimes = make([]float64, o.C.Tf)
 	for i := 0; i < o.Nova; i++ {
 		o.OutOvas[i][0] = o.Pop[0].Ovas[i]
 	}
@@ -279,6 +281,7 @@ func (o *Island) SelectReprodAndRegen(time int, doregen, doreport, verbose bool)
 	for i := 0; i < o.Noor; i++ {
 		o.OutOors[i][time] = o.Pop[0].Oors[i]
 	}
+	o.OutTimes[time] = float64(time)
 	return
 }
 

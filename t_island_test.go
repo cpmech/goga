@@ -15,7 +15,7 @@ import (
 
 func Test_island01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("island01")
 
 	genes := [][]float64{
@@ -39,9 +39,7 @@ func Test_island01(tst *testing.T) {
 	}
 
 	// generator
-	nova := 2
-	noor := 3
-	C.PopFltGen = func(pop Population, ninds, nbases int, noise float64, args interface{}, frange [][]float64) Population {
+	C.PopFltGen = func(pop Population, ninds, nova, noor, nbases int, noise float64, args interface{}, frange [][]float64) Population {
 		o := make([]*Individual, ninds)
 		for i := 0; i < ninds; i++ {
 			o[i] = NewIndividual(nova, noor, nbases, genes[i])
@@ -72,8 +70,11 @@ func Test_island01(tst *testing.T) {
 	}
 
 	// island
-	isl := NewIsland(0, C)
-	io.Pf("%v", isl.Pop.Output(nil, false))
+	id := 0
+	nova := 2
+	noor := 3
+	isl := NewIsland(id, nova, noor, C)
+	io.Pf("\n%v", isl.Pop.Output(nil, false))
 	io.Pf("best = %v\n", isl.Pop[0].Output(nil, false))
 	vals := make([]float64, 3)
 	for i := 0; i < 3; i++ {
@@ -96,7 +97,7 @@ func Test_island01(tst *testing.T) {
 
 	// stat
 	minrho, averho, maxrho, devrho := isl.FltStat()
-	io.Pforan("allbases[0] = %.6f\n", isl.allbases[0])
+	io.Pforan("\nallbases[0] = %.6f\n", isl.allbases[0])
 	io.Pforan("allbases[1] = %.6f\n", isl.allbases[1])
 	io.Pforan("allbases[2] = %.6f\n", isl.allbases[2])
 	if C.Nbases > 1 {
@@ -111,16 +112,15 @@ func Test_island01(tst *testing.T) {
 	io.Pforan("averho = %v\n", averho)
 	io.Pforan("maxrho = %v\n", maxrho)
 	io.Pforan("devrho = %v\n", devrho)
-	return
 
 	isl.SelectReprodAndRegen(0, false, false, false)
-	io.Pfcyan("%v\n", isl.Pop.Output(nil, false))
+	io.Pf("\n%v\n", isl.Pop.Output(nil, false))
 
 	isl.SelectReprodAndRegen(1, false, false, false)
 	io.Pforan("%v\n", isl.Pop.Output(nil, false))
 
 	isl.SelectReprodAndRegen(2, false, false, false)
-	io.Pfcyan("%v\n", isl.Pop.Output(nil, false))
+	io.Pf("%v\n", isl.Pop.Output(nil, false))
 
 	// TODO: more tests required
 }
