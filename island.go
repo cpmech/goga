@@ -380,7 +380,7 @@ func (o *Island) FltStat() (minrho, averho, maxrho, devrho float64) {
 
 // WritePopToReport writes population to report
 func (o *Island) WritePopToReport(time int, averho float64) {
-	io.Ff(&o.Report, "time=%d: averho=%g: population:\n", averho, time)
+	io.Ff(&o.Report, "time=%d averho=%g\n", time, averho)
 	o.Report.Write(o.Pop.Output(nil, o.C.ShowBases).Bytes())
 }
 

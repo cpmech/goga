@@ -365,3 +365,61 @@ func Test_evo04(tst *testing.T) {
 		plt.SaveD("/tmp/goga", "test_evo04.eps")
 	}
 }
+
+func Test_evo05(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("evo04. sin⁶(5 π x)")
+
+	// configuration
+	C := NewConfParams()
+	C.Nisl = 1
+	C.Ninds = 20
+	C.GAtype = "crowd"
+	C.DoPlot = false
+	C.RangeFlt = [][]float64{{0, 1}}
+	C.PopFltGen = PopFltGen
+	C.CalcDerived()
+
+	// initialise random numbers generator
+	rnd.Init(0)
+
+	// function
+	yfcn := func(x float64) float64 {
+		return math.Pow(math.Sin(5.0*math.Pi*x), 6.0)
+	}
+
+	// objective value function
+	C.OvaOor = func(ind *Individual, idIsland, t int, report *bytes.Buffer) {
+		x := ind.GetFloat(0)
+		ind.Ovas[0] = yfcn(x)
+		ind.Oors[0] = utl.GtePenalty(x, 0, 1)
+		ind.Oors[1] = utl.GtePenalty(1, x, 1)
+		io.Pforan("r = %v\n", report)
+	}
+
+	// run
+	nova := 1
+	noor := 2
+	evo := NewEvolver(nova, noor, C)
+	evo.Run()
+
+	// plot
+	if true {
+		np := 101
+		X := utl.LinSpace(0, 1, 101)
+		Y := make([]float64, np)
+		for i := 0; i < np; i++ {
+			Y[i] = yfcn(X[i])
+		}
+		plt.SetForEps(0.8, 300)
+		plt.Plot(X, Y, "'b-'")
+		for _, ind := range evo.Islands[0].Pop {
+			x := ind.GetFloat(0)
+			y := yfcn(x)
+			plt.PlotOne(x, y, "'r.'")
+		}
+		plt.Gll("$x$", "$y$", "")
+		plt.SaveD("/tmp/goga", "test_evo05_func.eps")
+	}
+}
