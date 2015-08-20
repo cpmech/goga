@@ -133,7 +133,7 @@ func (o *ConfParams) SetDefault() {
 	// selection and reproduction
 	o.Pc = 0.8
 	o.Pm = 0.01
-	o.Elite = true
+	o.Elite = false
 	o.Rws = false
 	o.Rnk = true
 	o.RnkSp = 1.2

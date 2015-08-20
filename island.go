@@ -74,25 +74,25 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 
 	// create population
 	if o.C.PopIntGen != nil {
-		o.Pop = o.C.PopIntGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeInt)
+		o.Pop = o.C.PopIntGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeInt)
 	}
 	if o.C.PopOrdGen != nil {
-		o.Pop = o.C.PopOrdGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.OrdNints)
+		o.Pop = o.C.PopOrdGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.OrdNints)
 	}
 	if o.C.PopFltGen != nil {
-		o.Pop = o.C.PopFltGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeFlt)
+		o.Pop = o.C.PopFltGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeFlt)
 	}
 	if o.C.PopStrGen != nil {
-		o.Pop = o.C.PopStrGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolStr)
+		o.Pop = o.C.PopStrGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolStr)
 	}
 	if o.C.PopKeyGen != nil {
-		o.Pop = o.C.PopKeyGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolKey)
+		o.Pop = o.C.PopKeyGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolKey)
 	}
 	if o.C.PopBytGen != nil {
-		o.Pop = o.C.PopBytGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolByt)
+		o.Pop = o.C.PopBytGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolByt)
 	}
 	if o.C.PopFunGen != nil {
-		o.Pop = o.C.PopFunGen(o.Pop, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolFun)
+		o.Pop = o.C.PopFunGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolFun)
 	}
 	if len(o.Pop) != o.C.Ninds {
 		chk.Panic("generation of population failed:\nat least one generator function in Params must be non nil")
@@ -199,64 +199,9 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 
 	// run
 	if o.C.GAtype == "crowd" {
-		o.RunCrowding(time, doreport, verbose)
+		o.update_crowding()
 	} else {
-		o.RunStandard(time, doreport, verbose)
-	}
-
-	// report
-	if doreport {
-		o.WritePopToReport(time)
-	}
-
-	// results
-	for i := 0; i < o.Nova; i++ {
-		o.OutOvas[i][time] = o.Pop[0].Ovas[i]
-	}
-	for i := 0; i < o.Noor; i++ {
-		o.OutOors[i][time] = o.Pop[0].Oors[i]
-	}
-	o.OutTimes[time] = float64(time)
-}
-
-// RunCrowding runs the evolutionary process with niching via crowding and tournament selection
-func (o *Island) RunCrowding(time int, doreport, verbose bool) {
-
-	// selection, reproduction and tournament
-	//io.Pforan("%v\n", o.Pop.Output(nil, true))
-	rnd.IntGetGroups(o.crowds, o.indices)
-	//io.Pforan("\ncrowds = %v\n", o.crowds)
-	//parents := make([]*Individual, o.C.CrowdSize)
-	//children := make([]*Individual, o.C.CrowdSize)
-	for _, crowd := range o.crowds {
-		for i := 1; i < o.C.CrowdSize; i++ {
-			//io.Pforan("%d with %d\n", crowd[i-1], crowd[i])
-			A, B := o.Pop[crowd[i-1]], o.Pop[crowd[i]]
-			a, b := o.BkpPop[crowd[i-1]], o.BkpPop[crowd[i]]
-			IndCrossover(a, b, A, B, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
-			IndMutation(a, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
-			IndMutation(b, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
-		}
-		for i := 0; i < o.C.CrowdSize; i++ {
-			A := o.Pop[crowd[i]]
-			for j := 0; j < o.C.CrowdSize; j++ {
-				a := o.BkpPop[crowd[j]]
-				//io.Pfcyan("A=%v a=%v\n", A.Ints, a.Ints)
-				o.dist[i][j] = IndDistance(A, a)
-			}
-		}
-		graph.Match(o.pairs, o.dist)
-		//io.Pfblue2("dist = %v\n", dist)
-		//io.Pforan("pairs = %v\n", pairs)
-		//io.Pf("\n")
-		for i := 0; i < o.C.CrowdSize; i++ {
-			A := o.Pop[o.pairs[i][0]]
-			a := o.BkpPop[o.pairs[i][1]]
-			if IndTournament(A, a) {
-				A.CopyInto(a) // parent wins
-			}
-		}
-		return
+		o.update_standard()
 	}
 
 	// compute objective values, demerits, and sort population
@@ -275,11 +220,70 @@ func (o *Island) RunCrowding(time int, doreport, verbose bool) {
 
 	// swap populations (Pop will always point to current one)
 	o.Pop, o.BkpPop = o.BkpPop, o.Pop
+
+	// statistics and regeneration of float-point individuals
+	var averho float64
+	if o.Pop[0].Nfltgenes > 0 {
+		_, averho, _, _ = o.FltStat()
+		homogeneous := averho < o.C.RegTol
+		if homogeneous {
+			o.Regenerate(time)
+			if doreport {
+				io.Ff(&o.Report, "time=%d: regeneration\n", time)
+			}
+			if verbose {
+				io.Pfmag(" .")
+			}
+		}
+	}
+
+	// report
+	if doreport {
+		o.WritePopToReport(time, averho)
+	}
+
+	// results
+	for i := 0; i < o.Nova; i++ {
+		o.OutOvas[i][time] = o.Pop[0].Ovas[i]
+	}
+	for i := 0; i < o.Noor; i++ {
+		o.OutOors[i][time] = o.Pop[0].Oors[i]
+	}
+	o.OutTimes[time] = float64(time)
 }
 
-// RunStandard performs the selection, reproduction and regeneration processes
+// update_crowding runs the evolutionary process with niching via crowding and tournament selection
+func (o *Island) update_crowding() {
+	rnd.IntGetGroups(o.crowds, o.indices)
+	for _, crowd := range o.crowds {
+		for i := 1; i < o.C.CrowdSize; i++ {
+			A, B := o.Pop[crowd[i-1]], o.Pop[crowd[i]]
+			a, b := o.BkpPop[crowd[i-1]], o.BkpPop[crowd[i]]
+			IndCrossover(a, b, A, B, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
+			IndMutation(a, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+			IndMutation(b, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+		}
+		for i := 0; i < o.C.CrowdSize; i++ {
+			A := o.Pop[crowd[i]]
+			for j := 0; j < o.C.CrowdSize; j++ {
+				a := o.BkpPop[crowd[j]]
+				o.dist[i][j] = IndDistance(A, a)
+			}
+		}
+		graph.Match(o.pairs, o.dist)
+		for i := 0; i < o.C.CrowdSize; i++ {
+			A := o.Pop[o.pairs[i][0]]
+			a := o.BkpPop[o.pairs[i][1]]
+			if IndTournament(A, a) {
+				A.CopyInto(a) // parent wins
+			}
+		}
+	}
+}
+
+// update_standard performs the selection, reproduction and regeneration processes
 //  Note: this function considers a SORTED population already
-func (o *Island) RunStandard(time int, doreport, verbose bool) {
+func (o *Island) update_standard() {
 
 	// fitness
 	ninds := len(o.Pop)
@@ -328,38 +332,6 @@ func (o *Island) RunStandard(time int, doreport, verbose bool) {
 		IndMutation(o.BkpPop[i], o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
 		IndMutation(o.BkpPop[h+i], o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
 	}
-
-	// compute objective values, demerits, and sort population
-	o.CalcOvs(o.BkpPop, time+1) // +1 => this is an updated generation
-	o.CalcDemeritsAndSort(o.BkpPop)
-
-	// elitism
-	if o.C.Elite {
-		iold, inew := o.Pop[0], o.BkpPop[ninds-1]
-		old_dominates, _ := IndCompare(iold, inew)
-		if old_dominates {
-			iold.CopyInto(inew)
-			o.CalcDemeritsAndSort(o.BkpPop)
-		}
-	}
-
-	// swap populations (Pop will always point to current one)
-	o.Pop, o.BkpPop = o.BkpPop, o.Pop
-
-	// statistics and regeneration of float-point individuals
-	if o.Pop[0].Nfltgenes > 0 {
-		_, averho, _, _ := o.FltStat()
-		homogeneous := averho < o.C.RegTol
-		if homogeneous {
-			o.Regenerate(time)
-			if doreport {
-				io.Ff(&o.Report, "time=%d: regeneration\n", time)
-			}
-			if verbose {
-				io.Pfmag(" .")
-			}
-		}
-	}
 }
 
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////
@@ -407,8 +379,8 @@ func (o *Island) FltStat() (minrho, averho, maxrho, devrho float64) {
 }
 
 // WritePopToReport writes population to report
-func (o *Island) WritePopToReport(time int) {
-	io.Ff(&o.Report, "time=%d: population:\n", time)
+func (o *Island) WritePopToReport(time int, averho float64) {
+	io.Ff(&o.Report, "time=%d: averho=%g: population:\n", averho, time)
 	o.Report.Write(o.Pop.Output(nil, o.C.ShowBases).Bytes())
 }
 

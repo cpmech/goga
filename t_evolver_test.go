@@ -20,7 +20,7 @@ import (
 
 func Test_evo01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo01. organise sequence of ints")
 	io.Pf("\n")
 
@@ -32,10 +32,10 @@ func Test_evo01(tst *testing.T) {
 	C.Nisl = 1
 	C.Ninds = 20
 	C.RegTol = 0
-	//C.GAtype = "crowd"
+	C.GAtype = "crowd"
 	C.CrowdSize = 2
-	C.Tf = 100
-	C.Verbose = true
+	C.Tf = 50
+	C.Verbose = chk.Verbose
 	C.CalcDerived()
 
 	// mutation function
@@ -57,7 +57,7 @@ func Test_evo01(tst *testing.T) {
 
 	// generation function
 	nvals := 20
-	C.PopIntGen = func(pop Population, ninds, nova, noor, nbases int, noise float64, args interface{}, irange [][]int) Population {
+	C.PopIntGen = func(ninds, nova, noor, nbases int, noise float64, args interface{}, irange [][]int) Population {
 		o := make([]*Individual, ninds)
 		genes := make([]int, nvals)
 		for i := 0; i < ninds; i++ {
@@ -111,6 +111,10 @@ func Test_evo02(tst *testing.T) {
 	C.Pll = false
 	C.Nisl = 4
 	C.Ninds = 20
+	C.RegTol = 0
+	C.GAtype = "crowd"
+	C.Elite = false
+	C.Verbose = false
 	C.RangeFlt = [][]float64{
 		{-2, 2}, // gene # 0: min and max
 		{-2, 2}, // gene # 1: min and max
@@ -173,14 +177,16 @@ func Test_evo03(tst *testing.T) {
 	// parameters
 	C := NewConfParams()
 	C.Pll = false
-	C.Nisl = 4
+	C.Nisl = 1
 	C.Ninds = 20
+	C.GAtype = "crowd"
+	//C.Elite = true
 	C.RangeFlt = [][]float64{
 		{-1, 3}, // gene # 0: min and max
 		{-1, 3}, // gene # 1: min and max
 	}
 	C.PopFltGen = PopFltGen
-	C.FnKey = "test_evo03"
+	//C.FnKey = "test_evo03"
 	C.DoPlot = chk.Verbose
 	C.CalcDerived()
 
@@ -255,7 +261,10 @@ func Test_evo04(tst *testing.T) {
 	C.Ninds = 40
 	C.RegTol = 0.3
 	C.RegPct = 0.2
+	//C.Dtmig = 30
 	C.IntOrd = true
+	//C.GAtype = "crowd"
+	C.Elite = true
 	C.DoPlot = false //chk.Verbose
 	C.PopOrdGen = PopOrdGen
 	C.OrdNints = nstations

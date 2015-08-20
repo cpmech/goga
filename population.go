@@ -19,23 +19,11 @@ type Population []*Individual
 
 // PopFltGen generates a population of individuals with float point numbers
 // Notes: (1) ngenes = len(frange)
-//        (2) this function can be used with existent population
-func PopFltGen(pop Population, ninds, nova, noor, nbases int, noise float64, args interface{}, frange [][]float64) Population {
-	o := pop
-	if len(o) != ninds {
-		o = make([]*Individual, ninds)
-	}
+func PopFltGen(ninds, nova, noor, nbases int, noise float64, args interface{}, frange [][]float64) Population {
+	o := make([]*Individual, ninds)
 	ngenes := len(frange)
 	for i := 0; i < ninds; i++ {
-		if o[i] == nil {
-			o[i] = new(Individual)
-			o[i].Ovas = make([]float64, nova)
-			o[i].Oors = make([]float64, noor)
-		}
-		if o[i].Nfltgenes != ngenes {
-			o[i].Nfltgenes = ngenes
-			o[i].Floats = make([]float64, ngenes)
-		}
+		o[i] = NewIndividual(nova, noor, nbases, make([]float64, ngenes))
 	}
 	npts := int(math.Pow(float64(ninds), 1.0/float64(ngenes))) // num points in 'square' grid
 	ntot := int(math.Pow(float64(npts), float64(ngenes)))      // total num of individuals in grid
@@ -88,22 +76,11 @@ func PopFltGen(pop Population, ninds, nova, noor, nbases int, noise float64, arg
 
 // PopOrdGen generates a population of individuals with ordered integers
 // Notes: (1) ngenes = len(frange)
-//        (2) this function can be used with existent population
-func PopOrdGen(pop Population, ninds, nova, noor, nbases int, noise float64, args interface{}, nints int) Population {
-	o := pop
-	if len(o) != ninds {
-		o = make([]*Individual, ninds)
-	}
+func PopOrdGen(ninds, nova, noor, nbases int, noise float64, args interface{}, nints int) Population {
+	o := make([]*Individual, ninds)
 	ngenes := nints
 	for i := 0; i < ninds; i++ {
-		if o[i] == nil {
-			o[i] = new(Individual)
-			o[i].Ovas = make([]float64, nova)
-			o[i].Oors = make([]float64, noor)
-		}
-		if len(o[i].Ints) != ngenes {
-			o[i].Ints = make([]int, ngenes)
-		}
+		o[i] = NewIndividual(nova, noor, nbases, make([]int, ngenes))
 		for j := 0; j < nints; j++ {
 			o[i].Ints[j] = j
 		}

@@ -44,7 +44,7 @@ func (o *Evolver) Run() {
 	// first output
 	t := 0
 	for _, isl := range o.Islands {
-		isl.WritePopToReport(t)
+		isl.WritePopToReport(t, 0)
 	}
 	if o.C.Verbose {
 		o.print_legend()

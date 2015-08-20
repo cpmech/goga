@@ -39,7 +39,7 @@ func Test_island01(tst *testing.T) {
 	}
 
 	// generator
-	C.PopFltGen = func(pop Population, ninds, nova, noor, nbases int, noise float64, args interface{}, frange [][]float64) Population {
+	C.PopFltGen = func(ninds, nova, noor, nbases int, noise float64, args interface{}, frange [][]float64) Population {
 		o := make([]*Individual, ninds)
 		for i := 0; i < ninds; i++ {
 			o[i] = NewIndividual(nova, noor, nbases, genes[i])
