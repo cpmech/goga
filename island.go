@@ -242,6 +242,11 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 		o.WritePopToReport(time, averho)
 	}
 
+	// post-process
+	if o.C.PostProc != nil {
+		o.C.PostProc(time, o.Pop)
+	}
+
 	// results
 	for i := 0; i < o.Nova; i++ {
 		o.OutOvas[i][time] = o.Pop[0].Ovas[i]

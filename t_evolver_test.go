@@ -395,7 +395,11 @@ func Test_evo05(tst *testing.T) {
 		ind.Ovas[0] = yfcn(x)
 		ind.Oors[0] = utl.GtePenalty(x, 0, 1)
 		ind.Oors[1] = utl.GtePenalty(1, x, 1)
-		io.Pforan("r = %v\n", report)
+	}
+
+	// post-processing function
+	C.PostProc = func(time int, pop Population) {
+		io.Pforan("r = %v\n", time)
 	}
 
 	// run

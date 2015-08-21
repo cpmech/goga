@@ -45,15 +45,16 @@ type ConfParams struct {
 	CrowdSize int     // crowd size
 
 	// output
-	Verbose   bool   // show messages during optimisation
-	DoReport  bool   // generate report
-	Json      bool   // output results as .json files; not tables
-	DirOut    string // directory to save output files. "" means "/tmp/goga"
-	FnKey     string // filename key for output files. "" means no output files
-	DoPlot    bool   // plot results
-	PltTi     int    // initial time for plot
-	PltTf     int    // final time for plot
-	ShowBases bool   // show also bases when printing results (if any)
+	Verbose   bool       // show messages during optimisation
+	DoReport  bool       // generate report
+	Json      bool       // output results as .json files; not tables
+	DirOut    string     // directory to save output files. "" means "/tmp/goga"
+	FnKey     string     // filename key for output files. "" means no output files
+	DoPlot    bool       // plot results
+	PltTi     int        // initial time for plot
+	PltTf     int        // final time for plot
+	ShowBases bool       // show also bases when printing results (if any)
+	PostProc  PostProc_t // function to post-process results
 
 	// auxiliary
 	Problem  int     // problem ID
