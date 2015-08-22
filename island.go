@@ -20,10 +20,10 @@ import (
 type Island struct {
 
 	// input
-	Id     int         // index of this island
-	C      *ConfParams // configuration parameters
-	Pop    Population  // pointer to current population
-	BkpPop Population  // backup population
+	Id  int         // index of this island
+	C   *ConfParams // configuration parameters
+	Pop Population  // pointer to current population
+	Bkp Population  // backup population
 
 	// results
 	Report   bytes.Buffer // buffer to report results
@@ -50,10 +50,10 @@ type Island struct {
 	larbases []float64   // [ngenes*nbases] largest bases; max(abs(bases))
 
 	// for crowding
-	indices []int       // [ninds]
-	crowds  [][]int     // [ninds/crowd_size][crowd_size]
-	dist    [][]float64 // [crowd_size][cowd_size]
-	pairs   [][]int     // [crowd_size][2]
+	indices []int         // [ninds]
+	crowds  [][]int       // [ninds/crowd_size][crowd_size]
+	dist    [][]float64   // [crowd_size][cowd_size]
+	match   graph.Munkres // matches
 }
 
 // NewIsland creates a new island
@@ -99,7 +99,7 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 	}
 
 	// copy population
-	o.BkpPop = o.Pop.GetCopy()
+	o.Bkp = o.Pop.GetCopy()
 
 	// auxiliary data
 	o.Nova = len(o.Pop[0].Ovas)
@@ -142,7 +142,7 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 	o.indices = utl.IntRange(o.C.Ninds)
 	o.crowds = utl.IntsAlloc(o.C.Ninds/o.C.CrowdSize, o.C.CrowdSize)
 	o.dist = la.MatAlloc(o.C.CrowdSize, o.C.CrowdSize)
-	o.pairs = utl.IntsAlloc(o.C.CrowdSize, 2)
+	o.match.Init(o.C.CrowdSize, o.C.CrowdSize)
 	return
 }
 
@@ -199,27 +199,13 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 
 	// run
 	if o.C.GAtype == "crowd" {
-		o.update_crowding()
+		o.update_crowding(time)
 	} else {
-		o.update_standard()
-	}
-
-	// compute objective values, demerits, and sort population
-	o.CalcOvs(o.BkpPop, time+1) // +1 => this is an updated generation
-	o.CalcDemeritsAndSort(o.BkpPop)
-
-	// elitism
-	if o.C.Elite {
-		iold, inew := o.Pop[0], o.BkpPop[o.C.Ninds-1]
-		old_dominates, _ := IndCompare(iold, inew)
-		if old_dominates {
-			iold.CopyInto(inew)
-			o.CalcDemeritsAndSort(o.BkpPop)
-		}
+		o.update_standard(time)
 	}
 
 	// swap populations (Pop will always point to current one)
-	o.Pop, o.BkpPop = o.BkpPop, o.Pop
+	o.Pop, o.Bkp = o.Bkp, o.Pop
 
 	// statistics and regeneration of float-point individuals
 	var averho float64
@@ -244,7 +230,7 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 
 	// post-process
 	if o.C.PostProc != nil {
-		o.C.PostProc(time, o.Pop)
+		o.C.PostProc(o.Id, time, o.Pop)
 	}
 
 	// results
@@ -258,27 +244,42 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 }
 
 // update_crowding runs the evolutionary process with niching via crowding and tournament selection
-func (o *Island) update_crowding() {
+func (o *Island) update_crowding(time int) {
+
+	// select groups (crowds)
 	rnd.IntGetGroups(o.crowds, o.indices)
+
+	// run tournaments
 	for _, crowd := range o.crowds {
+
+		// crossover, mutation and new objective values
 		for i := 1; i < o.C.CrowdSize; i++ {
 			A, B := o.Pop[crowd[i-1]], o.Pop[crowd[i]]
-			a, b := o.BkpPop[crowd[i-1]], o.BkpPop[crowd[i]]
+			a, b := o.Bkp[crowd[i-1]], o.Bkp[crowd[i]]
 			IndCrossover(a, b, A, B, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
 			IndMutation(a, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
 			IndMutation(b, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+			o.C.OvaOor(a, o.Id, time, &o.Report)
+			o.C.OvaOor(b, o.Id, time, &o.Report)
 		}
+
+		// compute distances
 		for i := 0; i < o.C.CrowdSize; i++ {
 			A := o.Pop[crowd[i]]
 			for j := 0; j < o.C.CrowdSize; j++ {
-				a := o.BkpPop[crowd[j]]
+				a := o.Bkp[crowd[j]]
 				o.dist[i][j] = IndDistance(A, a)
 			}
 		}
-		graph.Match(o.pairs, o.dist)
+
+		// match competitors
+		o.match.SetCostMatrix(o.dist)
+		o.match.Run()
+
+		// perform tournament
 		for i := 0; i < o.C.CrowdSize; i++ {
-			A := o.Pop[o.pairs[i][0]]
-			a := o.BkpPop[o.pairs[i][1]]
+			j := o.match.Links[i]
+			A, a := o.Pop[crowd[i]], o.Bkp[crowd[j]]
 			if IndTournament(A, a) {
 				A.CopyInto(a) // parent wins
 			}
@@ -288,7 +289,7 @@ func (o *Island) update_crowding() {
 
 // update_standard performs the selection, reproduction and regeneration processes
 //  Note: this function considers a SORTED population already
-func (o *Island) update_standard() {
+func (o *Island) update_standard(time int) {
 
 	// fitness
 	ninds := len(o.Pop)
@@ -333,9 +334,23 @@ func (o *Island) update_standard() {
 	// reproduction
 	h := ninds / 2
 	for i := 0; i < ninds/2; i++ {
-		IndCrossover(o.BkpPop[i], o.BkpPop[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
-		IndMutation(o.BkpPop[i], o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
-		IndMutation(o.BkpPop[h+i], o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+		IndCrossover(o.Bkp[i], o.Bkp[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
+		IndMutation(o.Bkp[i], o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+		IndMutation(o.Bkp[h+i], o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+	}
+
+	// compute objective values, demerits, and sort population
+	o.CalcOvs(o.Bkp, time+1) // +1 => this is an updated generation
+	o.CalcDemeritsAndSort(o.Bkp)
+
+	// elitism
+	if o.C.Elite {
+		iold, inew := o.Pop[0], o.Bkp[o.C.Ninds-1]
+		old_dominates, _ := IndCompare(iold, inew)
+		if old_dominates {
+			iold.CopyInto(inew)
+			o.CalcDemeritsAndSort(o.Bkp)
+		}
 	}
 }
 
