@@ -50,6 +50,11 @@ func (o *Evolver) Run() {
 		o.print_legend()
 		io.Pf("\nrunning ...\n")
 	}
+	if o.C.PostProc != nil {
+		for _, isl := range o.Islands {
+			o.C.PostProc(isl.Id, 0, isl.Pop)
+		}
+	}
 
 	// for migration
 	iworst := o.C.Ninds - 1
