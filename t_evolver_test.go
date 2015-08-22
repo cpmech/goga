@@ -109,7 +109,7 @@ func Test_evo02(tst *testing.T) {
 	// parameters
 	C := NewConfParams()
 	C.Pll = false
-	C.Nisl = 4
+	C.Nisl = 1
 	C.Ninds = 20
 	C.RegTol = 0
 	C.GAtype = "crowd"
@@ -263,7 +263,7 @@ func Test_evo04(tst *testing.T) {
 	C.RegPct = 0.2
 	//C.Dtmig = 30
 	C.IntOrd = true
-	//C.GAtype = "crowd"
+	C.GAtype = "crowd"
 	C.Elite = true
 	C.DoPlot = false //chk.Verbose
 	C.PopOrdGen = PopOrdGen
@@ -368,7 +368,7 @@ func Test_evo04(tst *testing.T) {
 
 func Test_evo05(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo04. sin⁶(5 π x)")
 
 	// configuration
@@ -376,7 +376,14 @@ func Test_evo05(tst *testing.T) {
 	C.Nisl = 1
 	C.Ninds = 20
 	C.GAtype = "crowd"
+	C.CrowdSize = 3
+	C.Noise = 0
 	C.DoPlot = false
+	C.RegTol = 0
+	C.Pc = 0.8
+	C.Pm = 0.01
+	C.MtExtra = map[string]interface{}{"flt": 1.1}
+	C.Tf = 100
 	C.RangeFlt = [][]float64{{0, 1}}
 	C.PopFltGen = PopFltGen
 	C.CalcDerived()
@@ -392,14 +399,25 @@ func Test_evo05(tst *testing.T) {
 	// objective value function
 	C.OvaOor = func(ind *Individual, idIsland, t int, report *bytes.Buffer) {
 		x := ind.GetFloat(0)
-		ind.Ovas[0] = yfcn(x)
+		ind.Ovas[0] = -yfcn(x)
 		ind.Oors[0] = utl.GtePenalty(x, 0, 1)
 		ind.Oors[1] = utl.GtePenalty(1, x, 1)
 	}
 
 	// post-processing function
-	C.PostProc = func(time int, pop Population) {
-		io.Pforan("r = %v\n", time)
+	xtmp := make([]float64, C.Ninds)
+	hist := rnd.Histogram{Stations: utl.LinSpace(0, 1, 26)}
+	var buf bytes.Buffer
+	defer func() { io.WriteFileVD("/tmp/goga", "test_evo05_hist.txt", &buf) }()
+	C.PostProc = func(idIsland, time int, pop Population) {
+		if time%10 == 0 {
+			for i, ind := range pop {
+				xtmp[i] = ind.GetFloat(0)
+			}
+			clear := true
+			hist.Count(xtmp, clear)
+			io.Ff(&buf, "\ntime=%d\n%v", time, rnd.TextHist(hist.GenLabels("%4.2f"), hist.Counts, 60))
+		}
 	}
 
 	// run
@@ -409,21 +427,27 @@ func Test_evo05(tst *testing.T) {
 	evo.Run()
 
 	// plot
-	if true {
-		np := 101
-		X := utl.LinSpace(0, 1, 101)
+	if chk.Verbose {
+		plt.SetForEps(0.8, 300)
+		xmin := evo.Islands[0].Pop[0].GetFloat(0)
+		xmax := xmin
+		for _, ind := range evo.Islands[0].Pop {
+			x := ind.GetFloat(0)
+			y := yfcn(x)
+			xmin = utl.Min(xmin, x)
+			xmax = utl.Max(xmax, x)
+			plt.PlotOne(x, y, "'r.',clip_on=0,zorder=20")
+		}
+		np := 201
+		//X := utl.LinSpace(xmin, xmax, np)
+		X := utl.LinSpace(0, 1, np)
 		Y := make([]float64, np)
 		for i := 0; i < np; i++ {
 			Y[i] = yfcn(X[i])
 		}
-		plt.SetForEps(0.8, 300)
-		plt.Plot(X, Y, "'b-'")
-		for _, ind := range evo.Islands[0].Pop {
-			x := ind.GetFloat(0)
-			y := yfcn(x)
-			plt.PlotOne(x, y, "'r.'")
-		}
+		plt.Plot(X, Y, "'b-',clip_on=0,zorder=10")
 		plt.Gll("$x$", "$y$", "")
+		//plt.AxisXrange(0, 1)
 		plt.SaveD("/tmp/goga", "test_evo05_func.eps")
 	}
 }
