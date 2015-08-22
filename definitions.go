@@ -7,7 +7,7 @@ package goga
 import "bytes"
 
 // PostProc_t defines a function to post-process results
-type PostProc_t func(time int, pop Population)
+type PostProc_t func(idIsland, time int, pop Population)
 
 // Func_t defines a type for a generic function to be used as a gene value
 type Func_t func(ind *Individual) string
