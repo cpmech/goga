@@ -126,7 +126,7 @@ func (o *Evolver) Run() {
 			for j := 0; j < nislands; j++ {
 				if i != j {
 					Bbest := o.Islands[j].Pop[0]
-					send, _ := IndCompare(Bbest, Aworst)
+					send := IndCompare(Bbest, Aworst, 0)
 					if send {
 						receiveFrom[i][k] = j // i gets individual from j
 						k++
@@ -186,8 +186,8 @@ func (o *Evolver) FindBestFromAll() {
 	}
 	o.Best = o.Islands[0].Pop[0]
 	for i := 1; i < o.C.Nisl; i++ {
-		_, other_dominates := IndCompare(o.Best, o.Islands[i].Pop[0])
-		if other_dominates {
+		best_is_better := IndCompare(o.Best, o.Islands[i].Pop[0], 0)
+		if !best_is_better {
 			o.Best = o.Islands[i].Pop[0]
 		}
 	}

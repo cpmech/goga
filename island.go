@@ -280,7 +280,7 @@ func (o *Island) update_crowding(time int) {
 		for i := 0; i < o.C.CrowdSize; i++ {
 			j := o.match.Links[i]
 			A, a := o.Pop[crowd[i]], o.Bkp[crowd[j]]
-			if IndTournament(A, a) {
+			if IndCompare(A, a, o.C.ParetoPhi) {
 				A.CopyInto(a) // parent wins
 			}
 		}
@@ -346,7 +346,7 @@ func (o *Island) update_standard(time int) {
 	// elitism
 	if o.C.Elite {
 		iold, inew := o.Pop[0], o.Bkp[o.C.Ninds-1]
-		old_dominates, _ := IndCompare(iold, inew)
+		old_dominates := IndCompare(iold, inew, 0)
 		if old_dominates {
 			iold.CopyInto(inew)
 			o.CalcDemeritsAndSort(o.Bkp)

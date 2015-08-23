@@ -43,6 +43,7 @@ type ConfParams struct {
 	RnkSp     float64 // selective pressure for ranking
 	GAtype    string  // type of GA; e.g. "std", "crowd"
 	CrowdSize int     // crowd size
+	ParetoPhi float64 // φ coefficient for probabilistic Pareto comparison
 
 	// output
 	Verbose   bool       // show messages during optimisation
@@ -140,6 +141,7 @@ func (o *ConfParams) SetDefault() {
 	o.RnkSp = 1.2
 	o.GAtype = "std"
 	o.CrowdSize = 2
+	o.ParetoPhi = 0.1
 
 	// output
 	o.Verbose = true

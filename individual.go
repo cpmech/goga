@@ -167,7 +167,7 @@ func (o Individual) CopyInto(x *Individual) {
 }
 
 // IndCompare compares individual 'A' with another one 'B'
-func IndCompare(A, B *Individual) (A_dominates, B_dominates bool) {
+func IndCompare(A, B *Individual, φ float64) (A_dominates bool) {
 	var A_is_unfeasible, B_is_unfeasible bool
 	for i := 0; i < len(A.Oors); i++ {
 		if A.Oors[i] > 0 {
@@ -179,18 +179,14 @@ func IndCompare(A, B *Individual) (A_dominates, B_dominates bool) {
 	}
 	if A_is_unfeasible {
 		if B_is_unfeasible {
-			A_dominates, B_dominates = utl.DblsParetoMin(A.Oors, B.Oors)
-			return
+			return utl.DblsParetoMinProb(A.Oors, B.Oors, φ)
 		}
-		B_dominates = true
-		return
+		return false // B dominates
 	}
 	if B_is_unfeasible {
-		A_dominates = true
-		return
+		return true // A dominates
 	}
-	A_dominates, B_dominates = utl.DblsParetoMin(A.Ovas, B.Ovas)
-	return
+	return utl.DblsParetoMinProb(A.Ovas, B.Ovas, φ)
 }
 
 // IndDistance computes a distance measure from individual 'A' to another individual 'B'
@@ -202,20 +198,6 @@ func IndDistance(A, B *Individual) (dist float64) {
 	if nints > 0 {
 		dist /= float64(nints)
 	}
-	return
-}
-
-// IndTournament executes a tournament between A and B
-func IndTournament(A, B *Individual) (A_wins bool) {
-	A_dominates, B_dominates := IndCompare(A, B)
-	if A_dominates {
-		A_wins = true
-		return
-	}
-	if B_dominates {
-		return
-	}
-	A_wins = rnd.FlipCoin(0.5)
 	return
 }
 

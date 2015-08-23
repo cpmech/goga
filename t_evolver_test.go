@@ -20,7 +20,7 @@ import (
 
 func Test_evo01(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo01. organise sequence of ints")
 	io.Pf("\n")
 
