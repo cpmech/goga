@@ -185,7 +185,7 @@ func FilterPairs(A, B []int, selinds []int) {
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func IntCrossover(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []int) {
+func IntCrossover(a, b, A, B []int, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -243,7 +243,7 @@ func IntCrossover(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []i
 //                       ↓                           5 6 7   0 1   2 3 4
 //     a = d e | f h g | a b c         get from A: | f̶ g̶ h̶ | a b | c d e
 //     b = h g | c d e | a b f         get from B: | e̶ c̶ a | b d̶ | f h g
-func IntOrdCrossover(a, b, A, B []int, dum int, cuts []int, pc float64) (notused []int) {
+func IntOrdCrossover(a, b, A, B []int, dum int, cuts []int, pc float64, extra interface{}) (notused []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 3 {
 		for i := 0; i < len(A); i++ {
@@ -307,7 +307,7 @@ func IntOrdCrossover(a, b, A, B []int, dum int, cuts []int, pc float64) (notused
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func FltCrossover(a, b, A, B []float64, ncuts int, cuts []int, pc float64) (ends []int) {
+func FltCrossover(a, b, A, B []float64, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -350,7 +350,7 @@ func FltCrossover(a, b, A, B []float64, ncuts int, cuts []int, pc float64) (ends
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func StrCrossover(a, b, A, B []string, ncuts int, cuts []int, pc float64) (ends []int) {
+func StrCrossover(a, b, A, B []string, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -393,7 +393,7 @@ func StrCrossover(a, b, A, B []string, ncuts int, cuts []int, pc float64) (ends 
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func KeyCrossover(a, b, A, B []byte, ncuts int, cuts []int, pc float64) (ends []int) {
+func KeyCrossover(a, b, A, B []byte, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -436,7 +436,7 @@ func KeyCrossover(a, b, A, B []byte, ncuts int, cuts []int, pc float64) (ends []
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func BytCrossover(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64) (ends []int) {
+func BytCrossover(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -482,7 +482,7 @@ func BytCrossover(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64) (ends 
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func FunCrossover(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64) (ends []int) {
+func FunCrossover(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {

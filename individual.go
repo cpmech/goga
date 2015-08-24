@@ -225,7 +225,7 @@ func IndDistance(A, B *Individual) (dist float64) {
 //   cxfucns -- crossover functions. use nil for default ones
 //  Output:
 //   a and b -- offspring
-func IndCrossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64,
+func IndCrossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64, extra map[string]interface{},
 	cxint CxIntFunc_t, cxflt CxFltFunc_t, cxstr CxStrFunc_t, cxkey CxKeyFunc_t, cxbyt CxBytFunc_t, cxfun CxFunFunc_t) {
 
 	// default values
@@ -258,22 +258,22 @@ func IndCrossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string]
 
 	// perform crossover
 	if A.Ints != nil {
-		cxint(a.Ints, b.Ints, A.Ints, B.Ints, ncuts["int"], cuts["int"], pc("int"))
+		cxint(a.Ints, b.Ints, A.Ints, B.Ints, ncuts["int"], cuts["int"], pc("int"), extra["int"])
 	}
 	if A.Floats != nil {
-		cxflt(a.Floats, b.Floats, A.Floats, B.Floats, ncuts["flt"], cuts["flt"], pc("flt"))
+		cxflt(a.Floats, b.Floats, A.Floats, B.Floats, ncuts["flt"], cuts["flt"], pc("flt"), extra["flt"])
 	}
 	if A.Strings != nil {
-		cxstr(a.Strings, b.Strings, A.Strings, B.Strings, ncuts["str"], cuts["str"], pc("str"))
+		cxstr(a.Strings, b.Strings, A.Strings, B.Strings, ncuts["str"], cuts["str"], pc("str"), extra["str"])
 	}
 	if A.Keys != nil {
-		cxkey(a.Keys, b.Keys, A.Keys, B.Keys, ncuts["key"], cuts["key"], pc("key"))
+		cxkey(a.Keys, b.Keys, A.Keys, B.Keys, ncuts["key"], cuts["key"], pc("key"), extra["key"])
 	}
 	if A.Bytes != nil {
-		cxbyt(a.Bytes, b.Bytes, A.Bytes, B.Bytes, ncuts["byt"], cuts["byt"], pc("byt"))
+		cxbyt(a.Bytes, b.Bytes, A.Bytes, B.Bytes, ncuts["byt"], cuts["byt"], pc("byt"), extra["byt"])
 	}
 	if A.Funcs != nil {
-		cxfun(a.Funcs, b.Funcs, A.Funcs, B.Funcs, ncuts["fun"], cuts["fun"], pc("fun"))
+		cxfun(a.Funcs, b.Funcs, A.Funcs, B.Funcs, ncuts["fun"], cuts["fun"], pc("fun"), extra["fun"])
 	}
 }
 

@@ -233,7 +233,7 @@ func Test_cxint01(tst *testing.T) {
 	B := []int{-1, -2}
 	a := make([]int, len(A))
 	b := make([]int, len(A))
-	IntCrossover(a, b, A, B, 1, nil, 1)
+	IntCrossover(a, b, A, B, 1, nil, 1, nil)
 	io.Pfred("A = %2d\n", A)
 	io.PfRed("B = %2d\n", B)
 	io.Pfcyan("a = %2d\n", a)
@@ -247,7 +247,7 @@ func Test_cxint01(tst *testing.T) {
 	a = make([]int, len(A))
 	b = make([]int, len(A))
 	cuts := []int{1, 3}
-	IntCrossover(a, b, A, B, 0, cuts, 1)
+	IntCrossover(a, b, A, B, 0, cuts, 1, nil)
 	io.Pfred("A = %2v\n", A)
 	io.PfRed("B = %2v\n", B)
 	io.Pfcyan("a = %2v\n", a)
@@ -256,7 +256,7 @@ func Test_cxint01(tst *testing.T) {
 	chk.Ints(tst, "b", b, []int{-1, 2, 3, -4, -5, -6, -7, -8})
 
 	cuts = []int{5, 7}
-	IntCrossover(a, b, A, B, 0, cuts, 1)
+	IntCrossover(a, b, A, B, 0, cuts, 1, nil)
 	io.Pfred("A = %2v\n", A)
 	io.PfRed("B = %2v\n", B)
 	io.Pfcyan("a = %2v\n", a)
@@ -274,7 +274,7 @@ func Test_cx01(tst *testing.T) {
 	B := []float64{9.1, 9.2, 9.3, 9.4, 9.5, 9.6}
 	a := make([]float64, len(A))
 	b := make([]float64, len(A))
-	FltCrossover(a, b, A, B, 0, []int{2, 4}, 1)
+	FltCrossover(a, b, A, B, 0, []int{2, 4}, 1, nil)
 	io.Pfred("A = %3v\n", A)
 	io.PfRed("B = %3v\n", B)
 	io.Pfcyan("a = %3v\n", a)
@@ -287,7 +287,7 @@ func Test_cx01(tst *testing.T) {
 	D := []string{"-", "o", "+", "@", "*", "&"}
 	c := make([]string, len(A))
 	d := make([]string, len(A))
-	StrCrossover(c, d, C, D, 0, []int{1, 3}, 1)
+	StrCrossover(c, d, C, D, 0, []int{1, 3}, 1, nil)
 	io.Pfred("C = %3v\n", C)
 	io.PfRed("D = %3v\n", D)
 	io.Pfcyan("c = %3v\n", c)
@@ -304,7 +304,7 @@ func Test_cx01(tst *testing.T) {
 		e[i] = make([]byte, 1)
 		f[i] = make([]byte, 1)
 	}
-	BytCrossover(e, f, E, F, 0, []int{1, 3}, 1)
+	BytCrossover(e, f, E, F, 0, []int{1, 3}, 1, nil)
 	io.Pfred("E = %3s\n", E)
 	io.PfRed("F = %3s\n", F)
 	io.Pfcyan("e = %3s\n", e)
@@ -323,7 +323,7 @@ func Test_cx01(tst *testing.T) {
 	H := []byte("-o+@*&")
 	g := make([]byte, len(A))
 	h := make([]byte, len(A))
-	KeyCrossover(g, h, G, H, 0, []int{1, 3}, 1)
+	KeyCrossover(g, h, G, H, 0, []int{1, 3}, 1, nil)
 	io.Pfred("G = %3v\n", G)
 	io.PfRed("H = %3v\n", H)
 	io.Pfcyan("g = %3v\n", g)
@@ -342,7 +342,7 @@ func Test_cx01(tst *testing.T) {
 	N := []Func_t{func(i *Individual) string { return "-" }, func(i *Individual) string { return "o" }, func(i *Individual) string { return "+" }, func(i *Individual) string { return "@" }, func(i *Individual) string { return "*" }, func(i *Individual) string { return "&" }}
 	m := make([]Func_t, len(A))
 	n := make([]Func_t, len(A))
-	FunCrossover(m, n, M, N, 0, []int{1, 3}, 1)
+	FunCrossover(m, n, M, N, 0, []int{1, 3}, 1, nil)
 	io.Pfred("M = %3v\n", M)
 	io.PfRed("N = %3v\n", N)
 	io.Pfcyan("m = %3v\n", m)
@@ -443,7 +443,7 @@ func Test_intordcx01(tst *testing.T) {
 	B := []int{2, 4, 6, 8, 7, 5, 3, 1}
 	a := make([]int, len(A))
 	b := make([]int, len(A))
-	IntOrdCrossover(a, b, A, B, 0, []int{2, 5}, 1)
+	IntOrdCrossover(a, b, A, B, 0, []int{2, 5}, 1, nil)
 	io.Pforan("A = %v\n", A)
 	io.Pfblue2("B = %v\n", B)
 	io.Pfgreen("a = %v\n", a)
@@ -460,7 +460,7 @@ func Test_intordcx01(tst *testing.T) {
 
 	A = []int{1, 3, 5, 7, 6, 2, 4, 8}
 	B = []int{5, 6, 3, 8, 2, 1, 4, 7}
-	IntOrdCrossover(a, b, A, B, 0, []int{3, 6}, 1)
+	IntOrdCrossover(a, b, A, B, 0, []int{3, 6}, 1, nil)
 	io.Pforan("\nA = %v\n", A)
 	io.Pfblue2("B = %v\n", B)
 	io.Pfgreen("a = %v\n", a)
@@ -476,7 +476,7 @@ func Test_intordcx01(tst *testing.T) {
 
 	A = []int{1, 2, 3, 4, 5, 6, 7, 8}
 	B = []int{2, 4, 6, 8, 7, 5, 3, 1}
-	IntOrdCrossover(a, b, A, B, 0, nil, 1)
+	IntOrdCrossover(a, b, A, B, 0, nil, 1, nil)
 	io.Pforan("\nA = %v\n", A)
 	io.Pfblue2("B = %v\n", B)
 	io.Pfgreen("a = %v\n", a)
@@ -490,7 +490,7 @@ func Test_intordcx01(tst *testing.T) {
 	D := []int{3, 1, 2}
 	c := make([]int, len(C))
 	d := make([]int, len(D))
-	IntOrdCrossover(c, d, C, D, 0, nil, 1)
+	IntOrdCrossover(c, d, C, D, 0, nil, 1, nil)
 	io.Pforan("\nC = %v\n", C)
 	io.Pfblue2("D = %v\n", D)
 	io.Pfgreen("c = %v\n", c)

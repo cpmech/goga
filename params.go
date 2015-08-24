@@ -73,6 +73,7 @@ type ConfParams struct {
 	CxCuts    map[string][]int       // crossover specific cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
 	CxProbs   map[string]float64     // crossover probabilities for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
 	CxFuncs   map[string]interface{} // crossover functions for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
+	CxExtra   map[string]interface{} // crossover extra parameters for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
 	CxIntFunc CxIntFunc_t            // crossover function
 	CxFltFunc CxFltFunc_t            // crossover function
 	CxStrFunc CxStrFunc_t            // crossover function

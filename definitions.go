@@ -38,12 +38,12 @@ type PopBytGen_t func(ninds, nova, noor, nbases int, noise float64, args interfa
 type PopFunGen_t func(ninds, nova, noor, nbases int, noise float64, args interface{}, pool [][]Func_t) Population
 
 // crossover functions
-type CxIntFunc_t func(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []int)
-type CxFltFunc_t func(a, b, A, B []float64, ncuts int, cuts []int, pc float64) (ends []int)
-type CxStrFunc_t func(a, b, A, B []string, ncuts int, cuts []int, pc float64) (ends []int)
-type CxKeyFunc_t func(a, b, A, B []byte, ncuts int, cuts []int, pc float64) (ends []int)
-type CxBytFunc_t func(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64) (ends []int)
-type CxFunFunc_t func(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64) (ends []int)
+type CxIntFunc_t func(a, b, A, B []int, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
+type CxFltFunc_t func(a, b, A, B []float64, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
+type CxStrFunc_t func(a, b, A, B []string, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
+type CxKeyFunc_t func(a, b, A, B []byte, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
+type CxBytFunc_t func(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
+type CxFunFunc_t func(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
 
 // mutation functions
 type MtIntFunc_t func(a []int, nchanges int, pm float64, extra interface{})

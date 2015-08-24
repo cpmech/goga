@@ -268,7 +268,7 @@ func (o *Island) update_crowding(time int) {
 			I, J := crowd[i], crowd[j]
 			A, B := o.Pop[I], o.Pop[J]
 			a, b := o.Bkp[I], o.Bkp[J]
-			IndCrossover(a, b, A, B, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
+			IndCrossover(a, b, A, B, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxExtra, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
 			IndMutation(a, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
 			IndMutation(b, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
 			o.C.OvaOor(a, o.Id, time, &o.Report)
@@ -346,7 +346,7 @@ func (o *Island) update_standard(time int) {
 	// reproduction
 	h := ninds / 2
 	for i := 0; i < ninds/2; i++ {
-		IndCrossover(o.Bkp[i], o.Bkp[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
+		IndCrossover(o.Bkp[i], o.Bkp[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxExtra, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
 		IndMutation(o.Bkp[i], o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
 		IndMutation(o.Bkp[h+i], o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
 	}
