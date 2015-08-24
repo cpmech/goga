@@ -206,6 +206,7 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 
 	// swap populations (Pop will always point to current one)
 	o.Pop, o.Bkp = o.Bkp, o.Pop
+	o.CalcDemeritsAndSort(o.Pop)
 
 	// statistics and regeneration of float-point individuals
 	var averho float64
@@ -341,7 +342,6 @@ func (o *Island) update_standard(time int) {
 
 	// compute objective values, demerits, and sort population
 	o.CalcOvs(o.Bkp, time+1) // +1 => this is an updated generation
-	o.CalcDemeritsAndSort(o.Bkp)
 
 	// elitism
 	if o.C.Elite {
@@ -349,7 +349,6 @@ func (o *Island) update_standard(time int) {
 		old_dominates := IndCompare(iold, inew, 0)
 		if old_dominates {
 			iold.CopyInto(inew)
-			o.CalcDemeritsAndSort(o.Bkp)
 		}
 	}
 }
