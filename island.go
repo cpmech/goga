@@ -182,10 +182,12 @@ func (o *Island) CalcDemeritsAndSort(pop Population) {
 	}
 	shift := 2.0
 	for i, ind := range pop {
+		firstOor := true
 		for j := 0; j < o.Noor; j++ {
 			if ind.Oors[j] > 0 {
-				if j == 0 {
+				if firstOor {
 					ind.Demerit = shift
+					firstOor = false
 				}
 				ind.Demerit += o.soors[j][i]
 			}
@@ -357,6 +359,7 @@ func (o *Island) update_standard(time int) {
 
 // Regenerate regenerates population with basis on best individual(s)
 func (o *Island) Regenerate(time int) {
+	chk.Panic("regenerate is deactivated")
 	ninds := len(o.Pop)
 	start := ninds - int(o.C.RegPct*float64(ninds))
 	for i := start; i < ninds; i++ {
