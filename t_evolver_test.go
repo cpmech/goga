@@ -260,14 +260,15 @@ func Test_evo04(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
-	C.Nisl = 4
-	C.Ninds = 40
+	C.Nisl = 1
+	C.Ninds = 20
 	C.RegTol = 0.3
 	C.RegPct = 0.2
 	//C.Dtmig = 30
 	C.IntOrd = true
 	C.GAtype = "crowd"
-	C.Elite = true
+	C.ParetoPhi = 0.1
+	C.Elite = false
 	C.DoPlot = false //chk.Verbose
 	C.PopOrdGen = PopOrdGen
 	C.OrdNints = nstations
@@ -371,7 +372,7 @@ func Test_evo04(tst *testing.T) {
 
 func Test_evo05(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo04. sin⁶(5 π x)")
 
 	// configuration
@@ -379,14 +380,15 @@ func Test_evo05(tst *testing.T) {
 	C.Nisl = 1
 	C.Ninds = 20
 	C.GAtype = "crowd"
-	C.CrowdSize = 3
+	C.CrowdSize = 2
+	C.ParetoPhi = 1
 	C.Noise = 0
 	C.DoPlot = false
 	C.RegTol = 0
 	C.Pc = 0.8
 	C.Pm = 0.01
 	C.MtExtra = map[string]interface{}{"flt": 1.1}
-	C.Tf = 100
+	C.Tf = 2
 	C.RangeFlt = [][]float64{{0, 1}}
 	C.PopFltGen = PopFltGen
 	C.CalcDerived()
@@ -423,10 +425,18 @@ func Test_evo05(tst *testing.T) {
 		}
 	}
 
-	// run
+	// evolver
 	nova := 1
 	noor := 2
 	evo := NewEvolver(nova, noor, C)
+
+	// initial population
+	xini := make([]float64, C.Ninds)
+	for i := 0; i < C.Ninds; i++ {
+		xini[i] = evo.Islands[0].Pop[i].GetFloat(0)
+	}
+
+	// run
 	evo.Run()
 
 	// plot
@@ -434,14 +444,15 @@ func Test_evo05(tst *testing.T) {
 		plt.SetForEps(0.8, 300)
 		xmin := evo.Islands[0].Pop[0].GetFloat(0)
 		xmax := xmin
-		for _, ind := range evo.Islands[0].Pop {
+		for i, ind := range evo.Islands[0].Pop {
 			x := ind.GetFloat(0)
 			y := yfcn(x)
 			xmin = utl.Min(xmin, x)
 			xmax = utl.Max(xmax, x)
+			plt.PlotOne(xini[i], yfcn(xini[i]), "'kx',clip_on=0,zorder=15")
 			plt.PlotOne(x, y, "'r.',clip_on=0,zorder=20")
 		}
-		np := 201
+		np := 401
 		//X := utl.LinSpace(xmin, xmax, np)
 		X := utl.LinSpace(0, 1, np)
 		Y := make([]float64, np)
