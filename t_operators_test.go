@@ -553,10 +553,9 @@ func Test_mwicz01(tst *testing.T) {
 
 	rnd.Init(0)
 
-	xmin := []float64{0, 1, 2, 3, 4}
-	xmax := []float64{2, 3, 4, 5, 6}
+	xrange := [][]float64{{0, 2}, {1, 3}, {2, 4}, {3, 5}, {4, 6}}
 	tmax := 10
-	mw := &Michalewicz{float64(tmax), 5.0, xmin, xmax}
+	mw := &Michalewicz{float64(tmax), 5.0, xrange}
 	T := utl.IntRange(tmax)
 	for _, t := range T {
 		io.Pf("t=%v Δ=%v\n", t, mw.Delta(float64(t), 1))

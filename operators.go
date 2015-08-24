@@ -729,10 +729,9 @@ func FltMutation(A []float64, time, nchanges int, pm float64, extra interface{})
 
 // Michalewicz holds data for non-uniform mutation by Michalewicz (1992)
 type Michalewicz struct {
-	Tmax float64   // max number of generations
-	B    float64   // power coefficient
-	Xmin []float64 // gene minimum values
-	Xmax []float64 // gene maximum values
+	Tmax   float64     // max number of generations
+	B      float64     // power coefficient
+	Xrange [][]float64 // [ngenes][2] genes minimum and maximum values
 }
 
 // Delta computes Michalewicz' Δ function
@@ -742,6 +741,7 @@ func (o Michalewicz) Delta(t, x float64) float64 {
 }
 
 // FltMutationNonUni implements the non-uniform mutation (Michaelewicz, 1992; Herrera, 1998)
+// See also Michalewicz (1996) page 103
 func FltMutationNonUni(A []float64, time, nchanges int, pm float64, extra interface{}) {
 	size := len(A)
 	if !rnd.FlipCoin(pm) || size < 1 {
@@ -750,10 +750,12 @@ func FltMutationNonUni(A []float64, time, nchanges int, pm float64, extra interf
 	t := float64(time)
 	mw := extra.(*Michalewicz)
 	for i := 0; i < size; i++ {
+		xmin := mw.Xrange[i][0]
+		xmax := mw.Xrange[i][1]
 		if rnd.FlipCoin(0.5) {
-			A[i] += mw.Delta(t, mw.Xmax[i]-A[i])
+			A[i] += mw.Delta(t, xmax-A[i])
 		} else {
-			A[i] -= mw.Delta(t, A[i]-mw.Xmin[i])
+			A[i] -= mw.Delta(t, A[i]-xmin)
 		}
 	}
 }
