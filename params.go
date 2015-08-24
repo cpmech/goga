@@ -54,6 +54,7 @@ type ConfParams struct {
 	DoPlot    bool       // plot results
 	PltTi     int        // initial time for plot
 	PltTf     int        // final time for plot
+	ShowOor   bool       // show oor values when printing results (if any)
 	ShowBases bool       // show also bases when printing results (if any)
 	PostProc  PostProc_t // function to post-process results
 
@@ -128,7 +129,7 @@ func (o *ConfParams) SetDefault() {
 	o.Dtmig = 40
 
 	// regeneration
-	o.RegTol = 1e-2
+	o.RegTol = 0
 	o.RegPct = 0.3
 	o.UseStdDev = false
 
@@ -139,9 +140,9 @@ func (o *ConfParams) SetDefault() {
 	o.Rws = false
 	o.Rnk = true
 	o.RnkSp = 1.2
-	o.GAtype = "std"
+	o.GAtype = "crowd"
 	o.CrowdSize = 2
-	o.ParetoPhi = 0.005
+	o.ParetoPhi = 0
 
 	// output
 	o.Verbose = true
@@ -152,6 +153,7 @@ func (o *ConfParams) SetDefault() {
 	o.DoPlot = false
 	o.PltTi = 0
 	o.PltTf = -1
+	o.ShowOor = true
 	o.ShowBases = false
 
 	// auxiliary

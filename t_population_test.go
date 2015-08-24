@@ -42,7 +42,7 @@ func Test_pop01(tst *testing.T) {
 		pop[i] = NewIndividual(nova, noor, nbases, genes[i])
 		pop[i].Ovas[0] = ovs[i]
 	}
-	io.Pforan("%v\n", pop.Output(nil, false))
+	io.Pforan("%v\n", pop.Output(nil, true, false))
 
 	// check floats and subfloats
 	for i, ind := range pop {
@@ -130,11 +130,11 @@ func Test_pop02(tst *testing.T) {
 		pop[i].Ovas[0] = ovs[i]
 		pop[i].Demerit = dem[i]
 	}
-	io.Pforan("%v\n", pop.Output(nil, false))
+	io.Pforan("%v\n", pop.Output(nil, true, false))
 
 	pop.Sort()
 
-	io.Pfyel("%v\n", pop.Output(nil, false))
+	io.Pfyel("%v\n", pop.Output(nil, true, false))
 
 	genes_sorted := [][]float64{
 		{5, 7}, // 2
