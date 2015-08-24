@@ -141,7 +141,7 @@ func (o *ConfParams) SetDefault() {
 	o.RnkSp = 1.2
 	o.GAtype = "std"
 	o.CrowdSize = 2
-	o.ParetoPhi = 0.1
+	o.ParetoPhi = 0.005
 
 	// output
 	o.Verbose = true

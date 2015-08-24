@@ -372,23 +372,24 @@ func Test_evo04(tst *testing.T) {
 
 func Test_evo05(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo04. sin⁶(5 π x)")
 
 	// configuration
 	C := NewConfParams()
-	C.Nisl = 1
-	C.Ninds = 20
+	C.Nisl = 4
+	C.Ninds = 24
 	C.GAtype = "crowd"
-	C.CrowdSize = 2
-	C.ParetoPhi = 1
-	C.Noise = 0
+	C.CrowdSize = 3
+	C.ParetoPhi = 0
+	C.Noise = 0.05
 	C.DoPlot = false
 	C.RegTol = 0
 	C.Pc = 0.8
 	C.Pm = 0.01
 	C.MtExtra = map[string]interface{}{"flt": 1.1}
-	C.Tf = 2
+	C.Tf = 100
+	C.Dtmig = 100
 	C.RangeFlt = [][]float64{{0, 1}}
 	C.PopFltGen = PopFltGen
 	C.CalcDerived()
@@ -410,47 +411,52 @@ func Test_evo05(tst *testing.T) {
 	}
 
 	// post-processing function
-	xtmp := make([]float64, C.Ninds)
-	hist := rnd.Histogram{Stations: utl.LinSpace(0, 1, 26)}
-	var buf bytes.Buffer
-	defer func() { io.WriteFileVD("/tmp/goga", "test_evo05_hist.txt", &buf) }()
+	values := utl.Deep3alloc(C.Tf/10, C.Nisl, C.Ninds)
 	C.PostProc = func(idIsland, time int, pop Population) {
 		if time%10 == 0 {
+			k := time / 10
 			for i, ind := range pop {
-				xtmp[i] = ind.GetFloat(0)
+				values[k][idIsland][i] = ind.GetFloat(0)
 			}
-			clear := true
-			hist.Count(xtmp, clear)
-			io.Ff(&buf, "\ntime=%d\n%v", time, rnd.TextHist(hist.GenLabels("%4.2f"), hist.Counts, 60))
 		}
 	}
 
-	// evolver
+	// run
 	nova := 1
 	noor := 2
 	evo := NewEvolver(nova, noor, C)
-
-	// initial population
-	xini := make([]float64, C.Ninds)
-	for i := 0; i < C.Ninds; i++ {
-		xini[i] = evo.Islands[0].Pop[i].GetFloat(0)
-	}
-
-	// run
 	evo.Run()
 
-	// plot
+	// write histograms and plot
 	if chk.Verbose {
+
+		// write histograms
+		var buf bytes.Buffer
+		hist := rnd.Histogram{Stations: utl.LinSpace(0, 1, 26)}
+		for k := 0; k < C.Tf/10; k++ {
+			for i := 0; i < C.Nisl; i++ {
+				clear := false
+				if i == 0 {
+					clear = true
+				}
+				hist.Count(values[k][i], clear)
+			}
+			io.Ff(&buf, "\ntime=%d\n%v", k*10, rnd.TextHist(hist.GenLabels("%4.2f"), hist.Counts, 60))
+		}
+		io.WriteFileVD("/tmp/goga", "test_evo05_hist.txt", &buf)
+
+		// plot
 		plt.SetForEps(0.8, 300)
 		xmin := evo.Islands[0].Pop[0].GetFloat(0)
 		xmax := xmin
-		for i, ind := range evo.Islands[0].Pop {
-			x := ind.GetFloat(0)
-			y := yfcn(x)
-			xmin = utl.Min(xmin, x)
-			xmax = utl.Max(xmax, x)
-			plt.PlotOne(xini[i], yfcn(xini[i]), "'kx',clip_on=0,zorder=15")
-			plt.PlotOne(x, y, "'r.',clip_on=0,zorder=20")
+		for k := 0; k < C.Nisl; k++ {
+			for _, ind := range evo.Islands[k].Pop {
+				x := ind.GetFloat(0)
+				y := yfcn(x)
+				xmin = utl.Min(xmin, x)
+				xmax = utl.Max(xmax, x)
+				plt.PlotOne(x, y, "'r.',clip_on=0,zorder=20")
+			}
 		}
 		np := 401
 		//X := utl.LinSpace(xmin, xmax, np)
