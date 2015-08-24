@@ -20,7 +20,7 @@ import (
 
 func Test_evo01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo01. organise sequence of ints")
 	io.Pf("\n")
 
@@ -32,7 +32,7 @@ func Test_evo01(tst *testing.T) {
 	C.Nisl = 1
 	C.Ninds = 20
 	C.RegTol = 0
-	C.GAtype = "crowd"
+	//C.GAtype = "crowd"
 	C.CrowdSize = 2
 	C.Tf = 50
 	C.Verbose = chk.Verbose
@@ -113,6 +113,7 @@ func Test_evo02(tst *testing.T) {
 	C.Ninds = 20
 	C.RegTol = 0
 	C.GAtype = "crowd"
+	C.ParetoPhi = 0.01
 	C.Elite = false
 	C.Verbose = false
 	C.RangeFlt = [][]float64{
@@ -172,7 +173,7 @@ func Test_evo03(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("evo03")
 
-	rnd.Init(111)
+	rnd.Init(0)
 
 	// parameters
 	C := NewConfParams()
@@ -180,14 +181,16 @@ func Test_evo03(tst *testing.T) {
 	C.Nisl = 1
 	C.Ninds = 20
 	C.GAtype = "crowd"
-	//C.Elite = true
+	C.Elite = true
 	C.RangeFlt = [][]float64{
 		{-1, 3}, // gene # 0: min and max
 		{-1, 3}, // gene # 1: min and max
 	}
 	C.PopFltGen = PopFltGen
-	//C.FnKey = "test_evo03"
-	C.DoPlot = chk.Verbose
+	if chk.Verbose {
+		C.FnKey = "test_evo03"
+		C.DoPlot = true
+	}
 	C.CalcDerived()
 
 	// geometry
