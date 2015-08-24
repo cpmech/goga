@@ -526,3 +526,22 @@ func Test_intordmut01(tst *testing.T) {
 	sort.Ints(a)
 	chk.Ints(tst, "asorted = 12345678", a, nums)
 }
+
+func Test_blx01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("blx01. blended crossover")
+
+	rnd.Init(0)
+
+	α := 0.5
+	A := []float64{0, 1, 2, 4, 5}
+	B := []float64{1, 2, 3, 5, 6}
+	a := make([]float64, len(A))
+	b := make([]float64, len(A))
+	FltCrossoverBlx(a, b, A, B, 0, nil, 1, α)
+	io.Pforan("A = %v\n", A)
+	io.Pforan("B = %v\n", B)
+	io.Pfcyan("a = %v\n", a)
+	io.Pfcyan("b = %v\n", b)
+}

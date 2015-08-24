@@ -12,6 +12,7 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
+	"github.com/cpmech/gosl/utl"
 )
 
 // SimpleChromo splits 'genes' into 'nbases' unequal parts
@@ -330,6 +331,27 @@ func FltCrossover(a, b, A, B []float64, ncuts int, cuts []int, pc float64, extra
 		}
 		start = end
 		swap = !swap
+	}
+	return
+}
+
+// FltCrossoverBlx implements the BLS-α crossover by Eshelman et al. (1993); see also Herrera (1998)
+func FltCrossoverBlx(a, b, A, B []float64, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
+	size := len(A)
+	if !rnd.FlipCoin(pc) {
+		for i := 0; i < size; i++ {
+			a[i], b[i] = A[i], B[i]
+		}
+		return
+	}
+	α := extra.(float64)
+	var cmin, cmax, δ float64
+	for i := 0; i < size; i++ {
+		cmin = utl.Min(A[i], B[i])
+		cmax = utl.Max(A[i], B[i])
+		δ = cmax - cmin
+		a[i] = rnd.Float64(cmin-α*δ, cmax+α*δ)
+		b[i] = rnd.Float64(cmin-α*δ, cmax+α*δ)
 	}
 	return
 }
@@ -704,6 +726,10 @@ func FltMutation(A []float64, nchanges int, pm float64, extra interface{}) {
 		}
 	}
 }
+
+// FltMutationNonUni implements the non-uniform mutation (Michaelewicz, 1992; Herrera, 1998)
+//func FltMutationNonUni(A []float64, nchanges int, pm float64, extra interface{}) {
+//}
 
 // StrMutation performs the mutation of genetic data from A
 //  Input:
