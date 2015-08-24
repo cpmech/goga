@@ -377,7 +377,7 @@ func Test_evo05(tst *testing.T) {
 
 	// configuration
 	C := NewConfParams()
-	C.Nisl = 4
+	C.Nisl = 1
 	C.Ninds = 24
 	C.GAtype = "crowd"
 	C.CrowdSize = 3
@@ -389,7 +389,7 @@ func Test_evo05(tst *testing.T) {
 	C.Pm = 0.01
 	C.MtExtra = map[string]interface{}{"flt": 1.1}
 	C.Tf = 100
-	C.Dtmig = 100
+	C.Dtmig = 101
 	C.RangeFlt = [][]float64{{0, 1}}
 	C.PopFltGen = PopFltGen
 	C.CalcDerived()
@@ -413,7 +413,7 @@ func Test_evo05(tst *testing.T) {
 	// post-processing function
 	values := utl.Deep3alloc(C.Tf/10, C.Nisl, C.Ninds)
 	C.PostProc = func(idIsland, time int, pop Population) {
-		if time%10 == 0 {
+		if time%10 == 0 && false {
 			k := time / 10
 			for i, ind := range pop {
 				values[k][idIsland][i] = ind.GetFloat(0)
@@ -426,6 +426,11 @@ func Test_evo05(tst *testing.T) {
 	noor := 2
 	evo := NewEvolver(nova, noor, C)
 	evo.Run()
+
+	// print population
+	for _, isl := range evo.Islands {
+		io.Pf("%v", isl.Pop.Output(nil, true, false, -1))
+	}
 
 	// write histograms and plot
 	if chk.Verbose {

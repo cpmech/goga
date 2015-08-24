@@ -54,6 +54,8 @@ type Island struct {
 	crowds  [][]int       // [ninds/crowd_size][crowd_size]
 	dist    [][]float64   // [crowd_size][cowd_size]
 	match   graph.Munkres // matches
+	//parents  []*Individual // [crowd_size*2]
+	//children []*Individual // [crowd_size*2]
 }
 
 // NewIsland creates a new island
@@ -139,10 +141,23 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 	}
 
 	// for crowding
-	o.indices = utl.IntRange(o.C.Ninds)
-	o.crowds = utl.IntsAlloc(o.C.Ninds/o.C.CrowdSize, o.C.CrowdSize)
-	o.dist = la.MatAlloc(o.C.CrowdSize, o.C.CrowdSize)
-	o.match.Init(o.C.CrowdSize, o.C.CrowdSize)
+	if o.C.GAtype == "crowd" {
+		n := o.C.CrowdSize
+		if o.C.Ninds%n > 0 {
+			chk.Panic("number of individuals must be multiple of crowd size")
+		}
+		o.indices = utl.IntRange(o.C.Ninds)
+		o.crowds = utl.IntsAlloc(o.C.Ninds/n, n)
+		o.dist = la.MatAlloc(n, n)
+		o.match.Init(n, n)
+		//m := n + n%2
+		//o.parents = make([]*Individual, m)
+		//o.children = make([]*Individual, m)
+		//for i := 0; i < m; i++ {
+		//o.parents[i] = o.Pop[0].GetCopy()
+		//o.children[i] = o.Pop[0].GetCopy()
+		//}
+	}
 	return
 }
 
@@ -253,23 +268,33 @@ func (o *Island) update_crowding(time int) {
 	rnd.IntGetGroups(o.crowds, o.indices)
 
 	// run tournaments
+	n := o.C.CrowdSize
+	//idx := 0 // index of new individual
 	for _, crowd := range o.crowds {
 
 		// crossover, mutation and new objective values
-		for i := 1; i < o.C.CrowdSize; i++ {
-			A, B := o.Pop[crowd[i-1]], o.Pop[crowd[i]]
-			a, b := o.Bkp[crowd[i-1]], o.Bkp[crowd[i]]
+		//io.Pfyel("\ncrowd=%v\n", crowd)
+		for k := 0; k < n; k += 2 { // NOTE: for odd crowd_size, one child is overwritten
+			i, j := k, (k+1)%n
+			I, J := crowd[i], crowd[j]
+			//io.Pf("k=%2d i=%2d j=%2d I=%2d J=%2d\n", k, i, j, I, J)
+			A, B := o.Pop[I], o.Pop[J]
+			a, b := o.Bkp[I], o.Bkp[J]
 			IndCrossover(a, b, A, B, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
 			IndMutation(a, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
 			IndMutation(b, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
 			o.C.OvaOor(a, o.Id, time, &o.Report)
 			o.C.OvaOor(b, o.Id, time, &o.Report)
+			//io.Pforan("ovas = %v, %v\n", a.Ovas[0], b.Ovas[0])
+			//if math.Abs(a.Ovas[0]) < 1e-15 || math.Abs(b.Ovas[0]) < 1e-15 {
+			//chk.Panic("stop")
+			//}
 		}
 
 		// compute distances
-		for i := 0; i < o.C.CrowdSize; i++ {
+		for i := 0; i < n; i++ {
 			A := o.Pop[crowd[i]]
-			for j := 0; j < o.C.CrowdSize; j++ {
+			for j := 0; j < n; j++ {
 				a := o.Bkp[crowd[j]]
 				o.dist[i][j] = IndDistance(A, a)
 			}
@@ -280,14 +305,17 @@ func (o *Island) update_crowding(time int) {
 		o.match.Run()
 
 		// perform tournament
-		for i := 0; i < o.C.CrowdSize; i++ {
+		for i := 0; i < n; i++ {
 			j := o.match.Links[i]
 			A, a := o.Pop[crowd[i]], o.Bkp[crowd[j]]
 			if IndCompare(A, a, o.C.ParetoPhi) {
 				A.CopyInto(a) // parent wins
 			}
+			//io.Pforan("idx = %v\n", idx)
+			//idx++
 		}
 	}
+	//io.Pforan("%v\n", o.Bkp.Output(nil, true, false, -1))
 }
 
 // update_standard performs the selection, reproduction and regeneration processes
