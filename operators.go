@@ -186,7 +186,7 @@ func FilterPairs(A, B []int, selinds []int) {
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func IntCrossover(a, b, A, B []int, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
+func IntCrossover(a, b, A, B []int, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -244,7 +244,7 @@ func IntCrossover(a, b, A, B []int, ncuts int, cuts []int, pc float64, extra int
 //                       ↓                           5 6 7   0 1   2 3 4
 //     a = d e | f h g | a b c         get from A: | f̶ g̶ h̶ | a b | c d e
 //     b = h g | c d e | a b f         get from B: | e̶ c̶ a | b d̶ | f h g
-func IntOrdCrossover(a, b, A, B []int, dum int, cuts []int, pc float64, extra interface{}) (notused []int) {
+func IntOrdCrossover(a, b, A, B []int, time, dum int, cuts []int, pc float64, extra interface{}) (notused []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 3 {
 		for i := 0; i < len(A); i++ {
@@ -308,7 +308,7 @@ func IntOrdCrossover(a, b, A, B []int, dum int, cuts []int, pc float64, extra in
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func FltCrossover(a, b, A, B []float64, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
+func FltCrossover(a, b, A, B []float64, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -336,7 +336,7 @@ func FltCrossover(a, b, A, B []float64, ncuts int, cuts []int, pc float64, extra
 }
 
 // FltCrossoverBlx implements the BLS-α crossover by Eshelman et al. (1993); see also Herrera (1998)
-func FltCrossoverBlx(a, b, A, B []float64, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
+func FltCrossoverBlx(a, b, A, B []float64, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) {
 		for i := 0; i < size; i++ {
@@ -372,7 +372,7 @@ func FltCrossoverBlx(a, b, A, B []float64, ncuts int, cuts []int, pc float64, ex
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func StrCrossover(a, b, A, B []string, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
+func StrCrossover(a, b, A, B []string, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -415,7 +415,7 @@ func StrCrossover(a, b, A, B []string, ncuts int, cuts []int, pc float64, extra 
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func KeyCrossover(a, b, A, B []byte, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
+func KeyCrossover(a, b, A, B []byte, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -458,7 +458,7 @@ func KeyCrossover(a, b, A, B []byte, ncuts int, cuts []int, pc float64, extra in
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func BytCrossover(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
+func BytCrossover(a, b, A, B [][]byte, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -504,7 +504,7 @@ func BytCrossover(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64, extra 
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func FunCrossover(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
+func FunCrossover(a, b, A, B []Func_t, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -601,7 +601,7 @@ func GenerateCxEnds(size, ncuts int, cuts []int) (ends []int) {
 //   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
-func IntMutation(A []int, nchanges int, pm float64, extra interface{}) {
+func IntMutation(A []int, time, nchanges int, pm float64, extra interface{}) {
 	size := len(A)
 	if !rnd.FlipCoin(pm) || size < 1 {
 		return
@@ -650,7 +650,7 @@ func IntMutation(A []int, nchanges int, pm float64, extra interface{}) {
 //       remain = a b f g h  (remaining)  nrem = size - ncore = 8 - 3 = 5
 //                       ↑
 //                       4 = ins
-func IntOrdMutation(A []int, dum1 int, pm float64, sti interface{}) {
+func IntOrdMutation(A []int, time, dum1 int, pm float64, sti interface{}) {
 	size := len(A)
 	if !rnd.FlipCoin(pm) || size < 3 {
 		if size == 2 {
@@ -707,7 +707,7 @@ func IntOrdMutation(A []int, dum1 int, pm float64, sti interface{}) {
 //   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
-func FltMutation(A []float64, nchanges int, pm float64, extra interface{}) {
+func FltMutation(A []float64, time, nchanges int, pm float64, extra interface{}) {
 	size := len(A)
 	if !rnd.FlipCoin(pm) || size < 1 {
 		return
@@ -738,7 +738,7 @@ func FltMutation(A []float64, nchanges int, pm float64, extra interface{}) {
 //   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
-func StrMutation(A []string, nchanges int, pm float64, extra interface{}) {
+func StrMutation(A []string, time, nchanges int, pm float64, extra interface{}) {
 	size := len(A)
 	if !rnd.FlipCoin(pm) || size < 1 {
 		return
@@ -756,7 +756,7 @@ func StrMutation(A []string, nchanges int, pm float64, extra interface{}) {
 //   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
-func KeyMutation(A []byte, nchanges int, pm float64, extra interface{}) {
+func KeyMutation(A []byte, time, nchanges int, pm float64, extra interface{}) {
 	size := len(A)
 	if !rnd.FlipCoin(pm) || size < 1 {
 		return
@@ -775,7 +775,7 @@ func KeyMutation(A []byte, nchanges int, pm float64, extra interface{}) {
 //   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
-func BytMutation(A [][]byte, nchanges int, pm float64, extra interface{}) {
+func BytMutation(A [][]byte, time, nchanges int, pm float64, extra interface{}) {
 	size := len(A)
 	if !rnd.FlipCoin(pm) || size < 1 {
 		return
@@ -794,7 +794,7 @@ func BytMutation(A [][]byte, nchanges int, pm float64, extra interface{}) {
 //   pm       -- probability of mutation
 //   extra    -- an integer corresponding to the max value for multiplier 'm'
 //  Output: modified individual 'A'
-func FunMutation(A []Func_t, nchanges int, pm float64, extra interface{}) {
+func FunMutation(A []Func_t, time, nchanges int, pm float64, extra interface{}) {
 	size := len(A)
 	if !rnd.FlipCoin(pm) || size < 1 {
 		return

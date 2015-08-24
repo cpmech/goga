@@ -225,7 +225,7 @@ func IndDistance(A, B *Individual) (dist float64) {
 //   cxfucns -- crossover functions. use nil for default ones
 //  Output:
 //   a and b -- offspring
-func IndCrossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64, extra map[string]interface{},
+func IndCrossover(a, b, A, B *Individual, time int, ncuts map[string]int, cuts map[string][]int, probs map[string]float64, extra map[string]interface{},
 	cxint CxIntFunc_t, cxflt CxFltFunc_t, cxstr CxStrFunc_t, cxkey CxKeyFunc_t, cxbyt CxBytFunc_t, cxfun CxFunFunc_t) {
 
 	// default values
@@ -258,22 +258,22 @@ func IndCrossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string]
 
 	// perform crossover
 	if A.Ints != nil {
-		cxint(a.Ints, b.Ints, A.Ints, B.Ints, ncuts["int"], cuts["int"], pc("int"), extra["int"])
+		cxint(a.Ints, b.Ints, A.Ints, B.Ints, time, ncuts["int"], cuts["int"], pc("int"), extra["int"])
 	}
 	if A.Floats != nil {
-		cxflt(a.Floats, b.Floats, A.Floats, B.Floats, ncuts["flt"], cuts["flt"], pc("flt"), extra["flt"])
+		cxflt(a.Floats, b.Floats, A.Floats, B.Floats, time, ncuts["flt"], cuts["flt"], pc("flt"), extra["flt"])
 	}
 	if A.Strings != nil {
-		cxstr(a.Strings, b.Strings, A.Strings, B.Strings, ncuts["str"], cuts["str"], pc("str"), extra["str"])
+		cxstr(a.Strings, b.Strings, A.Strings, B.Strings, time, ncuts["str"], cuts["str"], pc("str"), extra["str"])
 	}
 	if A.Keys != nil {
-		cxkey(a.Keys, b.Keys, A.Keys, B.Keys, ncuts["key"], cuts["key"], pc("key"), extra["key"])
+		cxkey(a.Keys, b.Keys, A.Keys, B.Keys, time, ncuts["key"], cuts["key"], pc("key"), extra["key"])
 	}
 	if A.Bytes != nil {
-		cxbyt(a.Bytes, b.Bytes, A.Bytes, B.Bytes, ncuts["byt"], cuts["byt"], pc("byt"), extra["byt"])
+		cxbyt(a.Bytes, b.Bytes, A.Bytes, B.Bytes, time, ncuts["byt"], cuts["byt"], pc("byt"), extra["byt"])
 	}
 	if A.Funcs != nil {
-		cxfun(a.Funcs, b.Funcs, A.Funcs, B.Funcs, ncuts["fun"], cuts["fun"], pc("fun"), extra["fun"])
+		cxfun(a.Funcs, b.Funcs, A.Funcs, B.Funcs, time, ncuts["fun"], cuts["fun"], pc("fun"), extra["fun"])
 	}
 }
 
@@ -286,7 +286,7 @@ func IndCrossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string]
 //   extra    -- extra arguments for each 'int', 'flt', 'str', 'key', 'byt', 'fun'
 //   mutfucns -- mutation functions. use nil for default ones
 //  Output: modified individual
-func IndMutation(A *Individual, nchanges map[string]int, probs map[string]float64, extra map[string]interface{},
+func IndMutation(A *Individual, time int, nchanges map[string]int, probs map[string]float64, extra map[string]interface{},
 	mtint MtIntFunc_t, mtflt MtFltFunc_t, mtstr MtStrFunc_t, mtkey MtKeyFunc_t, mtbyt MtBytFunc_t, mtfun MtFunFunc_t) {
 
 	// default values
@@ -325,22 +325,22 @@ func IndMutation(A *Individual, nchanges map[string]int, probs map[string]float6
 
 	// perform crossover
 	if A.Ints != nil {
-		mtint(A.Ints, nc("int"), pm("int"), extra["int"])
+		mtint(A.Ints, time, nc("int"), pm("int"), extra["int"])
 	}
 	if A.Floats != nil {
-		mtflt(A.Floats, nc("flt"), pm("flt"), extra["flt"])
+		mtflt(A.Floats, time, nc("flt"), pm("flt"), extra["flt"])
 	}
 	if A.Strings != nil {
-		mtstr(A.Strings, nc("flt"), pm("str"), extra["str"])
+		mtstr(A.Strings, time, nc("flt"), pm("str"), extra["str"])
 	}
 	if A.Keys != nil {
-		mtkey(A.Keys, nc("key"), pm("key"), extra["key"])
+		mtkey(A.Keys, time, nc("key"), pm("key"), extra["key"])
 	}
 	if A.Bytes != nil {
-		mtbyt(A.Bytes, nc("byt"), pm("byt"), extra["byt"])
+		mtbyt(A.Bytes, time, nc("byt"), pm("byt"), extra["byt"])
 	}
 	if A.Funcs != nil {
-		mtfun(A.Funcs, nc("fun"), pm("fun"), extra["fun"])
+		mtfun(A.Funcs, time, nc("fun"), pm("fun"), extra["fun"])
 	}
 }
 

@@ -39,7 +39,7 @@ func Test_evo01(tst *testing.T) {
 	C.CalcDerived()
 
 	// mutation function
-	C.MtIntFunc = func(A []int, nchanges int, pm float64, extra interface{}) {
+	C.MtIntFunc = func(A []int, time, nchanges int, pm float64, extra interface{}) {
 		size := len(A)
 		if !rnd.FlipCoin(pm) || size < 1 {
 			return
