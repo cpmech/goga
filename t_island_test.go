@@ -74,7 +74,7 @@ func Test_island01(tst *testing.T) {
 	nova := 2
 	noor := 3
 	isl := NewIsland(id, nova, noor, C)
-	io.Pf("\n%v", isl.Pop.Output(nil, true, false))
+	io.Pf("\n%v", isl.Pop.Output(nil, true, false, -1))
 	io.Pf("best = %v\n", isl.Pop[0].Output(nil, false))
 	vals := make([]float64, 3)
 	for i := 0; i < 3; i++ {
@@ -114,13 +114,13 @@ func Test_island01(tst *testing.T) {
 	io.Pforan("devrho = %v\n", devrho)
 
 	isl.Run(0, false, false)
-	io.Pf("\n%v\n", isl.Pop.Output(nil, true, false))
+	io.Pf("\n%v\n", isl.Pop.Output(nil, true, false, -1))
 
 	isl.Run(1, false, false)
-	io.Pforan("%v\n", isl.Pop.Output(nil, true, false))
+	io.Pforan("%v\n", isl.Pop.Output(nil, true, false, -1))
 
 	isl.Run(2, false, false)
-	io.Pf("%v\n", isl.Pop.Output(nil, true, false))
+	io.Pf("%v\n", isl.Pop.Output(nil, true, false, -1))
 
 	// TODO: more tests required
 }

@@ -56,6 +56,7 @@ type ConfParams struct {
 	PltTf     int        // final time for plot
 	ShowOor   bool       // show oor values when printing results (if any)
 	ShowBases bool       // show also bases when printing results (if any)
+	ShowNinds int        // number of individuals to show. use -1 to show all
 	PostProc  PostProc_t // function to post-process results
 
 	// auxiliary
@@ -155,6 +156,7 @@ func (o *ConfParams) SetDefault() {
 	o.PltTf = -1
 	o.ShowOor = true
 	o.ShowBases = false
+	o.ShowNinds = -1
 
 	// auxiliary
 	o.Problem = 1

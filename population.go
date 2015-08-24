@@ -127,7 +127,7 @@ func (o *Population) Sort() {
 //  fmts      -- [ngenes] formats for int, flt, string, byte, bytes, and func
 //               use fmts == nil to choose default ones
 //  showBases -- show bases, if any
-func (o Population) Output(fmts [][]string, showOor, showBases bool) (buf *bytes.Buffer) {
+func (o Population) Output(fmts [][]string, showOor, showBases bool, showNinds int) (buf *bytes.Buffer) {
 
 	// check
 	if len(o) < 1 {
@@ -161,7 +161,10 @@ func (o Population) Output(fmts [][]string, showOor, showBases bool) (buf *bytes
 	nova := len(o[0].Ovas)
 	noor := len(o[0].Oors)
 	szova, szoor, szdem := make([]int, nova), make([]int, noor), 0
-	for _, ind := range o {
+	for k, ind := range o {
+		if showNinds > 0 && k >= showNinds {
+			break
+		}
 		for i := 0; i < nova; i++ {
 			szova[i] = utl.Imax(szova[i], len(io.Sf("%g", ind.Ovas[i])))
 		}
@@ -196,7 +199,10 @@ func (o Population) Output(fmts [][]string, showOor, showBases bool) (buf *bytes
 	fmtdem := io.Sf("%%%d", szdem+1)
 	line, sza, szb := "", 0, 0
 	first := true
-	for _, ind := range o {
+	for i, ind := range o {
+		if showNinds > 0 && i >= showNinds {
+			break
+		}
 		stra := ""
 		for j := 0; j < nova; j++ {
 			stra += io.Sf(fmtova[j]+"g", ind.Ovas[j])
@@ -208,6 +214,18 @@ func (o Population) Output(fmts [][]string, showOor, showBases bool) (buf *bytes
 				} else {
 					stra += io.Sf(fmtoor[j]+"s", "n/a")
 				}
+			}
+		} else {
+			unfeasible := false
+			for j := 0; j < noor; j++ {
+				if ind.Oors[j] > 0 {
+					unfeasible = true
+				}
+			}
+			if unfeasible {
+				stra += " unfe."
+			} else {
+				stra += "      "
 			}
 		}
 		stra += io.Sf(fmtdem+"g", ind.Demerit) + " "
@@ -231,6 +249,8 @@ func (o Population) Output(fmts [][]string, showOor, showBases bool) (buf *bytes
 		for i := 0; i < noor; i++ {
 			io.Ff(buf, fmtoor[i]+"s", io.Sf("Oor%d", i))
 		}
+	} else {
+		io.Ff(buf, " check")
 	}
 	io.Ff(buf, fmtdem+"s", "Demerit")
 	io.Ff(buf, fmtgenes, "Genes")
