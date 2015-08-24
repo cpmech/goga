@@ -545,3 +545,25 @@ func Test_blx01(tst *testing.T) {
 	io.Pfcyan("a = %v\n", a)
 	io.Pfcyan("b = %v\n", b)
 }
+
+func Test_mwicz01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("mwicz01. Michalewicz mutation")
+
+	rnd.Init(0)
+
+	xmin := []float64{0, 1, 2, 3, 4}
+	xmax := []float64{2, 3, 4, 5, 6}
+	tmax := 10
+	mw := &Michalewicz{float64(tmax), 5.0, xmin, xmax}
+	T := utl.IntRange(tmax)
+	for _, t := range T {
+		io.Pf("t=%v Δ=%v\n", t, mw.Delta(float64(t), 1))
+	}
+	for _, t := range T {
+		A := []float64{0, 1, 2, 3, 4}
+		FltMutationNonUni(A, t, 0, 1, mw)
+		io.Pforan("A = %.8f\n", A)
+	}
+}
