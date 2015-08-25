@@ -105,6 +105,7 @@ func (o *Evolver) Run() {
 		tmig += o.C.Dtmig
 		if tmig > o.C.Tf {
 			tmig = o.C.Tf
+			nomig = true
 		}
 
 		// skip migration
