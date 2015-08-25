@@ -372,13 +372,13 @@ func Test_evo04(tst *testing.T) {
 
 func Test_evo05(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo04. sin⁶(5 π x)")
 
 	// configuration
 	C := NewConfParams()
 	C.Nisl = 1
-	C.Ninds = 24
+	C.Ninds = 12
 	C.GAtype = "crowd"
 	C.CrowdSize = 3
 	C.ParetoPhi = 0

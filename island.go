@@ -34,6 +34,10 @@ type Island struct {
 	OutTimes []float64    // [ntimes] times corresponding to OutOvas and OutOors
 
 	// auxiliary internal data
+	ovamin  []float64   // min ovas
+	ovamax  []float64   // max ovas
+	oormin  []float64   // min oors
+	oormax  []float64   // max oors
 	ovas    [][]float64 // all ova values
 	oors    [][]float64 // all oor values
 	sovas   [][]float64 // scaled ova values
@@ -104,6 +108,10 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 	// auxiliary data
 	o.Nova = len(o.Pop[0].Ovas)
 	o.Noor = len(o.Pop[0].Oors)
+	o.ovamin = make([]float64, o.Nova)
+	o.ovamax = make([]float64, o.Nova)
+	o.oormin = make([]float64, o.Noor)
+	o.oormax = make([]float64, o.Noor)
 	o.ovas = la.MatAlloc(o.Nova, o.C.Ninds)
 	o.oors = la.MatAlloc(o.Noor, o.C.Ninds)
 	o.sovas = la.MatAlloc(o.Nova, o.C.Ninds)
@@ -175,10 +183,10 @@ func (o *Island) CalcDemeritsAndSort(pop Population) {
 		}
 	}
 	for i := 0; i < o.Nova; i++ {
-		utl.Scaling(o.sovas[i], o.ovas[i], 0, 1e-16, false, true)
+		o.ovamin[i], o.ovamax[i] = utl.Scaling(o.sovas[i], o.ovas[i], 0, 1e-16, false, true)
 	}
 	for i := 0; i < o.Noor; i++ {
-		utl.Scaling(o.soors[i], o.oors[i], 0, 1e-16, false, true)
+		o.oormin[i], o.oormax[i] = utl.Scaling(o.soors[i], o.oors[i], 0, 1e-16, false, true)
 	}
 	for i, ind := range pop {
 		ind.Demerit = 0
