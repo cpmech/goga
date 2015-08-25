@@ -5,12 +5,14 @@
 package goga
 
 import (
+	"math"
 	"sort"
 	"testing"
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
+	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
@@ -564,5 +566,24 @@ func Test_mwicz01(tst *testing.T) {
 		A := []float64{0, 1, 2, 3, 4}
 		FltMutationNonUni(A, t, 0, 1, mw)
 		io.Pforan("A = %.8f\n", A)
+	}
+
+	if chk.Verbose {
+		b := 2.0
+		f := func(r, tb float64) float64 {
+			return math.Pow(r, math.Pow(1.0-tb, b))
+		}
+		np := 21
+		r, tb := utl.MeshGrid2D(0, 1, 0, 1, np, np) // tb = t/tmax
+		z := la.MatAlloc(np, np)
+		for i := 0; i < np; i++ {
+			for j := 0; j < np; j++ {
+				z[i][j] = f(r[i][j], tb[i][j])
+			}
+		}
+		plt.Surface(tb, r, z, "linewidth=0.8")
+		plt.Gll("tb", "r", "")
+		plt.SaveD("/tmp/goga", "test_mwicz01.eps")
+		//plt.Show()
 	}
 }
