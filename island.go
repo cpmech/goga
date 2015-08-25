@@ -147,16 +147,14 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 	}
 
 	// for crowding
-	if o.C.GAtype == "crowd" {
-		n := o.C.CrowdSize
-		if o.C.Ninds%n > 0 {
-			chk.Panic("number of individuals must be multiple of crowd size")
-		}
-		o.indices = utl.IntRange(o.C.Ninds)
-		o.crowds = utl.IntsAlloc(o.C.Ninds/n, n)
-		o.dist = la.MatAlloc(n, n)
-		o.match.Init(n, n)
+	n := o.C.CrowdSize
+	if o.C.Ninds%n > 0 {
+		chk.Panic("number of individuals must be multiple of crowd size")
 	}
+	o.indices = utl.IntRange(o.C.Ninds)
+	o.crowds = utl.IntsAlloc(o.C.Ninds/n, n)
+	o.dist = la.MatAlloc(n, n)
+	o.match.Init(n, n)
 	return
 }
 
@@ -214,9 +212,12 @@ func (o *Island) CalcDemeritsAndSort(pop Population) {
 func (o *Island) Run(time int, doreport, verbose bool) {
 
 	// run
-	if o.C.GAtype == "crowd" {
+	switch o.C.GAtype {
+	case "crowd":
 		o.update_crowding(time)
-	} else {
+	case "sharing":
+		o.update_sharing(time)
+	default:
 		o.update_standard(time)
 	}
 
@@ -279,8 +280,8 @@ func (o *Island) update_crowding(time int) {
 			IndCrossover(a, b, A, B, time, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxExtra, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
 			IndMutation(a, time, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
 			IndMutation(b, time, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
-			o.C.OvaOor(a, o.Id, time, &o.Report)
-			o.C.OvaOor(b, o.Id, time, &o.Report)
+			o.C.OvaOor(a, o.Id, time+1, &o.Report)
+			o.C.OvaOor(b, o.Id, time+1, &o.Report)
 		}
 
 		// compute distances
@@ -303,6 +304,76 @@ func (o *Island) update_crowding(time int) {
 			if IndCompare(A, a, o.C.ParetoPhi) {
 				A.CopyInto(a) // parent wins
 			}
+		}
+	}
+}
+
+// update_sharing runs the evolutionary process with pareto-niching and sharing
+func (o *Island) update_sharing(time int) {
+
+	// selection
+	nsample := int(o.C.ShSize * float64(o.C.Ninds))
+	k := 0
+	for k < o.C.Ninds {
+		sample := rnd.IntGetUniqueN(0, o.C.Ninds, nsample)
+		pair := rnd.IntGetUniqueN(0, o.C.Ninds, 2)
+		i, j := pair[0], pair[1]
+		A, B := o.Pop[i], o.Pop[j]
+		A_is_dominated, B_is_dominated := false, false
+		for _, s := range sample {
+			if s != i {
+				if !IndCompare(A, o.Pop[s], o.C.ParetoPhi) {
+					A_is_dominated = true
+					break
+				}
+			}
+		}
+		for _, s := range sample {
+			if s != j {
+				if !IndCompare(B, o.Pop[s], o.C.ParetoPhi) {
+					B_is_dominated = true
+					break
+				}
+			}
+		}
+		if !A_is_dominated && B_is_dominated {
+			o.selinds[k] = i
+			k++
+		} else if A_is_dominated && !B_is_dominated {
+			o.selinds[k] = j
+			k++
+		} else {
+			shA := o.calc_sharing(i)
+			shB := o.calc_sharing(j)
+			if shA < shB {
+				o.selinds[k] = i
+			} else {
+				o.selinds[k] = j
+			}
+			k++
+		}
+	}
+
+	// filter pairs
+	FilterPairs(o.A, o.B, o.selinds)
+
+	// reproduction
+	h := o.C.Ninds / 2
+	for i := 0; i < o.C.Ninds/2; i++ {
+		IndCrossover(o.Bkp[i], o.Bkp[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], time, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxExtra, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
+		IndMutation(o.Bkp[i], time, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+		IndMutation(o.Bkp[h+i], time, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+	}
+
+	// compute objective values
+	o.CalcOvs(o.Bkp, time+1) // +1 => this is an updated generation
+
+	// elitism
+	if o.C.Elite {
+		iold, inew := o.Pop[0], o.Bkp[o.C.Ninds-1]
+		old_dominates := IndCompare(iold, inew, 0)
+		if old_dominates {
+			iold.CopyInto(inew)
 		}
 	}
 }
@@ -359,7 +430,7 @@ func (o *Island) update_standard(time int) {
 		IndMutation(o.Bkp[h+i], time, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
 	}
 
-	// compute objective values, demerits, and sort population
+	// compute objective values
 	o.CalcOvs(o.Bkp, time+1) // +1 => this is an updated generation
 
 	// elitism
@@ -436,4 +507,24 @@ func (o Island) SaveReport(verbose bool) {
 		}
 		io.WriteFileD(o.C.DirOut, io.Sf("%s-%d.rpt", o.C.FnKey, o.Id), &o.Report)
 	}
+}
+
+// calc_sharing computes sharing coefficient
+func (o *Island) calc_sharing(idxind int) (sh float64) {
+	A := o.Pop[idxind]
+	var dova, door, d float64
+	for _, B := range o.Pop {
+		dova, door = 0, 0
+		for i := 0; i < o.Nova; i++ {
+			dova += math.Pow((A.Ovas[i]-B.Ovas[i])/(1+o.ovamax[i]-o.ovamin[i]), 2.0)
+		}
+		for i := 0; i < o.Noor; i++ {
+			door += math.Pow((A.Oors[i]-B.Oors[i])/(1+o.oormax[i]-o.oormin[i]), 2.0)
+		}
+		d = math.Sqrt(dova) + math.Sqrt(door)
+		if d < o.C.ShSig {
+			sh += 1.0 - math.Pow(d/o.C.ShSig, o.C.ShAlp)
+		}
+	}
+	return
 }

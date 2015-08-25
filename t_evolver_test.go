@@ -379,7 +379,8 @@ func Test_evo05(tst *testing.T) {
 	C := NewConfParams()
 	C.Nisl = 1
 	C.Ninds = 12
-	C.GAtype = "crowd"
+	//C.GAtype = "crowd"
+	C.GAtype = "sharing"
 	C.CrowdSize = 3
 	C.ParetoPhi = 0
 	C.Noise = 0.05
