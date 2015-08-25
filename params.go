@@ -190,6 +190,20 @@ func (o *ConfParams) CalcDerived() {
 	}
 }
 
+// SetCxBlx sets crossover method Blx
+func (o *ConfParams) SetCxBlx(α float64) {
+	o.Nbases = 1 // this crossover method works with 1 basis only
+	o.CxExtra = map[string]interface{}{"flt": α}
+	o.CxFltFunc = FltCrossoverBlx
+}
+
+// SetMtMwicz sets mutation method Michalewicz
+func (o *ConfParams) SetMtMwicz(b float64) {
+	o.Nbases = 1 // Michalewicz mutation does not work with nbases!=1
+	o.MtExtra = map[string]interface{}{"flt": &Michalewicz{float64(o.Tf), b, o.RangeFlt}}
+	o.MtFltFunc = FltMutationNonUni
+}
+
 // NewConfParams returns a new ConfParams structure, with default values set
 func NewConfParams() *ConfParams {
 	var o ConfParams
