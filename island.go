@@ -514,14 +514,18 @@ func (o *Island) calc_sharing(idxind int) (sh float64) {
 	A := o.Pop[idxind]
 	var dova, door, d float64
 	for _, B := range o.Pop {
-		dova, door = 0, 0
-		for i := 0; i < o.Nova; i++ {
-			dova += math.Pow((A.Ovas[i]-B.Ovas[i])/(1+o.ovamax[i]-o.ovamin[i]), 2.0)
+		if o.C.ShPhen {
+			d = IndDistance(A, B)
+		} else {
+			dova, door = 0, 0
+			for i := 0; i < o.Nova; i++ {
+				dova += math.Pow((A.Ovas[i]-B.Ovas[i])/(1+o.ovamax[i]-o.ovamin[i]), 2.0)
+			}
+			for i := 0; i < o.Noor; i++ {
+				door += math.Pow((A.Oors[i]-B.Oors[i])/(1+o.oormax[i]-o.oormin[i]), 2.0)
+			}
+			d = math.Sqrt(dova) + math.Sqrt(door)
 		}
-		for i := 0; i < o.Noor; i++ {
-			door += math.Pow((A.Oors[i]-B.Oors[i])/(1+o.oormax[i]-o.oormin[i]), 2.0)
-		}
-		d = math.Sqrt(dova) + math.Sqrt(door)
 		if d < o.C.ShSig {
 			sh += 1.0 - math.Pow(d/o.C.ShSig, o.C.ShAlp)
 		}

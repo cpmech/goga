@@ -47,6 +47,7 @@ type ConfParams struct {
 	ShSize    float64 // sharing sample size. percentage of Ninds; e.g. 0.1
 	ShAlp     float64 // αshare
 	ShSig     float64 // σshare
+	ShPhen    bool    // use phenotype distance analysis in sharing; otherwise use objective values
 
 	// output
 	Verbose   bool       // show messages during optimisation
@@ -151,6 +152,7 @@ func (o *ConfParams) SetDefault() {
 	o.ShSize = 0.5
 	o.ShAlp = 2.0
 	o.ShSig = 1.0
+	o.ShPhen = false
 
 	// output
 	o.Verbose = true
