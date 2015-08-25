@@ -194,6 +194,69 @@ func (o *Evolver) FindBestFromAll() {
 	}
 }
 
+// GetFeasible returns all feasible individuals from all islands
+func (o *Evolver) GetFeasible() (feasible []*Individual) {
+	for _, isl := range o.Islands {
+		for _, ind := range isl.Pop {
+			unfeasible := false
+			for _, oor := range ind.Oors {
+				if oor > 0 {
+					unfeasible = true
+				}
+			}
+			if !unfeasible {
+				feasible = append(feasible, ind)
+			}
+		}
+	}
+	return
+}
+
+// GetResults returns all ovas and oors from a subset of individuals
+//  Output:
+//   ovas -- [nova][len(subset)] objective values
+//   oors -- [noor][len(subset)] out-of-range values
+func (o *Evolver) GetResults(subset []*Individual) (ovas, oors [][]float64) {
+	nova := o.Islands[0].Nova
+	noor := o.Islands[0].Noor
+	ninds := len(subset)
+	ovas = utl.DblsAlloc(nova, ninds)
+	oors = utl.DblsAlloc(noor, ninds)
+	for j, ind := range subset {
+		for i := 0; i < nova; i++ {
+			ovas[i][j] = ind.Ovas[i]
+		}
+		for i := 0; i < noor; i++ {
+			oors[i][j] = ind.Oors[i]
+		}
+	}
+	return
+}
+
+// GetParetoFront2D returns all feasible individuals on the 2D Pareto front
+func (o *Evolver) GetParetoFront2D(feasible []*Individual) (xova, yova, xoor, yoor []float64) {
+	ovas, oors := o.GetResults(feasible)
+	ovafront := utl.ParetoFront2D(ovas[0], ovas[1])
+	xova = make([]float64, len(ovafront))
+	yova = make([]float64, len(ovafront))
+	for i, id := range ovafront {
+		xova[i] = feasible[id].Ovas[0]
+		yova[i] = feasible[id].Ovas[1]
+	}
+	if len(oors) > 0 {
+		oorfront := utl.ParetoFront2D(oors[0], oors[1])
+		xoor = make([]float64, len(oorfront))
+		yoor = make([]float64, len(oorfront))
+		for i, id := range oorfront {
+			xoor[i] = feasible[id].Ovas[0]
+			yoor[i] = feasible[id].Ovas[1]
+		}
+	}
+	return
+}
+
+// auxiliary //////////////////////////////////////////////////////////////////////////////////////
+
 func (o Evolver) calc_report(t int) bool {
 	return t%o.C.Dtout == 0
 }
