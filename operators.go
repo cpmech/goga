@@ -749,6 +749,7 @@ func FltMutationNonUni(A []float64, time, nchanges int, pm float64, extra interf
 	}
 	t := float64(time)
 	mw := extra.(*Michalewicz)
+	chk.IntAssert(len(mw.Xrange), len(A))
 	for i := 0; i < size; i++ {
 		xmin := mw.Xrange[i][0]
 		xmax := mw.Xrange[i][1]
