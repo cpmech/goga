@@ -34,32 +34,6 @@ func Test_simplechromo01(tst *testing.T) {
 	}
 }
 
-func Test_fitness01(tst *testing.T) {
-
-	//verbose()
-	chk.PrintTitle("fitness01")
-
-	ovs := []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
-	f := make([]float64, len(ovs))
-	CalcFitness(f, ovs)
-	io.Pforan("f = %v\n", f)
-	chk.Vector(tst, "f", 1e-15, f, utl.LinSpace(1, 0, 11))
-}
-
-func Test_ranking01(tst *testing.T) {
-
-	//verbose()
-	chk.PrintTitle("ranking01")
-
-	f := CalcFitnessRanking(11, 2.0)
-	io.Pforan("f = %v\n", f)
-	chk.Vector(tst, "f", 1e-15, f, []float64{2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0})
-
-	f = CalcFitnessRanking(11, 1.1)
-	io.Pfblue2("f = %v\n", f)
-	chk.Vector(tst, "f", 1e-15, f, []float64{1.1, 1.08, 1.06, 1.04, 1.02, 1, 0.98, 0.96, 0.94, 0.92, 0.9})
-}
-
 func Test_rws01(tst *testing.T) {
 
 	//verbose()

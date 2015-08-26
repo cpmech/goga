@@ -372,7 +372,7 @@ func Test_evo04(tst *testing.T) {
 
 func Test_evo05(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo04. sin⁶(5 π x)")
 
 	// configuration
@@ -480,7 +480,7 @@ func Test_evo05(tst *testing.T) {
 
 func Test_evo06(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo06. two-bar truss. Pareto-optimal")
 
 	// configuration
