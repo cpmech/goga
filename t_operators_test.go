@@ -205,11 +205,16 @@ func Test_cxint01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("cxint01")
 
+	var ops OpsData
+	ops.SetDefault()
+	ops.Pc = 1
+	ops.Ncuts = 1
+
 	A := []int{1, 2}
 	B := []int{-1, -2}
 	a := make([]int, len(A))
 	b := make([]int, len(A))
-	IntCrossover(a, b, A, B, 0, 1, nil, 1, nil)
+	IntCrossover(a, b, A, B, 0, &ops)
 	io.Pfred("A = %2d\n", A)
 	io.PfRed("B = %2d\n", B)
 	io.Pfcyan("a = %2d\n", a)
@@ -222,8 +227,8 @@ func Test_cxint01(tst *testing.T) {
 	B = []int{-1, -2, -3, -4, -5, -6, -7, -8}
 	a = make([]int, len(A))
 	b = make([]int, len(A))
-	cuts := []int{1, 3}
-	IntCrossover(a, b, A, B, 0, 0, cuts, 1, nil)
+	ops.Cuts = []int{1, 3}
+	IntCrossover(a, b, A, B, 0, &ops)
 	io.Pfred("A = %2v\n", A)
 	io.PfRed("B = %2v\n", B)
 	io.Pfcyan("a = %2v\n", a)
@@ -231,8 +236,8 @@ func Test_cxint01(tst *testing.T) {
 	chk.Ints(tst, "a", a, []int{1, -2, -3, 4, 5, 6, 7, 8})
 	chk.Ints(tst, "b", b, []int{-1, 2, 3, -4, -5, -6, -7, -8})
 
-	cuts = []int{5, 7}
-	IntCrossover(a, b, A, B, 0, 0, cuts, 1, nil)
+	ops.Cuts = []int{5, 7}
+	IntCrossover(a, b, A, B, 0, &ops)
 	io.Pfred("A = %2v\n", A)
 	io.PfRed("B = %2v\n", B)
 	io.Pfcyan("a = %2v\n", a)
@@ -246,11 +251,16 @@ func Test_cx01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("cx01")
 
+	var ops OpsData
+	ops.SetDefault()
+	ops.Pc = 1
+	ops.Cuts = []int{2, 4}
+
 	A := []float64{1.1, 2.2, 3.3, 4.4, 5.5, 6.6}
 	B := []float64{9.1, 9.2, 9.3, 9.4, 9.5, 9.6}
 	a := make([]float64, len(A))
 	b := make([]float64, len(A))
-	FltCrossover(a, b, A, B, 0, 0, []int{2, 4}, 1, nil)
+	FltCrossover(a, b, A, B, 0, &ops)
 	io.Pfred("A = %3v\n", A)
 	io.PfRed("B = %3v\n", B)
 	io.Pfcyan("a = %3v\n", a)
@@ -263,7 +273,8 @@ func Test_cx01(tst *testing.T) {
 	D := []string{"-", "o", "+", "@", "*", "&"}
 	c := make([]string, len(A))
 	d := make([]string, len(A))
-	StrCrossover(c, d, C, D, 0, 0, []int{1, 3}, 1, nil)
+	ops.Cuts = []int{1, 3}
+	StrCrossover(c, d, C, D, 0, &ops)
 	io.Pfred("C = %3v\n", C)
 	io.PfRed("D = %3v\n", D)
 	io.Pfcyan("c = %3v\n", c)
@@ -280,7 +291,8 @@ func Test_cx01(tst *testing.T) {
 		e[i] = make([]byte, 1)
 		f[i] = make([]byte, 1)
 	}
-	BytCrossover(e, f, E, F, 0, 0, []int{1, 3}, 1, nil)
+	ops.Cuts = []int{1, 3}
+	BytCrossover(e, f, E, F, 0, &ops)
 	io.Pfred("E = %3s\n", E)
 	io.PfRed("F = %3s\n", F)
 	io.Pfcyan("e = %3s\n", e)
@@ -299,7 +311,8 @@ func Test_cx01(tst *testing.T) {
 	H := []byte("-o+@*&")
 	g := make([]byte, len(A))
 	h := make([]byte, len(A))
-	KeyCrossover(g, h, G, H, 0, 0, []int{1, 3}, 1, nil)
+	ops.Cuts = []int{1, 3}
+	KeyCrossover(g, h, G, H, 0, &ops)
 	io.Pfred("G = %3v\n", G)
 	io.PfRed("H = %3v\n", H)
 	io.Pfcyan("g = %3v\n", g)
@@ -318,7 +331,8 @@ func Test_cx01(tst *testing.T) {
 	N := []Func_t{func(i *Individual) string { return "-" }, func(i *Individual) string { return "o" }, func(i *Individual) string { return "+" }, func(i *Individual) string { return "@" }, func(i *Individual) string { return "*" }, func(i *Individual) string { return "&" }}
 	m := make([]Func_t, len(A))
 	n := make([]Func_t, len(A))
-	FunCrossover(m, n, M, N, 0, 0, []int{1, 3}, 1, nil)
+	ops.Cuts = []int{1, 3}
+	FunCrossover(m, n, M, N, 0, &ops)
 	io.Pfred("M = %3v\n", M)
 	io.PfRed("N = %3v\n", N)
 	io.Pfcyan("m = %3v\n", m)
@@ -347,42 +361,43 @@ func Test_mut01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("mut01")
 
+	var ops OpsData
+	ops.SetDefault()
+	ops.Pm = 1
+
 	rnd.Init(0)
 
 	A := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
-	nchanges := 3
-	mult := 10
+	ops.Nchanges = 3
+	ops.Mmax = 10
 	io.Pforan("before: A = %v\n", A)
-	IntMutation(A, 0, nchanges, 1, mult)
+	IntMutation(A, 0, &ops)
 	io.Pforan("after:  A = %v\n", A)
 	io.Pf("\n")
 
 	B := []float64{1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9}
-	nchanges = 3
-	multf := 2000.0
 	io.Pforan("before: B = %v\n", B)
-	FltMutation(B, 0, nchanges, 1, multf)
+	FltMutation(B, 0, &ops)
 	io.Pforan("after:  B = %v\n", B)
 	io.Pf("\n")
 
 	C := []string{"a", "b", "c", "d", "e", "f"}
-	nchanges = 2
+	ops.Nchanges = 2
 	io.Pforan("before: C = %v\n", C)
-	StrMutation(C, 0, nchanges, 1, nil)
+	StrMutation(C, 0, &ops)
 	io.Pforan("after:  C = %v\n", C)
 	io.Pf("\n")
 
 	D := []byte("abcdefghijklm")
-	nchanges = 3
+	ops.Nchanges = 3
 	io.Pforan("before: D = %s\n", D)
-	KeyMutation(D, 0, nchanges, 1, nil)
+	KeyMutation(D, 0, &ops)
 	io.Pforan("after:  D = %s\n", D)
 	io.Pf("\n")
 
 	E := [][]byte{[]byte("abc"), []byte("def"), []byte("ghi"), []byte("jkl")}
-	nchanges = 3
 	io.Pforan("before: E = %s\n", E)
-	BytMutation(E, 0, nchanges, 1, nil)
+	BytMutation(E, 0, &ops)
 	io.Pforan("after:  E = %s\n", E)
 	io.Pf("\n")
 
@@ -394,12 +409,11 @@ func Test_mut01(tst *testing.T) {
 		func(o *Individual) string { return "g1" },
 		func(o *Individual) string { return "g2" },
 	}
-	nchanges = 3
 	io.Pforan("before: F =")
 	for _, f := range F {
 		io.Pforan(" %q", f(nil))
 	}
-	FunMutation(F, 0, nchanges, 1, nil)
+	FunMutation(F, 0, &ops)
 	io.Pforan("\nafter:  F =")
 	for _, f := range F {
 		io.Pforan(" %q", f(nil))
@@ -413,13 +427,18 @@ func Test_intordcx01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("intordcx01")
 
+	var ops OpsData
+	ops.SetDefault()
+	ops.Pc = 1
+
 	rnd.Init(0)
 
 	A := []int{1, 2, 3, 4, 5, 6, 7, 8}
 	B := []int{2, 4, 6, 8, 7, 5, 3, 1}
 	a := make([]int, len(A))
 	b := make([]int, len(A))
-	IntOrdCrossover(a, b, A, B, 0, 0, []int{2, 5}, 1, nil)
+	ops.Cuts = []int{2, 5}
+	IntOrdCrossover(a, b, A, B, 0, &ops)
 	io.Pforan("A = %v\n", A)
 	io.Pfblue2("B = %v\n", B)
 	io.Pfgreen("a = %v\n", a)
@@ -436,7 +455,8 @@ func Test_intordcx01(tst *testing.T) {
 
 	A = []int{1, 3, 5, 7, 6, 2, 4, 8}
 	B = []int{5, 6, 3, 8, 2, 1, 4, 7}
-	IntOrdCrossover(a, b, A, B, 0, 0, []int{3, 6}, 1, nil)
+	ops.Cuts = []int{3, 6}
+	IntOrdCrossover(a, b, A, B, 0, &ops)
 	io.Pforan("\nA = %v\n", A)
 	io.Pfblue2("B = %v\n", B)
 	io.Pfgreen("a = %v\n", a)
@@ -452,7 +472,8 @@ func Test_intordcx01(tst *testing.T) {
 
 	A = []int{1, 2, 3, 4, 5, 6, 7, 8}
 	B = []int{2, 4, 6, 8, 7, 5, 3, 1}
-	IntOrdCrossover(a, b, A, B, 0, 0, nil, 1, nil)
+	ops.Cuts = []int{}
+	IntOrdCrossover(a, b, A, B, 0, &ops)
 	io.Pforan("\nA = %v\n", A)
 	io.Pfblue2("B = %v\n", B)
 	io.Pfgreen("a = %v\n", a)
@@ -466,7 +487,7 @@ func Test_intordcx01(tst *testing.T) {
 	D := []int{3, 1, 2}
 	c := make([]int, len(C))
 	d := make([]int, len(D))
-	IntOrdCrossover(c, d, C, D, 0, 0, nil, 1, nil)
+	IntOrdCrossover(c, d, C, D, 0, &ops)
 	io.Pforan("\nC = %v\n", C)
 	io.Pfblue2("D = %v\n", D)
 	io.Pfgreen("c = %v\n", c)
@@ -484,11 +505,16 @@ func Test_intordmut01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("intordmut01")
 
+	var ops OpsData
+	ops.SetDefault()
+	ops.Pm = 1
+
 	rnd.Init(0)
 
 	a := []int{1, 2, 3, 4, 5, 6, 7, 8}
 	io.Pforan("before: a = %v\n", a)
-	IntOrdMutation(a, 0, 0, 1, []int{2, 5, 4})
+	ops.OrdSti = []int{2, 5, 4}
+	IntOrdMutation(a, 0, &ops)
 	io.Pfcyan("after:  a = %v\n", a)
 	chk.Ints(tst, "a", a, []int{1, 2, 6, 7, 3, 4, 5, 8})
 	nums := utl.IntRange2(1, 9)
@@ -497,7 +523,8 @@ func Test_intordmut01(tst *testing.T) {
 
 	a = []int{1, 2, 3, 4, 5, 6, 7, 8}
 	io.Pforan("\nbefore: a = %v\n", a)
-	IntOrdMutation(a, 0, 0, 1, nil)
+	ops.OrdSti = nil
+	IntOrdMutation(a, 0, &ops)
 	io.Pfcyan("after:  a = %v\n", a)
 	sort.Ints(a)
 	chk.Ints(tst, "asorted = 12345678", a, nums)
@@ -508,14 +535,18 @@ func Test_blx01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("blx01. blended crossover")
 
+	var ops OpsData
+	ops.SetDefault()
+	ops.Pc = 1.0
+	ops.Xrange = [][]float64{{-1, 2}, {0, 3}, {1, 4}, {3, 6}, {4, 7}}
+
 	rnd.Init(0)
 
-	α := 0.5
 	A := []float64{0, 1, 2, 4, 5}
 	B := []float64{1, 2, 3, 5, 6}
 	a := make([]float64, len(A))
 	b := make([]float64, len(A))
-	FltCrossoverBlx(a, b, A, B, 0, 0, nil, 1, α)
+	FltCrossoverBlx(a, b, A, B, 0, &ops)
 	io.Pforan("A = %v\n", A)
 	io.Pforan("B = %v\n", B)
 	io.Pfcyan("a = %v\n", a)
@@ -527,18 +558,21 @@ func Test_mwicz01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("mwicz01. Michalewicz mutation")
 
+	var ops OpsData
+	ops.SetDefault()
+	ops.Pm = 1.0
+	ops.Tmax = 10
+
 	rnd.Init(0)
 
-	xrange := [][]float64{{0, 2}, {1, 3}, {2, 4}, {3, 5}, {4, 6}}
-	tmax := 10
-	mw := &Michalewicz{float64(tmax), 5.0, xrange}
-	T := utl.IntRange(tmax)
+	ops.Xrange = [][]float64{{0, 2}, {1, 3}, {2, 4}, {3, 5}, {4, 6}}
+	T := utl.IntRange(int(ops.Tmax))
 	for _, t := range T {
-		io.Pf("t=%v Δ=%v\n", t, mw.Delta(float64(t), 1))
+		io.Pf("t=%v Δ=%v\n", t, ops.MwiczDelta(float64(t), 1))
 	}
 	for _, t := range T {
 		A := []float64{0, 1, 2, 3, 4}
-		FltMutationNonUni(A, t, 0, 1, mw)
+		FltMutationMwicz(A, t, &ops)
 		io.Pforan("A = %.8f\n", A)
 	}
 

@@ -22,7 +22,6 @@ type ConfParams struct {
 	Nbases int     // number of bases in chromosome
 	Grid   bool    // generate individuals based on grid
 	Noise  float64 // apply noise when generate based on grid (if Noise > 0)
-	IntOrd bool    // integer chromossome is ordered list
 
 	// time control
 	Tf    int // number of generations
@@ -34,9 +33,10 @@ type ConfParams struct {
 	RegPct    float64 // percentage of individuals to be regenerated; e.g. 0.3
 	UseStdDev bool    // use standard deviation (σ) instead of average deviation in Stat
 
+	// operators' data
+	Ops OpsData
+
 	// selection and reproduction
-	Pc        float64 // probability of crossover
-	Pm        float64 // probability of mutation
 	Elite     bool    // use elitism
 	Rws       bool    // use Roulette-Wheel selection method
 	Rnk       bool    // ranking
@@ -72,30 +72,6 @@ type ConfParams struct {
 	// objective function
 	OvaOor Objectives_t // compute objective value (ova) and out-of-range value (oor)
 
-	// crossover
-	CxNcuts   map[string]int         // crossover number of cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	CxCuts    map[string][]int       // crossover specific cuts for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	CxProbs   map[string]float64     // crossover probabilities for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	CxFuncs   map[string]interface{} // crossover functions for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	CxExtra   map[string]interface{} // crossover extra parameters for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	CxIntFunc CxIntFunc_t            // crossover function
-	CxFltFunc CxFltFunc_t            // crossover function
-	CxStrFunc CxStrFunc_t            // crossover function
-	CxKeyFunc CxKeyFunc_t            // crossover function
-	CxBytFunc CxBytFunc_t            // crossover function
-	CxFunFunc CxFunFunc_t            // crossover function
-
-	// mutation
-	MtNchanges map[string]int         // mutation number of changes for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	MtProbs    map[string]float64     // mutation probabilities for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	MtExtra    map[string]interface{} // mutation extra parameters for each 'int', 'flt', 'str', 'key', 'byt', 'fun' tag
-	MtIntFunc  MtIntFunc_t            // mutation function
-	MtFltFunc  MtFltFunc_t            // mutation function
-	MtStrFunc  MtStrFunc_t            // mutation function
-	MtKeyFunc  MtKeyFunc_t            // mutation function
-	MtBytFunc  MtBytFunc_t            // mutation function
-	MtFunFunc  MtFunFunc_t            // mutation function
-
 	// generation of individuals
 	OrdNints   int         // ordered integer populations: number of integers
 	RangeInt   [][]int     // [ngene][2] min and max integers
@@ -124,10 +100,9 @@ func (o *ConfParams) SetDefault() {
 	o.Pll = true
 	o.Nisl = 4
 	o.Ninds = 20
-	o.Nbases = 10
+	o.Nbases = 1
 	o.Grid = true
-	o.Noise = 0.3
-	o.IntOrd = false
+	o.Noise = 0.2
 
 	// time control
 	o.Tf = 100
@@ -136,12 +111,13 @@ func (o *ConfParams) SetDefault() {
 
 	// regeneration
 	o.RegTol = 0
-	o.RegPct = 0.3
+	o.RegPct = 0.2
 	o.UseStdDev = false
 
+	// operators' data
+	o.Ops.SetDefault()
+
 	// selection and reproduction
-	o.Pc = 0.8
-	o.Pm = 0.01
 	o.Elite = false
 	o.Rws = false
 	o.Rnk = true
@@ -172,45 +148,17 @@ func (o *ConfParams) SetDefault() {
 	o.Strategy = 1
 	o.Ntrials = 100
 	o.Eps1 = 0.1
-
-	// number of cuts in chromossome
-	o.CxNcuts = map[string]int{"int": 2, "flt": 2, "str": 2, "key": 2, "byt": 2, "fun": 2}
 }
 
 // CalcDerived calculates derived quantities
 func (o *ConfParams) CalcDerived() {
-
-	// set probabilities
-	pc, pm := o.Pc, o.Pm
-	o.CxProbs = map[string]float64{"int": pc, "flt": pc, "str": pc, "key": pc, "byt": pc, "fun": pc}
-	o.MtProbs = map[string]float64{"int": pm, "flt": pm, "str": pm, "key": pm, "byt": pm, "fun": pm}
-
-	// set specific crossover and mutation functions
-	if o.IntOrd {
-		o.CxIntFunc = IntOrdCrossover
-		o.MtIntFunc = IntOrdMutation
-	}
-}
-
-// SetCxBlx sets crossover method Blx
-func (o *ConfParams) SetCxBlx(α float64) {
-	o.Nbases = 1 // this crossover method works with 1 basis only
-	o.CxExtra = map[string]interface{}{"flt": α}
-	o.CxFltFunc = FltCrossoverBlx
-}
-
-// SetMtMwicz sets mutation method Michalewicz
-func (o *ConfParams) SetMtMwicz(b float64) {
-	o.Nbases = 1 // Michalewicz mutation does not work with nbases!=1
-	o.MtExtra = map[string]interface{}{"flt": &Michalewicz{float64(o.Tf), b, o.RangeFlt}}
-	o.MtFltFunc = FltMutationNonUni
+	o.Ops.CalcDerived(o.Tf, o.RangeFlt)
 }
 
 // NewConfParams returns a new ConfParams structure, with default values set
 func NewConfParams() *ConfParams {
 	var o ConfParams
 	o.SetDefault()
-	o.CalcDerived()
 	return &o
 }
 

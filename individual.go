@@ -241,133 +241,46 @@ func IndDistance(A, B *Individual) (dist float64) {
 
 // IndCrossover performs the crossover between chromosomes of two individuals A and B
 // resulting in the chromosomes of other two individuals a and b
-//  Input:
-//   A and B -- parents
-//   ncuts   -- number of cuts. keys are: 'int', 'flt', 'str', 'key', 'byt', 'fun'
-//              ncuts can be nil if 'cuts' is provided
-//   cuts    -- positions for cuts in the augmented/whole chromosome
-//              len(cuts) == 6: {int, flt, str, key, byt, fun
-//              cuts == nil indicates ncuts is to be used instead
-//   probs   -- probabilities. use nil for default values
-//   cxfucns -- crossover functions. use nil for default ones
-//  Output:
-//   a and b -- offspring
-func IndCrossover(a, b, A, B *Individual, time int, ncuts map[string]int, cuts map[string][]int, probs map[string]float64, extra map[string]interface{},
-	cxint CxIntFunc_t, cxflt CxFltFunc_t, cxstr CxStrFunc_t, cxkey CxKeyFunc_t, cxbyt CxBytFunc_t, cxfun CxFunFunc_t) {
-
-	// default values
-	pc := func(t string) float64 {
-		if val, ok := probs[t]; ok {
-			return val
-		}
-		return 0.8
-	}
-
-	// default functions
-	if cxint == nil {
-		cxint = IntCrossover
-	}
-	if cxflt == nil {
-		cxflt = FltCrossover
-	}
-	if cxstr == nil {
-		cxstr = StrCrossover
-	}
-	if cxkey == nil {
-		cxkey = KeyCrossover
-	}
-	if cxbyt == nil {
-		cxbyt = BytCrossover
-	}
-	if cxfun == nil {
-		cxfun = FunCrossover
-	}
-
-	// perform crossover
+func IndCrossover(a, b, A, B *Individual, time int, ops *OpsData) {
 	if A.Ints != nil {
-		cxint(a.Ints, b.Ints, A.Ints, B.Ints, time, ncuts["int"], cuts["int"], pc("int"), extra["int"])
+		ops.CxInt(a.Ints, b.Ints, A.Ints, B.Ints, time, ops)
 	}
 	if A.Floats != nil {
-		cxflt(a.Floats, b.Floats, A.Floats, B.Floats, time, ncuts["flt"], cuts["flt"], pc("flt"), extra["flt"])
+		ops.CxFlt(a.Floats, b.Floats, A.Floats, B.Floats, time, ops)
 	}
 	if A.Strings != nil {
-		cxstr(a.Strings, b.Strings, A.Strings, B.Strings, time, ncuts["str"], cuts["str"], pc("str"), extra["str"])
+		ops.CxStr(a.Strings, b.Strings, A.Strings, B.Strings, time, ops)
 	}
 	if A.Keys != nil {
-		cxkey(a.Keys, b.Keys, A.Keys, B.Keys, time, ncuts["key"], cuts["key"], pc("key"), extra["key"])
+		ops.CxKey(a.Keys, b.Keys, A.Keys, B.Keys, time, ops)
 	}
 	if A.Bytes != nil {
-		cxbyt(a.Bytes, b.Bytes, A.Bytes, B.Bytes, time, ncuts["byt"], cuts["byt"], pc("byt"), extra["byt"])
+		ops.CxByt(a.Bytes, b.Bytes, A.Bytes, B.Bytes, time, ops)
 	}
 	if A.Funcs != nil {
-		cxfun(a.Funcs, b.Funcs, A.Funcs, B.Funcs, time, ncuts["fun"], cuts["fun"], pc("fun"), extra["fun"])
+		ops.CxFun(a.Funcs, b.Funcs, A.Funcs, B.Funcs, time, ops)
 	}
 }
 
 // IndMutation performs the mutation operation in the chromosomes of an individual
-//  Input:
-//   A        -- individual
-//   nchanges -- number of changes. keys are: 'int', 'flt', 'str', 'key', 'byt', 'fun'
-//               use nil for default values
-//   probs    -- probabilities. use nil for default values
-//   extra    -- extra arguments for each 'int', 'flt', 'str', 'key', 'byt', 'fun'
-//   mutfucns -- mutation functions. use nil for default ones
-//  Output: modified individual
-func IndMutation(A *Individual, time int, nchanges map[string]int, probs map[string]float64, extra map[string]interface{},
-	mtint MtIntFunc_t, mtflt MtFltFunc_t, mtstr MtStrFunc_t, mtkey MtKeyFunc_t, mtbyt MtBytFunc_t, mtfun MtFunFunc_t) {
-
-	// default values
-	nc := func(t string) int {
-		if val, ok := nchanges[t]; ok {
-			return val
-		}
-		return 1
-	}
-	pm := func(t string) float64 {
-		if val, ok := probs[t]; ok {
-			return val
-		}
-		return 0.01
-	}
-
-	// default functions
-	if mtint == nil {
-		mtint = IntMutation
-	}
-	if mtflt == nil {
-		mtflt = FltMutation
-	}
-	if mtstr == nil {
-		mtstr = StrMutation
-	}
-	if mtkey == nil {
-		mtkey = KeyMutation
-	}
-	if mtbyt == nil {
-		mtbyt = BytMutation
-	}
-	if mtfun == nil {
-		mtfun = FunMutation
-	}
-
-	// perform crossover
+func IndMutation(A *Individual, time int, ops *OpsData) {
 	if A.Ints != nil {
-		mtint(A.Ints, time, nc("int"), pm("int"), extra["int"])
+		ops.MtInt(A.Ints, time, ops)
 	}
 	if A.Floats != nil {
-		mtflt(A.Floats, time, nc("flt"), pm("flt"), extra["flt"])
+		ops.MtFlt(A.Floats, time, ops)
 	}
 	if A.Strings != nil {
-		mtstr(A.Strings, time, nc("flt"), pm("str"), extra["str"])
+		ops.MtStr(A.Strings, time, ops)
 	}
 	if A.Keys != nil {
-		mtkey(A.Keys, time, nc("key"), pm("key"), extra["key"])
+		ops.MtKey(A.Keys, time, ops)
 	}
 	if A.Bytes != nil {
-		mtbyt(A.Bytes, time, nc("byt"), pm("byt"), extra["byt"])
+		ops.MtByt(A.Bytes, time, ops)
 	}
 	if A.Funcs != nil {
-		mtfun(A.Funcs, time, nc("fun"), pm("fun"), extra["fun"])
+		ops.MtFun(A.Funcs, time, ops)
 	}
 }
 
