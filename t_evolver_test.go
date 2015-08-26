@@ -39,12 +39,12 @@ func Test_evo01(tst *testing.T) {
 	C.CalcDerived()
 
 	// mutation function
-	C.MtIntFunc = func(A []int, time, nchanges int, pm float64, extra interface{}) {
+	C.Ops.MtInt = func(A []int, time int, ops *OpsData) {
 		size := len(A)
-		if !rnd.FlipCoin(pm) || size < 1 {
+		if !rnd.FlipCoin(ops.Pm) || size < 1 {
 			return
 		}
-		pos := rnd.IntGetUniqueN(0, size, nchanges)
+		pos := rnd.IntGetUniqueN(0, size, ops.Nchanges)
 		for _, i := range pos {
 			if A[i] == 1 {
 				A[i] = 0
@@ -112,7 +112,9 @@ func Test_evo02(tst *testing.T) {
 	C.Nisl = 1
 	C.Ninds = 20
 	C.RegTol = 0
+	//C.GAtype = "std"
 	C.GAtype = "crowd"
+	C.CrowdSize = 2
 	C.ParetoPhi = 0.01
 	C.Elite = false
 	C.Verbose = false
@@ -125,6 +127,7 @@ func Test_evo02(tst *testing.T) {
 		C.FnKey = "test_evo02"
 		C.DoPlot = true
 	}
+	//C.SetNbasesFixOp(8)
 	C.CalcDerived()
 
 	f := func(x []float64) float64 { return x[0]*x[0]/2.0 + x[1]*x[1] - x[0]*x[1] - 2.0*x[0] - 6.0*x[1] }
@@ -180,8 +183,8 @@ func Test_evo03(tst *testing.T) {
 	C.Pll = false
 	C.Nisl = 1
 	C.Ninds = 20
+	//C.GAtype = "std"
 	C.GAtype = "crowd"
-	C.Elite = true
 	C.RangeFlt = [][]float64{
 		{-1, 3}, // gene # 0: min and max
 		{-1, 3}, // gene # 1: min and max
@@ -265,14 +268,12 @@ func Test_evo04(tst *testing.T) {
 	C.RegTol = 0.3
 	C.RegPct = 0.2
 	//C.Dtmig = 30
-	C.IntOrd = true
 	C.GAtype = "crowd"
 	C.ParetoPhi = 0.1
 	C.Elite = false
 	C.DoPlot = false //chk.Verbose
-	C.PopOrdGen = PopOrdGen
-	C.OrdNints = nstations
 	//C.Rws = true
+	C.SetIntOrd(nstations)
 	C.CalcDerived()
 
 	// initialise random numbers generator
@@ -282,6 +283,7 @@ func Test_evo04(tst *testing.T) {
 	C.OvaOor = func(ind *Individual, idIsland, t int, report *bytes.Buffer) {
 		L := locations
 		ids := ind.Ints
+		//io.Pforan("ids = %v\n", ids)
 		dist := 0.0
 		for i := 1; i < nstations; i++ {
 			a, b := ids[i-1], ids[i]
@@ -373,26 +375,24 @@ func Test_evo04(tst *testing.T) {
 func Test_evo05(tst *testing.T) {
 
 	//verbose()
-	chk.PrintTitle("evo04. sin⁶(5 π x)")
+	chk.PrintTitle("evo05. sin⁶(5 π x)")
 
 	// configuration
 	C := NewConfParams()
 	C.Nisl = 1
 	C.Ninds = 12
-	//C.GAtype = "crowd"
-	C.GAtype = "sharing"
+	C.GAtype = "crowd"
+	//C.GAtype = "sharing"
 	C.CrowdSize = 3
-	C.ParetoPhi = 0
+	C.ParetoPhi = 0.01
 	C.Noise = 0.05
 	C.DoPlot = false
 	C.RegTol = 0
-	C.Pc = 0.8
-	C.Pm = 0.01
-	C.MtExtra = map[string]interface{}{"flt": 1.1}
 	C.Tf = 100
 	C.Dtmig = 101
 	C.RangeFlt = [][]float64{{0, 1}}
 	C.PopFltGen = PopFltGen
+	C.SetNbasesFixOp(8)
 	C.CalcDerived()
 
 	// initialise random numbers generator
@@ -486,11 +486,11 @@ func Test_evo06(tst *testing.T) {
 	// configuration
 	C := NewConfParams()
 	C.Nisl = 1
-	C.Ninds = 200
+	C.Ninds = 24
 	C.GAtype = "crowd"
 	//C.GAtype = "sharing"
 	//C.Elite = true
-	C.CrowdSize = 4
+	C.CrowdSize = 2
 	C.ParetoPhi = 0.1
 	C.ShAlp = 0.5
 	C.ShSig = 0.001
@@ -498,15 +498,11 @@ func Test_evo06(tst *testing.T) {
 	C.Noise = 0.05
 	C.DoPlot = false
 	C.RegTol = 0
-	C.Pc = 0.8
-	C.Pm = 0.01
 	C.Tf = 100
 	C.Dtmig = 25
 	C.RangeFlt = [][]float64{{0.1, 2.25}, {0.5, 2.5}}
 	C.PopFltGen = PopFltGen
 	C.CalcDerived()
-	C.SetCxBlx(0.5)
-	C.SetMtMwicz(5.0)
 
 	// initialise random numbers generator
 	rnd.Init(0)
@@ -541,18 +537,18 @@ func Test_evo06(tst *testing.T) {
 		ind.Ovas[1] = f2(x)
 		ind.Oors[0] = utl.GtePenalty(0, g1(x), 1)
 		ind.Oors[1] = utl.GtePenalty(0, g2(x), 1)
-		ind.Oors[2] = utl.GtePenalty(x[0], 0, 1)
-		ind.Oors[3] = utl.GtePenalty(x[1], 0, 1)
+		//ind.Oors[2] = utl.GtePenalty(x[0], 0, 1)
+		//ind.Oors[3] = utl.GtePenalty(x[1], 0, 1)
 	}
 
 	// run
 	nova := 2
-	noor := 4
+	noor := 2
 	evo := NewEvolver(nova, noor, C)
 	evo.Run()
 
 	// results
-	if C.Verbose {
+	if chk.Verbose {
 		_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
 		feasible := evo.GetFeasible()
 		ovas, _ := evo.GetResults(feasible)

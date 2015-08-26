@@ -109,26 +109,23 @@ func Test_ind02(tst *testing.T) {
 	io.Pfpink("A = %v\n", A.Output(fmts, false))
 	io.Pfcyan("B = %v\n", B.Output(fmts, false))
 
-	cuts := map[string][]int{
-		"int": []int{1, 2},
-		"str": []int{1},
-	}
-	pc := map[string]float64{
-		"int": 1,
-		"str": 1,
-	}
+	var ops OpsData
+	ops.SetDefault()
+	ops.Pc = 1.0
+	ops.Cuts = []int{1, 2}
+	ops.Xrange = [][]float64{{0, 1}, {-20, 20}, {-300, 300}}
 
 	a := A.GetCopy()
 	b := A.GetCopy()
-	IndCrossover(a, b, A, B, 0, nil, cuts, pc, nil, nil, nil, nil, nil, nil, nil)
+	IndCrossover(a, b, A, B, 0, &ops)
 
 	io.Pforan("a = %v\n", a.Output(fmts, false))
 	io.Pfblue2("b = %v\n", b.Output(fmts, false))
 
 	chk.Ints(tst, "a.Ints   ", a.Ints, []int{1, -20, 300})
 	chk.Ints(tst, "b.Ints   ", b.Ints, []int{-1, 20, -300})
-	chk.Strings(tst, "a.Strings", a.Strings, []string{"abc", "Y", "Z"})
-	chk.Strings(tst, "b.Strings", b.Strings, []string{"X", "b", "c"})
+	chk.Strings(tst, "a.Strings", a.Strings, []string{"abc", "Y", "c"})
+	chk.Strings(tst, "b.Strings", b.Strings, []string{"X", "b", "Z"})
 	// TODO: add other tests here
 	io.Pf("\n")
 

@@ -37,6 +37,7 @@ func Test_island01(tst *testing.T) {
 		{20, 30},
 		{30, 40},
 	}
+	C.CalcDerived()
 
 	// generator
 	C.PopFltGen = func(ninds, nova, noor, nbases int, noise float64, args interface{}, frange [][]float64) Population {

@@ -38,17 +38,17 @@ type PopBytGen_t func(ninds, nova, noor, nbases int, noise float64, args interfa
 type PopFunGen_t func(ninds, nova, noor, nbases int, noise float64, args interface{}, pool [][]Func_t) Population
 
 // crossover functions
-type CxIntFunc_t func(a, b, A, B []int, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
-type CxFltFunc_t func(a, b, A, B []float64, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
-type CxStrFunc_t func(a, b, A, B []string, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
-type CxKeyFunc_t func(a, b, A, B []byte, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
-type CxBytFunc_t func(a, b, A, B [][]byte, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
-type CxFunFunc_t func(a, b, A, B []Func_t, time, ncuts int, cuts []int, pc float64, extra interface{}) (ends []int)
+type CxIntFunc_t func(a, b, A, B []int, time int, dat *OpsData) (ends []int)
+type CxFltFunc_t func(a, b, A, B []float64, time int, dat *OpsData) (ends []int)
+type CxStrFunc_t func(a, b, A, B []string, time int, dat *OpsData) (ends []int)
+type CxKeyFunc_t func(a, b, A, B []byte, time int, dat *OpsData) (ends []int)
+type CxBytFunc_t func(a, b, A, B [][]byte, time int, dat *OpsData) (ends []int)
+type CxFunFunc_t func(a, b, A, B []Func_t, time int, dat *OpsData) (ends []int)
 
 // mutation functions
-type MtIntFunc_t func(a []int, time, nchanges int, pm float64, extra interface{})
-type MtFltFunc_t func(a []float64, time, nchanges int, pm float64, extra interface{})
-type MtStrFunc_t func(a []string, time, nchanges int, pm float64, extra interface{})
-type MtKeyFunc_t func(a []byte, time, nchanges int, pm float64, extra interface{})
-type MtBytFunc_t func(a [][]byte, time, nchanges int, pm float64, extra interface{})
-type MtFunFunc_t func(a []Func_t, time, nchanges int, pm float64, extra interface{})
+type MtIntFunc_t func(a []int, time int, dat *OpsData)
+type MtFltFunc_t func(a []float64, time int, dat *OpsData)
+type MtStrFunc_t func(a []string, time int, dat *OpsData)
+type MtKeyFunc_t func(a []byte, time int, dat *OpsData)
+type MtBytFunc_t func(a [][]byte, time int, dat *OpsData)
+type MtFunFunc_t func(a []Func_t, time int, dat *OpsData)

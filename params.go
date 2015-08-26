@@ -150,6 +150,21 @@ func (o *ConfParams) SetDefault() {
 	o.Eps1 = 0.1
 }
 
+// SetNbases sets number of bases and fixes corresponding operators
+func (o *ConfParams) SetNbasesFixOp(nbases int) {
+	o.Nbases = nbases
+	o.Ops.CxFlt = FltCrossover
+	o.Ops.MtFlt = FltMutation
+}
+
+// SetIntOrd sets functions to handle ordered integers
+func (o *ConfParams) SetIntOrd(nstations int) {
+	o.OrdNints = nstations
+	o.PopOrdGen = PopOrdGen
+	o.Ops.CxInt = IntOrdCrossover
+	o.Ops.MtInt = IntOrdMutation
+}
+
 // CalcDerived calculates derived quantities
 func (o *ConfParams) CalcDerived() {
 	o.Ops.CalcDerived(o.Tf, o.RangeFlt)

@@ -277,9 +277,9 @@ func (o *Island) update_crowding(time int) {
 			I, J := crowd[i], crowd[j]
 			A, B := o.Pop[I], o.Pop[J]
 			a, b := o.Bkp[I], o.Bkp[J]
-			IndCrossover(a, b, A, B, time, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxExtra, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
-			IndMutation(a, time, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
-			IndMutation(b, time, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+			IndCrossover(a, b, A, B, time, &o.C.Ops)
+			IndMutation(a, time, &o.C.Ops)
+			IndMutation(b, time, &o.C.Ops)
 			o.C.OvaOor(a, o.Id, time+1, &o.Report)
 			o.C.OvaOor(b, o.Id, time+1, &o.Report)
 		}
@@ -360,9 +360,9 @@ func (o *Island) update_sharing(time int) {
 	// reproduction
 	h := o.C.Ninds / 2
 	for i := 0; i < o.C.Ninds/2; i++ {
-		IndCrossover(o.Bkp[i], o.Bkp[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], time, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxExtra, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
-		IndMutation(o.Bkp[i], time, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
-		IndMutation(o.Bkp[h+i], time, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+		IndCrossover(o.Bkp[i], o.Bkp[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], time, &o.C.Ops)
+		IndMutation(o.Bkp[i], time, &o.C.Ops)
+		IndMutation(o.Bkp[h+i], time, &o.C.Ops)
 	}
 
 	// compute objective values
@@ -425,9 +425,9 @@ func (o *Island) update_standard(time int) {
 	// reproduction
 	h := ninds / 2
 	for i := 0; i < ninds/2; i++ {
-		IndCrossover(o.Bkp[i], o.Bkp[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], time, o.C.CxNcuts, o.C.CxCuts, o.C.CxProbs, o.C.CxExtra, o.C.CxIntFunc, o.C.CxFltFunc, o.C.CxStrFunc, o.C.CxKeyFunc, o.C.CxBytFunc, o.C.CxFunFunc)
-		IndMutation(o.Bkp[i], time, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
-		IndMutation(o.Bkp[h+i], time, o.C.MtNchanges, o.C.MtProbs, o.C.MtExtra, o.C.MtIntFunc, o.C.MtFltFunc, o.C.MtStrFunc, o.C.MtKeyFunc, o.C.MtBytFunc, o.C.MtFunFunc)
+		IndCrossover(o.Bkp[i], o.Bkp[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], time, &o.C.Ops)
+		IndMutation(o.Bkp[i], time, &o.C.Ops)
+		IndMutation(o.Bkp[h+i], time, &o.C.Ops)
 	}
 
 	// compute objective values
