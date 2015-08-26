@@ -301,7 +301,7 @@ func (o *Island) update_crowding(time int) {
 		for i := 0; i < n; i++ {
 			j := o.match.Links[i]
 			A, a := o.Pop[crowd[i]], o.Bkp[crowd[j]]
-			if IndCompare(A, a, o.C.ParetoPhi) {
+			if IndCompareProb(A, a, o.C.ParetoPhi) {
 				A.CopyInto(a) // parent wins
 			}
 		}
@@ -313,8 +313,7 @@ func (o *Island) update_sharing(time int) {
 
 	// selection
 	nsample := int(o.C.ShSize * float64(o.C.Ninds))
-	k := 0
-	for k < o.C.Ninds {
+	for k := 0; k < o.C.Ninds; k++ {
 		sample := rnd.IntGetUniqueN(0, o.C.Ninds, nsample)
 		pair := rnd.IntGetUniqueN(0, o.C.Ninds, 2)
 		i, j := pair[0], pair[1]
@@ -322,7 +321,8 @@ func (o *Island) update_sharing(time int) {
 		A_is_dominated, B_is_dominated := false, false
 		for _, s := range sample {
 			if s != i {
-				if !IndCompare(A, o.Pop[s], o.C.ParetoPhi) {
+				_, other_dominates := IndCompareDet(A, o.Pop[s])
+				if other_dominates {
 					A_is_dominated = true
 					break
 				}
@@ -330,7 +330,8 @@ func (o *Island) update_sharing(time int) {
 		}
 		for _, s := range sample {
 			if s != j {
-				if !IndCompare(B, o.Pop[s], o.C.ParetoPhi) {
+				_, other_dominates := IndCompareDet(B, o.Pop[s])
+				if other_dominates {
 					B_is_dominated = true
 					break
 				}
@@ -338,19 +339,18 @@ func (o *Island) update_sharing(time int) {
 		}
 		if !A_is_dominated && B_is_dominated {
 			o.selinds[k] = i
-			k++
-		} else if A_is_dominated && !B_is_dominated {
+			continue
+		}
+		if A_is_dominated && !B_is_dominated {
 			o.selinds[k] = j
-			k++
+			continue
+		}
+		shA := o.calc_sharing(i)
+		shB := o.calc_sharing(j)
+		if shA < shB {
+			o.selinds[k] = i
 		} else {
-			shA := o.calc_sharing(i)
-			shB := o.calc_sharing(j)
-			if shA < shB {
-				o.selinds[k] = i
-			} else {
-				o.selinds[k] = j
-			}
-			k++
+			o.selinds[k] = j
 		}
 	}
 
@@ -371,7 +371,7 @@ func (o *Island) update_sharing(time int) {
 	// elitism
 	if o.C.Elite {
 		iold, inew := o.Pop[0], o.Bkp[o.C.Ninds-1]
-		old_dominates := IndCompare(iold, inew, 0)
+		old_dominates, _ := IndCompareDet(iold, inew)
 		if old_dominates {
 			iold.CopyInto(inew)
 		}
@@ -436,7 +436,7 @@ func (o *Island) update_standard(time int) {
 	// elitism
 	if o.C.Elite {
 		iold, inew := o.Pop[0], o.Bkp[o.C.Ninds-1]
-		old_dominates := IndCompare(iold, inew, 0)
+		old_dominates, _ := IndCompareDet(iold, inew)
 		if old_dominates {
 			iold.CopyInto(inew)
 		}

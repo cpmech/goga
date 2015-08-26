@@ -166,8 +166,35 @@ func (o Individual) CopyInto(x *Individual) {
 	return
 }
 
-// IndCompare compares individual 'A' with another one 'B'
-func IndCompare(A, B *Individual, φ float64) (A_dominates bool) {
+// IndCompareDet compares individual 'A' with another one 'B'. Deterministic method
+func IndCompareDet(A, B *Individual) (A_dominates, B_dominates bool) {
+	var A_is_unfeasible, B_is_unfeasible bool
+	for i := 0; i < len(A.Oors); i++ {
+		if A.Oors[i] > 0 {
+			A_is_unfeasible = true
+		}
+		if B.Oors[i] > 0 {
+			B_is_unfeasible = true
+		}
+	}
+	if A_is_unfeasible {
+		if B_is_unfeasible {
+			A_dominates, B_dominates = utl.DblsParetoMin(A.Oors, B.Oors)
+			return
+		}
+		B_dominates = true
+		return
+	}
+	if B_is_unfeasible {
+		A_dominates = true
+		return
+	}
+	A_dominates, B_dominates = utl.DblsParetoMin(A.Ovas, B.Ovas)
+	return
+}
+
+// IndCompareProb compares individual 'A' with another one 'B' using probabilistic Pareto method
+func IndCompareProb(A, B *Individual, φ float64) (A_dominates bool) {
 	var A_is_unfeasible, B_is_unfeasible bool
 	for i := 0; i < len(A.Oors); i++ {
 		if A.Oors[i] > 0 {

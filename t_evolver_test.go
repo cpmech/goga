@@ -477,3 +477,94 @@ func Test_evo05(tst *testing.T) {
 		plt.SaveD("/tmp/goga", "test_evo05_func.eps")
 	}
 }
+
+func Test_evo06(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("evo06. two-bar truss. Pareto-optimal")
+
+	// configuration
+	C := NewConfParams()
+	C.Nisl = 1
+	C.Ninds = 48
+	//C.GAtype = "crowd"
+	C.GAtype = "sharing"
+	C.CrowdSize = 3
+	C.ParetoPhi = 0
+	C.Noise = 0.05
+	C.DoPlot = false
+	C.RegTol = 0
+	C.Pc = 0.8
+	C.Pm = 0.01
+	C.Tf = 100
+	C.Dtmig = 101
+	C.RangeFlt = [][]float64{{0.1, 2.25}, {0.5, 2.5}}
+	C.PopFltGen = PopFltGen
+	C.CalcDerived()
+	C.SetCxBlx(0.5)
+	C.SetMtMwicz(5.0)
+
+	// initialise random numbers generator
+	rnd.Init(0)
+
+	// data
+	// from Coelho (2007) page 19
+	ρ := 0.283 // lb/in³
+	h := 100.0 // in
+	P := 1e4   // lb
+	E := 3e7   // lb/in²
+	σ0 := 2e4  // lb/in²
+	//Amin := 1.0 // in²
+
+	// functions
+	twosq2 := 2.0 * math.Sqrt2
+	f1 := func(x []float64) float64 {
+		return 2.0 * ρ * h * x[1] * math.Sqrt(1.0+x[0]*x[0])
+	}
+	f2 := func(x []float64) float64 {
+		return P * h * math.Pow(1.0+x[0]*x[0], 1.5) * math.Sqrt(1.0+math.Pow(x[0], 4.0)) / (twosq2 * E * x[0] * x[0] * x[1])
+	}
+	g1 := func(x []float64) float64 {
+		return P*(1.0+x[0])*math.Sqrt(1.0+x[0]*x[0])/(twosq2*x[0]*x[1]) - σ0
+	}
+	g2 := func(x []float64) float64 {
+		return P*(1.0-x[0])*math.Sqrt(1.0+x[0]*x[0])/(twosq2*x[0]*x[1]) - σ0
+	}
+
+	// objective value function
+	C.OvaOor = func(ind *Individual, idIsland, t int, report *bytes.Buffer) {
+		x := ind.GetFloats()
+		ind.Ovas[0] = f1(x)
+		ind.Ovas[1] = f2(x)
+		ind.Oors[0] = utl.GtePenalty(0, g1(x), 1)
+		ind.Oors[1] = utl.GtePenalty(0, g2(x), 1)
+		ind.Oors[2] = utl.GtePenalty(x[0], 0, 1)
+		ind.Oors[3] = utl.GtePenalty(x[1], 0, 1)
+	}
+
+	// run
+	nova := 2
+	noor := 4
+	evo := NewEvolver(nova, noor, C)
+	evo.Run()
+
+	// results
+	if C.Verbose {
+		feasible := evo.GetFeasible()
+		for _, ind := range feasible {
+			x := ind.GetFloats()
+			io.Pforan("f1=%8.4f f2=%8.4f g1=%12.4f g2=%12.4f\n", f1(x), f2(x), g1(x), g2(x))
+			io.Pfyel("ovas = %v\n", ind.Ovas)
+			io.Pfpink("oors = %v\n", ind.Oors)
+		}
+		ovas, _ := evo.GetResults(feasible)
+		_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
+		plt.SetForEps(0.75, 355)
+		plt.Plot(dat["f1"], dat["f2"], "'k+',ms=3")
+		plt.Plot(ovas[0], ovas[1], "'r.'")
+		xova, yova, _, _ := evo.GetParetoFront2D(feasible)
+		plt.Plot(xova, yova, "'ko',markerfacecolor='none',ms=6")
+		plt.Gll("$f_1$", "$f_2$", "")
+		plt.SaveD("/tmp/goga", "test_evo06.eps")
+	}
+}
