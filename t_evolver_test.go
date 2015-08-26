@@ -486,18 +486,22 @@ func Test_evo06(tst *testing.T) {
 	// configuration
 	C := NewConfParams()
 	C.Nisl = 1
-	C.Ninds = 48
-	//C.GAtype = "crowd"
-	C.GAtype = "sharing"
-	C.CrowdSize = 3
-	C.ParetoPhi = 0
+	C.Ninds = 200
+	C.GAtype = "crowd"
+	//C.GAtype = "sharing"
+	//C.Elite = true
+	C.CrowdSize = 4
+	C.ParetoPhi = 0.1
+	C.ShAlp = 0.5
+	C.ShSig = 0.001
+	C.ShPhen = false
 	C.Noise = 0.05
 	C.DoPlot = false
 	C.RegTol = 0
 	C.Pc = 0.8
 	C.Pm = 0.01
 	C.Tf = 100
-	C.Dtmig = 101
+	C.Dtmig = 25
 	C.RangeFlt = [][]float64{{0.1, 2.25}, {0.5, 2.5}}
 	C.PopFltGen = PopFltGen
 	C.CalcDerived()
@@ -514,7 +518,6 @@ func Test_evo06(tst *testing.T) {
 	P := 1e4   // lb
 	E := 3e7   // lb/in²
 	σ0 := 2e4  // lb/in²
-	//Amin := 1.0 // in²
 
 	// functions
 	twosq2 := 2.0 * math.Sqrt2
@@ -551,12 +554,12 @@ func Test_evo06(tst *testing.T) {
 	// results
 	if C.Verbose {
 		feasible := evo.GetFeasible()
-		for _, ind := range feasible {
-			x := ind.GetFloats()
-			io.Pforan("f1=%8.4f f2=%8.4f g1=%12.4f g2=%12.4f\n", f1(x), f2(x), g1(x), g2(x))
-			io.Pfyel("ovas = %v\n", ind.Ovas)
-			io.Pfpink("oors = %v\n", ind.Oors)
-		}
+		//for _, ind := range feasible {
+		//x := ind.GetFloats()
+		//io.Pforan("f1=%8.4f f2=%8.4f g1=%12.4f g2=%12.4f\n", f1(x), f2(x), g1(x), g2(x))
+		//io.Pfyel("ovas = %v\n", ind.Ovas)
+		//io.Pfpink("oors = %v\n", ind.Oors)
+		//}
 		ovas, _ := evo.GetResults(feasible)
 		_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
 		plt.SetForEps(0.75, 355)

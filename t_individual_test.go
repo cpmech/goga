@@ -153,68 +153,91 @@ func Test_ind03(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("ind03. comparing")
 
-	rnd.Init(1113)
-
 	nbases := 1
 	A := get_individual(0, nbases)
 	B := get_individual(1, nbases)
-	A_dominates := IndCompare(A, B, 0)
+	A_dominates, B_dominates := IndCompareDet(A, B)
 	io.Pfblue2("A: ovas = %v\n", A.Ovas)
 	io.Pfblue2("A: oors = %v\n", A.Oors)
 	io.Pfcyan("B: ovas = %v\n", B.Ovas)
 	io.Pfcyan("B: oors = %v\n", B.Oors)
 	io.Pforan("A_dominates = %v\n", A_dominates)
+	io.Pforan("B_dominates = %v\n", B_dominates)
 	if !A_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+	if B_dominates {
 		tst.Errorf("test failed\n")
 		return
 	}
 
 	A.Oors = []float64{0, 0, 0}
 	B.Oors = []float64{0, 0, 0}
-	A_dominates = IndCompare(A, B, 0)
+	A_dominates, B_dominates = IndCompareDet(A, B)
 	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
 	io.Pfblue2("A: oors = %v\n", A.Oors)
 	io.Pfcyan("B: ovas = %v\n", B.Ovas)
 	io.Pfcyan("B: oors = %v\n", B.Oors)
 	io.Pforan("A_dominates = %v\n", A_dominates)
+	io.Pforan("B_dominates = %v\n", B_dominates)
 	if A_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+	if B_dominates {
 		tst.Errorf("test failed\n")
 		return
 	}
 
 	A.Ovas = []float64{200, 100}
-	A_dominates = IndCompare(A, B, 0)
+	A_dominates, B_dominates = IndCompareDet(A, B)
 	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
 	io.Pfblue2("A: oors = %v\n", A.Oors)
 	io.Pfcyan("B: ovas = %v\n", B.Ovas)
 	io.Pfcyan("B: oors = %v\n", B.Oors)
 	io.Pforan("A_dominates = %v\n", A_dominates)
+	io.Pforan("B_dominates = %v\n", B_dominates)
 	if A_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+	if B_dominates {
 		tst.Errorf("test failed\n")
 		return
 	}
 
 	A.Ovas = []float64{200, 99}
-	A_dominates = IndCompare(A, B, 0)
+	A_dominates, B_dominates = IndCompareDet(A, B)
 	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
 	io.Pfblue2("A: oors = %v\n", A.Oors)
 	io.Pfcyan("B: ovas = %v\n", B.Ovas)
 	io.Pfcyan("B: oors = %v\n", B.Oors)
 	io.Pforan("A_dominates = %v\n", A_dominates)
+	io.Pforan("B_dominates = %v\n", B_dominates)
 	if !A_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+	if B_dominates {
 		tst.Errorf("test failed\n")
 		return
 	}
 
 	A.Ovas = []float64{200, 100}
 	B.Ovas = []float64{199, 100}
-	A_dominates = IndCompare(A, B, 0)
+	A_dominates, B_dominates = IndCompareDet(A, B)
 	io.Pfblue2("\nA: ovas = %v\n", A.Ovas)
 	io.Pfblue2("A: oors = %v\n", A.Oors)
 	io.Pfcyan("B: ovas = %v\n", B.Ovas)
 	io.Pfcyan("B: oors = %v\n", B.Oors)
 	io.Pforan("A_dominates = %v\n", A_dominates)
+	io.Pforan("B_dominates = %v\n", B_dominates)
 	if A_dominates {
+		tst.Errorf("test failed\n")
+		return
+	}
+	if !B_dominates {
 		tst.Errorf("test failed\n")
 		return
 	}
