@@ -214,46 +214,60 @@ func (o *Evolver) GetFeasible() (feasible []*Individual) {
 
 // GetResults returns all ovas and oors from a subset of individuals
 //  Output:
-//   ovas -- [nova][len(subset)] objective values
-//   oors -- [noor][len(subset)] out-of-range values
+//   ovas -- [len(subset)][nova] objective values
+//   oors -- [len(subset)][noor] out-of-range values
 func (o *Evolver) GetResults(subset []*Individual) (ovas, oors [][]float64) {
 	nova := o.Islands[0].Nova
 	noor := o.Islands[0].Noor
 	ninds := len(subset)
-	ovas = utl.DblsAlloc(nova, ninds)
-	oors = utl.DblsAlloc(noor, ninds)
-	for j, ind := range subset {
-		for i := 0; i < nova; i++ {
-			ovas[i][j] = ind.Ovas[i]
+	ovas = utl.DblsAlloc(ninds, nova)
+	oors = utl.DblsAlloc(ninds, noor)
+	for i, ind := range subset {
+		for j := 0; j < nova; j++ {
+			ovas[i][j] = ind.Ovas[j]
 		}
-		for i := 0; i < noor; i++ {
-			oors[i][j] = ind.Oors[i]
+		for j := 0; j < noor; j++ {
+			oors[i][j] = ind.Oors[j]
 		}
 	}
 	return
 }
 
-// GetParetoFront2D returns all feasible individuals on the 2D Pareto front
-func (o *Evolver) GetParetoFront2D(feasible []*Individual) (xova, yova, xoor, yoor []float64) {
-	ovas, oors := o.GetResults(feasible)
-	ovafront := utl.ParetoFront2D(ovas[0], ovas[1])
-	xova = make([]float64, len(ovafront))
-	yova = make([]float64, len(ovafront))
-	for i, id := range ovafront {
-		xova[i] = feasible[id].Ovas[0]
-		yova[i] = feasible[id].Ovas[1]
+// GetParetoFront returns all feasible individuals on the Pareto front
+// Note: input data can be obtained from GetFeasible and GetResults
+func (o *Evolver) GetParetoFront(feasible []*Individual, ovas, oors [][]float64) (ovafront, oorfront []*Individual) {
+	chk.IntAssert(len(feasible), len(ovas))
+	ovaf := utl.ParetoFront(ovas)
+	ovafront = make([]*Individual, len(ovaf))
+	for i, id := range ovaf {
+		ovafront[i] = feasible[id]
 	}
 	if len(oors) > 0 {
-		oorfront := utl.ParetoFront2D(oors[0], oors[1])
-		xoor = make([]float64, len(oorfront))
-		yoor = make([]float64, len(oorfront))
-		for i, id := range oorfront {
-			xoor[i] = feasible[id].Ovas[0]
-			yoor[i] = feasible[id].Ovas[1]
+		chk.IntAssert(len(feasible), len(oors))
+		oorf := utl.ParetoFront(oors)
+		oorfront = make([]*Individual, len(oorf))
+		for i, id := range oorf {
+			oorfront[i] = feasible[id]
 		}
 	}
 	return
 }
+
+// GetFrontOvas collects 2 ova results from Pareto front
+//  Input:
+//   r and s -- 2 selected objective functions; e.g. r=0 and s=1 for 2D problems
+func (o *Evolver) GetFrontOvas(r, s int, front []*Individual) (x, y []float64) {
+	x = make([]float64, len(front))
+	y = make([]float64, len(front))
+	for i, ind := range front {
+		x[i] = ind.Ovas[r]
+		y[i] = ind.Ovas[s]
+	}
+	return
+}
+
+//func (o *Evolver) GetCompromise(feasible []*Individual) (xova, yova, xoor, yoor []float64) {
+//}
 
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////
 

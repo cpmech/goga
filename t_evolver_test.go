@@ -553,19 +553,22 @@ func Test_evo06(tst *testing.T) {
 
 	// results
 	if C.Verbose {
+		_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
 		feasible := evo.GetFeasible()
+		ovas, _ := evo.GetResults(feasible)
+		ovafront, _ := evo.GetParetoFront(feasible, ovas, nil)
+		xova, yova := evo.GetFrontOvas(0, 1, ovafront)
 		//for _, ind := range feasible {
 		//x := ind.GetFloats()
 		//io.Pforan("f1=%8.4f f2=%8.4f g1=%12.4f g2=%12.4f\n", f1(x), f2(x), g1(x), g2(x))
 		//io.Pfyel("ovas = %v\n", ind.Ovas)
 		//io.Pfpink("oors = %v\n", ind.Oors)
 		//}
-		ovas, _ := evo.GetResults(feasible)
-		_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
 		plt.SetForEps(0.75, 355)
 		plt.Plot(dat["f1"], dat["f2"], "'k+',ms=3")
-		plt.Plot(ovas[0], ovas[1], "'r.'")
-		xova, yova, _, _ := evo.GetParetoFront2D(feasible)
+		x := utl.DblsGetColumn(0, ovas)
+		y := utl.DblsGetColumn(1, ovas)
+		plt.Plot(x, y, "'r.'")
 		plt.Plot(xova, yova, "'ko',markerfacecolor='none',ms=6")
 		plt.Gll("$f_1$", "$f_2$", "")
 		plt.SaveD("/tmp/goga", "test_evo06.eps")
