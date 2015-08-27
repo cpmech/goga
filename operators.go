@@ -30,6 +30,7 @@ type OpsData struct {
 	Cuts     []int       // specified cuts for crossover. can be <nil>
 	OrdSti   []int       // {start, end, insertPoint}. can be <nil>
 	Xrange   [][]float64 // [ngenes][2] genes minimum and maximum values
+	EnfRange bool        // do enforce range
 
 	// crossover functions
 	CxInt CxIntFunc_t // int crossover function
@@ -91,6 +92,9 @@ func (o *OpsData) MwiczDelta(t, x float64) float64 {
 
 // EnforceRange makes sure x is within given range
 func (o *OpsData) EnforceRange(igene int, x float64) float64 {
+	if !o.EnfRange {
+		return x
+	}
 	if x < o.Xrange[igene][0] {
 		return o.Xrange[igene][0]
 	}
