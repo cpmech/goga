@@ -73,18 +73,16 @@ type ConfParams struct {
 	OvaOor Objectives_t // compute objective value (ova) and out-of-range value (oor)
 
 	// generation of individuals
-	OrdNints   int         // ordered integer populations: number of integers
-	RangeInt   [][]int     // [ngene][2] min and max integers
-	RangeFlt   [][]float64 // [ngene][2] min and max float point numbers
-	PoolStr    [][]string  // [ngene][nsamples] pool of words to be used in Gene.String
-	PoolKey    [][]byte    // [ngene][nsamples] pool of bytes to be used in Gene.Byte
-	PoolByt    [][]string  // [ngene][nsamples] pool of byte-words to be used in Gene.Bytes
-	PoolFun    [][]Func_t  // [ngene][nsamples] pool of functions
-	PopGenArgs interface{} // extra arguments for generation of populations
+	NumInts  int         // number of integers for "ordered" and "binary" populations
+	RangeInt [][]int     // [ngene][2] min and max integers
+	RangeFlt [][]float64 // [ngene][2] min and max float point numbers
+	PoolStr  [][]string  // [ngene][nsamples] pool of words to be used in Gene.String
+	PoolKey  [][]byte    // [ngene][nsamples] pool of bytes to be used in Gene.Byte
+	PoolByt  [][]string  // [ngene][nsamples] pool of byte-words to be used in Gene.Bytes
+	PoolFun  [][]Func_t  // [ngene][nsamples] pool of functions
 
 	// generation of populations
 	PopIntGen PopIntGen_t // generate population of integers
-	PopOrdGen PopOrdGen_t // generate population of ordered integers
 	PopFltGen PopFltGen_t // generate population of float point numbers
 	PopStrGen PopStrGen_t // generate population of strings
 	PopKeyGen PopKeyGen_t // generate population of keys (bytes)
@@ -157,10 +155,18 @@ func (o *ConfParams) SetNbasesFixOp(nbases int) {
 	o.Ops.MtFlt = FltMutation
 }
 
+// SetIntBin sets functions to handle binary numbers [0,1]
+func (o *ConfParams) SetIntBin(size int) {
+	o.NumInts = size
+	o.PopIntGen = PopBinGen
+	o.Ops.CxInt = IntCrossover
+	o.Ops.MtInt = IntBinMutation
+}
+
 // SetIntOrd sets functions to handle ordered integers
 func (o *ConfParams) SetIntOrd(nstations int) {
-	o.OrdNints = nstations
-	o.PopOrdGen = PopOrdGen
+	o.NumInts = nstations
+	o.PopIntGen = PopOrdGen
 	o.Ops.CxInt = IntOrdCrossover
 	o.Ops.MtInt = IntOrdMutation
 }

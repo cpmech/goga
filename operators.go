@@ -548,6 +548,23 @@ func IntMutation(A []int, time int, ops *OpsData) {
 	}
 }
 
+// IntBinMutation performs the mutation of a binary chromosome
+//  Output: modified individual 'A'
+func IntBinMutation(A []int, time int, ops *OpsData) {
+	size := len(A)
+	if !rnd.FlipCoin(ops.Pm) || size < 1 {
+		return
+	}
+	pos := rnd.IntGetUniqueN(0, size, ops.Nchanges)
+	for _, i := range pos {
+		if A[i] == 0 {
+			A[i] = 1
+		} else {
+			A[i] = 0
+		}
+	}
+}
+
 // IntOrdMutation performs the mutation of genetic data from a ordered list of integers A
 //  Output: modified individual 'A'
 //  Note: using DM method as explained in [1] (citing [2])

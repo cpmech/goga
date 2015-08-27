@@ -78,25 +78,22 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 
 	// create population
 	if o.C.PopIntGen != nil {
-		o.Pop = o.C.PopIntGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeInt)
-	}
-	if o.C.PopOrdGen != nil {
-		o.Pop = o.C.PopOrdGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.OrdNints)
+		o.Pop = o.C.PopIntGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.NumInts, o.C.RangeInt)
 	}
 	if o.C.PopFltGen != nil {
-		o.Pop = o.C.PopFltGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.RangeFlt)
+		o.Pop = o.C.PopFltGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.RangeFlt)
 	}
 	if o.C.PopStrGen != nil {
-		o.Pop = o.C.PopStrGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolStr)
+		o.Pop = o.C.PopStrGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolStr)
 	}
 	if o.C.PopKeyGen != nil {
-		o.Pop = o.C.PopKeyGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolKey)
+		o.Pop = o.C.PopKeyGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolKey)
 	}
 	if o.C.PopBytGen != nil {
-		o.Pop = o.C.PopBytGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolByt)
+		o.Pop = o.C.PopBytGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolByt)
 	}
 	if o.C.PopFunGen != nil {
-		o.Pop = o.C.PopFunGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PopGenArgs, o.C.PoolFun)
+		o.Pop = o.C.PopFunGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolFun)
 	}
 	if len(o.Pop) != o.C.Ninds {
 		chk.Panic("generation of population failed:\nat least one generator function in Params must be non nil")

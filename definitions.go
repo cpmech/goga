@@ -17,25 +17,22 @@ type Func_t func(ind *Individual) string
 type Objectives_t func(ind *Individual, idIsland, time int, report *bytes.Buffer)
 
 // PopIntGen_t defines function to generate population of integers
-type PopIntGen_t func(ninds, nova, noor, nbases int, noise float64, args interface{}, irange [][]int) Population
-
-// PopOrdGen_t defines function to generate population of ordered integers
-type PopOrdGen_t func(ninds, nova, noor, nbases int, noise float64, args interface{}, nints int) Population
+type PopIntGen_t func(ninds, nova, noor, nbases int, noise float64, nints_or_unused int, irange_or_unused [][]int) Population
 
 // PopFltGen_t defines function to generate population of float point numbers
-type PopFltGen_t func(ninds, nova, noor, nbases int, noise float64, args interface{}, frange [][]float64) Population
+type PopFltGen_t func(ninds, nova, noor, nbases int, noise float64, frange [][]float64) Population
 
 // PopStrGen_t defines function to generate population of strings
-type PopStrGen_t func(ninds, nova, noor, nbases int, noise float64, args interface{}, pool [][]string) Population
+type PopStrGen_t func(ninds, nova, noor, nbases int, noise float64, pool [][]string) Population
 
 // PopKeyGen_t defines function to generate population of keys (bytes)
-type PopKeyGen_t func(ninds, nova, noor, nbases int, noise float64, args interface{}, pool [][]byte) Population
+type PopKeyGen_t func(ninds, nova, noor, nbases int, noise float64, pool [][]byte) Population
 
 // PopBytGen_t defines function to generate population of bytes
-type PopBytGen_t func(ninds, nova, noor, nbases int, noise float64, args interface{}, pool [][]string) Population
+type PopBytGen_t func(ninds, nova, noor, nbases int, noise float64, pool [][]string) Population
 
 // PopFunGen_t defines function to generate population of functions
-type PopFunGen_t func(ninds, nova, noor, nbases int, noise float64, args interface{}, pool [][]Func_t) Population
+type PopFunGen_t func(ninds, nova, noor, nbases int, noise float64, pool [][]Func_t) Population
 
 // crossover functions
 type CxIntFunc_t func(a, b, A, B []int, time int, dat *OpsData) (ends []int)

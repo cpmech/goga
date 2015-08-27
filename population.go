@@ -7,6 +7,7 @@ package goga
 import (
 	"bytes"
 	"math"
+	"math/rand"
 	"sort"
 
 	"github.com/cpmech/gosl/io"
@@ -17,9 +18,22 @@ import (
 // Population holds all individuals
 type Population []*Individual
 
+// PopBinGen generates a population of binary numbers [0,1]
+func PopBinGen(ninds, nova, noor, nbases int, noise float64, nints int, unused [][]int) Population {
+	pop := make([]*Individual, ninds)
+	genes := make([]int, nints)
+	for i := 0; i < ninds; i++ {
+		for j := 0; j < nints; j++ {
+			genes[j] = rand.Intn(2)
+		}
+		pop[i] = NewIndividual(nova, noor, nbases, genes)
+	}
+	return pop
+}
+
 // PopFltGen generates a population of individuals with float point numbers
 // Notes: (1) ngenes = len(frange)
-func PopFltGen(ninds, nova, noor, nbases int, noise float64, args interface{}, frange [][]float64) Population {
+func PopFltGen(ninds, nova, noor, nbases int, noise float64, frange [][]float64) Population {
 	o := make([]*Individual, ninds)
 	ngenes := len(frange)
 	for i := 0; i < ninds; i++ {
@@ -76,7 +90,7 @@ func PopFltGen(ninds, nova, noor, nbases int, noise float64, args interface{}, f
 
 // PopOrdGen generates a population of individuals with ordered integers
 // Notes: (1) ngenes = len(frange)
-func PopOrdGen(ninds, nova, noor, nbases int, noise float64, args interface{}, nints int) Population {
+func PopOrdGen(ninds, nova, noor, nbases int, noise float64, nints int, unused [][]int) Population {
 	o := make([]*Individual, ninds)
 	ngenes := nints
 	for i := 0; i < ninds; i++ {

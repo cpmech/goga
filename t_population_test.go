@@ -155,3 +155,15 @@ func Test_pop02(tst *testing.T) {
 		}
 	}
 }
+
+func Test_pop03(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("pop03")
+
+	rnd.Init(0)
+
+	nints := 7
+	pop := PopBinGen(4, 1, 1, 1, 0, nints, nil)
+	io.Pforan("%v\n", pop.Output(nil, false, false, -1))
+}

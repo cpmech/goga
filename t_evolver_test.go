@@ -32,6 +32,7 @@ func Test_evo01(tst *testing.T) {
 	C.Nisl = 1
 	C.Ninds = 20
 	C.RegTol = 0
+	C.NumInts = 20
 	//C.GAtype = "crowd"
 	C.CrowdSize = 2
 	C.Tf = 50
@@ -56,8 +57,7 @@ func Test_evo01(tst *testing.T) {
 	}
 
 	// generation function
-	nvals := 20
-	C.PopIntGen = func(ninds, nova, noor, nbases int, noise float64, args interface{}, irange [][]int) Population {
+	C.PopIntGen = func(ninds, nova, noor, nbases int, noise float64, nvals int, dummy [][]int) Population {
 		o := make([]*Individual, ninds)
 		genes := make([]int, nvals)
 		for i := 0; i < ninds; i++ {
@@ -93,7 +93,7 @@ func Test_evo01(tst *testing.T) {
 	evo.Run()
 
 	// results
-	ideal := 1.0 / (1.0 + float64(nvals))
+	ideal := 1.0 / (1.0 + float64(C.NumInts))
 	io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.Ovas[0], ideal)
 }
 
