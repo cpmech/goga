@@ -164,10 +164,8 @@ func Test_evo02(tst *testing.T) {
 
 	// plot contour
 	if C.DoPlot {
-		xmin := []float64{-2, -2}
-		xmax := []float64{2, 2}
 		PlotTwoVarsContour("/tmp/goga", "contour_evo02", pop0, evo.Islands[0].Pop, evo.Best, 41, nil, true,
-			xmin, xmax, false, false, nil, nil, f, c1, c2, c3, c4, c5)
+			C.RangeFlt, false, false, nil, nil, f, c1, c2, c3, c4, c5)
 	}
 }
 
@@ -241,10 +239,8 @@ func Test_evo03(tst *testing.T) {
 		extra := func() {
 			plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
 		}
-		xmin := []float64{-1, -1}
-		xmax := []float64{3, 3}
 		PlotTwoVarsContour("/tmp/goga", "contour_evo03", pop0, evo.Islands[0].Pop, evo.Best, 41, extra, true,
-			xmin, xmax, false, false, nil, nil, f, c)
+			C.RangeFlt, false, false, nil, nil, f, c)
 	}
 }
 

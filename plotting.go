@@ -28,9 +28,9 @@ type TwoVarsTrans_t func(x []float64) (y []float64, invalid bool)
 //   np      -- number of points for contour
 //   extra   -- called just before saving figure
 //   axequal -- axis.equal
-//   vmin    -- min 0 values
+//   vrange  -- [2][2] range of x and y values; e.g.: [][]float64{{xmin,xmax},{ymin,ymax}}
 //   vmax    -- max 1 values
-//   istrans -- vmin, vmax and individuals are transformed y-values; otherwise they are x-values
+//   istrans -- vrange and individuals are transformed y-values; otherwise they are x-values
 //   tplot   -- plot transformed plot; needs T and Ti.
 //   T       -- transformation: x → y
 //   Ti      -- transformation: y → x
@@ -38,13 +38,12 @@ type TwoVarsTrans_t func(x []float64) (y []float64, invalid bool)
 //   gs      -- functions to plot contour @ level 0. can be <nil>
 //  Note: g(x) operates on original x values
 func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Individual, np int, extra func(), axequal bool,
-	vmin, vmax []float64, istrans, tplot bool, T, Ti TwoVarsTrans_t, f TwoVarsFunc_t, gs ...TwoVarsFunc_t) {
+	vrange [][]float64, istrans, tplot bool, T, Ti TwoVarsTrans_t, f TwoVarsFunc_t, gs ...TwoVarsFunc_t) {
 	if fnkey == "" {
 		return
 	}
-	chk.IntAssert(len(vmin), 2)
-	chk.IntAssert(len(vmax), 2)
-	V0, V1 := utl.MeshGrid2D(vmin[0], vmax[0], vmin[1], vmax[1], np, np)
+	chk.IntAssert(len(vrange), 2)
+	V0, V1 := utl.MeshGrid2D(vrange[0][0], vrange[0][1], vrange[1][0], vrange[1][1], np, np)
 	var Zf [][]float64
 	var Zg [][][]float64
 	if f != nil {
@@ -150,32 +149,34 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 	if axequal {
 		plt.Equal()
 	}
-	umin, umax := vmin, vmax
+	urange := vrange
 	if istrans && !tplot {
+		vmin := []float64{vrange[0][0], vrange[1][0]}
 		xmin, invalid := Ti(vmin)
 		if invalid {
 			chk.Panic("cannot plot contour due to invalid transformation")
 		}
+		vmax := []float64{vrange[0][1], vrange[1][1]}
 		xmax, invalid := Ti(vmax)
 		if invalid {
 			chk.Panic("cannot plot contour due to invalid transformation")
 		}
-		umin = []float64{xmin[0], xmin[1]}
-		umax = []float64{xmax[0], xmax[1]}
+		urange = [][]float64{{xmin[0], xmax[0]}, {xmin[1], xmax[1]}}
 	}
 	if !istrans && tplot {
+		vmin := []float64{vrange[0][0], vrange[1][0]}
 		ymin, invalid := T(vmin)
 		if invalid {
 			chk.Panic("cannot plot contour due to invalid transformation")
 		}
+		vmax := []float64{vrange[0][1], vrange[1][1]}
 		ymax, invalid := T(vmax)
 		if invalid {
 			chk.Panic("cannot plot contour due to invalid transformation")
 		}
-		umin = []float64{ymin[0], ymin[1]}
-		umax = []float64{ymax[0], ymax[1]}
+		urange = [][]float64{{ymin[0], ymax[0]}, {ymin[1], ymax[1]}}
 	}
-	plt.AxisRange(umin[0], umax[0], umin[1], umax[1])
+	plt.AxisRange(urange[0][0], urange[0][1], urange[1][0], urange[1][1])
 	args := "leg_out='1', leg_ncol=4, leg_hlen=1.5"
 	if tplot {
 		plt.Gll("$y_0$", "$y_1$", args)
