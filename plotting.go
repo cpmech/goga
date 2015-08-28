@@ -27,6 +27,7 @@ type TwoVarsTrans_t func(x []float64) (y []float64, invalid bool)
 //   best    -- best individual. can be <nil>
 //   np      -- number of points for contour
 //   lw_g    -- linewidth for g functions
+//   cargs   -- arguments for contour command
 //   extra   -- called just before saving figure
 //   axequal -- axis.equal
 //   vrange  -- [2][2] range of x and y values; e.g.: [][]float64{{xmin,xmax},{ymin,ymax}}
@@ -38,7 +39,7 @@ type TwoVarsTrans_t func(x []float64) (y []float64, invalid bool)
 //   f       -- function to plot filled contour. can be <nil>
 //   gs      -- functions to plot contour @ level 0. can be <nil>
 //  Note: g(x) operates on original x values
-func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Individual, np int, lw_g float64, extra func(), axequal bool,
+func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Individual, np int, lw_g float64, cargs string, extra func(), axequal bool,
 	vrange [][]float64, istrans, tplot bool, T, Ti TwoVarsTrans_t, f TwoVarsFunc_t, gs ...TwoVarsFunc_t) {
 	if fnkey == "" {
 		return
@@ -91,7 +92,10 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 		if tplot {
 			cmapidx = 4
 		}
-		plt.Contour(V0, V1, Zf, io.Sf("fsz=7, cmapidx=%d", cmapidx))
+		if cargs != "" {
+			cargs = "," + cargs
+		}
+		plt.Contour(V0, V1, Zf, io.Sf("fsz=7, cmapidx=%d"+cargs, cmapidx))
 	}
 	for k, _ := range gs {
 		plt.ContourSimple(V0, V1, Zg[k], io.Sf("zorder=5, levels=[0], colors=['yellow'], linewidths=[%g], clip_on=0", lw_g))
