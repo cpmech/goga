@@ -149,8 +149,6 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 		dirout = "."
 	}
 	plt.Cross("clr='grey'")
-	plt.SetXnticks(11)
-	plt.SetYnticks(11)
 	if axequal {
 		plt.Equal()
 	}
@@ -182,7 +180,7 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 		urange = [][]float64{{ymin[0], ymax[0]}, {ymin[1], ymax[1]}}
 	}
 	plt.AxisRange(urange[0][0], urange[0][1], urange[1][0], urange[1][1])
-	args := "leg_out='1', leg_ncol=4, leg_hlen=1.5"
+	args := "leg_out=1, leg_ncol=4, leg_hlen=1.5"
 	if tplot {
 		plt.Gll("$y_0$", "$y_1$", args)
 	} else {
