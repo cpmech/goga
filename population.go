@@ -239,7 +239,9 @@ func (o Population) Output(C *ConfParams) (buf *bytes.Buffer) {
 				stra += "      "
 			}
 		}
-		stra += io.Sf(fmtdem+"g", ind.Demerit) + " "
+		if C.ShowDem {
+			stra += io.Sf(fmtdem+"g", ind.Demerit) + " "
+		}
 		strb := ind.Output(C.NumFmts, C.ShowBases)
 		line += stra + strb + "\n"
 		if first {
@@ -249,7 +251,7 @@ func (o Population) Output(C *ConfParams) (buf *bytes.Buffer) {
 	}
 
 	// write to buffer
-	fmtgenes := io.Sf(" %%%d.%ds\n", szb, szb)
+	fmtgenes := io.Sf("%%%d.%ds\n", szb, szb)
 	n := sza + szb
 	buf = new(bytes.Buffer)
 	io.Ff(buf, io.StrThickLine(n))
@@ -263,7 +265,9 @@ func (o Population) Output(C *ConfParams) (buf *bytes.Buffer) {
 	} else {
 		io.Ff(buf, " check")
 	}
-	io.Ff(buf, fmtdem+"s", "Demerit")
+	if C.ShowDem {
+		io.Ff(buf, fmtdem+"s ", "Demerit")
+	}
 	io.Ff(buf, fmtgenes, "Genes")
 	io.Ff(buf, io.StrThinLine(n))
 	io.Ff(buf, line)

@@ -50,20 +50,24 @@ type ConfParams struct {
 	ShPhen    bool    // use phenotype distance analysis in sharing; otherwise use objective values
 
 	// output
-	Verbose   bool                // show messages during optimisation
-	DoReport  bool                // generate report
-	Json      bool                // output results as .json files; not tables
-	DirOut    string              // directory to save output files. "" means "/tmp/goga"
-	FnKey     string              // filename key for output files. "" means no output files
-	DoPlot    bool                // plot results
-	PltTi     int                 // initial time for plot
-	PltTf     int                 // final time for plot
-	ShowOor   bool                // show oor values when printing results (if any)
-	ShowDem   bool                // show demerits when printing individuals
-	ShowBases bool                // show also bases when printing results (if any)
-	ShowNinds int                 // number of individuals to show. use -1 to show all individuals
-	NumFmts   map[string][]string // number formats used during printing of individuals. use nil for default values: fmts=["int","flt","str","key","byt","fun"][ngenes] print formats for each gene
-	PostProc  PostProc_t          // function to post-process results
+	Verbose   bool       // show messages during optimisation
+	DoReport  bool       // generate report
+	Json      bool       // output results as .json files; not tables
+	DirOut    string     // directory to save output files. "" means "/tmp/goga"
+	FnKey     string     // filename key for output files. "" means no output files
+	DoPlot    bool       // plot results
+	PltTi     int        // initial time for plot
+	PltTf     int        // final time for plot
+	ShowOor   bool       // show oor values when printing results (if any)
+	ShowDem   bool       // show demerits when printing individuals
+	ShowBases bool       // show also bases when printing results (if any)
+	ShowNinds int        // number of individuals to show. use -1 to show all individuals
+	PostProc  PostProc_t // function to post-process results
+
+	// number formats. use nil for default values
+	// fmts=["int","flt","str","key","byt","fun"][ngenes] print formats for each gene
+	NumFmts   map[string][]string // number formats used during printing of individuals.
+	NumFmtOva string              // number format for ova. use "" for default value
 
 	// auxiliary
 	Problem  int     // problem ID
