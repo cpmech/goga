@@ -9,7 +9,6 @@ package main
 import (
 	"bytes"
 	"math"
-	"time"
 
 	"github.com/cpmech/goga"
 	"github.com/cpmech/gosl/io"
@@ -19,16 +18,8 @@ import (
 
 func main() {
 
-	// benchmarking
-	t0 := time.Now()
-	defer func() { io.Pfblue2("\ntime elapsed = %v\n", time.Now().Sub(t0)) }()
-
-	// read parameters
-	fn := "tsp-simple"
-	fn, _ = io.ArgToFilename(0, fn, ".json", true)
-	C := goga.ReadConfParams(fn)
-
-	// initialise random numbers generator
+	// GA parameters
+	C := goga.ReadConfParams("tsp-simple.json")
 	rnd.Init(C.Seed)
 
 	// location / coordinates of stations
@@ -38,9 +29,11 @@ func main() {
 		{20, 40}, {100, 40}, {200, 40}, {20, 20}, {60, 20}, {160, 20},
 	}
 	nstations := len(locations)
+	C.SetIntOrd(nstations)
+	C.CalcDerived()
 
 	// objective value function
-	ovfunc := func(ind *goga.Individual, idIsland, t int, report *bytes.Buffer) (ova, oor float64) {
+	C.OvaOor = func(ind *goga.Individual, idIsland, time int, report *bytes.Buffer) {
 		L := locations
 		ids := ind.Ints
 		dist := 0.0
@@ -50,25 +43,22 @@ func main() {
 		}
 		a, b := ids[nstations-1], ids[0]
 		dist += math.Sqrt(math.Pow(L[b][0]-L[a][0], 2.0) + math.Pow(L[b][1]-L[a][1], 2.0))
-		ova = dist
+		ind.Ovas[0] = dist
 		return
 	}
 
 	// evolver
-	evo := goga.NewEvolverIntOrdChromo(C, nstations, ovfunc)
-
-	// run
-	verbose := true
-	doreport := true
-	evo.Run(verbose, doreport)
+	nova, noor := 1, 0
+	evo := goga.NewEvolver(nova, noor, C)
+	evo.Run()
 
 	// results
 	io.Pfgreen("best = %v\n", evo.Best.Ints)
-	io.Pfgreen("best OVA = %v  (871.117353844847)\n\n", evo.Best.Ova)
+	io.Pfgreen("best OVA = %v  (871.117353844847)\n\n", evo.Best.Ovas[0])
 
 	// plot travelling salesman path
 	if C.DoPlot {
-		plt.SetForPng(1, 300, 150)
+		plt.SetForEps(1, 300)
 		X, Y := make([]float64, nstations), make([]float64, nstations)
 		for k, id := range evo.Best.Ints {
 			X[k], Y[k] = locations[id][0], locations[id][1]
@@ -79,7 +69,7 @@ func main() {
 		plt.Plot([]float64{X[0], X[nstations-1]}, []float64{Y[0], Y[nstations-1]}, "'b-', clip_on=0, zorder=10")
 		plt.Equal()
 		plt.AxisRange(10, 210, 10, 210)
-		plt.Gll("x", "y", "")
-		plt.SaveD("/tmp/goga", "tsp-simple.png")
+		plt.Gll("$x$", "$y$", "")
+		plt.SaveD("/tmp/goga", "test_evo04.eps")
 	}
 }
