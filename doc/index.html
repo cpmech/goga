@@ -70,64 +70,76 @@
 			
 			
 				
-				<dd><a href="#BytCrossover">func BytCrossover(a, b, A, B [][]byte, ncuts int, cuts []int, pc float64) (ends []int)</a></dd>
+				<dd><a href="#BytCrossover">func BytCrossover(a, b, A, B [][]byte, time int, ops *OpsData) (ends []int)</a></dd>
 			
 				
-				<dd><a href="#BytMutation">func BytMutation(A [][]byte, nchanges int, pm float64, extra interface{})</a></dd>
-			
-				
-				<dd><a href="#CalcFitness">func CalcFitness(f, ovs []float64)</a></dd>
-			
-				
-				<dd><a href="#CalcFitnessRanking">func CalcFitnessRanking(ninds int, sp float64) (f []float64)</a></dd>
-			
-				
-				<dd><a href="#Crossover">func Crossover(a, b, A, B *Individual, ncuts map[string]int, cuts map[string][]int, probs map[string]float64, cxint CxIntFunc_t, cxflt CxFltFunc_t, cxstr CxStrFunc_t, cxkey CxKeyFunc_t, cxbyt CxBytFunc_t, cxfun CxFunFunc_t)</a></dd>
+				<dd><a href="#BytMutation">func BytMutation(A [][]byte, time int, ops *OpsData)</a></dd>
 			
 				
 				<dd><a href="#FilterPairs">func FilterPairs(A, B []int, selinds []int)</a></dd>
 			
 				
-				<dd><a href="#FltCrossover">func FltCrossover(a, b, A, B []float64, ncuts int, cuts []int, pc float64) (ends []int)</a></dd>
+				<dd><a href="#FltCrossover">func FltCrossover(a, b, A, B []float64, time int, ops *OpsData) (ends []int)</a></dd>
 			
 				
-				<dd><a href="#FltMutation">func FltMutation(A []float64, nchanges int, pm float64, extra interface{})</a></dd>
+				<dd><a href="#FltCrossoverBlx">func FltCrossoverBlx(a, b, A, B []float64, time int, ops *OpsData) (ends []int)</a></dd>
 			
 				
-				<dd><a href="#FunCrossover">func FunCrossover(a, b, A, B []Func_t, ncuts int, cuts []int, pc float64) (ends []int)</a></dd>
+				<dd><a href="#FltMutation">func FltMutation(A []float64, time int, ops *OpsData)</a></dd>
 			
 				
-				<dd><a href="#FunMutation">func FunMutation(A []Func_t, nchanges int, pm float64, extra interface{})</a></dd>
+				<dd><a href="#FltMutationMwicz">func FltMutationMwicz(A []float64, time int, ops *OpsData)</a></dd>
+			
+				
+				<dd><a href="#FunCrossover">func FunCrossover(a, b, A, B []Func_t, time int, ops *OpsData) (ends []int)</a></dd>
+			
+				
+				<dd><a href="#FunMutation">func FunMutation(A []Func_t, time int, ops *OpsData)</a></dd>
 			
 				
 				<dd><a href="#GenerateCxEnds">func GenerateCxEnds(size, ncuts int, cuts []int) (ends []int)</a></dd>
 			
 				
-				<dd><a href="#IntCrossover">func IntCrossover(a, b, A, B []int, ncuts int, cuts []int, pc float64) (ends []int)</a></dd>
+				<dd><a href="#IndCompareDet">func IndCompareDet(A, B *Individual) (A_dominates, B_dominates bool)</a></dd>
 			
 				
-				<dd><a href="#IntMutation">func IntMutation(A []int, nchanges int, pm float64, extra interface{})</a></dd>
+				<dd><a href="#IndCompareProb">func IndCompareProb(A, B *Individual, φ float64) (A_dominates bool)</a></dd>
 			
 				
-				<dd><a href="#IntOrdCrossover">func IntOrdCrossover(a, b, A, B []int, dum int, cuts []int, pc float64) (notused []int)</a></dd>
+				<dd><a href="#IndCrossover">func IndCrossover(a, b, A, B *Individual, time int, ops *OpsData)</a></dd>
 			
 				
-				<dd><a href="#IntOrdMutation">func IntOrdMutation(A []int, dum1 int, pm float64, sti interface{})</a></dd>
+				<dd><a href="#IndDistance">func IndDistance(A, B *Individual) (dist float64)</a></dd>
 			
 				
-				<dd><a href="#KeyCrossover">func KeyCrossover(a, b, A, B []byte, ncuts int, cuts []int, pc float64) (ends []int)</a></dd>
+				<dd><a href="#IndMutation">func IndMutation(A *Individual, time int, ops *OpsData)</a></dd>
 			
 				
-				<dd><a href="#KeyMutation">func KeyMutation(A []byte, nchanges int, pm float64, extra interface{})</a></dd>
+				<dd><a href="#IntBinMutation">func IntBinMutation(A []int, time int, ops *OpsData)</a></dd>
 			
 				
-				<dd><a href="#Mutation">func Mutation(A *Individual, nchanges map[string]int, probs map[string]float64, extra map[string]interface{}, mtint MtIntFunc_t, mtflt MtFltFunc_t, mtstr MtStrFunc_t, mtkey MtKeyFunc_t, mtbyt MtBytFunc_t, mtfun MtFunFunc_t)</a></dd>
+				<dd><a href="#IntCrossover">func IntCrossover(a, b, A, B []int, time int, ops *OpsData) (ends []int)</a></dd>
 			
 				
-				<dd><a href="#PlotOor">func PlotOor(isl *Island, ext, args string, t0, tf int, withtxt bool, numfmt string, first, last bool)</a></dd>
+				<dd><a href="#IntMutation">func IntMutation(A []int, time int, ops *OpsData)</a></dd>
 			
 				
-				<dd><a href="#PlotOvs">func PlotOvs(isl *Island, ext, args string, t0, tf int, withtxt bool, numfmt string, first, last bool)</a></dd>
+				<dd><a href="#IntOrdCrossover">func IntOrdCrossover(a, b, A, B []int, time int, ops *OpsData) (notused []int)</a></dd>
+			
+				
+				<dd><a href="#IntOrdMutation">func IntOrdMutation(A []int, time int, ops *OpsData)</a></dd>
+			
+				
+				<dd><a href="#KeyCrossover">func KeyCrossover(a, b, A, B []byte, time int, ops *OpsData) (ends []int)</a></dd>
+			
+				
+				<dd><a href="#KeyMutation">func KeyMutation(A []byte, time int, ops *OpsData)</a></dd>
+			
+				
+				<dd><a href="#PlotOor">func PlotOor(isl *Island, ext, args string, t0, tf int, first, last bool)</a></dd>
+			
+				
+				<dd><a href="#PlotOvs">func PlotOvs(isl *Island, ext, args string, t0, tf int, first, last bool)</a></dd>
 			
 				
 				<dd><a href="#PlotTwoVarsContour">func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Individual, np int, extra func(), axequal bool, vmin, vmax []float64, istrans, tplot bool, T, Ti TwoVarsTrans_t, f TwoVarsFunc_t, gs ...TwoVarsFunc_t)</a></dd>
@@ -142,49 +154,11 @@
 				<dd><a href="#SimpleChromo">func SimpleChromo(genes []float64, nbases int) (chromo []float64)</a></dd>
 			
 				
-				<dd><a href="#StrCrossover">func StrCrossover(a, b, A, B []string, ncuts int, cuts []int, pc float64) (ends []int)</a></dd>
+				<dd><a href="#StrCrossover">func StrCrossover(a, b, A, B []string, time int, ops *OpsData) (ends []int)</a></dd>
 			
 				
-				<dd><a href="#StrMutation">func StrMutation(A []string, nchanges int, pm float64, extra interface{})</a></dd>
+				<dd><a href="#StrMutation">func StrMutation(A []string, time int, ops *OpsData)</a></dd>
 			
-			
-				
-				<dd><a href="#Bingo">type Bingo</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#NewBingoFloats">func NewBingoFloats(xmin, xmax []float64) (o *Bingo)</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#NewBingoInts">func NewBingoInts(xmin, xmax []int) (o *Bingo)</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#NewExampleBingo">func NewExampleBingo() *Bingo</a></dd>
-				
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Bingo.DrawBytes">func (o Bingo) DrawBytes(iGene int) []byte</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Bingo.DrawFloat">func (o Bingo) DrawFloat(iInd, iGene, nInd int) float64</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Bingo.DrawFunc">func (o Bingo) DrawFunc(iGene int) Func_t</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Bingo.DrawInt">func (o Bingo) DrawInt(iInd, iGene, nInd int) int</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Bingo.DrawKey">func (o Bingo) DrawKey(iGene int) byte</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Bingo.DrawString">func (o Bingo) DrawString(iGene int) string</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Bingo.GetCopy">func (o Bingo) GetCopy() (p *Bingo)</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Bingo.ResetBasedOnRef">func (o *Bingo) ResetBasedOnRef(time int, ind *Individual, mmin, mmax float64)</a></dd>
-				
 			
 				
 				<dd><a href="#ConfParams">type ConfParams</a></dd>
@@ -201,6 +175,15 @@
 				
 					
 					<dd>&nbsp; &nbsp; <a href="#ConfParams.SetDefault">func (o *ConfParams) SetDefault()</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ConfParams.SetIntBin">func (o *ConfParams) SetIntBin(size int)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ConfParams.SetIntOrd">func (o *ConfParams) SetIntOrd(nstations int)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#ConfParams.SetNbasesFixOp">func (o *ConfParams) SetNbasesFixOp(nbases int)</a></dd>
 				
 			
 				
@@ -237,23 +220,26 @@
 				<dd><a href="#Evolver">type Evolver</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#NewEvolver">func NewEvolver(C *ConfParams, ref *Individual, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver)</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#NewEvolverFloatChromo">func NewEvolverFloatChromo(C *ConfParams, xmin, xmax []float64, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver)</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#NewEvolverIntOrdChromo">func NewEvolverIntOrdChromo(C *ConfParams, nstations int, ovfunc ObjFunc_t) (o *Evolver)</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#NewEvolverPop">func NewEvolverPop(C *ConfParams, pops []Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Evolver)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#NewEvolver">func NewEvolver(nova, noor int, C *ConfParams) (o *Evolver)</a></dd>
 				
 				
 					
 					<dd>&nbsp; &nbsp; <a href="#Evolver.FindBestFromAll">func (o *Evolver) FindBestFromAll()</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#Evolver.Run">func (o *Evolver) Run(verbose, doreport bool)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#Evolver.GetFeasible">func (o *Evolver) GetFeasible() (feasible []*Individual)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#Evolver.GetFrontOvas">func (o *Evolver) GetFrontOvas(r, s int, front []*Individual) (x, y []float64)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#Evolver.GetParetoFront">func (o *Evolver) GetParetoFront(feasible []*Individual, ovas, oors [][]float64) (ovafront, oorfront []*Individual)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#Evolver.GetResults">func (o *Evolver) GetResults(subset []*Individual) (ovas, oors [][]float64)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#Evolver.Run">func (o *Evolver) Run()</a></dd>
 				
 			
 				
@@ -265,11 +251,8 @@
 				<dd><a href="#Individual">type Individual</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#NewIndividual">func NewIndividual(nbases int, slices ...interface{}) (o *Individual)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#NewIndividual">func NewIndividual(nova, noor, nbases int, slices ...interface{}) (o *Individual)</a></dd>
 				
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Individual.Compare">func (A Individual) Compare(B *Individual) (A_is_better bool)</a></dd>
 				
 					
 					<dd>&nbsp; &nbsp; <a href="#Individual.CopyInto">func (o Individual) CopyInto(x *Individual)</a></dd>
@@ -297,7 +280,7 @@
 				<dd><a href="#Island">type Island</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#NewIsland">func NewIsland(id int, C *ConfParams, pop Population, ovfunc ObjFunc_t, bingo *Bingo) (o *Island)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#NewIsland">func NewIsland(id, nova, noor int, C *ConfParams) (o *Island)</a></dd>
 				
 				
 					
@@ -307,19 +290,19 @@
 					<dd>&nbsp; &nbsp; <a href="#Island.CalcOvs">func (o *Island) CalcOvs(pop Population, time int)</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#Island.Regenerate">func (o *Island) Regenerate(time int, basedOnBest bool) (method string)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#Island.FltStat">func (o *Island) FltStat() (minrho, averho, maxrho, devrho float64)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#Island.Regenerate">func (o *Island) Regenerate(time int)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#Island.Run">func (o *Island) Run(time int, doreport, verbose bool)</a></dd>
 				
 					
 					<dd>&nbsp; &nbsp; <a href="#Island.SaveReport">func (o Island) SaveReport(verbose bool)</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#Island.SelectReprodAndRegen">func (o *Island) SelectReprodAndRegen(time int, doregen, doreport, verbose bool)</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Island.Stat">func (o *Island) Stat() (minrho, averho, maxrho, devrho float64)</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Island.WritePopToReport">func (o *Island) WritePopToReport(time int)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#Island.WritePopToReport">func (o *Island) WritePopToReport(time int, averho float64)</a></dd>
 				
 			
 				
@@ -353,7 +336,54 @@
 				
 			
 				
-				<dd><a href="#ObjFunc_t">type ObjFunc_t</a></dd>
+				<dd><a href="#Objectives_t">type Objectives_t</a></dd>
+				
+				
+			
+				
+				<dd><a href="#OpsData">type OpsData</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#OpsData.CalcDerived">func (o *OpsData) CalcDerived(Tf int, xrange [][]float64)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#OpsData.EnforceRange">func (o *OpsData) EnforceRange(igene int, x float64) float64</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#OpsData.MwiczDelta">func (o *OpsData) MwiczDelta(t, x float64) float64</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="#OpsData.SetDefault">func (o *OpsData) SetDefault()</a></dd>
+				
+			
+				
+				<dd><a href="#PopBytGen_t">type PopBytGen_t</a></dd>
+				
+				
+			
+				
+				<dd><a href="#PopFltGen_t">type PopFltGen_t</a></dd>
+				
+				
+			
+				
+				<dd><a href="#PopFunGen_t">type PopFunGen_t</a></dd>
+				
+				
+			
+				
+				<dd><a href="#PopIntGen_t">type PopIntGen_t</a></dd>
+				
+				
+			
+				
+				<dd><a href="#PopKeyGen_t">type PopKeyGen_t</a></dd>
+				
+				
+			
+				
+				<dd><a href="#PopStrGen_t">type PopStrGen_t</a></dd>
 				
 				
 			
@@ -361,23 +391,14 @@
 				<dd><a href="#Population">type Population</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#NewPopFloatChromo">func NewPopFloatChromo(nbases int, genes [][]float64) (pop Population)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#PopBinGen">func PopBinGen(ninds, nova, noor, nbases int, noise float64, nints int, unused [][]int) Population</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#NewPopFloatRandom">func NewPopFloatRandom(C *ConfParams, xmin, xmax []float64) (pop Population)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#PopFltGen">func PopFltGen(ninds, nova, noor, nbases int, noise float64, frange [][]float64) Population</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#NewPopIntOrdRandom">func NewPopIntOrdRandom(C *ConfParams, nstations int) (pop Population)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#PopOrdGen">func PopOrdGen(ninds, nova, noor, nbases int, noise float64, nints int, unused [][]int) Population</a></dd>
 				
-					
-					<dd>&nbsp; &nbsp; <a href="#NewPopRandom">func NewPopRandom(ninds int, ref *Individual, bingo *Bingo) (pop Population)</a></dd>
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#NewPopReference">func NewPopReference(ninds int, ref *Individual) (pop Population)</a></dd>
-				
-				
-					
-					<dd>&nbsp; &nbsp; <a href="#Population.GenFloatRandom">func (o *Population) GenFloatRandom(C *ConfParams, xmin, xmax []float64)</a></dd>
 				
 					
 					<dd>&nbsp; &nbsp; <a href="#Population.GetCopy">func (o Population) GetCopy() (pop Population)</a></dd>
@@ -392,13 +413,18 @@
 					<dd>&nbsp; &nbsp; <a href="#Population.OutFloatBases">func (o Population) OutFloatBases(numFmt string) (l string)</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#Population.Output">func (o Population) Output(fmts [][]string, showBases bool) (buf *bytes.Buffer)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#Population.Output">func (o Population) Output(fmts [][]string, showOor, showBases bool, showNinds int) (buf *bytes.Buffer)</a></dd>
 				
 					
 					<dd>&nbsp; &nbsp; <a href="#Population.Sort">func (o *Population) Sort()</a></dd>
 				
 					
 					<dd>&nbsp; &nbsp; <a href="#Population.Swap">func (o Population) Swap(i, j int)</a></dd>
+				
+			
+				
+				<dd><a href="#PostProc_t">type PostProc_t</a></dd>
+				
 				
 			
 				
@@ -422,7 +448,7 @@
 			<p>
 			<span style="font-size:90%">
 			
-				<a href="/src/github.com/cpmech/goga/bingo.go">bingo.go</a>
+				<a href="/src/github.com/cpmech/goga/definitions.go">definitions.go</a>
 			
 				<a href="/src/github.com/cpmech/goga/evolver.go">evolver.go</a>
 			
@@ -437,6 +463,8 @@
 				<a href="/src/github.com/cpmech/goga/plotting.go">plotting.go</a>
 			
 				<a href="/src/github.com/cpmech/goga/population.go">population.go</a>
+			
+				<a href="/src/github.com/cpmech/goga/selection.go">selection.go</a>
 			
 			</span>
 			</p>
@@ -486,17 +514,12 @@
 		
 			
 			
-			<h2 id="BytCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=11784:11870#L429">BytCrossover</a></h2>
-			<pre>func BytCrossover(a, b, A, B [][]<a href="/pkg/builtin/#byte">byte</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="BytCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=12133:12208#L453">BytCrossover</a></h2>
+			<pre>func BytCrossover(a, b, A, B [][]<a href="/pkg/builtin/#byte">byte</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 BytCrossover performs the crossover of genetic data from A and B
 </p>
-<pre>Input:
- A and B -- parents
- ncuts   -- number of cuts to be used, unless cuts != nil
- cuts    -- cut positions. can be nil =&gt; use ncuts instead
- pc      -- probability of crossover
-Output:
+<pre>Output:
  a and b -- offspring
 Example:
        0 1 2 3 4 5 6 7
@@ -514,17 +537,12 @@ Example:
 		
 			
 			
-			<h2 id="BytMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=19822:19895#L742">BytMutation</a></h2>
-			<pre>func BytMutation(A [][]<a href="/pkg/builtin/#byte">byte</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="BytMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=18147:18199#L699">BytMutation</a></h2>
+			<pre>func BytMutation(A [][]<a href="/pkg/builtin/#byte">byte</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>)</pre>
 			<p>
 BytMutation performs the mutation of genetic data from A
 </p>
-<pre>Input:
- A        -- individual
- nchanges -- number of changes of genes
- pm       -- probability of mutation
- extra    -- an integer corresponding to the max value for multiplier &#39;m&#39;
-Output: modified individual &#39;A&#39;
+<pre>Output: modified individual &#39;A&#39;
 </pre>
 
 			
@@ -533,73 +551,7 @@ Output: modified individual &#39;A&#39;
 		
 			
 			
-			<h2 id="CalcFitness">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=1292:1326#L40">CalcFitness</a></h2>
-			<pre>func CalcFitness(f, ovs []<a href="/pkg/builtin/#float64">float64</a>)</pre>
-			<p>
-CalcFitness maps objective values into [0, 1]; thus returning the fitness function values
-</p>
-<pre>Input:
-  ovs -- objective values
-Output:
-  f -- fitness function values
-</pre>
-
-			
-			
-
-		
-			
-			
-			<h2 id="CalcFitnessRanking">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=1758:1818#L58">CalcFitnessRanking</a></h2>
-			<pre>func CalcFitnessRanking(ninds <a href="/pkg/builtin/#int">int</a>, sp <a href="/pkg/builtin/#float64">float64</a>) (f []<a href="/pkg/builtin/#float64">float64</a>)</pre>
-			<p>
-CalcFitnessRanking computes fitness corresponding to a linear ranking
-</p>
-<pre>Input:
-  ninds -- number of individuals
-  sp    -- selective pressure; must be inside [1, 2]
-Output:
-  f -- ranked fitnesses
-</pre>
-
-			
-			
-
-		
-			
-			
-			<h2 id="Crossover">func <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=5524:5753#L203">Crossover</a></h2>
-			<pre>func Crossover(a, b, A, B *<a href="#Individual">Individual</a>, ncuts map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#int">int</a>, cuts map[<a href="/pkg/builtin/#string">string</a>][]<a href="/pkg/builtin/#int">int</a>, probs map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#float64">float64</a>,
-    cxint <a href="#CxIntFunc_t">CxIntFunc_t</a>,
-    cxflt <a href="#CxFltFunc_t">CxFltFunc_t</a>,
-    cxstr <a href="#CxStrFunc_t">CxStrFunc_t</a>,
-    cxkey <a href="#CxKeyFunc_t">CxKeyFunc_t</a>,
-    cxbyt <a href="#CxBytFunc_t">CxBytFunc_t</a>,
-    cxfun <a href="#CxFunFunc_t">CxFunFunc_t</a>)</pre>
-			<p>
-Crossover performs the crossover between chromosomes of two individuals A and B
-resulting in the chromosomes of other two individuals a and b
-</p>
-<pre>Input:
- A and B -- parents
- ncuts   -- number of cuts. keys are: &#39;int&#39;, &#39;flt&#39;, &#39;str&#39;, &#39;key&#39;, &#39;byt&#39;, &#39;fun&#39;
-            ncuts can be nil if &#39;cuts&#39; is provided
- cuts    -- positions for cuts in the augmented/whole chromosome
-            len(cuts) == 6: {int, flt, str, key, byt, fun
-            cuts == nil indicates ncuts is to be used instead
- probs   -- probabilities. use nil for default values
- cxfucns -- crossover functions. use nil for default ones
-Output:
- a and b -- offspring
-</pre>
-
-			
-			
-
-		
-			
-			
-			<h2 id="FilterPairs">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=3813:3856#L135">FilterPairs</a></h2>
+			<h2 id="FilterPairs">func <a href="https://github.com/cpmech/goga/blob/master//selection.go?s=1979:2022#L68">FilterPairs</a></h2>
 			<pre>func FilterPairs(A, B []<a href="/pkg/builtin/#int">int</a>, selinds []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 FilterPairs generates 2 lists with ninds/2 items each corresponding to selected pairs
@@ -617,17 +569,12 @@ Output:
 		
 			
 			
-			<h2 id="FltCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=8539:8626#L300">FltCrossover</a></h2>
-			<pre>func FltCrossover(a, b, A, B []<a href="/pkg/builtin/#float64">float64</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="FltCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=8783:8859#L313">FltCrossover</a></h2>
+			<pre>func FltCrossover(a, b, A, B []<a href="/pkg/builtin/#float64">float64</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 FltCrossover performs the crossover of genetic data from A and B
 </p>
-<pre>Input:
- A and B -- parents
- ncuts   -- number of cuts to be used, unless cuts != nil
- cuts    -- cut positions. can be nil =&gt; use ncuts instead
- pc      -- probability of crossover
-Output:
+<pre>Output:
  a and b -- offspring
 Example:
        0 1 2 3 4 5 6 7
@@ -645,17 +592,27 @@ Example:
 		
 			
 			
-			<h2 id="FltMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=18006:18080#L678">FltMutation</a></h2>
-			<pre>func FltMutation(A []<a href="/pkg/builtin/#float64">float64</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="FltCrossoverBlx">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=9442:9521#L343">FltCrossoverBlx</a></h2>
+			<pre>func FltCrossoverBlx(a, b, A, B []<a href="/pkg/builtin/#float64">float64</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			<p>
+FltCrossoverBlx implements the BLS-α crossover by Eshelman et al. (1993); see also Herrera (1998)
+</p>
+<pre>Output:
+ a and b -- offspring
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="FltMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=16474:16527#L633">FltMutation</a></h2>
+			<pre>func FltMutation(A []<a href="/pkg/builtin/#float64">float64</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>)</pre>
 			<p>
 FltMutation performs the mutation of genetic data from A
 </p>
-<pre>Input:
- A        -- individual
- nchanges -- number of changes of genes
- pm       -- probability of mutation
- extra    -- an integer corresponding to the max value for multiplier &#39;m&#39;
-Output: modified individual &#39;A&#39;
+<pre>Output: modified individual &#39;A&#39;
 </pre>
 
 			
@@ -664,17 +621,25 @@ Output: modified individual &#39;A&#39;
 		
 			
 			
-			<h2 id="FunCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=12907:12993#L475">FunCrossover</a></h2>
-			<pre>func FunCrossover(a, b, A, B []<a href="#Func_t">Func_t</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="FltMutationMwicz">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=16922:16980#L651">FltMutationMwicz</a></h2>
+			<pre>func FltMutationMwicz(A []<a href="/pkg/builtin/#float64">float64</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>)</pre>
+			<p>
+FltMutationMwicz implements the non-uniform mutation (Michaelewicz, 1992; Herrera, 1998)
+See also Michalewicz (1996) page 103
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="FunCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=13056:13131#L494">FunCrossover</a></h2>
+			<pre>func FunCrossover(a, b, A, B []<a href="#Func_t">Func_t</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 FunCrossover performs the crossover of genetic data from A and B
 </p>
-<pre>Input:
- A and B -- parents
- ncuts   -- number of cuts to be used, unless cuts != nil
- cuts    -- cut positions. can be nil =&gt; use ncuts instead
- pc      -- probability of crossover
-Output:
+<pre>Output:
  a and b -- offspring
 Example:
        0 1 2 3 4 5 6 7
@@ -692,17 +657,12 @@ Example:
 		
 			
 			
-			<h2 id="FunMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=20401:20474#L761">FunMutation</a></h2>
-			<pre>func FunMutation(A []<a href="#Func_t">Func_t</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="FunMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=18511:18563#L713">FunMutation</a></h2>
+			<pre>func FunMutation(A []<a href="#Func_t">Func_t</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>)</pre>
 			<p>
 FunMutation performs the mutation of genetic data from A
 </p>
-<pre>Input:
- A        -- individual
- nchanges -- number of changes of genes
- pm       -- probability of mutation
- extra    -- an integer corresponding to the max value for multiplier &#39;m&#39;
-Output: modified individual &#39;A&#39;
+<pre>Output: modified individual &#39;A&#39;
 </pre>
 
 			
@@ -711,7 +671,7 @@ Output: modified individual &#39;A&#39;
 		
 			
 			
-			<h2 id="GenerateCxEnds">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=13908:13969#L514">GenerateCxEnds</a></h2>
+			<h2 id="GenerateCxEnds">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=4204:4265#L139">GenerateCxEnds</a></h2>
 			<pre>func GenerateCxEnds(size, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 GenerateCxEnds randomly computes the end positions of cuts in chromosomes
@@ -735,17 +695,87 @@ Example:
 		
 			
 			
-			<h2 id="IntCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=4933:5016#L178">IntCrossover</a></h2>
-			<pre>func IntCrossover(a, b, A, B []<a href="/pkg/builtin/#int">int</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="IndCompareDet">func <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=3830:3898#L160">IndCompareDet</a></h2>
+			<pre>func IndCompareDet(A, B *<a href="#Individual">Individual</a>) (A_dominates, B_dominates <a href="/pkg/builtin/#bool">bool</a>)</pre>
+			<p>
+IndCompareDet compares individual &#39;A&#39; with another one &#39;B&#39;. Deterministic method
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="IndCompareProb">func <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=4466:4534#L187">IndCompareProb</a></h2>
+			<pre>func IndCompareProb(A, B *<a href="#Individual">Individual</a>, φ <a href="/pkg/builtin/#float64">float64</a>) (A_dominates <a href="/pkg/builtin/#bool">bool</a>)</pre>
+			<p>
+IndCompareProb compares individual &#39;A&#39; with another one &#39;B&#39; using probabilistic Pareto method
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="IndCrossover">func <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=5710:5775#L234">IndCrossover</a></h2>
+			<pre>func IndCrossover(a, b, A, B *<a href="#Individual">Individual</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>)</pre>
+			<p>
+IndCrossover performs the crossover between chromosomes of two individuals A and B
+resulting in the chromosomes of other two individuals a and b
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="IndDistance">func <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=5051:5100#L210">IndDistance</a></h2>
+			<pre>func IndDistance(A, B *<a href="#Individual">Individual</a>) (dist <a href="/pkg/builtin/#float64">float64</a>)</pre>
+			<p>
+IndDistance computes a distance measure from individual &#39;A&#39; to another individual &#39;B&#39;
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="IndMutation">func <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=6367:6422#L256">IndMutation</a></h2>
+			<pre>func IndMutation(A *<a href="#Individual">Individual</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>)</pre>
+			<p>
+IndMutation performs the mutation operation in the chromosomes of an individual
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="IntBinMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=14184:14236#L543">IntBinMutation</a></h2>
+			<pre>func IntBinMutation(A []<a href="/pkg/builtin/#int">int</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>)</pre>
+			<p>
+IntBinMutation performs the mutation of a binary chromosome
+</p>
+<pre>Output: modified individual &#39;A&#39;
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="IntCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=5570:5642#L201">IntCrossover</a></h2>
+			<pre>func IntCrossover(a, b, A, B []<a href="/pkg/builtin/#int">int</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 IntCrossover performs the crossover of genetic data from A and B
 </p>
-<pre>Input:
- A and B -- parents
- ncuts   -- number of cuts to be used, unless cuts != nil
- cuts    -- cut positions. can be nil =&gt; use ncuts instead
- pc      -- probability of crossover
-Output:
+<pre>Output:
  a and b -- offspring
 Example:
        0 1 2 3 4 5 6 7
@@ -763,17 +793,12 @@ Example:
 		
 			
 			
-			<h2 id="IntMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=15208:15278#L572">IntMutation</a></h2>
-			<pre>func IntMutation(A []<a href="/pkg/builtin/#int">int</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="IntMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=13772:13821#L525">IntMutation</a></h2>
+			<pre>func IntMutation(A []<a href="/pkg/builtin/#int">int</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>)</pre>
 			<p>
 IntMutation performs the mutation of genetic data from A
 </p>
-<pre>Input:
- A        -- individual
- nchanges -- number of changes of genes
- pm       -- probability of mutation
- extra    -- an integer corresponding to the max value for multiplier &#39;m&#39;
-Output: modified individual &#39;A&#39;
+<pre>Output: modified individual &#39;A&#39;
 </pre>
 
 			
@@ -782,18 +807,13 @@ Output: modified individual &#39;A&#39;
 		
 			
 			
-			<h2 id="IntOrdCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=7046:7133#L236">IntOrdCrossover</a></h2>
-			<pre>func IntOrdCrossover(a, b, A, B []<a href="/pkg/builtin/#int">int</a>, dum <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (notused []<a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="IntOrdCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=7484:7562#L254">IntOrdCrossover</a></h2>
+			<pre>func IntOrdCrossover(a, b, A, B []<a href="/pkg/builtin/#int">int</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>) (notused []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 IntOrdCrossover performs the crossover in a pair of individuals with integer numbers
 that correspond to a ordered sequence, e.g. for traveling salesman problem
 </p>
-<pre>Input:
-  A and B -- parents&#39; chromosomes
-  dum     -- not used
-  cuts    -- 2 cut positions. if len(cuts) != 2, 2 cuts are randomly generated
-  pc      -- probability of crossover
-Output:
+<pre>Output:
   a and b -- offspring chromosomes
 Note: using OX1 method explained in [1] (proposed in [2])
 References:
@@ -825,17 +845,12 @@ Example:
 		
 			
 			
-			<h2 id="IntOrdMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=16849:16916#L621">IntOrdMutation</a></h2>
-			<pre>func IntOrdMutation(A []<a href="/pkg/builtin/#int">int</a>, dum1 <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, sti interface{})</pre>
+			<h2 id="IntOrdMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=15523:15575#L582">IntOrdMutation</a></h2>
+			<pre>func IntOrdMutation(A []<a href="/pkg/builtin/#int">int</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>)</pre>
 			<p>
 IntOrdMutation performs the mutation of genetic data from a ordered list of integers A
 </p>
-<pre>Input:
- A     -- individual
- dum1  -- not used
- pm    -- probability of mutation
- sti   -- if []int{start, end, insertPoint} != nil, use it; otherwise, use random
-Output: modified individual &#39;A&#39;
+<pre>Output: modified individual &#39;A&#39;
 Note: using DM method as explained in [1] (citing [2])
 References:
  [1] Larrañaga P, Kuijpers CMH, Murga RH, Inza I and Dizdarevic S. Genetic Algorithms for the
@@ -866,17 +881,12 @@ DM displacement mutation method:
 		
 			
 			
-			<h2 id="KeyCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=10704:10788#L386">KeyCrossover</a></h2>
-			<pre>func KeyCrossover(a, b, A, B []<a href="/pkg/builtin/#byte">byte</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="KeyCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=11253:11326#L415">KeyCrossover</a></h2>
+			<pre>func KeyCrossover(a, b, A, B []<a href="/pkg/builtin/#byte">byte</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 KeyCrossover performs the crossover of genetic data from A and B
 </p>
-<pre>Input:
- A and B -- parents
- ncuts   -- number of cuts to be used, unless cuts != nil
- cuts    -- cut positions. can be nil =&gt; use ncuts instead
- pc      -- probability of crossover
-Output:
+<pre>Output:
  a and b -- offspring
 Example:
        0 1 2 3 4 5 6 7
@@ -894,17 +904,12 @@ Example:
 		
 			
 			
-			<h2 id="KeyMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=19248:19319#L723">KeyMutation</a></h2>
-			<pre>func KeyMutation(A []<a href="/pkg/builtin/#byte">byte</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="KeyMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=17788:17838#L685">KeyMutation</a></h2>
+			<pre>func KeyMutation(A []<a href="/pkg/builtin/#byte">byte</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>)</pre>
 			<p>
 KeyMutation performs the mutation of genetic data from A
 </p>
-<pre>Input:
- A        -- individual
- nchanges -- number of changes of genes
- pm       -- probability of mutation
- extra    -- an integer corresponding to the max value for multiplier &#39;m&#39;
-Output: modified individual &#39;A&#39;
+<pre>Output: modified individual &#39;A&#39;
 </pre>
 
 			
@@ -913,35 +918,8 @@ Output: modified individual &#39;A&#39;
 		
 			
 			
-			<h2 id="Mutation">func <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=7812:8041#L277">Mutation</a></h2>
-			<pre>func Mutation(A *<a href="#Individual">Individual</a>, nchanges map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#int">int</a>, probs map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#float64">float64</a>, extra map[<a href="/pkg/builtin/#string">string</a>]interface{},
-    mtint <a href="#MtIntFunc_t">MtIntFunc_t</a>,
-    mtflt <a href="#MtFltFunc_t">MtFltFunc_t</a>,
-    mtstr <a href="#MtStrFunc_t">MtStrFunc_t</a>,
-    mtkey <a href="#MtKeyFunc_t">MtKeyFunc_t</a>,
-    mtbyt <a href="#MtBytFunc_t">MtBytFunc_t</a>,
-    mtfun <a href="#MtFunFunc_t">MtFunFunc_t</a>)</pre>
-			<p>
-Mutation performs the mutation operation in the chromosomes of an individual
-</p>
-<pre>Input:
- A        -- individual
- nchanges -- number of changes. keys are: &#39;int&#39;, &#39;flt&#39;, &#39;str&#39;, &#39;key&#39;, &#39;byt&#39;, &#39;fun&#39;
-             use nil for default values
- probs    -- probabilities. use nil for default values
- extra    -- extra arguments for each &#39;int&#39;, &#39;flt&#39;, &#39;str&#39;, &#39;key&#39;, &#39;byt&#39;, &#39;fun&#39;
- mutfucns -- mutation functions. use nil for default ones
-Output: modified individual
-</pre>
-
-			
-			
-
-		
-			
-			
-			<h2 id="PlotOor">func <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=6150:6252#L214">PlotOor</a></h2>
-			<pre>func PlotOor(isl *<a href="#Island">Island</a>, ext, args <a href="/pkg/builtin/#string">string</a>, t0, tf <a href="/pkg/builtin/#int">int</a>, withtxt <a href="/pkg/builtin/#bool">bool</a>, numfmt <a href="/pkg/builtin/#string">string</a>, first, last <a href="/pkg/builtin/#bool">bool</a>)</pre>
+			<h2 id="PlotOor">func <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=5914:5987#L204">PlotOor</a></h2>
+			<pre>func PlotOor(isl *<a href="#Island">Island</a>, ext, args <a href="/pkg/builtin/#string">string</a>, t0, tf <a href="/pkg/builtin/#int">int</a>, first, last <a href="/pkg/builtin/#bool">bool</a>)</pre>
 			<p>
 PlotOor plots out-of-range values versus time
 </p>
@@ -952,8 +930,8 @@ PlotOor plots out-of-range values versus time
 		
 			
 			
-			<h2 id="PlotOvs">func <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=5251:5353#L179">PlotOvs</a></h2>
-			<pre>func PlotOvs(isl *<a href="#Island">Island</a>, ext, args <a href="/pkg/builtin/#string">string</a>, t0, tf <a href="/pkg/builtin/#int">int</a>, withtxt <a href="/pkg/builtin/#bool">bool</a>, numfmt <a href="/pkg/builtin/#string">string</a>, first, last <a href="/pkg/builtin/#bool">bool</a>)</pre>
+			<h2 id="PlotOvs">func <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=5251:5324#L179">PlotOvs</a></h2>
+			<pre>func PlotOvs(isl *<a href="#Island">Island</a>, ext, args <a href="/pkg/builtin/#string">string</a>, t0, tf <a href="/pkg/builtin/#int">int</a>, first, last <a href="/pkg/builtin/#bool">bool</a>)</pre>
 			<p>
 PlotOvs plots objective values versus time
 </p>
@@ -996,7 +974,7 @@ Note: g(x) operates on original x values
 		
 			
 			
-			<h2 id="RouletteSelect">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=2358:2429#L77">RouletteSelect</a></h2>
+			<h2 id="RouletteSelect">func <a href="https://github.com/cpmech/goga/blob/master//selection.go?s=524:595#L10">RouletteSelect</a></h2>
 			<pre>func RouletteSelect(selinds []<a href="/pkg/builtin/#int">int</a>, cumprob []<a href="/pkg/builtin/#float64">float64</a>, sample []<a href="/pkg/builtin/#float64">float64</a>)</pre>
 			<p>
 RouletteSelect selects n individuals
@@ -1014,7 +992,7 @@ Output:
 		
 			
 			
-			<h2 id="SUSselect">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=3205:3265#L111">SUSselect</a></h2>
+			<h2 id="SUSselect">func <a href="https://github.com/cpmech/goga/blob/master//selection.go?s=1371:1431#L44">SUSselect</a></h2>
 			<pre>func SUSselect(selinds []<a href="/pkg/builtin/#int">int</a>, cumprob []<a href="/pkg/builtin/#float64">float64</a>, pb <a href="/pkg/builtin/#float64">float64</a>)</pre>
 			<p>
 SUSselect performs the Stochastic-Universal-Sampling selection
@@ -1033,7 +1011,7 @@ Output:
 		
 			
 			
-			<h2 id="SimpleChromo">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=747:812#L20">SimpleChromo</a></h2>
+			<h2 id="SimpleChromo">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=3356:3421#L112">SimpleChromo</a></h2>
 			<pre>func SimpleChromo(genes []<a href="/pkg/builtin/#float64">float64</a>, nbases <a href="/pkg/builtin/#int">int</a>) (chromo []<a href="/pkg/builtin/#float64">float64</a>)</pre>
 			<p>
 SimpleChromo splits &#39;genes&#39; into &#39;nbases&#39; unequal parts
@@ -1057,17 +1035,12 @@ Example:
 		
 			
 			
-			<h2 id="StrCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=9622:9708#L343">StrCrossover</a></h2>
-			<pre>func StrCrossover(a, b, A, B []<a href="/pkg/builtin/#string">string</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="StrCrossover">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=10371:10446#L377">StrCrossover</a></h2>
+			<pre>func StrCrossover(a, b, A, B []<a href="/pkg/builtin/#string">string</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 StrCrossover performs the crossover of genetic data from A and B
 </p>
-<pre>Input:
- A and B -- parents
- ncuts   -- number of cuts to be used, unless cuts != nil
- cuts    -- cut positions. can be nil =&gt; use ncuts instead
- pc      -- probability of crossover
-Output:
+<pre>Output:
  a and b -- offspring
 Example:
        0 1 2 3 4 5 6 7
@@ -1085,17 +1058,12 @@ Example:
 		
 			
 			
-			<h2 id="StrMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=18696:18769#L705">StrMutation</a></h2>
-			<pre>func StrMutation(A []<a href="/pkg/builtin/#string">string</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="StrMutation">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=17451:17503#L672">StrMutation</a></h2>
+			<pre>func StrMutation(A []<a href="/pkg/builtin/#string">string</a>, time <a href="/pkg/builtin/#int">int</a>, ops *<a href="#OpsData">OpsData</a>)</pre>
 			<p>
 StrMutation performs the mutation of genetic data from A
 </p>
-<pre>Input:
- A        -- individual
- nchanges -- number of changes of genes
- pm       -- probability of mutation
- extra    -- an integer corresponding to the max value for multiplier &#39;m&#39;
-Output: modified individual &#39;A&#39;
+<pre>Output: modified individual &#39;A&#39;
 </pre>
 
 			
@@ -1105,189 +1073,7 @@ Output: modified individual &#39;A&#39;
 		
 			
 			
-			<h2 id="Bingo">type <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=374:852#L5">Bingo</a></h2>
-			<pre>type Bingo struct {
-    IntRange  [][]<a href="/pkg/builtin/#int">int</a>     <span class="comment">// [ngene][nsamples] min and max integers</span>
-    FltRange  [][]<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// [ngene][nsamples] min and max float point numbers</span>
-    PoolWords [][]<a href="/pkg/builtin/#string">string</a>  <span class="comment">// [ngene][nsamples] pool of words to be used in Gene.String</span>
-    PoolBytes [][]<a href="/pkg/builtin/#byte">byte</a>    <span class="comment">// [ngene][nsamples] pool of bytes to be used in Gene.Byte</span>
-    PoolBtxt  [][]<a href="/pkg/builtin/#string">string</a>  <span class="comment">// [ngene][nsamples] pool of byte-words to be used in Gene.Bytes</span>
-    PoolFuncs [][]<a href="#Func_t">Func_t</a>  <span class="comment">// [ngene][nsamples] pool of functions</span>
-}</pre>
-			<p>
-Bingo collects values to be drawn in random operations
-</p>
-
-
-			
-
-			
-
-			
-			
-			
-
-			
-				
-				<h3 id="NewBingoFloats">func <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=3201:3253#L90">NewBingoFloats</a></h3>
-				<pre>func NewBingoFloats(xmin, xmax []<a href="/pkg/builtin/#float64">float64</a>) (o *<a href="#Bingo">Bingo</a>)</pre>
-				<p>
-NewBingoFloats creates a bingo to generate float point numbers between xmin and xmax
-</p>
-<pre>Input:
- xmin -- min values of genes (to be subdivided). len(xmin) == ngenes
- xmax -- max values of genes (to be subdivided)
-</pre>
-
-				
-				
-			
-				
-				<h3 id="NewBingoInts">func <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=2712:2758#L74">NewBingoInts</a></h3>
-				<pre>func NewBingoInts(xmin, xmax []<a href="/pkg/builtin/#int">int</a>) (o *<a href="#Bingo">Bingo</a>)</pre>
-				<p>
-NewBingoInts creates a bingo to generate int numbers between xmin and xmax
-</p>
-<pre>Input:
- xmin -- min values of genes. len(xmin) == ngenes
- xmax -- max values of genes
-</pre>
-
-				
-				
-			
-				
-				<h3 id="NewExampleBingo">func <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=1271:1300#L28">NewExampleBingo</a></h3>
-				<pre>func NewExampleBingo() *<a href="#Bingo">Bingo</a></pre>
-				<p>
-NewExampleBingo returns a new Bingo with example values
-</p>
-
-				
-				
-			
-
-			
-				
-				<h3 id="Bingo.DrawBytes">func (Bingo) <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=5136:5178#L159">DrawBytes</a></h3>
-				<pre>func (o <a href="#Bingo">Bingo</a>) DrawBytes(iGene <a href="/pkg/builtin/#int">int</a>) []<a href="/pkg/builtin/#byte">byte</a></pre>
-				<p>
-DrawBytes randomly selects a []byte from data pool
-</p>
-<pre>Input:
- iGene -- index of gene
-</pre>
-
-				
-				
-				
-			
-				
-				<h3 id="Bingo.DrawFloat">func (Bingo) <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=4280:4335#L124">DrawFloat</a></h3>
-				<pre>func (o <a href="#Bingo">Bingo</a>) DrawFloat(iInd, iGene, nInd <a href="/pkg/builtin/#int">int</a>) <a href="/pkg/builtin/#float64">float64</a></pre>
-				<p>
-DrawFloat randomly selects a float point number from data pool
-</p>
-<pre>Input:
- iInd  -- index of individual used to  compute value in Range: val = min + idx * Δ
-          use iInd = -1 to randomly choose between min and max
- iGene -- index of gene
- nInd  -- number of individuals
-</pre>
-
-				
-				
-				
-			
-				
-				<h3 id="Bingo.DrawFunc">func (Bingo) <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=5407:5448#L170">DrawFunc</a></h3>
-				<pre>func (o <a href="#Bingo">Bingo</a>) DrawFunc(iGene <a href="/pkg/builtin/#int">int</a>) <a href="#Func_t">Func_t</a></pre>
-				<p>
-DrawFunc randomly selects a function from data pool
-</p>
-<pre>Input:
- iGene -- index of gene
-</pre>
-
-				
-				
-				
-			
-				
-				<h3 id="Bingo.DrawInt">func (Bingo) <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=3752:3801#L108">DrawInt</a></h3>
-				<pre>func (o <a href="#Bingo">Bingo</a>) DrawInt(iInd, iGene, nInd <a href="/pkg/builtin/#int">int</a>) <a href="/pkg/builtin/#int">int</a></pre>
-				<p>
-DrawInt randomly selects an int from data pool
-</p>
-<pre>Input:
- iInd  -- index of individual used to  compute value in Range: val = min + idx * Δ
-          use iInd = -1 to randomly choose between min and max
- iGene -- index of gene
- nInd  -- number of individuals
-</pre>
-
-				
-				
-				
-			
-				
-				<h3 id="Bingo.DrawKey">func (Bingo) <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=4877:4915#L148">DrawKey</a></h3>
-				<pre>func (o <a href="#Bingo">Bingo</a>) DrawKey(iGene <a href="/pkg/builtin/#int">int</a>) <a href="/pkg/builtin/#byte">byte</a></pre>
-				<p>
-DrawKey randomly selects a byte from data pool
-</p>
-<pre>Input:
- iGene -- index of gene
-</pre>
-
-				
-				
-				
-			
-				
-				<h3 id="Bingo.DrawString">func (Bingo) <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=4616:4659#L137">DrawString</a></h3>
-				<pre>func (o <a href="#Bingo">Bingo</a>) DrawString(iGene <a href="/pkg/builtin/#int">int</a>) <a href="/pkg/builtin/#string">string</a></pre>
-				<p>
-DrawString randomly selects a string from data pool
-</p>
-<pre>Input:
- iGene -- index of gene
-</pre>
-
-				
-				
-				
-			
-				
-				<h3 id="Bingo.GetCopy">func (Bingo) <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=894:929#L15">GetCopy</a></h3>
-				<pre>func (o <a href="#Bingo">Bingo</a>) GetCopy() (p *<a href="#Bingo">Bingo</a>)</pre>
-				<p>
-GetCopy returns a copy of this bingo
-</p>
-
-				
-				
-				
-			
-				
-				<h3 id="Bingo.ResetBasedOnRef">func (*Bingo) <a href="https://github.com/cpmech/goga/blob/master//bingo.go?s=5800:5878#L182">ResetBasedOnRef</a></h3>
-				<pre>func (o *<a href="#Bingo">Bingo</a>) ResetBasedOnRef(time <a href="/pkg/builtin/#int">int</a>, ind *<a href="#Individual">Individual</a>, mmin, mmax <a href="/pkg/builtin/#float64">float64</a>)</pre>
-				<p>
-ResetBasedOnRef resets bingo with values based on reference (e.g. best) individual
-</p>
-<pre>Input:
- mmin -- multiplier to decrease reference value; e.g. 0.1
- mmax -- multiplier to increase reference value; e.g. 10.0
-</pre>
-
-				
-				
-				
-			
-		
-			
-			
-			<h2 id="ConfParams">type <a href="https://github.com/cpmech/goga/blob/master//params.go?s=369:4192#L5">ConfParams</a></h2>
+			<h2 id="ConfParams">type <a href="https://github.com/cpmech/goga/blob/master//params.go?s=369:3902#L5">ConfParams</a></h2>
 			<pre>type ConfParams struct {
 
     <span class="comment">// initialisation</span>
@@ -1298,42 +1084,46 @@ ResetBasedOnRef resets bingo with values based on reference (e.g. best) individu
     Nbases <a href="/pkg/builtin/#int">int</a>     <span class="comment">// number of bases in chromosome</span>
     Grid   <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// generate individuals based on grid</span>
     Noise  <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// apply noise when generate based on grid (if Noise &gt; 0)</span>
-    IntOrd <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// integer chromossome is ordered list</span>
 
     <span class="comment">// time control</span>
     Tf    <a href="/pkg/builtin/#int">int</a> <span class="comment">// number of generations</span>
     Dtout <a href="/pkg/builtin/#int">int</a> <span class="comment">// increment of time for output</span>
     Dtmig <a href="/pkg/builtin/#int">int</a> <span class="comment">// increment of time for migration</span>
-    Dtreg <a href="/pkg/builtin/#int">int</a> <span class="comment">// increment of time for regeneration</span>
 
     <span class="comment">// regeneration</span>
-    RegIni    <a href="/pkg/builtin/#int">int</a>     <span class="comment">// time index for initial regeneration. use -1 for none</span>
     RegTol    <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// tolerance for ρ to activate regeneration</span>
-    RegBest   <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// enforce that regeneration is always based on based individual, regardless the population is homogeneous or not</span>
     RegPct    <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// percentage of individuals to be regenerated; e.g. 0.3</span>
-    RegMmin   <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// multiplier to decrease reference value; e.g. 0.1</span>
-    RegMmax   <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// multiplier to increase reference value; e.g. 10.0</span>
     UseStdDev <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use standard deviation (σ) instead of average deviation in Stat</span>
 
-    <span class="comment">// selection and reproduction</span>
-    Pc    <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// probability of crossover</span>
-    Pm    <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// probability of mutation</span>
-    Elite <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use elitism</span>
-    Rws   <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use Roulette-Wheel selection method</span>
-    Rnk   <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// ranking</span>
-    RnkSp <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// selective pressure for ranking</span>
+    <span class="comment">// operators&#39; data</span>
+    Ops <a href="#OpsData">OpsData</a>
 
-    <span class="comment">// diversity</span>
-    StatOorSkip <a href="/pkg/builtin/#bool">bool</a> <span class="comment">// skip oor individuals from statistics</span>
+    <span class="comment">// selection and reproduction</span>
+    Elite     <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use elitism</span>
+    Rws       <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use Roulette-Wheel selection method</span>
+    Rnk       <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// ranking</span>
+    RnkSp     <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// selective pressure for ranking</span>
+    GAtype    <a href="/pkg/builtin/#string">string</a>  <span class="comment">// type of GA; e.g. &#34;std&#34;, &#34;crowd&#34;, &#34;sharing&#34;</span>
+    CrowdSize <a href="/pkg/builtin/#int">int</a>     <span class="comment">// crowd size</span>
+    ParetoPhi <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// φ coefficient for probabilistic Pareto comparison</span>
+    ShSize    <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// sharing sample size. percentage of Ninds; e.g. 0.1</span>
+    ShAlp     <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// αshare</span>
+    ShSig     <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// σshare</span>
+    ShPhen    <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use phenotype distance analysis in sharing; otherwise use objective values</span>
 
     <span class="comment">// output</span>
-    Json      <a href="/pkg/builtin/#bool">bool</a>   <span class="comment">// output results as .json files; not tables</span>
-    DirOut    <a href="/pkg/builtin/#string">string</a> <span class="comment">// directory to save output files. &#34;&#34; means &#34;/tmp/goga&#34;</span>
-    FnKey     <a href="/pkg/builtin/#string">string</a> <span class="comment">// filename key for output files. &#34;&#34; means no output files</span>
-    DoPlot    <a href="/pkg/builtin/#bool">bool</a>   <span class="comment">// plot results</span>
-    PltTi     <a href="/pkg/builtin/#int">int</a>    <span class="comment">// initial time for plot</span>
-    PltTf     <a href="/pkg/builtin/#int">int</a>    <span class="comment">// final time for plot</span>
-    ShowBases <a href="/pkg/builtin/#bool">bool</a>   <span class="comment">// show also bases when printing results (if any)</span>
+    Verbose   <a href="/pkg/builtin/#bool">bool</a>       <span class="comment">// show messages during optimisation</span>
+    DoReport  <a href="/pkg/builtin/#bool">bool</a>       <span class="comment">// generate report</span>
+    Json      <a href="/pkg/builtin/#bool">bool</a>       <span class="comment">// output results as .json files; not tables</span>
+    DirOut    <a href="/pkg/builtin/#string">string</a>     <span class="comment">// directory to save output files. &#34;&#34; means &#34;/tmp/goga&#34;</span>
+    FnKey     <a href="/pkg/builtin/#string">string</a>     <span class="comment">// filename key for output files. &#34;&#34; means no output files</span>
+    DoPlot    <a href="/pkg/builtin/#bool">bool</a>       <span class="comment">// plot results</span>
+    PltTi     <a href="/pkg/builtin/#int">int</a>        <span class="comment">// initial time for plot</span>
+    PltTf     <a href="/pkg/builtin/#int">int</a>        <span class="comment">// final time for plot</span>
+    ShowOor   <a href="/pkg/builtin/#bool">bool</a>       <span class="comment">// show oor values when printing results (if any)</span>
+    ShowBases <a href="/pkg/builtin/#bool">bool</a>       <span class="comment">// show also bases when printing results (if any)</span>
+    ShowNinds <a href="/pkg/builtin/#int">int</a>        <span class="comment">// number of individuals to show. use -1 to show all</span>
+    PostProc  <a href="#PostProc_t">PostProc_t</a> <span class="comment">// function to post-process results</span>
 
     <span class="comment">// auxiliary</span>
     Problem  <a href="/pkg/builtin/#int">int</a>     <span class="comment">// problem ID</span>
@@ -1341,28 +1131,25 @@ ResetBasedOnRef resets bingo with values based on reference (e.g. best) individu
     Ntrials  <a href="/pkg/builtin/#int">int</a>     <span class="comment">// number of trials</span>
     Eps1     <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// tolerance # 1; e.g. for strategy # 2 in reliability analyses</span>
 
-    <span class="comment">// crossover</span>
-    CxNcuts   map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#int">int</a>         <span class="comment">// crossover number of cuts for each &#39;int&#39;, &#39;flt&#39;, &#39;str&#39;, &#39;key&#39;, &#39;byt&#39;, &#39;fun&#39; tag</span>
-    CxCuts    map[<a href="/pkg/builtin/#string">string</a>][]<a href="/pkg/builtin/#int">int</a>       <span class="comment">// crossover specific cuts for each &#39;int&#39;, &#39;flt&#39;, &#39;str&#39;, &#39;key&#39;, &#39;byt&#39;, &#39;fun&#39; tag</span>
-    CxProbs   map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#float64">float64</a>     <span class="comment">// crossover probabilities for each &#39;int&#39;, &#39;flt&#39;, &#39;str&#39;, &#39;key&#39;, &#39;byt&#39;, &#39;fun&#39; tag</span>
-    CxFuncs   map[<a href="/pkg/builtin/#string">string</a>]interface{} <span class="comment">// crossover functions for each &#39;int&#39;, &#39;flt&#39;, &#39;str&#39;, &#39;key&#39;, &#39;byt&#39;, &#39;fun&#39; tag</span>
-    CxIntFunc <a href="#CxIntFunc_t">CxIntFunc_t</a>            <span class="comment">// crossover function</span>
-    CxFltFunc <a href="#CxFltFunc_t">CxFltFunc_t</a>            <span class="comment">// crossover function</span>
-    CxStrFunc <a href="#CxStrFunc_t">CxStrFunc_t</a>            <span class="comment">// crossover function</span>
-    CxKeyFunc <a href="#CxKeyFunc_t">CxKeyFunc_t</a>            <span class="comment">// crossover function</span>
-    CxBytFunc <a href="#CxBytFunc_t">CxBytFunc_t</a>            <span class="comment">// crossover function</span>
-    CxFunFunc <a href="#CxFunFunc_t">CxFunFunc_t</a>            <span class="comment">// crossover function</span>
+    <span class="comment">// objective function</span>
+    OvaOor <a href="#Objectives_t">Objectives_t</a> <span class="comment">// compute objective value (ova) and out-of-range value (oor)</span>
 
-    <span class="comment">// mutation</span>
-    MtNchanges map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#int">int</a>         <span class="comment">// mutation number of changes for each &#39;int&#39;, &#39;flt&#39;, &#39;str&#39;, &#39;key&#39;, &#39;byt&#39;, &#39;fun&#39; tag</span>
-    MtProbs    map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#float64">float64</a>     <span class="comment">// mutation probabilities for each &#39;int&#39;, &#39;flt&#39;, &#39;str&#39;, &#39;key&#39;, &#39;byt&#39;, &#39;fun&#39; tag</span>
-    MtExtra    map[<a href="/pkg/builtin/#string">string</a>]interface{} <span class="comment">// mutation extra parameters for each &#39;int&#39;, &#39;flt&#39;, &#39;str&#39;, &#39;key&#39;, &#39;byt&#39;, &#39;fun&#39; tag</span>
-    MtIntFunc  <a href="#MtIntFunc_t">MtIntFunc_t</a>            <span class="comment">// mutation function</span>
-    MtFltFunc  <a href="#MtFltFunc_t">MtFltFunc_t</a>            <span class="comment">// mutation function</span>
-    MtStrFunc  <a href="#MtStrFunc_t">MtStrFunc_t</a>            <span class="comment">// mutation function</span>
-    MtKeyFunc  <a href="#MtKeyFunc_t">MtKeyFunc_t</a>            <span class="comment">// mutation function</span>
-    MtBytFunc  <a href="#MtBytFunc_t">MtBytFunc_t</a>            <span class="comment">// mutation function</span>
-    MtFunFunc  <a href="#MtFunFunc_t">MtFunFunc_t</a>            <span class="comment">// mutation function</span>
+    <span class="comment">// generation of individuals</span>
+    NumInts  <a href="/pkg/builtin/#int">int</a>         <span class="comment">// number of integers for &#34;ordered&#34; and &#34;binary&#34; populations</span>
+    RangeInt [][]<a href="/pkg/builtin/#int">int</a>     <span class="comment">// [ngene][2] min and max integers</span>
+    RangeFlt [][]<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// [ngene][2] min and max float point numbers</span>
+    PoolStr  [][]<a href="/pkg/builtin/#string">string</a>  <span class="comment">// [ngene][nsamples] pool of words to be used in Gene.String</span>
+    PoolKey  [][]<a href="/pkg/builtin/#byte">byte</a>    <span class="comment">// [ngene][nsamples] pool of bytes to be used in Gene.Byte</span>
+    PoolByt  [][]<a href="/pkg/builtin/#string">string</a>  <span class="comment">// [ngene][nsamples] pool of byte-words to be used in Gene.Bytes</span>
+    PoolFun  [][]<a href="#Func_t">Func_t</a>  <span class="comment">// [ngene][nsamples] pool of functions</span>
+
+    <span class="comment">// generation of populations</span>
+    PopIntGen <a href="#PopIntGen_t">PopIntGen_t</a> <span class="comment">// generate population of integers</span>
+    PopFltGen <a href="#PopFltGen_t">PopFltGen_t</a> <span class="comment">// generate population of float point numbers</span>
+    PopStrGen <a href="#PopStrGen_t">PopStrGen_t</a> <span class="comment">// generate population of strings</span>
+    PopKeyGen <a href="#PopKeyGen_t">PopKeyGen_t</a> <span class="comment">// generate population of keys (bytes)</span>
+    PopBytGen <a href="#PopBytGen_t">PopBytGen_t</a> <span class="comment">// generate population of bytes</span>
+    PopFunGen <a href="#PopFunGen_t">PopFunGen_t</a> <span class="comment">// generate population of functions</span>
 }</pre>
 			<p>
 ConfParams is an auxiliary structure to hold configuration parameters for setting the GA up
@@ -1379,7 +1166,7 @@ ConfParams is an auxiliary structure to hold configuration parameters for settin
 
 			
 				
-				<h3 id="NewConfParams">func <a href="https://github.com/cpmech/goga/blob/master//params.go?s=5640:5672#L156">NewConfParams</a></h3>
+				<h3 id="NewConfParams">func <a href="https://github.com/cpmech/goga/blob/master//params.go?s=5574:5606#L170">NewConfParams</a></h3>
 				<pre>func NewConfParams() *<a href="#ConfParams">ConfParams</a></pre>
 				<p>
 NewConfParams returns a new ConfParams structure, with default values set
@@ -1389,7 +1176,7 @@ NewConfParams returns a new ConfParams structure, with default values set
 				
 			
 				
-				<h3 id="ReadConfParams">func <a href="https://github.com/cpmech/goga/blob/master//params.go?s=5804:5856#L164">ReadConfParams</a></h3>
+				<h3 id="ReadConfParams">func <a href="https://github.com/cpmech/goga/blob/master//params.go?s=5721:5773#L177">ReadConfParams</a></h3>
 				<pre>func ReadConfParams(filenamepath <a href="/pkg/builtin/#string">string</a>) *<a href="#ConfParams">ConfParams</a></pre>
 				<p>
 ReadConfParams reads configuration parameters from JSON file
@@ -1401,7 +1188,7 @@ ReadConfParams reads configuration parameters from JSON file
 
 			
 				
-				<h3 id="ConfParams.CalcDerived">func (*ConfParams) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=5150:5184#L141">CalcDerived</a></h3>
+				<h3 id="ConfParams.CalcDerived">func (*ConfParams) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=5420:5454#L165">CalcDerived</a></h3>
 				<pre>func (o *<a href="#ConfParams">ConfParams</a>) CalcDerived()</pre>
 				<p>
 CalcDerived calculates derived quantities
@@ -1412,7 +1199,7 @@ CalcDerived calculates derived quantities
 				
 			
 				
-				<h3 id="ConfParams.SetDefault">func (*ConfParams) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=4232:4265#L83">SetDefault</a></h3>
+				<h3 id="ConfParams.SetDefault">func (*ConfParams) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=3942:3975#L84">SetDefault</a></h3>
 				<pre>func (o *<a href="#ConfParams">ConfParams</a>) SetDefault()</pre>
 				<p>
 SetDefault sets default parameters
@@ -1422,65 +1209,98 @@ SetDefault sets default parameters
 				
 				
 			
-		
-			
-			
-			<h2 id="CxBytFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=4665:4755#L187">CxBytFunc_t</a></h2>
-			<pre>type CxBytFunc_t func(a, b, A, B [][]<a href="/pkg/builtin/#byte">byte</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
-			
+				
+				<h3 id="ConfParams.SetIntBin">func (*ConfParams) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=5013:5053#L149">SetIntBin</a></h3>
+				<pre>func (o *<a href="#ConfParams">ConfParams</a>) SetIntBin(size <a href="/pkg/builtin/#int">int</a>)</pre>
+				<p>
+SetIntBin sets functions to handle binary numbers [0,1]
+</p>
 
+				
+				
+				
 			
+				
+				<h3 id="ConfParams.SetIntOrd">func (*ConfParams) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=5215:5260#L157">SetIntOrd</a></h3>
+				<pre>func (o *<a href="#ConfParams">ConfParams</a>) SetIntOrd(nstations <a href="/pkg/builtin/#int">int</a>)</pre>
+				<p>
+SetIntOrd sets functions to handle ordered integers
+</p>
 
+				
+				
+				
 			
+				
+				<h3 id="ConfParams.SetNbasesFixOp">func (*ConfParams) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=4827:4874#L142">SetNbasesFixOp</a></h3>
+				<pre>func (o *<a href="#ConfParams">ConfParams</a>) SetNbasesFixOp(nbases <a href="/pkg/builtin/#int">int</a>)</pre>
+				<p>
+SetNbases sets number of bases and fixes corresponding operators
+</p>
 
-			
-			
-			
-
-			
-
-			
-		
-			
-			
-			<h2 id="CxFltFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=4393:4484#L184">CxFltFunc_t</a></h2>
-			<pre>type CxFltFunc_t func(a, b, A, B []<a href="/pkg/builtin/#float64">float64</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
-			
-
-			
-
-			
-
-			
-			
-			
-
-			
-
-			
-		
-			
-			
-			<h2 id="CxFunFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=4756:4846#L188">CxFunFunc_t</a></h2>
-			<pre>type CxFunFunc_t func(a, b, A, B []<a href="#Func_t">Func_t</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
-			
-
-			
-
-			
-
-			
-			
-			
-
-			
-
+				
+				
+				
 			
 		
 			
 			
-			<h2 id="CxIntFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=4305:4392#L183">CxIntFunc_t</a></h2>
-			<pre>type CxIntFunc_t func(a, b, A, B []<a href="/pkg/builtin/#int">int</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="CxBytFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=1997:2076#L32">CxBytFunc_t</a></h2>
+			<pre>type CxBytFunc_t func(a, b, A, B [][]<a href="/pkg/builtin/#byte">byte</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="CxFltFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=1758:1838#L29">CxFltFunc_t</a></h2>
+			<pre>type CxFltFunc_t func(a, b, A, B []<a href="/pkg/builtin/#float64">float64</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="CxFunFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=2077:2156#L33">CxFunFunc_t</a></h2>
+			<pre>type CxFunFunc_t func(a, b, A, B []<a href="#Func_t">Func_t</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="CxIntFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=1681:1757#L28">CxIntFunc_t</a></h2>
+			<pre>type CxIntFunc_t func(a, b, A, B []<a href="/pkg/builtin/#int">int</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 crossover functions
 </p>
@@ -1500,8 +1320,8 @@ crossover functions
 		
 			
 			
-			<h2 id="CxKeyFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=4576:4664#L186">CxKeyFunc_t</a></h2>
-			<pre>type CxKeyFunc_t func(a, b, A, B []<a href="/pkg/builtin/#byte">byte</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="CxKeyFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=1919:1996#L31">CxKeyFunc_t</a></h2>
+			<pre>type CxKeyFunc_t func(a, b, A, B []<a href="/pkg/builtin/#byte">byte</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
 			
 
 			
@@ -1518,8 +1338,8 @@ crossover functions
 		
 			
 			
-			<h2 id="CxStrFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=4485:4575#L185">CxStrFunc_t</a></h2>
-			<pre>type CxStrFunc_t func(a, b, A, B []<a href="/pkg/builtin/#string">string</a>, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>, pc <a href="/pkg/builtin/#float64">float64</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="CxStrFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=1839:1918#L30">CxStrFunc_t</a></h2>
+			<pre>type CxStrFunc_t func(a, b, A, B []<a href="/pkg/builtin/#string">string</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
 			
 
 			
@@ -1557,66 +1377,11 @@ Evolver realises the evolutionary process
 
 			
 				
-				<h3 id="NewEvolver">func <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=828:920#L17">NewEvolver</a></h3>
-				<pre>func NewEvolver(C *<a href="#ConfParams">ConfParams</a>, ref *<a href="#Individual">Individual</a>, ovfunc <a href="#ObjFunc_t">ObjFunc_t</a>, bingo *<a href="#Bingo">Bingo</a>) (o *<a href="#Evolver">Evolver</a>)</pre>
+				<h3 id="NewEvolver">func <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=568:627#L11">NewEvolver</a></h3>
+				<pre>func NewEvolver(nova, noor <a href="/pkg/builtin/#int">int</a>, C *<a href="#ConfParams">ConfParams</a>) (o *<a href="#Evolver">Evolver</a>)</pre>
 				<p>
-NewEvolver creates a new evolver
+NewEvolverPop creates a new evolver based on given populations
 </p>
-<pre>Input:
- nislands -- number of islands
- ninds    -- number of individuals to be generated
- ref      -- reference individual with chromosome structure already set
- bingo    -- Bingo structure set with pool of values to draw gene values
- ovfunc   -- objective function
-</pre>
-
-				
-				
-			
-				
-				<h3 id="NewEvolverFloatChromo">func <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=2175:2283#L54">NewEvolverFloatChromo</a></h3>
-				<pre>func NewEvolverFloatChromo(C *<a href="#ConfParams">ConfParams</a>, xmin, xmax []<a href="/pkg/builtin/#float64">float64</a>, ovfunc <a href="#ObjFunc_t">ObjFunc_t</a>, bingo *<a href="#Bingo">Bingo</a>) (o *<a href="#Evolver">Evolver</a>)</pre>
-				<p>
-NewEvolverFloatChromo creates a new evolver with float point individuals
-</p>
-<pre>Input:
- C.Ninds  -- number of individuals to be generated
- C.Nbases -- number of bases
- C.Grid   -- whether or not to calc values based on grid;
-             otherwise select randomly between xmin and xmax
- C.Noise  -- if noise&gt;0, apply noise to move points away from grid nodes
-             noise is a multiplier; e.g. 0.2
- xmin     -- min values of genes
- xmax     -- max values of genes. len(xmin) = len(xmax) = ngenes
-</pre>
-
-				
-				
-			
-				
-				<h3 id="NewEvolverIntOrdChromo">func <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=2654:2742#L66">NewEvolverIntOrdChromo</a></h3>
-				<pre>func NewEvolverIntOrdChromo(C *<a href="#ConfParams">ConfParams</a>, nstations <a href="/pkg/builtin/#int">int</a>, ovfunc <a href="#ObjFunc_t">ObjFunc_t</a>) (o *<a href="#Evolver">Evolver</a>)</pre>
-				<p>
-NewEvolverIntOrdChromo creates a new evolver with ordered integer individuals
-</p>
-<pre>Input:
- C.Ninds   -- number of individuals to be generated
- nstations -- number of stations/integers == ngenes
-</pre>
-
-				
-				
-			
-				
-				<h3 id="NewEvolverPop">func <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=1314:1411#L32">NewEvolverPop</a></h3>
-				<pre>func NewEvolverPop(C *<a href="#ConfParams">ConfParams</a>, pops []<a href="#Population">Population</a>, ovfunc <a href="#ObjFunc_t">ObjFunc_t</a>, bingo *<a href="#Bingo">Bingo</a>) (o *<a href="#Evolver">Evolver</a>)</pre>
-				<p>
-NewEvolverPop creates a new evolver based on a given population
-</p>
-<pre>Input:
- pops   -- populations. len(pop) == nislands
- ovfunc -- objective function
-</pre>
 
 				
 				
@@ -1624,7 +1389,7 @@ NewEvolverPop creates a new evolver based on a given population
 
 			
 				
-				<h3 id="Evolver.FindBestFromAll">func (*Evolver) <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=5841:5876#L212">FindBestFromAll</a></h3>
+				<h3 id="Evolver.FindBestFromAll">func (*Evolver) <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=3807:3842#L174">FindBestFromAll</a></h3>
 				<pre>func (o *<a href="#Evolver">Evolver</a>) FindBestFromAll()</pre>
 				<p>
 FindBestFromAll finds best individual from all islands
@@ -1637,8 +1402,60 @@ FindBestFromAll finds best individual from all islands
 				
 			
 				
-				<h3 id="Evolver.Run">func (*Evolver) <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=2941:2986#L75">Run</a></h3>
-				<pre>func (o *<a href="#Evolver">Evolver</a>) Run(verbose, doreport <a href="/pkg/builtin/#bool">bool</a>)</pre>
+				<h3 id="Evolver.GetFeasible">func (*Evolver) <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=4142:4198#L188">GetFeasible</a></h3>
+				<pre>func (o *<a href="#Evolver">Evolver</a>) GetFeasible() (feasible []*<a href="#Individual">Individual</a>)</pre>
+				<p>
+GetFeasible returns all feasible individuals from all islands
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="Evolver.GetFrontOvas">func (*Evolver) <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=5824:5902#L249">GetFrontOvas</a></h3>
+				<pre>func (o *<a href="#Evolver">Evolver</a>) GetFrontOvas(r, s <a href="/pkg/builtin/#int">int</a>, front []*<a href="#Individual">Individual</a>) (x, y []<a href="/pkg/builtin/#float64">float64</a>)</pre>
+				<p>
+GetFrontOvas collects 2 ova results from Pareto front
+</p>
+<pre>Input:
+ r and s -- 2 selected objective functions; e.g. r=0 and s=1 for 2D problems
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="Evolver.GetParetoFront">func (*Evolver) <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=5169:5284#L228">GetParetoFront</a></h3>
+				<pre>func (o *<a href="#Evolver">Evolver</a>) GetParetoFront(feasible []*<a href="#Individual">Individual</a>, ovas, oors [][]<a href="/pkg/builtin/#float64">float64</a>) (ovafront, oorfront []*<a href="#Individual">Individual</a>)</pre>
+				<p>
+GetParetoFront returns all feasible individuals on the Pareto front
+Note: input data can be obtained from GetFeasible and GetResults
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="Evolver.GetResults">func (*Evolver) <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=4638:4713#L209">GetResults</a></h3>
+				<pre>func (o *<a href="#Evolver">Evolver</a>) GetResults(subset []*<a href="#Individual">Individual</a>) (ovas, oors [][]<a href="/pkg/builtin/#float64">float64</a>)</pre>
+				<p>
+GetResults returns all ovas and oors from a subset of individuals
+</p>
+<pre>Output:
+ ovas -- [len(subset)][nova] objective values
+ oors -- [len(subset)][noor] out-of-range values
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="Evolver.Run">func (*Evolver) <a href="https://github.com/cpmech/goga/blob/master//evolver.go?s=854:877#L23">Run</a></h3>
+				<pre>func (o *<a href="#Evolver">Evolver</a>) Run()</pre>
 				<p>
 Run runs the evolution process
 </p>
@@ -1650,7 +1467,7 @@ Run runs the evolution process
 		
 			
 			
-			<h2 id="Func_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=390:430#L5">Func_t</a></h2>
+			<h2 id="Func_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=391:431#L3">Func_t</a></h2>
 			<pre>type Func_t func(ind *<a href="#Individual">Individual</a>) <a href="/pkg/builtin/#string">string</a></pre>
 			<p>
 Func_t defines a type for a generic function to be used as a gene value
@@ -1671,15 +1488,15 @@ Func_t defines a type for a generic function to be used as a gene value
 		
 			
 			
-			<h2 id="Individual">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=488:1079#L8">Individual</a></h2>
+			<h2 id="Individual">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=380:989#L7">Individual</a></h2>
 			<pre>type Individual struct {
 
     <span class="comment">// data</span>
-    Ova       <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// objective value</span>
-    Oor       <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// out-of-range: sum of positive distances from constraints</span>
-    Demerit   <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// quantity for comparing individuals. 0=good 1=bad 2=worse(oor) 3=worst(oor)</span>
-    Nfltgenes <a href="/pkg/builtin/#int">int</a>     <span class="comment">// number of floats == number of float64 genes</span>
-    Nbases    <a href="/pkg/builtin/#int">int</a>     <span class="comment">// number of bases to split Floats</span>
+    Ovas      []<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// objective values</span>
+    Oors      []<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// out-of-range values: sum of positive distances from constraints</span>
+    Demerit   <a href="/pkg/builtin/#float64">float64</a>   <span class="comment">// quantity for comparing individuals. 0=good 1=bad 2=worse(oor) 3=worst(oor)</span>
+    Nfltgenes <a href="/pkg/builtin/#int">int</a>       <span class="comment">// number of floats == number of float64 genes</span>
+    Nbases    <a href="/pkg/builtin/#int">int</a>       <span class="comment">// number of bases to split Floats</span>
 
     <span class="comment">// chromosome</span>
     Ints    []<a href="/pkg/builtin/#int">int</a>     <span class="comment">// integers</span>
@@ -1704,8 +1521,8 @@ Individual implements one individual in a population
 
 			
 				
-				<h3 id="NewIndividual">func <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=1432:1501#L33">NewIndividual</a></h3>
-				<pre>func NewIndividual(nbases <a href="/pkg/builtin/#int">int</a>, slices ...interface{}) (o *<a href="#Individual">Individual</a>)</pre>
+				<h3 id="NewIndividual">func <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=1342:1423#L32">NewIndividual</a></h3>
+				<pre>func NewIndividual(nova, noor, nbases <a href="/pkg/builtin/#int">int</a>, slices ...interface{}) (o *<a href="#Individual">Individual</a>)</pre>
 				<p>
 NewIndividual allocates a new individual
 </p>
@@ -1723,18 +1540,7 @@ Notes:
 
 			
 				
-				<h3 id="Individual.Compare">func (Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=3715:3776#L157">Compare</a></h3>
-				<pre>func (A <a href="#Individual">Individual</a>) Compare(B *<a href="#Individual">Individual</a>) (A_is_better <a href="/pkg/builtin/#bool">bool</a>)</pre>
-				<p>
-Compare compares this individual &#39;A&#39; with another one &#39;B&#39;
-</p>
-
-				
-				
-				
-			
-				
-				<h3 id="Individual.CopyInto">func (Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=3160:3203#L120">CopyInto</a></h3>
+				<h3 id="Individual.CopyInto">func (Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=3238:3281#L123">CopyInto</a></h3>
 				<pre>func (o <a href="#Individual">Individual</a>) CopyInto(x *<a href="#Individual">Individual</a>)</pre>
 				<p>
 CopyInto copies this individual&#39;s data into another individual
@@ -1745,7 +1551,7 @@ CopyInto copies this individual&#39;s data into another individual
 				
 			
 				
-				<h3 id="Individual.GetCopy">func (Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=2296:2341#L75">GetCopy</a></h3>
+				<h3 id="Individual.GetCopy">func (Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=2282:2327#L76">GetCopy</a></h3>
 				<pre>func (o <a href="#Individual">Individual</a>) GetCopy() (x *<a href="#Individual">Individual</a>)</pre>
 				<p>
 GetCopy returns a copy of this individual
@@ -1756,7 +1562,7 @@ GetCopy returns a copy of this individual
 				
 			
 				
-				<h3 id="Individual.GetFloat">func (Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=9658:9709#L359">GetFloat</a></h3>
+				<h3 id="Individual.GetFloat">func (Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=7391:7442#L296">GetFloat</a></h3>
 				<pre>func (o <a href="#Individual">Individual</a>) GetFloat(igene <a href="/pkg/builtin/#int">int</a>) (x <a href="/pkg/builtin/#float64">float64</a>)</pre>
 				<p>
 GetFloat returns the float corresponding to gene &#39;i&#39;
@@ -1769,7 +1575,7 @@ GetFloat returns the float corresponding to gene &#39;i&#39;
 				
 			
 				
-				<h3 id="Individual.GetFloats">func (Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=9880:9925#L370">GetFloats</a></h3>
+				<h3 id="Individual.GetFloats">func (Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=7613:7658#L307">GetFloats</a></h3>
 				<pre>func (o <a href="#Individual">Individual</a>) GetFloats() (x []<a href="/pkg/builtin/#float64">float64</a>)</pre>
 				<p>
 GetFloats returns all float genes
@@ -1780,7 +1586,7 @@ GetFloats returns all float genes
 				
 			
 				
-				<h3 id="Individual.GetStringSizes">func (*Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=10293:10346#L382">GetStringSizes</a></h3>
+				<h3 id="Individual.GetStringSizes">func (*Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=8026:8079#L319">GetStringSizes</a></h3>
 				<pre>func (o *<a href="#Individual">Individual</a>) GetStringSizes() (sizes [][]<a href="/pkg/builtin/#int">int</a>)</pre>
 				<p>
 GetStringSizes returns the sizes of strings representing each gene type
@@ -1793,7 +1599,7 @@ GetStringSizes returns the sizes of strings representing each gene type
 				
 			
 				
-				<h3 id="Individual.Output">func (*Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=11723:11794#L440">Output</a></h3>
+				<h3 id="Individual.Output">func (*Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=9456:9527#L377">Output</a></h3>
 				<pre>func (o *<a href="#Individual">Individual</a>) Output(fmts [][]<a href="/pkg/builtin/#string">string</a>, showBases <a href="/pkg/builtin/#bool">bool</a>) (l <a href="/pkg/builtin/#string">string</a>)</pre>
 				<p>
 Output returns a string representation of this individual
@@ -1808,7 +1614,7 @@ showBases -- show bases, if any
 				
 			
 				
-				<h3 id="Individual.SetFloat">func (*Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=9249:9300#L344">SetFloat</a></h3>
+				<h3 id="Individual.SetFloat">func (*Individual) <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=6982:7033#L281">SetFloat</a></h3>
 				<pre>func (o *<a href="#Individual">Individual</a>) SetFloat(igene <a href="/pkg/builtin/#int">int</a>, x <a href="/pkg/builtin/#float64">float64</a>)</pre>
 				<p>
 SetFloat returns the float corresponding to gene &#39;i&#39;
@@ -1823,22 +1629,22 @@ SetFloat returns the float corresponding to gene &#39;i&#39;
 		
 			
 			
-			<h2 id="Island">type <a href="https://github.com/cpmech/goga/blob/master//island.go?s=594:1964#L12">Island</a></h2>
+			<h2 id="Island">type <a href="https://github.com/cpmech/goga/blob/master//island.go?s=466:2098#L10">Island</a></h2>
 			<pre>type Island struct {
 
     <span class="comment">// input</span>
-    Id        <a href="/pkg/builtin/#int">int</a>         <span class="comment">// index of this island</span>
-    C         *<a href="#ConfParams">ConfParams</a> <span class="comment">// configuration parameters</span>
-    Pop       <a href="#Population">Population</a>  <span class="comment">// pointer to current population</span>
-    BkpPop    <a href="#Population">Population</a>  <span class="comment">// backup population</span>
-    OvOorFunc <a href="#ObjFunc_t">ObjFunc_t</a>   <span class="comment">// function to compute objective and out-of-range values</span>
-    BingoGrid *<a href="#Bingo">Bingo</a>      <span class="comment">// bingo for regeneration with initial values from grid</span>
-    BingoBest *<a href="#Bingo">Bingo</a>      <span class="comment">// bingo for regeneration with values recomputed based on best individual</span>
+    Id  <a href="/pkg/builtin/#int">int</a>         <span class="comment">// index of this island</span>
+    C   *<a href="#ConfParams">ConfParams</a> <span class="comment">// configuration parameters</span>
+    Pop <a href="#Population">Population</a>  <span class="comment">// pointer to current population</span>
+    Bkp <a href="#Population">Population</a>  <span class="comment">// backup population</span>
 
     <span class="comment">// results</span>
-    Report <a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a> <span class="comment">// buffer to report results</span>
-    OVA    []<a href="/pkg/builtin/#float64">float64</a>    <span class="comment">// best objective values collected from multiple calls to SelectReprodAndRegen</span>
-    OOR    []<a href="/pkg/builtin/#float64">float64</a>    <span class="comment">// best out-of-range values collected from multiple calls to SelectReprodAndRegen</span>
+    Report   <a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a> <span class="comment">// buffer to report results</span>
+    Nova     <a href="/pkg/builtin/#int">int</a>          <span class="comment">// number of ovas</span>
+    Noor     <a href="/pkg/builtin/#int">int</a>          <span class="comment">// number of oors</span>
+    OutOvas  [][]<a href="/pkg/builtin/#float64">float64</a>  <span class="comment">// [nova][ntimes] best objective values collected from multiple calls to SelectReprodAndRegen</span>
+    OutOors  [][]<a href="/pkg/builtin/#float64">float64</a>  <span class="comment">// [noor][ntimes] best out-of-range values collected from multiple calls to SelectReprodAndRegen</span>
+    OutTimes []<a href="/pkg/builtin/#float64">float64</a>    <span class="comment">// [ntimes] times corresponding to OutOvas and OutOors</span>
 
     A, B []<a href="/pkg/builtin/#int">int</a> <span class="comment">// indices of selected parents</span>
     <span class="comment">// contains filtered or unexported fields</span>
@@ -1858,17 +1664,11 @@ Island holds one population and performs the reproduction operation
 
 			
 				
-				<h3 id="NewIsland">func <a href="https://github.com/cpmech/goga/blob/master//island.go?s=2217:2314#L51">NewIsland</a></h3>
-				<pre>func NewIsland(id <a href="/pkg/builtin/#int">int</a>, C *<a href="#ConfParams">ConfParams</a>, pop <a href="#Population">Population</a>, ovfunc <a href="#ObjFunc_t">ObjFunc_t</a>, bingo *<a href="#Bingo">Bingo</a>) (o *<a href="#Island">Island</a>)</pre>
+				<h3 id="NewIsland">func <a href="https://github.com/cpmech/goga/blob/master//island.go?s=2134:2195#L54">NewIsland</a></h3>
+				<pre>func NewIsland(id, nova, noor <a href="/pkg/builtin/#int">int</a>, C *<a href="#ConfParams">ConfParams</a>) (o *<a href="#Island">Island</a>)</pre>
 				<p>
-NewIsland allocates a new island but with a give population already allocated
-Input:
+NewIsland creates a new island
 </p>
-<pre>id     -- index of this island
-pop    -- the population
-ovfunc -- objective function
-bingo  -- structure needed for regeneration of individuals
-</pre>
 
 				
 				
@@ -1876,7 +1676,7 @@ bingo  -- structure needed for regeneration of individuals
 
 			
 				
-				<h3 id="Island.CalcDemeritsAndSort">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=4276:4328#L135">CalcDemeritsAndSort</a></h3>
+				<h3 id="Island.CalcDemeritsAndSort">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=5298:5350#L161">CalcDemeritsAndSort</a></h3>
 				<pre>func (o *<a href="#Island">Island</a>) CalcDemeritsAndSort(pop <a href="#Population">Population</a>)</pre>
 				<p>
 CalcDemeritsAndSort computes demerits and sort population
@@ -1887,7 +1687,7 @@ CalcDemeritsAndSort computes demerits and sort population
 				
 			
 				
-				<h3 id="Island.CalcOvs">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=3742:3792#L118">CalcOvs</a></h3>
+				<h3 id="Island.CalcOvs">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=4916:4966#L149">CalcOvs</a></h3>
 				<pre>func (o *<a href="#Island">Island</a>) CalcOvs(pop <a href="#Population">Population</a>, time <a href="/pkg/builtin/#int">int</a>)</pre>
 				<p>
 CalcOvs computes objective and out-of-range values
@@ -1898,8 +1698,21 @@ CalcOvs computes objective and out-of-range values
 				
 			
 				
-				<h3 id="Island.Regenerate">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=8078:8149#L269">Regenerate</a></h3>
-				<pre>func (o *<a href="#Island">Island</a>) Regenerate(time <a href="/pkg/builtin/#int">int</a>, basedOnBest <a href="/pkg/builtin/#bool">bool</a>) (method <a href="/pkg/builtin/#string">string</a>)</pre>
+				<h3 id="Island.FltStat">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=12308:12375#L453">FltStat</a></h3>
+				<pre>func (o *<a href="#Island">Island</a>) FltStat() (minrho, averho, maxrho, devrho <a href="/pkg/builtin/#float64">float64</a>)</pre>
+				<p>
+FltStat computes some statistic information with float-point individuals
+</p>
+<pre>rho (ρ) is a normalised quantity measuring the deviation of bases of each gene
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="Island.Regenerate">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=11743:11780#L436">Regenerate</a></h3>
+				<pre>func (o *<a href="#Island">Island</a>) Regenerate(time <a href="/pkg/builtin/#int">int</a>)</pre>
 				<p>
 Regenerate regenerates population with basis on best individual(s)
 </p>
@@ -1909,7 +1722,18 @@ Regenerate regenerates population with basis on best individual(s)
 				
 			
 				
-				<h3 id="Island.SaveReport">func (Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=11114:11154#L394">SaveReport</a></h3>
+				<h3 id="Island.Run">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=6153:6207#L199">Run</a></h3>
+				<pre>func (o *<a href="#Island">Island</a>) Run(time <a href="/pkg/builtin/#int">int</a>, doreport, verbose <a href="/pkg/builtin/#bool">bool</a>)</pre>
+				<p>
+Run runs evolutionary process
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="Island.SaveReport">func (Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=13340:13380#L485">SaveReport</a></h3>
 				<pre>func (o <a href="#Island">Island</a>) SaveReport(verbose <a href="/pkg/builtin/#bool">bool</a>)</pre>
 				<p>
 SaveReport saves report to file
@@ -1920,36 +1744,8 @@ SaveReport saves report to file
 				
 			
 				
-				<h3 id="Island.SelectReprodAndRegen">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=5315:5395#L172">SelectReprodAndRegen</a></h3>
-				<pre>func (o *<a href="#Island">Island</a>) SelectReprodAndRegen(time <a href="/pkg/builtin/#int">int</a>, doregen, doreport, verbose <a href="/pkg/builtin/#bool">bool</a>)</pre>
-				<p>
-SelectReprodAndRegen performs the selection, reproduction and regeneration processes
-It also peforms the output to files.
-</p>
-<pre>Note: this function considers a SORTED population already
-</pre>
-
-				
-				
-				
-			
-				
-				<h3 id="Island.Stat">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=9346:9410#L312">Stat</a></h3>
-				<pre>func (o *<a href="#Island">Island</a>) Stat() (minrho, averho, maxrho, devrho <a href="/pkg/builtin/#float64">float64</a>)</pre>
-				<p>
-Stat computes some statistic information
-</p>
-<pre>rho (ρ) is a normalised quantity measuring the deviation of bases of each gene
-Note: OoR individuals are excluded
-</pre>
-
-				
-				
-				
-			
-				
-				<h3 id="Island.WritePopToReport">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=10922:10965#L388">WritePopToReport</a></h3>
-				<pre>func (o *<a href="#Island">Island</a>) WritePopToReport(time <a href="/pkg/builtin/#int">int</a>)</pre>
+				<h3 id="Island.WritePopToReport">func (*Island) <a href="https://github.com/cpmech/goga/blob/master//island.go?s=13099:13158#L479">WritePopToReport</a></h3>
+				<pre>func (o *<a href="#Island">Island</a>) WritePopToReport(time <a href="/pkg/builtin/#int">int</a>, averho <a href="/pkg/builtin/#float64">float64</a>)</pre>
 				<p>
 WritePopToReport writes population to report
 </p>
@@ -1961,8 +1757,8 @@ WritePopToReport writes population to report
 		
 			
 			
-			<h2 id="MtBytFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=7167:7245#L265">MtBytFunc_t</a></h2>
-			<pre>type MtBytFunc_t func(a [][]<a href="/pkg/builtin/#byte">byte</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="MtBytFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=2408:2465#L40">MtBytFunc_t</a></h2>
+			<pre>type MtBytFunc_t func(a [][]<a href="/pkg/builtin/#byte">byte</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>)</pre>
 			
 
 			
@@ -1979,8 +1775,8 @@ WritePopToReport writes population to report
 		
 			
 			
-			<h2 id="MtFltFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=6931:7010#L262">MtFltFunc_t</a></h2>
-			<pre>type MtFltFunc_t func(a []<a href="/pkg/builtin/#float64">float64</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="MtFltFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=2235:2293#L37">MtFltFunc_t</a></h2>
+			<pre>type MtFltFunc_t func(a []<a href="/pkg/builtin/#float64">float64</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>)</pre>
 			
 
 			
@@ -1997,8 +1793,8 @@ WritePopToReport writes population to report
 		
 			
 			
-			<h2 id="MtFunFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=7246:7324#L266">MtFunFunc_t</a></h2>
-			<pre>type MtFunFunc_t func(a []<a href="#Func_t">Func_t</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="MtFunFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=2466:2523#L41">MtFunFunc_t</a></h2>
+			<pre>type MtFunFunc_t func(a []<a href="#Func_t">Func_t</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>)</pre>
 			
 
 			
@@ -2015,8 +1811,8 @@ WritePopToReport writes population to report
 		
 			
 			
-			<h2 id="MtIntFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=6855:6930#L261">MtIntFunc_t</a></h2>
-			<pre>type MtIntFunc_t func(a []<a href="/pkg/builtin/#int">int</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="MtIntFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=2180:2234#L36">MtIntFunc_t</a></h2>
+			<pre>type MtIntFunc_t func(a []<a href="/pkg/builtin/#int">int</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>)</pre>
 			<p>
 mutation functions
 </p>
@@ -2036,8 +1832,8 @@ mutation functions
 		
 			
 			
-			<h2 id="MtKeyFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=7090:7166#L264">MtKeyFunc_t</a></h2>
-			<pre>type MtKeyFunc_t func(a []<a href="/pkg/builtin/#byte">byte</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="MtKeyFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=2352:2407#L39">MtKeyFunc_t</a></h2>
+			<pre>type MtKeyFunc_t func(a []<a href="/pkg/builtin/#byte">byte</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>)</pre>
 			
 
 			
@@ -2054,8 +1850,8 @@ mutation functions
 		
 			
 			
-			<h2 id="MtStrFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//individual.go?s=7011:7089#L263">MtStrFunc_t</a></h2>
-			<pre>type MtStrFunc_t func(a []<a href="/pkg/builtin/#string">string</a>, nchanges <a href="/pkg/builtin/#int">int</a>, pm <a href="/pkg/builtin/#float64">float64</a>, extra interface{})</pre>
+			<h2 id="MtStrFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=2294:2351#L38">MtStrFunc_t</a></h2>
+			<pre>type MtStrFunc_t func(a []<a href="/pkg/builtin/#string">string</a>, time <a href="/pkg/builtin/#int">int</a>, dat *<a href="#OpsData">OpsData</a>)</pre>
 			
 
 			
@@ -2072,10 +1868,11 @@ mutation functions
 		
 			
 			
-			<h2 id="ObjFunc_t">type <a href="https://github.com/cpmech/goga/blob/master//island.go?s=424:521#L9">ObjFunc_t</a></h2>
-			<pre>type ObjFunc_t func(ind *<a href="#Individual">Individual</a>, idIsland, time <a href="/pkg/builtin/#int">int</a>, report *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>) (ova, oor <a href="/pkg/builtin/#float64">float64</a>)</pre>
+			<h2 id="Objectives_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=548:629#L7">Objectives_t</a></h2>
+			<pre>type Objectives_t func(ind *<a href="#Individual">Individual</a>, idIsland, time <a href="/pkg/builtin/#int">int</a>, report *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>)</pre>
 			<p>
-ObjFunc_t defines the template for the objective function
+Objectives_t defines the template for the objective functions and constraints.
+ind is set with ovas and oors
 </p>
 
 
@@ -2093,7 +1890,229 @@ ObjFunc_t defines the template for the objective function
 		
 			
 			
-			<h2 id="Population">type <a href="https://github.com/cpmech/goga/blob/master//population.go?s=378:407#L9">Population</a></h2>
+			<h2 id="OpsData">type <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=405:1686#L9">OpsData</a></h2>
+			<pre>type OpsData struct {
+
+    <span class="comment">// constants</span>
+    Pc       <a href="/pkg/builtin/#float64">float64</a>     <span class="comment">// probability of crossover</span>
+    Pm       <a href="/pkg/builtin/#float64">float64</a>     <span class="comment">// probability of mutation</span>
+    Ncuts    <a href="/pkg/builtin/#int">int</a>         <span class="comment">// number of cuts during crossover</span>
+    Nchanges <a href="/pkg/builtin/#int">int</a>         <span class="comment">// number of changes during mutation</span>
+    Tmax     <a href="/pkg/builtin/#float64">float64</a>     <span class="comment">// max number of generations</span>
+    MwiczB   <a href="/pkg/builtin/#float64">float64</a>     <span class="comment">// Michalewicz&#39; power coefficient</span>
+    BlxAlp   <a href="/pkg/builtin/#float64">float64</a>     <span class="comment">// BLX-α coefficient</span>
+    Mmax     <a href="/pkg/builtin/#float64">float64</a>     <span class="comment">// multiplier for mutation</span>
+    Cuts     []<a href="/pkg/builtin/#int">int</a>       <span class="comment">// specified cuts for crossover. can be &lt;nil&gt;</span>
+    OrdSti   []<a href="/pkg/builtin/#int">int</a>       <span class="comment">// {start, end, insertPoint}. can be &lt;nil&gt;</span>
+    Xrange   [][]<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// [ngenes][2] genes minimum and maximum values</span>
+    EnfRange <a href="/pkg/builtin/#bool">bool</a>        <span class="comment">// do enforce range</span>
+
+    <span class="comment">// crossover functions</span>
+    CxInt <a href="#CxIntFunc_t">CxIntFunc_t</a> <span class="comment">// int crossover function</span>
+    CxFlt <a href="#CxFltFunc_t">CxFltFunc_t</a> <span class="comment">// flt crossover function</span>
+    CxStr <a href="#CxStrFunc_t">CxStrFunc_t</a> <span class="comment">// str crossover function</span>
+    CxKey <a href="#CxKeyFunc_t">CxKeyFunc_t</a> <span class="comment">// key crossover function</span>
+    CxByt <a href="#CxBytFunc_t">CxBytFunc_t</a> <span class="comment">// byt crossover function</span>
+    CxFun <a href="#CxFunFunc_t">CxFunFunc_t</a> <span class="comment">// fun crossover function</span>
+
+    <span class="comment">// mutation functions</span>
+    MtInt <a href="#MtIntFunc_t">MtIntFunc_t</a> <span class="comment">// int mutation function</span>
+    MtFlt <a href="#MtFltFunc_t">MtFltFunc_t</a> <span class="comment">// flt mutation function</span>
+    MtStr <a href="#MtStrFunc_t">MtStrFunc_t</a> <span class="comment">// str mutation function</span>
+    MtKey <a href="#MtKeyFunc_t">MtKeyFunc_t</a> <span class="comment">// key mutation function</span>
+    MtByt <a href="#MtBytFunc_t">MtBytFunc_t</a> <span class="comment">// byt mutation function</span>
+    MtFun <a href="#MtFunFunc_t">MtFunFunc_t</a> <span class="comment">// fun mutation function</span>
+}</pre>
+			<p>
+OpsData holds data for crossover and mutation operators
+</p>
+
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="OpsData.CalcDerived">func (*OpsData) <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=2249:2306#L72">CalcDerived</a></h3>
+				<pre>func (o *<a href="#OpsData">OpsData</a>) CalcDerived(Tf <a href="/pkg/builtin/#int">int</a>, xrange [][]<a href="/pkg/builtin/#float64">float64</a>)</pre>
+				<p>
+CalcDerived sets derived quantities
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="OpsData.EnforceRange">func (*OpsData) <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=2595:2655#L84">EnforceRange</a></h3>
+				<pre>func (o *<a href="#OpsData">OpsData</a>) EnforceRange(igene <a href="/pkg/builtin/#int">int</a>, x <a href="/pkg/builtin/#float64">float64</a>) <a href="/pkg/builtin/#float64">float64</a></pre>
+				<p>
+EnforceRange makes sure x is within given range
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="OpsData.MwiczDelta">func (*OpsData) <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=2401:2451#L78">MwiczDelta</a></h3>
+				<pre>func (o *<a href="#OpsData">OpsData</a>) MwiczDelta(t, x <a href="/pkg/builtin/#float64">float64</a>) <a href="/pkg/builtin/#float64">float64</a></pre>
+				<p>
+MwiczDelta computes Michalewicz&#39; Δ function
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="OpsData.SetDefault">func (*OpsData) <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=1722:1752#L43">SetDefault</a></h3>
+				<pre>func (o *<a href="#OpsData">OpsData</a>) SetDefault()</pre>
+				<p>
+SetDefault sets default values
+</p>
+
+				
+				
+				
+			
+		
+			
+			
+			<h2 id="PopBytGen_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=1396:1491#L22">PopBytGen_t</a></h2>
+			<pre>type PopBytGen_t func(ninds, nova, noor, nbases <a href="/pkg/builtin/#int">int</a>, noise <a href="/pkg/builtin/#float64">float64</a>, pool [][]<a href="/pkg/builtin/#string">string</a>) <a href="#Population">Population</a></pre>
+			<p>
+PopBytGen_t defines function to generate population of bytes
+</p>
+
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="PopFltGen_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=903:1001#L13">PopFltGen_t</a></h2>
+			<pre>type PopFltGen_t func(ninds, nova, noor, nbases <a href="/pkg/builtin/#int">int</a>, noise <a href="/pkg/builtin/#float64">float64</a>, frange [][]<a href="/pkg/builtin/#float64">float64</a>) <a href="#Population">Population</a></pre>
+			<p>
+PopFltGen_t defines function to generate population of float point numbers
+</p>
+
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="PopFunGen_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=1561:1656#L25">PopFunGen_t</a></h2>
+			<pre>type PopFunGen_t func(ninds, nova, noor, nbases <a href="/pkg/builtin/#int">int</a>, noise <a href="/pkg/builtin/#float64">float64</a>, pool [][]<a href="#Func_t">Func_t</a>) <a href="#Population">Population</a></pre>
+			<p>
+PopFunGen_t defines function to generate population of functions
+</p>
+
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="PopIntGen_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=698:823#L10">PopIntGen_t</a></h2>
+			<pre>type PopIntGen_t func(ninds, nova, noor, nbases <a href="/pkg/builtin/#int">int</a>, noise <a href="/pkg/builtin/#float64">float64</a>, nints_or_unused <a href="/pkg/builtin/#int">int</a>, irange_or_unused [][]<a href="/pkg/builtin/#int">int</a>) <a href="#Population">Population</a></pre>
+			<p>
+PopIntGen_t defines function to generate population of integers
+</p>
+
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="PopKeyGen_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=1237:1330#L19">PopKeyGen_t</a></h2>
+			<pre>type PopKeyGen_t func(ninds, nova, noor, nbases <a href="/pkg/builtin/#int">int</a>, noise <a href="/pkg/builtin/#float64">float64</a>, pool [][]<a href="/pkg/builtin/#byte">byte</a>) <a href="#Population">Population</a></pre>
+			<p>
+PopKeyGen_t defines function to generate population of keys (bytes)
+</p>
+
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="PopStrGen_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=1069:1164#L16">PopStrGen_t</a></h2>
+			<pre>type PopStrGen_t func(ninds, nova, noor, nbases <a href="/pkg/builtin/#int">int</a>, noise <a href="/pkg/builtin/#float64">float64</a>, pool [][]<a href="/pkg/builtin/#string">string</a>) <a href="#Population">Population</a></pre>
+			<p>
+PopStrGen_t defines function to generate population of strings
+</p>
+
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="Population">type <a href="https://github.com/cpmech/goga/blob/master//population.go?s=361:390#L9">Population</a></h2>
 			<pre>type Population []*<a href="#Individual">Individual</a></pre>
 			<p>
 Population holds all individuals
@@ -2110,86 +2129,33 @@ Population holds all individuals
 
 			
 				
-				<h3 id="NewPopFloatChromo">func <a href="https://github.com/cpmech/goga/blob/master//population.go?s=864:934#L27">NewPopFloatChromo</a></h3>
-				<pre>func NewPopFloatChromo(nbases <a href="/pkg/builtin/#int">int</a>, genes [][]<a href="/pkg/builtin/#float64">float64</a>) (pop <a href="#Population">Population</a>)</pre>
+				<h3 id="PopBinGen">func <a href="https://github.com/cpmech/goga/blob/master//population.go?s=452:550#L12">PopBinGen</a></h3>
+				<pre>func PopBinGen(ninds, nova, noor, nbases <a href="/pkg/builtin/#int">int</a>, noise <a href="/pkg/builtin/#float64">float64</a>, nints <a href="/pkg/builtin/#int">int</a>, unused [][]<a href="/pkg/builtin/#int">int</a>) <a href="#Population">Population</a></pre>
 				<p>
-NewPopFloatChromo allocates a population made entirely of float point numbers
+PopBinGen generates a population of binary numbers [0,1]
 </p>
-<pre>Input:
- nbases -- number of bases in each float point gene
- genes  -- all genes of all individuals [ninds][ngenes]
-Output:
- new population
-</pre>
 
 				
 				
 			
 				
-				<h3 id="NewPopFloatRandom">func <a href="https://github.com/cpmech/goga/blob/master//population.go?s=3135:3211#L96">NewPopFloatRandom</a></h3>
-				<pre>func NewPopFloatRandom(C *<a href="#ConfParams">ConfParams</a>, xmin, xmax []<a href="/pkg/builtin/#float64">float64</a>) (pop <a href="#Population">Population</a>)</pre>
+				<h3 id="PopFltGen">func <a href="https://github.com/cpmech/goga/blob/master//population.go?s=890:981#L26">PopFltGen</a></h3>
+				<pre>func PopFltGen(ninds, nova, noor, nbases <a href="/pkg/builtin/#int">int</a>, noise <a href="/pkg/builtin/#float64">float64</a>, frange [][]<a href="/pkg/builtin/#float64">float64</a>) <a href="#Population">Population</a></pre>
 				<p>
-NewPopFloatRandom generates a population of individuals with float point
-numbers only genes for given grid
+PopFltGen generates a population of individuals with float point numbers
+Notes: (1) ngenes = len(frange)
 </p>
-<pre>Input:
- C.Ninds  -- number of individuals to be generated
- C.Nbases -- number of bases
- C.Grid   -- whether or not to calc values based on grid;
-             otherwise select randomly between xmin and xmax
- C.Noise  -- if noise&gt;0, apply noise to move points away from grid nodes
-             noise is a multiplier; e.g. 0.2
- xmin     -- min values of genes
- xmax     -- max values of genes. len(xmin) = len(xmax) = ngenes
-</pre>
 
 				
 				
 			
 				
-				<h3 id="NewPopIntOrdRandom">func <a href="https://github.com/cpmech/goga/blob/master//population.go?s=5600:5670#L171">NewPopIntOrdRandom</a></h3>
-				<pre>func NewPopIntOrdRandom(C *<a href="#ConfParams">ConfParams</a>, nstations <a href="/pkg/builtin/#int">int</a>) (pop <a href="#Population">Population</a>)</pre>
+				<h3 id="PopOrdGen">func <a href="https://github.com/cpmech/goga/blob/master//population.go?s=2532:2630#L83">PopOrdGen</a></h3>
+				<pre>func PopOrdGen(ninds, nova, noor, nbases <a href="/pkg/builtin/#int">int</a>, noise <a href="/pkg/builtin/#float64">float64</a>, nints <a href="/pkg/builtin/#int">int</a>, unused [][]<a href="/pkg/builtin/#int">int</a>) <a href="#Population">Population</a></pre>
 				<p>
-NewPopIntOrdRandom generates a population of individuals with ordered integers
+PopOrdGen generates a population of individuals with ordered integers
+Notes: (1) ngenes = len(frange)
 </p>
-<pre>Input:
- C.Ninds   -- number of individuals to be generated
- nstations -- number of stations/integers == ngenes
-</pre>
-
-				
-				
-			
-				
-				<h3 id="NewPopRandom">func <a href="https://github.com/cpmech/goga/blob/master//population.go?s=1869:1945#L58">NewPopRandom</a></h3>
-				<pre>func NewPopRandom(ninds <a href="/pkg/builtin/#int">int</a>, ref *<a href="#Individual">Individual</a>, bingo *<a href="#Bingo">Bingo</a>) (pop <a href="#Population">Population</a>)</pre>
-				<p>
-NewPopRandom generates random population with individuals based on reference individual
-and gene values randomly drawn from Bingo.
-</p>
-<pre>Input:
- ninds -- number of individuals to be generated
- ref   -- reference individual with chromosome structure already set
- bingo -- Bingo structure set with pool of values to draw gene values
-Output:
- new population
-</pre>
-
-				
-				
-			
-				
-				<h3 id="NewPopReference">func <a href="https://github.com/cpmech/goga/blob/master//population.go?s=1319:1384#L42">NewPopReference</a></h3>
-				<pre>func NewPopReference(ninds <a href="/pkg/builtin/#int">int</a>, ref *<a href="#Individual">Individual</a>) (pop <a href="#Population">Population</a>)</pre>
-				<p>
-NewPopReference creates a population based on a reference individual
-</p>
-<pre>Input:
- ninds -- number of individuals to be generated
- ref   -- reference individual with chromosome structure already set
-Output:
- new population
-</pre>
 
 				
 				
@@ -2197,29 +2163,7 @@ Output:
 
 			
 				
-				<h3 id="Population.GenFloatRandom">func (*Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=3977:4049#L116">GenFloatRandom</a></h3>
-				<pre>func (o *<a href="#Population">Population</a>) GenFloatRandom(C *<a href="#ConfParams">ConfParams</a>, xmin, xmax []<a href="/pkg/builtin/#float64">float64</a>)</pre>
-				<p>
-GenFloatRandom generates a population of individuals with float point
-numbers only genes for given grid
-</p>
-<pre>Input:
- C.Ninds  -- number of individuals to be generated
- C.Nbases -- number of bases
- C.Grid   -- whether or not to calc values based on grid;
-             otherwise select randomly between xmin and xmax
- C.Noise  -- if noise&gt;0, apply noise to move points away from grid nodes
-             noise is a multiplier; e.g. 0.2
- xmin     -- min values of genes
- xmax     -- max values of genes. len(xmin) = len(xmax) = ngenes
-</pre>
-
-				
-				
-				
-			
-				
-				<h3 id="Population.GetCopy">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=454:500#L12">GetCopy</a></h3>
+				<h3 id="Population.GetCopy">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=3023:3069#L99">GetCopy</a></h3>
 				<pre>func (o <a href="#Population">Population</a>) GetCopy() (pop <a href="#Population">Population</a>)</pre>
 				<p>
 GetCopy returns a copy of this population
@@ -2230,7 +2174,7 @@ GetCopy returns a copy of this population
 				
 			
 				
-				<h3 id="Population.Len">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=5965:5994#L184">Len</a></h3>
+				<h3 id="Population.Len">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=3262:3291#L109">Len</a></h3>
 				<pre>func (o <a href="#Population">Population</a>) Len() <a href="/pkg/builtin/#int">int</a></pre>
 				<p>
 Len returns the length of the population == number of individuals
@@ -2241,7 +2185,7 @@ Len returns the length of the population == number of individuals
 				
 			
 				
-				<h3 id="Population.Less">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=6265:6304#L195">Less</a></h3>
+				<h3 id="Population.Less">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=3562:3601#L120">Less</a></h3>
 				<pre>func (o <a href="#Population">Population</a>) Less(i, j <a href="/pkg/builtin/#int">int</a>) <a href="/pkg/builtin/#bool">bool</a></pre>
 				<p>
 Less returns true if &#39;i&#39; is &#34;less bad&#34; than &#39;j&#39;; therefore it can be used
@@ -2253,7 +2197,7 @@ to sort the population in increasing order of demerits: from best to worst
 				
 			
 				
-				<h3 id="Population.OutFloatBases">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=8740:8799#L287">OutFloatBases</a></h3>
+				<h3 id="Population.OutFloatBases">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=7102:7161#L268">OutFloatBases</a></h3>
 				<pre>func (o <a href="#Population">Population</a>) OutFloatBases(numFmt <a href="/pkg/builtin/#string">string</a>) (l <a href="/pkg/builtin/#string">string</a>)</pre>
 				<p>
 OutFloatBases print bases of float genes
@@ -2264,8 +2208,8 @@ OutFloatBases print bases of float genes
 				
 			
 				
-				<h3 id="Population.Output">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=6720:6799#L209">Output</a></h3>
-				<pre>func (o <a href="#Population">Population</a>) Output(fmts [][]<a href="/pkg/builtin/#string">string</a>, showBases <a href="/pkg/builtin/#bool">bool</a>) (buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>)</pre>
+				<h3 id="Population.Output">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=4017:4120#L134">Output</a></h3>
+				<pre>func (o <a href="#Population">Population</a>) Output(fmts [][]<a href="/pkg/builtin/#string">string</a>, showOor, showBases <a href="/pkg/builtin/#bool">bool</a>, showNinds <a href="/pkg/builtin/#int">int</a>) (buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>)</pre>
 				<p>
 Output generates a nice table with population data
 </p>
@@ -2280,7 +2224,7 @@ showBases -- show bases, if any
 				
 			
 				
-				<h3 id="Population.Sort">func (*Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=6438:6465#L200">Sort</a></h3>
+				<h3 id="Population.Sort">func (*Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=3735:3762#L125">Sort</a></h3>
 				<pre>func (o *<a href="#Population">Population</a>) Sort()</pre>
 				<p>
 Sort sorts the population from best to worst individuals; i.e. decreasing fitness values
@@ -2291,7 +2235,7 @@ Sort sorts the population from best to worst individuals; i.e. decreasing fitnes
 				
 			
 				
-				<h3 id="Population.Swap">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=6045:6079#L189">Swap</a></h3>
+				<h3 id="Population.Swap">func (Population) <a href="https://github.com/cpmech/goga/blob/master//population.go?s=3342:3376#L114">Swap</a></h3>
 				<pre>func (o <a href="#Population">Population</a>) Swap(i, j <a href="/pkg/builtin/#int">int</a>)</pre>
 				<p>
 Swap swaps two individuals
@@ -2300,6 +2244,27 @@ Swap swaps two individuals
 				
 				
 				
+			
+		
+			
+			
+			<h2 id="PostProc_t">type <a href="https://github.com/cpmech/goga/blob/master//definitions.go?s=258:314#L1">PostProc_t</a></h2>
+			<pre>type PostProc_t func(idIsland, time <a href="/pkg/builtin/#int">int</a>, pop <a href="#Population">Population</a>)</pre>
+			<p>
+PostProc_t defines a function to post-process results
+</p>
+
+
+			
+
+			
+
+			
+			
+			
+
+			
+
 			
 		
 			
@@ -2368,6 +2333,14 @@ TwoVarsTrans_t defines a tranformation x → y (len(x)==len(y)==2)
 		<td><a href="..">..</a></td>
 		</tr>
 	
+	
+		
+			<tr>
+			<td class="name"><a href="data/">data</a></td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td style="width: auto"></td>
+			</tr>
+		
 	
 		
 			<tr>
