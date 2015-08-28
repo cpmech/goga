@@ -430,7 +430,7 @@ func Test_evo05(tst *testing.T) {
 
 	// print population
 	for _, isl := range evo.Islands {
-		io.Pf("%v", isl.Pop.Output(nil, true, false, -1))
+		io.Pf("%v", isl.Pop.Output(C))
 	}
 
 	// write histograms and plot

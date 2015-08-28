@@ -137,13 +137,7 @@ func (o *Population) Sort() {
 }
 
 // Output generates a nice table with population data
-//  Input:
-//  fmts      -- ["int","flt","str","key","byt","fun"][ngenes] print formats for each gene
-//               use fmt == nil to choose default ones
-//  showOor   -- show out-of-range values
-//  showBases -- show bases, if any
-//  showNinds -- max number of individuals to be shown. use -1 to show all individuals
-func (o Population) Output(fmts map[string][]string, showOor, showBases bool, showNinds int) (buf *bytes.Buffer) {
+func (o Population) Output(C *ConfParams) (buf *bytes.Buffer) {
 
 	// check
 	if len(o) < 1 {
@@ -151,7 +145,7 @@ func (o Population) Output(fmts map[string][]string, showOor, showBases bool, sh
 	}
 
 	// compute sizes and generate formats list
-	if fmts == nil {
+	if C.NumFmts == nil {
 		sizes := make([][]int, 6)
 		for _, ind := range o {
 			sz := ind.GetStringSizes()
@@ -165,11 +159,11 @@ func (o Population) Output(fmts map[string][]string, showOor, showBases bool, sh
 			}
 		}
 		name := []string{"int", "flt", "str", "key", "byt", "fun"}
-		fmts = make(map[string][]string)
+		C.NumFmts = make(map[string][]string)
 		for i, str := range []string{"d", "g", "s", "x", "s", "s"} {
-			fmts[name[i]] = make([]string, len(sizes[i]))
+			C.NumFmts[name[i]] = make([]string, len(sizes[i]))
 			for j, sz := range sizes[i] {
-				fmts[name[i]][j] = io.Sf("%%%d%s", sz+1, str)
+				C.NumFmts[name[i]][j] = io.Sf("%%%d%s", sz+1, str)
 			}
 		}
 	}
@@ -179,13 +173,13 @@ func (o Population) Output(fmts map[string][]string, showOor, showBases bool, sh
 	noor := len(o[0].Oors)
 	szova, szoor, szdem := make([]int, nova), make([]int, noor), 0
 	for k, ind := range o {
-		if showNinds > 0 && k >= showNinds {
+		if C.ShowNinds > 0 && k >= C.ShowNinds {
 			break
 		}
 		for i := 0; i < nova; i++ {
 			szova[i] = utl.Imax(szova[i], len(io.Sf("%g", ind.Ovas[i])))
 		}
-		if showOor {
+		if C.ShowOor {
 			for i := 0; i < noor; i++ {
 				szoor[i] = utl.Imax(szoor[i], len(io.Sf("%g", ind.Oors[i])))
 			}
@@ -195,7 +189,7 @@ func (o Population) Output(fmts map[string][]string, showOor, showBases bool, sh
 	for i := 0; i < nova; i++ {
 		szova[i] = utl.Imax(szova[i], 5) // 5 ==> len("Ova##")
 	}
-	if showOor {
+	if C.ShowOor {
 		for i := 0; i < noor; i++ {
 			szoor[i] = utl.Imax(szoor[i], 5) // 5 ==> len("Oor####")
 		}
@@ -208,7 +202,7 @@ func (o Population) Output(fmts map[string][]string, showOor, showBases bool, sh
 	for i := 0; i < nova; i++ {
 		fmtova[i] = io.Sf("%%%d", szova[i]+1)
 	}
-	if showOor {
+	if C.ShowOor {
 		for i := 0; i < noor; i++ {
 			fmtoor[i] = io.Sf("%%%d", szoor[i]+1)
 		}
@@ -217,14 +211,14 @@ func (o Population) Output(fmts map[string][]string, showOor, showBases bool, sh
 	line, sza, szb := "", 0, 0
 	first := true
 	for i, ind := range o {
-		if showNinds > 0 && i >= showNinds {
+		if C.ShowNinds > 0 && i >= C.ShowNinds {
 			break
 		}
 		stra := ""
 		for j := 0; j < nova; j++ {
 			stra += io.Sf(fmtova[j]+"g", ind.Ovas[j])
 		}
-		if showOor {
+		if C.ShowOor {
 			for j := 0; j < noor; j++ {
 				if ind.Oors[j] > 0 {
 					stra += io.Sf(fmtoor[j]+"g", ind.Oors[j])
@@ -246,7 +240,7 @@ func (o Population) Output(fmts map[string][]string, showOor, showBases bool, sh
 			}
 		}
 		stra += io.Sf(fmtdem+"g", ind.Demerit) + " "
-		strb := ind.Output(fmts, showBases)
+		strb := ind.Output(C.NumFmts, C.ShowBases)
 		line += stra + strb + "\n"
 		if first {
 			sza, szb = len(stra), len(strb)
@@ -262,7 +256,7 @@ func (o Population) Output(fmts map[string][]string, showOor, showBases bool, sh
 	for i := 0; i < nova; i++ {
 		io.Ff(buf, fmtova[i]+"s", io.Sf("Ova%d", i))
 	}
-	if showOor {
+	if C.ShowOor {
 		for i := 0; i < noor; i++ {
 			io.Ff(buf, fmtoor[i]+"s", io.Sf("Oor%d", i))
 		}
