@@ -138,10 +138,12 @@ func (o *Population) Sort() {
 
 // Output generates a nice table with population data
 //  Input:
-//  fmts      -- [ngenes] formats for int, flt, string, byte, bytes, and func
-//               use fmts == nil to choose default ones
+//  fmts      -- ["int","flt","str","key","byt","fun"][ngenes] print formats for each gene
+//               use fmt == nil to choose default ones
+//  showOor   -- show out-of-range values
 //  showBases -- show bases, if any
-func (o Population) Output(fmts [][]string, showOor, showBases bool, showNinds int) (buf *bytes.Buffer) {
+//  showNinds -- max number of individuals to be shown. use -1 to show all individuals
+func (o Population) Output(fmts map[string][]string, showOor, showBases bool, showNinds int) (buf *bytes.Buffer) {
 
 	// check
 	if len(o) < 1 {
@@ -162,11 +164,12 @@ func (o Population) Output(fmts [][]string, showOor, showBases bool, showNinds i
 				}
 			}
 		}
-		fmts = make([][]string, 6)
+		name := []string{"int", "flt", "str", "key", "byt", "fun"}
+		fmts = make(map[string][]string)
 		for i, str := range []string{"d", "g", "s", "x", "s", "s"} {
-			fmts[i] = make([]string, len(sizes[i]))
+			fmts[name[i]] = make([]string, len(sizes[i]))
 			for j, sz := range sizes[i] {
-				fmts[i][j] = io.Sf("%%%d%s", sz+1, str)
+				fmts[name[i]][j] = io.Sf("%%%d%s", sz+1, str)
 			}
 		}
 	}

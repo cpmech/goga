@@ -72,7 +72,8 @@ func Test_ind01(tst *testing.T) {
 	chk.Scalar(tst, "oor1", 1e-17, B.Oors[1], 20)
 	chk.Scalar(tst, "oor2", 1e-17, B.Oors[2], 30)
 
-	fmts := [][]string{{" %d"}, {" %.1f"}, {" %q"}, {" %x"}, {" %q"}, {" %q"}}
+	fmts := map[string][]string{"int": {" %d"}, "flt": {" %.1f"}, "str": {" %q"}, "key": {" %x"}, "byt": {" %q"}, "fun": {" %q"}}
+
 	oA := A.Output(fmts, false)
 	oB := B.Output(fmts, false)
 	io.Pfyel("\n%v\n", oA)
@@ -98,13 +99,13 @@ func Test_ind02(tst *testing.T) {
 	A := get_individual(0, nbases)
 	B := get_individual(1, nbases)
 
-	fmts := [][]string{
-		{"%2d", "%4d", "%5d"}, // ints
-		{"%6g", "%6g", "%5g"}, // floats
-		{"%4s", "%2s", "%2s"}, // strings
-		{"%3x", "%3x", "%3x"}, // keys
-		{"%4s", "%4s", "%4s"}, // bytes
-		{"%3s", "%3s", "%3s"}, // funcs
+	fmts := map[string][]string{
+		"int": {"%2d", "%4d", "%5d"}, // ints
+		"flt": {"%6g", "%6g", "%5g"}, // floats
+		"str": {"%4s", "%2s", "%2s"}, // strings
+		"key": {"%3x", "%3x", "%3x"}, // keys
+		"byt": {"%4s", "%4s", "%4s"}, // bytes
+		"fun": {"%3s", "%3s", "%3s"}, // funcs
 	}
 	io.Pfpink("A = %v\n", A.Output(fmts, false))
 	io.Pfcyan("B = %v\n", B.Output(fmts, false))

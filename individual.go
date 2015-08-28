@@ -381,25 +381,25 @@ func (o *Individual) GetStringSizes() (sizes [][]int) {
 }
 
 // Output returns a string representation of this individual
-//  fmts      -- [6][...] formats of strings for {int, flt, string, byte, bytes, func}
+//  fmts      -- ["int","flt","str","key","byt","fun"][ngenes] print formats for each gene
 //               use fmts == nil to choose default ones
 //  showBases -- show bases, if any
-func (o *Individual) Output(fmts [][]string, showBases bool) (l string) {
+func (o *Individual) Output(fmts map[string][]string, showBases bool) (l string) {
 
 	if fmts == nil {
-		fmts = [][]string{{" %d"}, {" %g"}, {" %q"}, {" %x"}, {" %q"}, {" %q"}}
+		fmts = map[string][]string{"int": {" %d"}, "flt": {" %g"}, "str": {" %q"}, "key": {" %x"}, "byt": {" %q"}, "fun": {" %q"}}
 	}
 
-	fmt := func(itype, idx int) (s string) {
-		s = fmts[itype][0]
-		if idx < len(fmts[itype]) {
-			s = fmts[itype][idx]
+	fmt := func(name string, idx int) (s string) {
+		s = fmts[name][0]
+		if idx < len(fmts[name]) {
+			s = fmts[name][idx]
 		}
 		return
 	}
 
 	for i, x := range o.Ints {
-		l += io.Sf(fmt(0, i), x)
+		l += io.Sf(fmt("int", i), x)
 	}
 
 	for i := 0; i < o.Nfltgenes; i++ {
@@ -410,23 +410,23 @@ func (o *Individual) Output(fmts [][]string, showBases bool) (l string) {
 				x += o.Floats[i*o.Nbases+j]
 			}
 		}
-		l += io.Sf(fmt(1, i), x)
+		l += io.Sf(fmt("flt", i), x)
 	}
 
 	for i, x := range o.Strings {
-		l += io.Sf(fmt(2, i), x)
+		l += io.Sf(fmt("str", i), x)
 	}
 
 	for i, x := range o.Keys {
-		l += io.Sf(fmt(3, i), x)
+		l += io.Sf(fmt("key", i), x)
 	}
 
 	for i, x := range o.Bytes {
-		l += io.Sf(fmt(4, i), string(x))
+		l += io.Sf(fmt("byt", i), string(x))
 	}
 
 	for i, x := range o.Funcs {
-		l += io.Sf(fmt(5, i), x(o))
+		l += io.Sf(fmt("fun", i), x(o))
 	}
 
 	if showBases && len(o.Floats) > 0 {
