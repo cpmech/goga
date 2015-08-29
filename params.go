@@ -74,6 +74,7 @@ type ConfParams struct {
 	Strategy int     // strategy for implementing constraints
 	Ntrials  int     // number of trials
 	Eps1     float64 // tolerance # 1; e.g. for strategy # 2 in reliability analyses
+	Check    bool    // run checking code before GA
 
 	// objective function
 	OvaOor Objectives_t // compute objective value (ova) and out-of-range value (oor)
@@ -152,6 +153,7 @@ func (o *ConfParams) SetDefault() {
 	o.Strategy = 1
 	o.Ntrials = 100
 	o.Eps1 = 0.1
+	o.Check = false
 }
 
 // SetNbases sets number of bases and fixes corresponding operators
