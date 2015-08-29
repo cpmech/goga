@@ -99,8 +99,8 @@ func Test_evo01(tst *testing.T) {
 
 func Test_evo02(tst *testing.T) {
 
-	//verbose()
-	chk.PrintTitle("evo02")
+	verbose()
+	//chk.PrintTitle("evo02")
 
 	// initialise random numbers generator
 	//rnd.Init(0) // 0 => use current time as seed
@@ -171,7 +171,7 @@ func Test_evo02(tst *testing.T) {
 
 func Test_evo03(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo03")
 
 	rnd.Init(0)
@@ -190,7 +190,7 @@ func Test_evo03(tst *testing.T) {
 	C.PopFltGen = PopFltGen
 	if chk.Verbose {
 		C.FnKey = "test_evo03"
-		C.DoPlot = true
+		C.DoPlot = false
 	}
 	C.CalcDerived()
 
@@ -375,7 +375,7 @@ func Test_evo05(tst *testing.T) {
 
 	// configuration
 	C := NewConfParams()
-	C.Nisl = 1
+	C.Nisl = 4
 	C.Ninds = 12
 	C.GAtype = "crowd"
 	//C.GAtype = "sharing"
@@ -385,7 +385,7 @@ func Test_evo05(tst *testing.T) {
 	C.DoPlot = false
 	C.RegTol = 0
 	C.Tf = 100
-	C.Dtmig = 101
+	C.Dtmig = 60
 	C.RangeFlt = [][]float64{{0, 1}}
 	C.PopFltGen = PopFltGen
 	C.SetNbasesFixOp(8)
@@ -481,13 +481,13 @@ func Test_evo06(tst *testing.T) {
 
 	// configuration
 	C := NewConfParams()
-	C.Nisl = 1
+	C.Nisl = 4
 	C.Ninds = 24
 	C.GAtype = "crowd"
 	//C.GAtype = "sharing"
 	//C.Elite = true
 	C.CrowdSize = 2
-	C.ParetoPhi = 0.1
+	C.ParetoPhi = 0.05
 	C.ShAlp = 0.5
 	C.ShSig = 0.001
 	C.ShPhen = false

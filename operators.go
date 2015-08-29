@@ -62,6 +62,7 @@ func (o *OpsData) SetDefault() {
 	o.MwiczB = 2.0
 	o.BlxAlp = 0.5
 	o.Mmax = 2
+	o.EnfRange = true
 	o.DebEtac = 1
 	o.DebEtam = 100
 
@@ -75,7 +76,7 @@ func (o *OpsData) SetDefault() {
 
 	// mutation functions
 	o.MtInt = IntMutation
-	o.MtFlt = FltMutationMwicz
+	o.MtFlt = FltMutationDeb
 	o.MtStr = StrMutation
 	o.MtKey = KeyMutation
 	o.MtByt = BytMutation
@@ -377,7 +378,7 @@ func FltCrossoverBlx(a, b, A, B []float64, time int, ops *OpsData) (ends []int) 
 	return
 }
 
-// FltCrossoverDeb implements Deb's simulated binary crossover
+// FltCrossoverDeb implements Deb's simulated binary crossover (SBX)
 func FltCrossoverDeb(a, b, A, B []float64, time int, ops *OpsData) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(ops.Pc) {
@@ -410,8 +411,8 @@ func FltCrossoverDeb(a, b, A, B []float64, time int, ops *OpsData) (ends []int) 
 				βb = math.Pow(0.5/(1.0-u), cc)
 			}
 		}
-		a[i] = 0.5 * (x1 + x2 - βb*(x2-x1))
-		b[i] = 0.5 * (x1 + x2 + βb*(x2-x1))
+		a[i] = ops.EnforceRange(i, 0.5*(x1+x2-βb*(x2-x1)))
+		b[i] = ops.EnforceRange(i, 0.5*(x1+x2+βb*(x2-x1)))
 	}
 	return
 }
@@ -717,6 +718,42 @@ func FltMutationMwicz(A []float64, time int, ops *OpsData) {
 			A[i] -= ops.MwiczDelta(t, A[i]-xmin)
 		}
 		A[i] = ops.EnforceRange(i, A[i])
+	}
+}
+
+//  FltMutationDeb implements Deb's parameter-based mutation operator
+func FltMutationDeb(A []float64, time int, ops *OpsData) {
+	size := len(A)
+	chk.IntAssert(len(ops.Xrange), size)
+	t := float64(time)
+	r := 1.0 / float64(size)
+	pm := r + (t/ops.Tmax)*(1.0-r)
+	if !rnd.FlipCoin(pm) || size < 1 {
+		return
+	}
+	ηm := 100.0 + t
+	cm := 1.0 / (ηm + 1.0)
+	var u, Δx, φ, δ, δb, xl, xu float64
+	for i := 0; i < size; i++ {
+		u = rnd.Float64(0, 1)
+		xl, xu = ops.Xrange[i][0], ops.Xrange[i][1]
+		Δx = xu - xl
+		if ops.EnfRange {
+			δ = utl.Min(A[i]-xl, xu-A[i]) / Δx
+			φ = math.Pow(1.0-δ, ηm+1.0)
+			if u <= 0.5 {
+				δb = math.Pow(2.0*u+(1.0-2.0*u)*φ, cm) - 1.0
+			} else {
+				δb = 1.0 - math.Pow(2.0-2.0*u+(2.0*u-1.0)*φ, cm)
+			}
+		} else {
+			if u <= 0.5 {
+				δb = math.Pow(2.0*u, cm) - 1.0
+			} else {
+				δb = 1.0 - math.Pow(2.0-2.0*u, cm)
+			}
+		}
+		A[i] = ops.EnforceRange(i, A[i]+δb*Δx)
 	}
 }
 

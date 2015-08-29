@@ -629,7 +629,7 @@ func Test_binmut01(tst *testing.T) {
 
 func Test_cxdeb01(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("cxdeb01. Deb's crossover")
 
 	var ops OpsData
@@ -676,4 +676,39 @@ func Test_cxdeb01(tst *testing.T) {
 	io.Pf("%s", rnd.TextHist(ha1.GenLabels("%.1f"), ha1.Counts, 60))
 	io.Pforan("b1s\n")
 	io.Pf("%s", rnd.TextHist(hb1.GenLabels("%.1f"), hb1.Counts, 60))
+}
+
+func Test_mtdeb01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("mtdeb01. Deb's mutation")
+
+	var ops OpsData
+	ops.SetDefault()
+	ops.Pm = 1.0
+	ops.Xrange = [][]float64{{-3, 3}, {-4, 4}}
+	ops.EnfRange = true
+
+	rnd.Init(0)
+
+	A := []float64{-1, 1}
+	io.Pforan("before: A = %v\n", A)
+	FltMutationDeb(A, 10, &ops)
+	io.Pforan("after:  A = %v\n", A)
+
+	ha0 := rnd.Histogram{Stations: utl.LinSpace(-3, 3, 11)}
+
+	nsamples := 100
+	aa := make([]float64, len(A))
+	a0s := make([]float64, nsamples)
+	for _, t := range []int{0, 50, 100} {
+		for i := 0; i < nsamples; i++ {
+			copy(aa, A)
+			FltMutationDeb(aa, t, &ops)
+			a0s[i] = aa[0]
+		}
+		ha0.Count(a0s, true)
+		io.Pf("\ntime = %d\n", t)
+		io.Pf("%s", rnd.TextHist(ha0.GenLabels("%.1f"), ha0.Counts, 60))
+	}
 }
