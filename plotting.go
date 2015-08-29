@@ -97,13 +97,17 @@ func PlotTwoVarsContour(dirout, fnkey string, pop0, pop1 Population, best *Indiv
 			cargs = "," + cargs
 		}
 		if csimple {
-			plt.ContourSimple(V0, V1, Zf, true, 7, "colos=['k'], fsz=7"+cargs)
+			plt.ContourSimple(V0, V1, Zf, true, 7, "colors=['k'], fsz=7"+cargs)
 		} else {
 			plt.Contour(V0, V1, Zf, io.Sf("fsz=7, cmapidx=%d"+cargs, cmapidx))
 		}
 	}
+	clr := "yellow"
+	if csimple {
+		clr = "blue"
+	}
 	for k, _ := range gs {
-		plt.ContourSimple(V0, V1, Zg[k], false, 7, io.Sf("zorder=5, levels=[0], colors=['yellow'], linewidths=[%g], clip_on=0", lw_g))
+		plt.ContourSimple(V0, V1, Zg[k], false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", clr, lw_g))
 	}
 	get_v := func(ind *Individual) (v []float64) {
 		v = ind.GetFloats()
