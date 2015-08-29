@@ -629,7 +629,7 @@ func Test_binmut01(tst *testing.T) {
 
 func Test_cxdeb01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("cxdeb01. Deb's crossover")
 
 	var ops OpsData
