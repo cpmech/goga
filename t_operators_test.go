@@ -191,7 +191,7 @@ func Test_ends02(tst *testing.T) {
 
 	size := 20
 	ncuts := 10
-	nsamples := 1000
+	nsamples := 100
 	hist := rnd.IntHistogram{Stations: utl.IntRange(size + 3)}
 	for i := 0; i < nsamples; i++ {
 		ends := GenerateCxEnds(size, ncuts, nil)
@@ -625,4 +625,55 @@ func Test_binmut01(tst *testing.T) {
 	if ndiff != ops.Nchanges {
 		tst.Errorf("binary mutation failed\n")
 	}
+}
+
+func Test_cxdeb01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("cxdeb01. Deb's crossover")
+
+	var ops OpsData
+	ops.SetDefault()
+	ops.Pc = 1.0
+	ops.Xrange = [][]float64{{-3, 3}, {-4, 4}}
+	ops.EnfRange = true
+
+	rnd.Init(0)
+
+	A := []float64{-1, 1}
+	B := []float64{1, 2}
+	a := make([]float64, len(A))
+	b := make([]float64, len(A))
+	FltCrossoverDeb(a, b, A, B, 0, &ops)
+	io.Pforan("A = %v\n", A)
+	io.Pforan("B = %v\n", B)
+	io.Pfcyan("a = %.6f\n", a)
+	io.Pfcyan("b = %.6f\n", b)
+
+	nsamples := 100
+	a0s, a1s := make([]float64, nsamples), make([]float64, nsamples)
+	b0s, b1s := make([]float64, nsamples), make([]float64, nsamples)
+	for i := 0; i < nsamples; i++ {
+		FltCrossoverDeb(a, b, B, A, 0, &ops)
+		a0s[i], a1s[i] = a[0], a[1]
+		b0s[i], b1s[i] = b[0], b[1]
+	}
+	ha0 := rnd.Histogram{Stations: []float64{-4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1}}
+	hb0 := rnd.Histogram{Stations: []float64{0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 5, 5.5, 6}}
+	ha1 := rnd.Histogram{Stations: utl.LinSpace(-4, 4, 11)}
+	hb1 := rnd.Histogram{Stations: utl.LinSpace(-4, 4, 11)}
+	ha0.Count(a0s, true)
+	hb0.Count(b0s, true)
+	ha1.Count(a1s, true)
+	hb1.Count(b1s, true)
+
+	io.Pforan("\na0s\n")
+	io.Pf("%s", rnd.TextHist(ha0.GenLabels("%.1f"), ha0.Counts, 60))
+	io.Pforan("b0s\n")
+	io.Pf("%s", rnd.TextHist(hb0.GenLabels("%.1f"), hb0.Counts, 60))
+
+	io.Pforan("\na1s\n")
+	io.Pf("%s", rnd.TextHist(ha1.GenLabels("%.1f"), ha1.Counts, 60))
+	io.Pforan("b1s\n")
+	io.Pf("%s", rnd.TextHist(hb1.GenLabels("%.1f"), hb1.Counts, 60))
 }

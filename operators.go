@@ -31,6 +31,8 @@ type OpsData struct {
 	OrdSti   []int       // {start, end, insertPoint}. can be <nil>
 	Xrange   [][]float64 // [ngenes][2] genes minimum and maximum values
 	EnfRange bool        // do enforce range
+	DebEtac  float64     // Deb's SBX crossover parameter
+	DebEtam  float64     // Deb's parameter-based mutation parameter
 
 	// crossover functions
 	CxInt CxIntFunc_t // int crossover function
@@ -60,10 +62,12 @@ func (o *OpsData) SetDefault() {
 	o.MwiczB = 2.0
 	o.BlxAlp = 0.5
 	o.Mmax = 2
+	o.DebEtac = 1
+	o.DebEtam = 100
 
 	// crossover functions
 	o.CxInt = IntCrossover
-	o.CxFlt = FltCrossoverBlx
+	o.CxFlt = FltCrossoverDeb
 	o.CxStr = StrCrossover
 	o.CxKey = KeyCrossover
 	o.CxByt = BytCrossover
@@ -369,6 +373,45 @@ func FltCrossoverBlx(a, b, A, B []float64, time int, ops *OpsData) (ends []int) 
 		b[i] = rnd.Float64(cmin-α*δ, cmax+α*δ)
 		a[i] = ops.EnforceRange(i, a[i])
 		b[i] = ops.EnforceRange(i, b[i])
+	}
+	return
+}
+
+// FltCrossoverDeb implements Deb's simulated binary crossover
+func FltCrossoverDeb(a, b, A, B []float64, time int, ops *OpsData) (ends []int) {
+	size := len(A)
+	if !rnd.FlipCoin(ops.Pc) {
+		for i := 0; i < size; i++ {
+			a[i], b[i] = A[i], B[i]
+		}
+		return
+	}
+	cc := 1.0 / (ops.DebEtac + 1.0)
+	var u, α, β, βb, x1, x2, xl, xu float64
+	for i := 0; i < size; i++ {
+		x1, x2 = A[i], B[i]
+		if x1 > x2 {
+			x1, x2 = x2, x1
+		}
+		u = rnd.Float64(0, 1)
+		if ops.EnfRange {
+			xl, xu = ops.Xrange[i][0], ops.Xrange[i][1]
+			β = 1.0 + (2.0/(1e-15+x2-x1))*utl.Min(x1-xl, xu-x2)
+			α = 2.0 - math.Pow(β, -(ops.DebEtac+1.0))
+			if u <= 1.0/α {
+				βb = math.Pow(α*u, cc)
+			} else {
+				βb = math.Pow(1.0/(2.0-α*u), cc)
+			}
+		} else {
+			if u <= 0.5 {
+				βb = math.Pow(2.0*u, cc)
+			} else {
+				βb = math.Pow(0.5/(1.0-u), cc)
+			}
+		}
+		a[i] = 0.5 * (x1 + x2 - βb*(x2-x1))
+		b[i] = 0.5 * (x1 + x2 + βb*(x2-x1))
 	}
 	return
 }
