@@ -84,7 +84,7 @@ func Test_mwicz01(tst *testing.T) {
 
 func Test_cxdeb01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("cxdeb01. Deb's crossover")
 
 	var ops OpsData
@@ -135,7 +135,7 @@ func Test_cxdeb01(tst *testing.T) {
 
 func Test_mtdeb01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("mtdeb01. Deb's mutation")
 
 	var ops OpsData
@@ -153,7 +153,7 @@ func Test_mtdeb01(tst *testing.T) {
 
 	ha0 := rnd.Histogram{Stations: utl.LinSpace(-3, 3, 11)}
 
-	nsamples := 100
+	nsamples := 1000
 	aa := make([]float64, len(A))
 	a0s := make([]float64, nsamples)
 	for _, t := range []int{0, 50, 100} {

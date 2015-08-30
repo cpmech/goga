@@ -100,7 +100,7 @@ func Test_evo01(tst *testing.T) {
 func Test_evo02(tst *testing.T) {
 
 	verbose()
-	//chk.PrintTitle("evo02")
+	chk.PrintTitle("evo02")
 
 	// initialise random numbers generator
 	//rnd.Init(0) // 0 => use current time as seed

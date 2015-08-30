@@ -200,21 +200,36 @@ func FltCrossoverDeb(a, b, A, B []float64, time int, ops *OpsData) (ends []int) 
 //   [1] Deb K and Tiwari S (2008) Omni-optimizer: A generic evolutionary algorithm for single
 //       and multi-objective optimization. European Journal of Operational Research, 185:1062-1087.
 func FltMutationDeb(A []float64, time int, ops *OpsData) {
+
+	// check
+	chk.IntAssert(len(ops.Xrange), len(A))
+
+	// copy only
 	size := len(A)
-	chk.IntAssert(len(ops.Xrange), size)
 	t := float64(time)
 	r := 1.0 / float64(size)
 	pm := r + (1.0-r)*t/ops.Tmax
 	if !rnd.FlipCoin(pm) || size < 1 {
 		return
 	}
+
+	// for each gene
 	ηm := 100.0 + t
 	cm := 1.0 / (ηm + 1.0)
 	var u, Δx, φ1, φ2, δ1, δ2, δb, xl, xu float64
 	for i := 0; i < size; i++ {
-		u = rnd.Float64(0, 1)
+
+		// leave basis unmodified
+		if !rnd.FlipCoin(ops.Pm) {
+			continue
+		}
+
+		// range
 		xl, xu = ops.Xrange[i][0], ops.Xrange[i][1]
 		Δx = xu - xl
+
+		// mutation
+		u = rnd.Float64(0, 1)
 		if ops.EnfRange {
 			δ1 = (A[i] - xl) / Δx
 			δ2 = (xu - A[i]) / Δx
