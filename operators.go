@@ -388,31 +388,51 @@ func FltCrossoverDeb(a, b, A, B []float64, time int, ops *OpsData) (ends []int) 
 		return
 	}
 	cc := 1.0 / (ops.DebEtac + 1.0)
-	var u, α, β, βb, x1, x2, xl, xu float64
+	var u, α, β, βb, x1, x2, δx, xl, xu float64
 	for i := 0; i < size; i++ {
+
+		// parent basis values
 		x1, x2 = A[i], B[i]
 		if x1 > x2 {
 			x1, x2 = x2, x1
 		}
+		δx = x2 - x1
 		u = rnd.Float64(0, 1)
+
 		if ops.EnfRange {
+
+			// range
 			xl, xu = ops.Xrange[i][0], ops.Xrange[i][1]
-			β = 1.0 + (2.0/(1e-15+x2-x1))*utl.Min(x1-xl, xu-x2)
+
+			// first offspring
+			β = 1.0 + 2.0*(x1-xl)/(1e-15+δx)
 			α = 2.0 - math.Pow(β, -(ops.DebEtac+1.0))
 			if u <= 1.0/α {
 				βb = math.Pow(α*u, cc)
 			} else {
 				βb = math.Pow(1.0/(2.0-α*u), cc)
 			}
+			a[i] = ops.EnforceRange(i, 0.5*(x1+x2-βb*δx))
+
+			// second offspring
+			β = 1.0 + 2.0*(xu-x2)/(1e-15+δx)
+			α = 2.0 - math.Pow(β, -(ops.DebEtac+1.0))
+			if u <= (1.0 / α) {
+				βb = math.Pow(α*u, cc)
+			} else {
+				βb = math.Pow(1.0/(2.0-α*u), cc)
+			}
+			b[i] = ops.EnforceRange(i, 0.5*(x1+x2+βb*δx))
+
 		} else {
 			if u <= 0.5 {
 				βb = math.Pow(2.0*u, cc)
 			} else {
 				βb = math.Pow(0.5/(1.0-u), cc)
 			}
+			a[i] = 0.5 * (x1 + x2 - βb*δx)
+			b[i] = 0.5 * (x1 + x2 + βb*δx)
 		}
-		a[i] = ops.EnforceRange(i, 0.5*(x1+x2-βb*(x2-x1)))
-		b[i] = ops.EnforceRange(i, 0.5*(x1+x2+βb*(x2-x1)))
 	}
 	return
 }
@@ -722,29 +742,34 @@ func FltMutationMwicz(A []float64, time int, ops *OpsData) {
 }
 
 //  FltMutationDeb implements Deb's parameter-based mutation operator
+//  References:
+//   [1] Deb K and Tiwari S (2008) Omni-optimizer: A generic evolutionary algorithm for single
+//       and multi-objective optimization. European Journal of Operational Research, 185:1062-1087.
 func FltMutationDeb(A []float64, time int, ops *OpsData) {
 	size := len(A)
 	chk.IntAssert(len(ops.Xrange), size)
 	t := float64(time)
 	r := 1.0 / float64(size)
-	pm := r + (t/ops.Tmax)*(1.0-r)
+	pm := r + (1.0-r)*t/ops.Tmax
 	if !rnd.FlipCoin(pm) || size < 1 {
 		return
 	}
 	ηm := 100.0 + t
 	cm := 1.0 / (ηm + 1.0)
-	var u, Δx, φ, δ, δb, xl, xu float64
+	var u, Δx, φ1, φ2, δ1, δ2, δb, xl, xu float64
 	for i := 0; i < size; i++ {
 		u = rnd.Float64(0, 1)
 		xl, xu = ops.Xrange[i][0], ops.Xrange[i][1]
 		Δx = xu - xl
 		if ops.EnfRange {
-			δ = utl.Min(A[i]-xl, xu-A[i]) / Δx
-			φ = math.Pow(1.0-δ, ηm+1.0)
+			δ1 = (A[i] - xl) / Δx
+			δ2 = (xu - A[i]) / Δx
 			if u <= 0.5 {
-				δb = math.Pow(2.0*u+(1.0-2.0*u)*φ, cm) - 1.0
+				φ1 = math.Pow(1.0-δ1, ηm+1.0)
+				δb = math.Pow(2.0*u+(1.0-2.0*u)*φ1, cm) - 1.0
 			} else {
-				δb = 1.0 - math.Pow(2.0-2.0*u+(2.0*u-1.0)*φ, cm)
+				φ2 = math.Pow(1.0-δ2, ηm+1.0)
+				δb = 1.0 - math.Pow(2.0-2.0*u+(2.0*u-1.0)*φ2, cm)
 			}
 		} else {
 			if u <= 0.5 {

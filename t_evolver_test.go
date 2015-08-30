@@ -99,7 +99,7 @@ func Test_evo01(tst *testing.T) {
 
 func Test_evo02(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	//chk.PrintTitle("evo02")
 
 	// initialise random numbers generator
@@ -171,7 +171,7 @@ func Test_evo02(tst *testing.T) {
 
 func Test_evo03(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo03")
 
 	rnd.Init(0)

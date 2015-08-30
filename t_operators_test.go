@@ -629,7 +629,7 @@ func Test_binmut01(tst *testing.T) {
 
 func Test_cxdeb01(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("cxdeb01. Deb's crossover")
 
 	var ops OpsData
@@ -650,7 +650,7 @@ func Test_cxdeb01(tst *testing.T) {
 	io.Pfcyan("a = %.6f\n", a)
 	io.Pfcyan("b = %.6f\n", b)
 
-	nsamples := 100
+	nsamples := 1000
 	a0s, a1s := make([]float64, nsamples), make([]float64, nsamples)
 	b0s, b1s := make([]float64, nsamples), make([]float64, nsamples)
 	for i := 0; i < nsamples; i++ {
