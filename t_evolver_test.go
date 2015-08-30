@@ -99,12 +99,12 @@ func Test_evo01(tst *testing.T) {
 
 func Test_evo02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo02")
 
 	// initialise random numbers generator
-	//rnd.Init(0) // 0 => use current time as seed
-	rnd.Init(1111) // 0 => use current time as seed
+	rnd.Init(0) // 0 => use current time as seed
+	//rnd.Init(1111) // 0 => use current time as seed
 
 	// parameters
 	C := NewConfParams()
@@ -116,7 +116,7 @@ func Test_evo02(tst *testing.T) {
 	C.GAtype = "crowd"
 	C.CrowdSize = 2
 	C.ParetoPhi = 0.01
-	C.Elite = false
+	//C.Elite = true
 	C.Verbose = false
 	C.RangeFlt = [][]float64{
 		{-2, 2}, // gene # 0: min and max
@@ -125,7 +125,7 @@ func Test_evo02(tst *testing.T) {
 	C.PopFltGen = PopFltGen
 	if chk.Verbose {
 		C.FnKey = "test_evo02"
-		C.DoPlot = true
+		C.DoPlot = false
 	}
 	//C.SetNbasesFixOp(8)
 	C.CalcDerived()

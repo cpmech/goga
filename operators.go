@@ -63,7 +63,7 @@ func (o *OpsData) SetDefault() {
 	o.Mmax = 2
 	o.EnfRange = true
 	o.DebEtac = 1
-	o.DebEtam = 100
+	o.DebEtam = 1
 
 	// crossover functions
 	o.CxInt = IntCrossover

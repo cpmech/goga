@@ -205,22 +205,29 @@ func FltMutationDeb(A []float64, time int, ops *OpsData) {
 	chk.IntAssert(len(ops.Xrange), len(A))
 
 	// copy only
+
+	// TODO: fix this
+
 	size := len(A)
-	t := float64(time)
-	r := 1.0 / float64(size)
-	pm := r + (1.0-r)*t/ops.Tmax
-	if !rnd.FlipCoin(pm) || size < 1 {
-		return
-	}
+	//t := float64(time)
+	//r := 1.0 / float64(size)
+	//pm := r + (1.0-r)*t/ops.Tmax
+	pm := 1.0 / float64(size)
+	//if !rnd.FlipCoin(pm) || size < 1 {
+	//if !rnd.FlipCoin(ops.Pm) || size < 1 {
+	//return
+	//}
 
 	// for each gene
-	ηm := 100.0 + t
+	//ηm := 100.0 + t
+	ηm := 1.0
 	cm := 1.0 / (ηm + 1.0)
 	var u, Δx, φ1, φ2, δ1, δ2, δb, xl, xu float64
 	for i := 0; i < size; i++ {
 
 		// leave basis unmodified
-		if !rnd.FlipCoin(ops.Pm) {
+		//if !rnd.FlipCoin(ops.Pm) {
+		if !rnd.FlipCoin(pm) {
 			continue
 		}
 
