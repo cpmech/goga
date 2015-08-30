@@ -167,3 +167,34 @@ func Test_intordmut01(tst *testing.T) {
 	sort.Ints(a)
 	chk.Ints(tst, "asorted = 12345678", a, nums)
 }
+
+func Test_binmut01(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("binmut01. mutation: binary")
+
+	var ops OpsData
+	ops.SetDefault()
+	ops.Pm = 1.0
+	ops.Tmax = 10
+	ops.Nchanges = 3
+
+	rnd.Init(0)
+
+	A := []int{0, 1, 1, 1, 0, 0, 1, 0, 1, 1}
+	a := make([]int, len(A))
+	copy(a, A)
+	io.Pforan("before: A = %v\n", A)
+	IntBinMutation(A, 0, &ops)
+	io.Pforan("after:  A = %v\n", A)
+	ndiff := 0
+	for i := 0; i < len(A); i++ {
+		if A[i] != a[i] {
+			ndiff++
+		}
+	}
+	io.Pforan("number of changes = %v\n", ndiff)
+	if ndiff != ops.Nchanges {
+		tst.Errorf("binary mutation failed\n")
+	}
+}
