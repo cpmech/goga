@@ -680,7 +680,7 @@ func Test_cxdeb01(tst *testing.T) {
 
 func Test_mtdeb01(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("mtdeb01. Deb's mutation")
 
 	var ops OpsData
