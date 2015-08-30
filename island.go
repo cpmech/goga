@@ -239,15 +239,17 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 	}
 
 	// check individuals
-	xxmin := o.Pop[0].GetFloat(0)
-	xxmax := xxmin
-	for _, ind := range o.Pop {
-		xmin, xmax := la.VecMinMax(ind.Floats)
-		xxmin = utl.Min(xxmin, xmin)
-		xxmax = utl.Max(xxmax, xmax)
-	}
-	io.Pforan("xxmin = %v\n", xxmin)
-	io.Pforan("xxmax = %v\n", xxmax)
+	/*
+		xxmin := o.Pop[0].GetFloat(0)
+		xxmax := xxmin
+		for _, ind := range o.Pop {
+			xmin, xmax := la.VecMinMax(ind.Floats)
+			xxmin = utl.Min(xxmin, xmin)
+			xxmax = utl.Max(xxmax, xmax)
+		}
+		io.Pforan("xxmin = %v\n", xxmin)
+		io.Pforan("xxmax = %v\n", xxmax)
+	*/
 
 	// report
 	if doreport {

@@ -380,6 +380,8 @@ func FltCrossoverBlx(a, b, A, B []float64, time int, ops *OpsData) (ends []int) 
 
 // FltCrossoverDeb implements Deb's simulated binary crossover (SBX)
 func FltCrossoverDeb(a, b, A, B []float64, time int, ops *OpsData) (ends []int) {
+
+	// copy only
 	size := len(A)
 	if !rnd.FlipCoin(ops.Pc) {
 		for i := 0; i < size; i++ {
@@ -387,25 +389,35 @@ func FltCrossoverDeb(a, b, A, B []float64, time int, ops *OpsData) (ends []int) 
 		}
 		return
 	}
+
+	// for each gene
+	ϵ := 1e-10
 	cc := 1.0 / (ops.DebEtac + 1.0)
 	var u, α, β, βb, x1, x2, δx, xl, xu float64
 	for i := 0; i < size; i++ {
 
-		// parent basis values
+		// parents' basis values
 		x1, x2 = A[i], B[i]
 		if x1 > x2 {
 			x1, x2 = x2, x1
 		}
 		δx = x2 - x1
-		u = rnd.Float64(0, 1)
 
+		// copy only
+		if rnd.FlipCoin(0.5) || δx < ϵ {
+			a[i], b[i] = A[i], B[i]
+			continue
+		}
+
+		// crossover
+		u = rnd.Float64(0, 1)
 		if ops.EnfRange {
 
 			// range
 			xl, xu = ops.Xrange[i][0], ops.Xrange[i][1]
 
 			// first offspring
-			β = 1.0 + 2.0*(x1-xl)/(1e-15+δx)
+			β = 1.0 + 2.0*(x1-xl)/δx
 			α = 2.0 - math.Pow(β, -(ops.DebEtac+1.0))
 			if u <= 1.0/α {
 				βb = math.Pow(α*u, cc)
@@ -415,7 +427,7 @@ func FltCrossoverDeb(a, b, A, B []float64, time int, ops *OpsData) (ends []int) 
 			a[i] = ops.EnforceRange(i, 0.5*(x1+x2-βb*δx))
 
 			// second offspring
-			β = 1.0 + 2.0*(xu-x2)/(1e-15+δx)
+			β = 1.0 + 2.0*(xu-x2)/δx
 			α = 2.0 - math.Pow(β, -(ops.DebEtac+1.0))
 			if u <= (1.0 / α) {
 				βb = math.Pow(α*u, cc)
