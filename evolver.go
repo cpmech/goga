@@ -179,6 +179,15 @@ func (o *Evolver) Run() {
 	return
 }
 
+// ResetAllPop resets/re-generates all populations in all islands
+func (o *Evolver) ResetAllPop() {
+	for _, isl := range o.Islands {
+		isl.Pop = o.C.PopFltGen(o.C.Ninds, isl.Nova, isl.Noor, o.C.Nbases, o.C.Noise, o.C.RangeFlt)
+		isl.CalcOvs(isl.Pop, 0)
+		isl.CalcDemeritsAndSort(isl.Pop)
+	}
+}
+
 // FindBestFromAll finds best individual from all islands
 //  Output: o.Best will point to the best individual
 func (o *Evolver) FindBestFromAll() {
