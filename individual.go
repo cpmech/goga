@@ -7,6 +7,7 @@ package goga
 import (
 	"math"
 
+	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
@@ -180,6 +181,9 @@ func IndCompareDet(A, B *Individual) (A_dominates, B_dominates bool) {
 	if A_is_unfeasible {
 		if B_is_unfeasible {
 			A_dominates, B_dominates = utl.DblsParetoMin(A.Oors, B.Oors)
+			if !A_dominates && !B_dominates {
+				A_dominates, B_dominates = utl.DblsParetoMin(A.Ovas, B.Ovas)
+			}
 			return
 		}
 		B_dominates = true
@@ -195,6 +199,7 @@ func IndCompareDet(A, B *Individual) (A_dominates, B_dominates bool) {
 
 // IndCompareProb compares individual 'A' with another one 'B' using probabilistic Pareto method
 func IndCompareProb(A, B *Individual, φ float64) (A_dominates bool) {
+	chk.Panic("IndCompareProb is disabled")
 	var A_is_unfeasible, B_is_unfeasible bool
 	for i := 0; i < len(A.Oors); i++ {
 		if A.Oors[i] > 0 {
