@@ -19,7 +19,7 @@ import (
 type Population []*Individual
 
 // PopBinGen generates a population of binary numbers [0,1]
-func PopBinGen(ninds, nova, noor, nbases int, noise float64, nints int, unused [][]int) Population {
+func PopBinGen(id, ninds, nova, noor, nbases int, noise float64, nints int, unused [][]int) Population {
 	pop := make([]*Individual, ninds)
 	genes := make([]int, nints)
 	for i := 0; i < ninds; i++ {
@@ -33,7 +33,7 @@ func PopBinGen(ninds, nova, noor, nbases int, noise float64, nints int, unused [
 
 // PopFltGen generates a population of individuals with float point numbers
 // Notes: (1) ngenes = len(frange)
-func PopFltGen(ninds, nova, noor, nbases int, noise float64, frange [][]float64) Population {
+func PopFltGen(id, ninds, nova, noor, nbases int, noise float64, frange [][]float64) Population {
 	o := make([]*Individual, ninds)
 	ngenes := len(frange)
 	for i := 0; i < ninds; i++ {
@@ -59,7 +59,7 @@ func PopFltGen(ninds, nova, noor, nbases int, noise float64, frange [][]float64)
 				xmin = frange[j][0]
 				xmax = frange[j][1]
 				dx = xmax - xmin
-				x = xmin + float64(idx)*dx/den
+				x = xmin + float64(idx+id)*dx/den
 				if noise > 0 {
 					mul = rnd.Float64(0, noise)
 					if rnd.FlipCoin(0.5) {
@@ -67,12 +67,12 @@ func PopFltGen(ninds, nova, noor, nbases int, noise float64, frange [][]float64)
 					} else {
 						x -= mul * x
 					}
-					if x < xmin {
-						x = xmin + (xmin - x)
-					}
-					if x > xmax {
-						x = xmax - (x - xmax)
-					}
+				}
+				if x < xmin {
+					x = xmin + (xmin - x)
+				}
+				if x > xmax {
+					x = xmax - (x - xmax)
 				}
 				o[i].SetFloat(j, x)
 			}
@@ -90,7 +90,7 @@ func PopFltGen(ninds, nova, noor, nbases int, noise float64, frange [][]float64)
 
 // PopOrdGen generates a population of individuals with ordered integers
 // Notes: (1) ngenes = len(frange)
-func PopOrdGen(ninds, nova, noor, nbases int, noise float64, nints int, unused [][]int) Population {
+func PopOrdGen(id, ninds, nova, noor, nbases int, noise float64, nints int, unused [][]int) Population {
 	o := make([]*Individual, ninds)
 	ngenes := nints
 	for i := 0; i < ninds; i++ {

@@ -107,7 +107,7 @@ func (o *ConfParams) SetDefault() {
 	o.Ninds = 20
 	o.Nbases = 1
 	o.Grid = true
-	o.Noise = 0.2
+	o.Noise = 0.1
 
 	// time control
 	o.Tf = 100
@@ -161,6 +161,12 @@ func (o *ConfParams) SetNbasesFixOp(nbases int) {
 	o.Nbases = nbases
 	o.Ops.CxFlt = FltCrossover
 	o.Ops.MtFlt = FltMutation
+}
+
+// SetBlxMwicz sets BLX-α (crossover) and Michaelewicz (mutation) operators
+func (o *ConfParams) SetBlxMwicz() {
+	o.Ops.CxFlt = FltCrossoverBlx
+	o.Ops.MtFlt = FltMutationMwicz
 }
 
 // SetIntBin sets functions to handle binary numbers [0,1]
