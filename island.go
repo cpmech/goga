@@ -78,22 +78,22 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 
 	// create population
 	if o.C.PopIntGen != nil {
-		o.Pop = o.C.PopIntGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.NumInts, o.C.RangeInt)
+		o.Pop = o.C.PopIntGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.NumInts, o.C.RangeInt)
 	}
 	if o.C.PopFltGen != nil {
-		o.Pop = o.C.PopFltGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.RangeFlt)
+		o.Pop = o.C.PopFltGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.RangeFlt)
 	}
 	if o.C.PopStrGen != nil {
-		o.Pop = o.C.PopStrGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolStr)
+		o.Pop = o.C.PopStrGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolStr)
 	}
 	if o.C.PopKeyGen != nil {
-		o.Pop = o.C.PopKeyGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolKey)
+		o.Pop = o.C.PopKeyGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolKey)
 	}
 	if o.C.PopBytGen != nil {
-		o.Pop = o.C.PopBytGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolByt)
+		o.Pop = o.C.PopBytGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolByt)
 	}
 	if o.C.PopFunGen != nil {
-		o.Pop = o.C.PopFunGen(o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolFun)
+		o.Pop = o.C.PopFunGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolFun)
 	}
 	if len(o.Pop) != o.C.Ninds {
 		chk.Panic("generation of population failed:\nat least one generator function in Params must be non nil")
@@ -311,8 +311,21 @@ func (o *Island) update_crowding(time int) {
 		for i := 0; i < n; i++ {
 			j := o.match.Links[i]
 			A, a := o.Pop[crowd[i]], o.Bkp[crowd[j]]
-			if IndCompareProb(A, a, o.C.ParetoPhi) {
-				A.CopyInto(a) // parent wins
+			if true {
+				A_dominates, B_dominates := IndCompareDet(A, a)
+				if A_dominates {
+					A.CopyInto(a) // parent wins
+					continue
+				}
+				if !B_dominates {
+					if rnd.FlipCoin(0.5) {
+						A.CopyInto(a) // parent wins by chance
+					}
+				}
+			} else {
+				if IndCompareProb(A, a, o.C.ParetoPhi) {
+					A.CopyInto(a) // parent wins
+				}
 			}
 		}
 	}
@@ -457,7 +470,8 @@ func (o *Island) update_standard(time int) {
 
 // Regenerate regenerates population with basis on best individual(s)
 func (o *Island) Regenerate(time int) {
-	chk.Panic("regenerate is deactivated")
+	//chk.Panic("regenerate is deactivated")
+	//io.Pfred("regenerating\n")
 	ninds := len(o.Pop)
 	start := ninds - int(o.C.RegPct*float64(ninds))
 	for i := start; i < ninds; i++ {
