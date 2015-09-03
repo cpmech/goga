@@ -57,7 +57,7 @@ func Test_evo01(tst *testing.T) {
 	}
 
 	// generation function
-	C.PopIntGen = func(ninds, nova, noor, nbases int, noise float64, nvals int, dummy [][]int) Population {
+	C.PopIntGen = func(id, ninds, nova, noor, nbases int, noise float64, nvals int, dummy [][]int) Population {
 		o := make([]*Individual, ninds)
 		genes := make([]int, nvals)
 		for i := 0; i < ninds; i++ {
@@ -179,19 +179,33 @@ func Test_evo03(tst *testing.T) {
 	// parameters
 	C := NewConfParams()
 	C.Pll = false
-	C.Nisl = 1
-	C.Ninds = 20
+	C.Nisl = 4
+	C.Ninds = 12
+	C.Ntrials = 20
+	C.Verbose = false
+	C.Dtmig = 50
+	C.Ops.Pm = 0.01
+	C.CrowdSize = 2
+	C.ParetoPhi = 0
 	//C.GAtype = "std"
 	C.GAtype = "crowd"
+	//C.GAtype = "sharing"
+	//C.Elite = true
 	C.RangeFlt = [][]float64{
 		{-1, 3}, // gene # 0: min and max
 		{-1, 3}, // gene # 1: min and max
 	}
 	C.PopFltGen = PopFltGen
 	if chk.Verbose {
-		C.FnKey = "test_evo03"
+		C.FnKey = "" //"test_evo03"
 		C.DoPlot = false
 	}
+	//C.SetBlxMwicz()
+	//C.SetNbasesFixOp(8)
+	C.Ops.EnfRange = true
+	C.NumFmts = map[string][]string{"flt": {"%8.4f", "%8.4f"}}
+	C.ShowDem = true
+	C.RegTol = 0.01
 	C.CalcDerived()
 
 	// geometry
@@ -225,22 +239,58 @@ func Test_evo03(tst *testing.T) {
 	nova := 1
 	noor := 1
 	evo := NewEvolver(nova, noor, C)
-	pop0 := evo.Islands[0].Pop.GetCopy()
-	evo.Run()
 
-	// results
-	xbest := []float64{evo.Best.GetFloat(0), evo.Best.GetFloat(1)}
-	io.PfGreen("\nx=%g (%g)\n", xbest[0], ys)
-	io.PfGreen("y=%g (%g)\n", xbest[1], ys)
-	io.PfGreen("BestOV=%g (%g)\n\n", evo.Best.Ovas[0], le)
+	// run ntrials times
+	pops0 := make([]Population, C.Nisl)
+	for i := 0; i < C.Ntrials; i++ {
 
-	// plot contour
-	if C.DoPlot {
-		extra := func() {
-			plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
+		// reset populations
+		if i > 0 {
+			evo.ResetAllPop()
 		}
-		PlotTwoVarsContour("/tmp/goga", "contour_evo03", pop0, evo.Islands[0].Pop, evo.Best, 41, 2, "", extra, false, true,
-			C.RangeFlt, false, false, nil, nil, f, c)
+
+		// initial populations
+		for k, isl := range evo.Islands {
+			pops0[k] = isl.Pop.GetCopy()
+		}
+
+		// run
+		evo.Run()
+
+		// results
+		if false {
+			xbest := []float64{evo.Best.GetFloat(0), evo.Best.GetFloat(1)}
+			io.PfGreen("\nx=%g (%g)\n", xbest[0], ys)
+			io.PfGreen("y=%g (%g)\n", xbest[1], ys)
+		}
+		ova := evo.Best.Ovas[0]
+		if ova > 0 {
+			io.PfRed("BestOV=%g (%g)\n", ova, le)
+		} else if math.Abs(ova)-0.25 < 0.1 {
+			io.Pforan("BestOV=%g (%g)\n", ova, le)
+		} else {
+			io.PfGreen("BestOV=%g (%g)\n", ova, le)
+		}
+		//io.Pf("%v\n", evo.Islands[0].Pop.Output(C))
+
+		// plot contour
+		if C.DoPlot {
+			extra := func() {
+				plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
+				for k := 1; k < C.Nisl; k++ {
+					for _, ind := range pops0[k] {
+						v := ind.GetFloats()
+						plt.PlotOne(v[0], v[1], "'k.', zorder=20, clip_on=0")
+					}
+					for _, ind := range evo.Islands[k].Pop {
+						v := ind.GetFloats()
+						plt.PlotOne(v[0], v[1], "'ko', ms=6, zorder=30, clip_on=0, markerfacecolor='none'")
+					}
+				}
+			}
+			PlotTwoVarsContour("/tmp/goga", io.Sf("contour_evo03_%02d", i), pops0[0], evo.Islands[0].Pop, evo.Best, 41, 2, "", extra, false, true,
+				C.RangeFlt, false, false, nil, nil, f, c)
+		}
 	}
 }
 
@@ -379,7 +429,7 @@ func Test_evo05(tst *testing.T) {
 	C.Ninds = 12
 	C.GAtype = "crowd"
 	//C.GAtype = "sharing"
-	C.CrowdSize = 3
+	C.CrowdSize = 2
 	C.ParetoPhi = 0.01
 	C.Noise = 0.05
 	C.DoPlot = false
