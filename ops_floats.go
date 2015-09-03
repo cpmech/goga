@@ -202,13 +202,16 @@ func FltCrossoverDeb(a, b, A, B []float64, time int, ops *OpsData) (ends []int) 
 func FltMutationDeb(A []float64, time int, ops *OpsData) {
 
 	// check
-	chk.IntAssert(len(ops.Xrange), len(A))
+	size := len(A)
+	chk.IntAssert(len(ops.Xrange), size)
 
-	// copy only
+	// no mutation
+	if !rnd.FlipCoin(ops.Pm) || size < 1 {
+		return
+	}
 
 	// TODO: fix this
 
-	size := len(A)
 	//t := float64(time)
 	//r := 1.0 / float64(size)
 	//pm := r + (1.0-r)*t/ops.Tmax
