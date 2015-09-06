@@ -181,10 +181,13 @@ func Test_evo03(tst *testing.T) {
 	C.Pll = false
 	C.Nisl = 4
 	C.Ninds = 12
-	C.Ntrials = 20
+	C.Ntrials = 1
+	if chk.Verbose {
+		C.Ntrials = 40
+	}
 	C.Verbose = false
 	C.Dtmig = 50
-	C.Ops.Pm = 0.01
+	C.Ops.Pm = 0.1
 	C.CrowdSize = 2
 	C.ParetoPhi = 0
 	//C.GAtype = "std"
