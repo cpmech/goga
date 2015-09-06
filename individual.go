@@ -169,17 +169,25 @@ func (o Individual) CopyInto(x *Individual) {
 
 // IndCompareDet compares individual 'A' with another one 'B'. Deterministic method
 func IndCompareDet(A, B *Individual) (A_dominates, B_dominates bool) {
-	var A_is_unfeasible, B_is_unfeasible bool
+	var A_nviolations, B_nviolations int
 	for i := 0; i < len(A.Oors); i++ {
 		if A.Oors[i] > 0 {
-			A_is_unfeasible = true
+			A_nviolations++
 		}
 		if B.Oors[i] > 0 {
-			B_is_unfeasible = true
+			B_nviolations++
 		}
 	}
-	if A_is_unfeasible {
-		if B_is_unfeasible {
+	if A_nviolations > 0 {
+		if B_nviolations > 0 {
+			if A_nviolations < B_nviolations {
+				A_dominates = true
+				return
+			}
+			if B_nviolations < A_nviolations {
+				B_dominates = true
+				return
+			}
 			A_dominates, B_dominates = utl.DblsParetoMin(A.Oors, B.Oors)
 			if !A_dominates && !B_dominates {
 				A_dominates, B_dominates = utl.DblsParetoMin(A.Ovas, B.Ovas)
@@ -189,7 +197,7 @@ func IndCompareDet(A, B *Individual) (A_dominates, B_dominates bool) {
 		B_dominates = true
 		return
 	}
-	if B_is_unfeasible {
+	if B_nviolations > 0 {
 		A_dominates = true
 		return
 	}
