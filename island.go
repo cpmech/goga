@@ -305,16 +305,40 @@ func (o *Island) update_crowding(time int) {
 	for _, crowd := range o.crowds {
 
 		// crossover, mutation and new objective values
-		for k := 0; k < n; k += 2 { // NOTE: for odd crowd_size, one child is overwritten
-			i, j := k, (k+1)%n
-			I, J := crowd[i], crowd[j]
-			A, B := o.Pop[I], o.Pop[J]
-			a, b := o.Bkp[I], o.Bkp[J]
-			IndCrossover(a, b, A, B, time, &o.C.Ops)
-			IndMutation(a, time, &o.C.Ops)
-			IndMutation(b, time, &o.C.Ops)
-			o.C.OvaOor(a, o.Id, time+1, &o.Report)
-			o.C.OvaOor(b, o.Id, time+1, &o.Report)
+		if o.C.DiffEvol {
+			nflts := o.Pop[0].Nfltgenes * o.Pop[0].Nbases
+			srand := rnd.Int(0, nflts-1)
+			var x float64
+			for r := 0; r < 4; r++ {
+				i, j, k, l := r, (r+1)%4, (r+2)%4, (r+3)%4
+				A := o.Pop[crowd[i]]
+				B := o.Pop[crowd[j]]
+				C := o.Pop[crowd[k]]
+				D := o.Pop[crowd[l]]
+				a := o.Bkp[crowd[i]]
+				for s := 0; s < nflts; s++ {
+					if rnd.FlipCoin(0.1) || s == srand {
+						x = B.Floats[s] + 0.5*(C.Floats[s]+D.Floats[s])
+					} else {
+						x = A.Floats[s]
+					}
+					a.Floats[s] = o.C.Ops.EnforceRange(s, x)
+				}
+				IndMutation(a, time, &o.C.Ops)
+				o.C.OvaOor(a, o.Id, time+1, &o.Report)
+			}
+		} else {
+			for k := 0; k < n; k += 2 { // NOTE: for odd crowd_size, one child is overwritten
+				i, j := k, (k+1)%n
+				I, J := crowd[i], crowd[j]
+				A, B := o.Pop[I], o.Pop[J]
+				a, b := o.Bkp[I], o.Bkp[J]
+				IndCrossover(a, b, A, B, time, &o.C.Ops)
+				IndMutation(a, time, &o.C.Ops)
+				IndMutation(b, time, &o.C.Ops)
+				o.C.OvaOor(a, o.Id, time+1, &o.Report)
+				o.C.OvaOor(b, o.Id, time+1, &o.Report)
+			}
 		}
 
 		// compute distances

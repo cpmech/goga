@@ -196,6 +196,7 @@ func Test_evo03(tst *testing.T) {
 	//C.GAtype = "std"
 	C.GAtype = "crowd"
 	//C.GAtype = "sharing"
+	C.DiffEvol = false
 	C.Elite = false
 	C.RangeFlt = [][]float64{
 		{-1, 3}, // gene # 0: min and max

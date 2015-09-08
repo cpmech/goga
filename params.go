@@ -47,6 +47,7 @@ type ConfParams struct {
 	CrowdSize int     // crowd size
 	ParetoPhi float64 // φ coefficient for probabilistic Pareto comparison
 	CompProb  bool    // use probabilistic comparision in crowding
+	DiffEvol  bool    // use differential evolution-like crossover
 
 	// sharing
 	ShSize float64 // sharing sample size. percentage of Ninds; e.g. 0.1
@@ -141,6 +142,7 @@ func (o *ConfParams) SetDefault() {
 	o.CrowdSize = 2
 	o.ParetoPhi = 0
 	o.CompProb = false
+	o.DiffEvol = false
 
 	// sharing
 	o.ShSize = 0.5
@@ -207,6 +209,9 @@ func (o *ConfParams) SetIntOrd(nstations int) {
 // CalcDerived calculates derived quantities
 func (o *ConfParams) CalcDerived() {
 	o.Ops.CalcDerived(o.Tf, o.RangeFlt)
+	if o.DiffEvol {
+		o.CrowdSize = 4
+	}
 }
 
 // NewConfParams returns a new ConfParams structure, with default values set
