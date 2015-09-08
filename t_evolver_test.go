@@ -191,7 +191,8 @@ func Test_evo03(tst *testing.T) {
 	C.Dtmig = 50
 	C.Ops.Pm = 0.1
 	C.CrowdSize = 2
-	C.ParetoPhi = 0
+	C.ParetoPhi = 1.0
+	C.CompProb = false
 	//C.GAtype = "std"
 	C.GAtype = "crowd"
 	//C.GAtype = "sharing"
@@ -204,7 +205,9 @@ func Test_evo03(tst *testing.T) {
 	C.PopFltGen = PopFltGen
 	if chk.Verbose {
 		C.FnKey = "" //"test_evo03"
-		C.DoPlot = false
+		if C.Ntrials == 1 {
+			C.DoPlot = true
+		}
 	}
 	//C.SetBlxMwicz()
 	//C.SetNbasesFixOp(8)
@@ -437,6 +440,7 @@ func Test_evo05(tst *testing.T) {
 	//C.GAtype = "sharing"
 	C.CrowdSize = 2
 	C.ParetoPhi = 0.01
+	C.CompProb = true
 	C.Elite = false
 	C.Noise = 0.05
 	C.DoPlot = false

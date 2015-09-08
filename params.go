@@ -46,6 +46,7 @@ type ConfParams struct {
 	GAtype    string  // type of GA; e.g. "std", "crowd", "sharing"
 	CrowdSize int     // crowd size
 	ParetoPhi float64 // φ coefficient for probabilistic Pareto comparison
+	CompProb  bool    // use probabilistic comparision in crowding
 
 	// sharing
 	ShSize float64 // sharing sample size. percentage of Ninds; e.g. 0.1
@@ -139,6 +140,7 @@ func (o *ConfParams) SetDefault() {
 	o.GAtype = "crowd"
 	o.CrowdSize = 2
 	o.ParetoPhi = 0
+	o.CompProb = false
 
 	// sharing
 	o.ShSize = 0.5

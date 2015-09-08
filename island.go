@@ -316,7 +316,11 @@ func (o *Island) update_crowding(time int) {
 		for i := 0; i < n; i++ {
 			j := o.match.Links[i]
 			A, a := o.Pop[crowd[i]], o.Bkp[crowd[j]]
-			if true {
+			if o.C.CompProb {
+				if IndCompareProb(A, a, o.C.ParetoPhi) {
+					A.CopyInto(a) // parent wins
+				}
+			} else {
 				A_dominates, B_dominates := IndCompareDet(A, a)
 				if A_dominates {
 					A.CopyInto(a) // parent wins
@@ -326,10 +330,6 @@ func (o *Island) update_crowding(time int) {
 					if rnd.FlipCoin(0.5) {
 						A.CopyInto(a) // parent wins by chance
 					}
-				}
-			} else {
-				if IndCompareProb(A, a, o.C.ParetoPhi) {
-					A.CopyInto(a) // parent wins
 				}
 			}
 		}
