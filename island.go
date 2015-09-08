@@ -27,8 +27,6 @@ type Island struct {
 
 	// results
 	Report   bytes.Buffer // buffer to report results
-	Nova     int          // number of ovas
-	Noor     int          // number of oors
 	OutOvas  [][]float64  // [nova][ntimes] best objective values collected from multiple calls to SelectReprodAndRegen
 	OutOors  [][]float64  // [noor][ntimes] best out-of-range values collected from multiple calls to SelectReprodAndRegen
 	OutTimes []float64    // [ntimes] times corresponding to OutOvas and OutOors
@@ -61,7 +59,7 @@ type Island struct {
 }
 
 // NewIsland creates a new island
-func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
+func NewIsland(id int, C *ConfParams) (o *Island) {
 
 	// check
 	if C.Ninds < 2 || (C.Ninds%2 != 0) {
@@ -78,22 +76,22 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 
 	// create population
 	if o.C.PopIntGen != nil {
-		o.Pop = o.C.PopIntGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.NumInts, o.C.RangeInt)
+		o.Pop = o.C.PopIntGen(id, o.C, o.C.NumInts, o.C.RangeInt)
 	}
 	if o.C.PopFltGen != nil {
-		o.Pop = o.C.PopFltGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.RangeFlt)
+		o.Pop = o.C.PopFltGen(id, o.C, o.C.RangeFlt)
 	}
 	if o.C.PopStrGen != nil {
-		o.Pop = o.C.PopStrGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolStr)
+		o.Pop = o.C.PopStrGen(id, o.C, o.C.PoolStr)
 	}
 	if o.C.PopKeyGen != nil {
-		o.Pop = o.C.PopKeyGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolKey)
+		o.Pop = o.C.PopKeyGen(id, o.C, o.C.PoolKey)
 	}
 	if o.C.PopBytGen != nil {
-		o.Pop = o.C.PopBytGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolByt)
+		o.Pop = o.C.PopBytGen(id, o.C, o.C.PoolByt)
 	}
 	if o.C.PopFunGen != nil {
-		o.Pop = o.C.PopFunGen(id, o.C.Ninds, nova, noor, o.C.Nbases, o.C.Noise, o.C.PoolFun)
+		o.Pop = o.C.PopFunGen(id, o.C, o.C.PoolFun)
 	}
 	if len(o.Pop) != o.C.Ninds {
 		chk.Panic("generation of population failed:\nat least one generator function in Params must be non nil")
@@ -103,16 +101,14 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 	o.Bkp = o.Pop.GetCopy()
 
 	// auxiliary data
-	o.Nova = len(o.Pop[0].Ovas)
-	o.Noor = len(o.Pop[0].Oors)
-	o.ovamin = make([]float64, o.Nova)
-	o.ovamax = make([]float64, o.Nova)
-	o.oormin = make([]float64, o.Noor)
-	o.oormax = make([]float64, o.Noor)
-	o.ovas = la.MatAlloc(o.Nova, o.C.Ninds)
-	o.oors = la.MatAlloc(o.Noor, o.C.Ninds)
-	o.sovas = la.MatAlloc(o.Nova, o.C.Ninds)
-	o.soors = la.MatAlloc(o.Noor, o.C.Ninds)
+	o.ovamin = make([]float64, o.C.Nova)
+	o.ovamax = make([]float64, o.C.Nova)
+	o.oormin = make([]float64, o.C.Noor)
+	o.oormax = make([]float64, o.C.Noor)
+	o.ovas = la.MatAlloc(o.C.Nova, o.C.Ninds)
+	o.oors = la.MatAlloc(o.C.Noor, o.C.Ninds)
+	o.sovas = la.MatAlloc(o.C.Nova, o.C.Ninds)
+	o.soors = la.MatAlloc(o.C.Noor, o.C.Ninds)
 	o.fitness = make([]float64, o.C.Ninds)
 	o.prob = make([]float64, o.C.Ninds)
 	o.cumprob = make([]float64, o.C.Ninds)
@@ -125,13 +121,13 @@ func NewIsland(id, nova, noor int, C *ConfParams) (o *Island) {
 	o.CalcDemeritsAndSort(o.Pop)
 
 	// results
-	o.OutOvas = la.MatAlloc(o.Nova, o.C.Tf)
-	o.OutOors = la.MatAlloc(o.Noor, o.C.Tf)
+	o.OutOvas = la.MatAlloc(o.C.Nova, o.C.Tf)
+	o.OutOors = la.MatAlloc(o.C.Noor, o.C.Tf)
 	o.OutTimes = make([]float64, o.C.Tf)
-	for i := 0; i < o.Nova; i++ {
+	for i := 0; i < o.C.Nova; i++ {
 		o.OutOvas[i][0] = o.Pop[0].Ovas[i]
 	}
-	for i := 0; i < o.Noor; i++ {
+	for i := 0; i < o.C.Noor; i++ {
 		o.OutOors[i][0] = o.Pop[0].Oors[i]
 	}
 
@@ -170,29 +166,29 @@ func (o *Island) CalcOvs(pop Population, time int) {
 // CalcDemeritsAndSort computes demerits and sort population
 func (o *Island) CalcDemeritsAndSort(pop Population) {
 	for i, ind := range pop {
-		for j := 0; j < o.Nova; j++ {
+		for j := 0; j < o.C.Nova; j++ {
 			o.ovas[j][i] = ind.Ovas[j]
 		}
-		for j := 0; j < o.Noor; j++ {
+		for j := 0; j < o.C.Noor; j++ {
 			o.oors[j][i] = ind.Oors[j]
 		}
 	}
-	for i := 0; i < o.Nova; i++ {
+	for i := 0; i < o.C.Nova; i++ {
 		o.ovamin[i], o.ovamax[i] = utl.Scaling(o.sovas[i], o.ovas[i], 0, 1e-16, false, true)
 	}
-	for i := 0; i < o.Noor; i++ {
+	for i := 0; i < o.C.Noor; i++ {
 		o.oormin[i], o.oormax[i] = utl.Scaling(o.soors[i], o.oors[i], 0, 1e-16, false, true)
 	}
 	for i, ind := range pop {
 		ind.Demerit = 0
-		for j := 0; j < o.Nova; j++ {
+		for j := 0; j < o.C.Nova; j++ {
 			ind.Demerit += o.sovas[j][i]
 		}
 	}
 	shift := 2.0
 	for i, ind := range pop {
 		firstOor := true
-		for j := 0; j < o.Noor; j++ {
+		for j := 0; j < o.C.Noor; j++ {
 			if ind.Oors[j] > 0 {
 				if firstOor {
 					ind.Demerit = shift
@@ -262,10 +258,10 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 	}
 
 	// results
-	for i := 0; i < o.Nova; i++ {
+	for i := 0; i < o.C.Nova; i++ {
 		o.OutOvas[i][time] = o.Pop[0].Ovas[i]
 	}
-	for i := 0; i < o.Noor; i++ {
+	for i := 0; i < o.C.Noor; i++ {
 		o.OutOors[i][time] = o.Pop[0].Oors[i]
 	}
 	o.OutTimes[time] = float64(time)
@@ -542,10 +538,10 @@ func (o *Island) calc_sharing(idxind int) (sh float64) {
 			d = IndDistance(A, B)
 		} else {
 			dova, door = 0, 0
-			for i := 0; i < o.Nova; i++ {
+			for i := 0; i < o.C.Nova; i++ {
 				dova += math.Pow((A.Ovas[i]-B.Ovas[i])/(1+o.ovamax[i]-o.ovamin[i]), 2.0)
 			}
-			for i := 0; i < o.Noor; i++ {
+			for i := 0; i < o.C.Noor; i++ {
 				door += math.Pow((A.Oors[i]-B.Oors[i])/(1+o.oormax[i]-o.oormin[i]), 2.0)
 			}
 			d = math.Sqrt(dova) + math.Sqrt(door)

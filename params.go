@@ -14,14 +14,18 @@ import (
 // ConfParams is an auxiliary structure to hold configuration parameters for setting the GA up
 type ConfParams struct {
 
+	// essential
+	Nova   int // number of objective values
+	Noor   int // number of out-of-range variables
+	Nbases int // number of bases in chromosome
+
 	// initialisation
-	Seed   int     // seed to initialise random numbers generator. Seed ≤ 0 means use current time
-	Pll    bool    // allow running islands in parallel (go-routines)
-	Nisl   int     // number of islands
-	Ninds  int     // number of individuals: population size
-	Nbases int     // number of bases in chromosome
-	Grid   bool    // generate individuals based on grid
-	Noise  float64 // apply noise when generate based on grid (if Noise > 0)
+	Seed  int     // seed to initialise random numbers generator. Seed ≤ 0 means use current time
+	Pll   bool    // allow running islands in parallel (go-routines)
+	Nisl  int     // number of islands
+	Ninds int     // number of individuals: population size
+	Grid  bool    // generate individuals based on grid
+	Noise float64 // apply noise when generate based on grid (if Noise > 0)
 
 	// time control
 	Tf    int // number of generations
@@ -100,12 +104,16 @@ type ConfParams struct {
 // SetDefault sets default parameters
 func (o *ConfParams) SetDefault() {
 
+	// essential
+	o.Nova = 1
+	o.Noor = 0
+	o.Nbases = 1
+
 	// initialisation
 	o.Seed = 0
 	o.Pll = true
 	o.Nisl = 4
 	o.Ninds = 20
-	o.Nbases = 1
 	o.Grid = true
 	o.Noise = 0.1
 

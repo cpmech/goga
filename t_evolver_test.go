@@ -29,6 +29,8 @@ func Test_evo01(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
+	C.Nova = 1
+	C.Noor = 0
 	C.Nisl = 1
 	C.Ninds = 20
 	C.RegTol = 0
@@ -57,14 +59,14 @@ func Test_evo01(tst *testing.T) {
 	}
 
 	// generation function
-	C.PopIntGen = func(id, ninds, nova, noor, nbases int, noise float64, nvals int, dummy [][]int) Population {
-		o := make([]*Individual, ninds)
+	C.PopIntGen = func(id int, cc *ConfParams, nvals int, dummy [][]int) Population {
+		o := make([]*Individual, cc.Ninds)
 		genes := make([]int, nvals)
-		for i := 0; i < ninds; i++ {
+		for i := 0; i < cc.Ninds; i++ {
 			for j := 0; j < nvals; j++ {
 				genes[j] = rand.Intn(2)
 			}
-			o[i] = NewIndividual(nova, noor, nbases, genes)
+			o[i] = NewIndividual(cc.Nova, cc.Noor, cc.Nbases, genes)
 		}
 		return o
 	}
@@ -87,9 +89,7 @@ func Test_evo01(tst *testing.T) {
 	}
 
 	// run optimisation
-	nova := 1
-	noor := 0
-	evo := NewEvolver(nova, noor, C)
+	evo := NewEvolver(C)
 	evo.Run()
 
 	// results
@@ -108,6 +108,8 @@ func Test_evo02(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
+	C.Nova = 1
+	C.Noor = 5
 	C.Pll = false
 	C.Nisl = 1
 	C.Ninds = 20
@@ -151,9 +153,7 @@ func Test_evo02(tst *testing.T) {
 	}
 
 	// evolver
-	nova := 1
-	noor := 5
-	evo := NewEvolver(nova, noor, C)
+	evo := NewEvolver(C)
 	pop0 := evo.Islands[0].Pop.GetCopy()
 	evo.Run()
 
@@ -178,6 +178,8 @@ func Test_evo03(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
+	C.Nova = 1
+	C.Noor = 1
 	C.Pll = false
 	C.Nisl = 4
 	C.Ninds = 12
@@ -239,9 +241,7 @@ func Test_evo03(tst *testing.T) {
 	}
 
 	// evolver
-	nova := 1
-	noor := 1
-	evo := NewEvolver(nova, noor, C)
+	evo := NewEvolver(C)
 
 	// run ntrials times
 	pops0 := make([]Population, C.Nisl)
@@ -312,6 +312,8 @@ func Test_evo04(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
+	C.Nova = 1
+	C.Noor = 0
 	C.Nisl = 1
 	C.Ninds = 20
 	C.RegTol = 0.3
@@ -345,9 +347,7 @@ func Test_evo04(tst *testing.T) {
 	}
 
 	// evolver
-	nova := 1
-	noor := 0
-	evo := NewEvolver(nova, noor, C)
+	evo := NewEvolver(C)
 
 	// print initial population
 	pop := evo.Islands[0].Pop
@@ -428,6 +428,8 @@ func Test_evo05(tst *testing.T) {
 
 	// configuration
 	C := NewConfParams()
+	C.Nova = 1
+	C.Noor = 2
 	C.Nisl = 4
 	C.Ninds = 12
 	C.GAtype = "crowd"
@@ -472,9 +474,7 @@ func Test_evo05(tst *testing.T) {
 	}
 
 	// run
-	nova := 1
-	noor := 2
-	evo := NewEvolver(nova, noor, C)
+	evo := NewEvolver(C)
 	evo.Run()
 
 	// print population
@@ -534,6 +534,8 @@ func Test_evo06(tst *testing.T) {
 
 	// configuration
 	C := NewConfParams()
+	C.Nova = 2
+	C.Noor = 2
 	C.Nisl = 4
 	C.Ninds = 24
 	C.GAtype = "crowd"
@@ -591,9 +593,7 @@ func Test_evo06(tst *testing.T) {
 	}
 
 	// run
-	nova := 2
-	noor := 2
-	evo := NewEvolver(nova, noor, C)
+	evo := NewEvolver(C)
 	evo.Run()
 
 	// results

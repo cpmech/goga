@@ -19,29 +19,29 @@ import (
 type Population []*Individual
 
 // PopBinGen generates a population of binary numbers [0,1]
-func PopBinGen(id, ninds, nova, noor, nbases int, noise float64, nints int, unused [][]int) Population {
-	pop := make([]*Individual, ninds)
+func PopBinGen(id int, C *ConfParams, nints int, unused [][]int) Population {
+	pop := make([]*Individual, C.Ninds)
 	genes := make([]int, nints)
-	for i := 0; i < ninds; i++ {
+	for i := 0; i < C.Ninds; i++ {
 		for j := 0; j < nints; j++ {
 			genes[j] = rand.Intn(2)
 		}
-		pop[i] = NewIndividual(nova, noor, nbases, genes)
+		pop[i] = NewIndividual(C.Nova, C.Noor, C.Nbases, genes)
 	}
 	return pop
 }
 
 // PopFltGen generates a population of individuals with float point numbers
 // Notes: (1) ngenes = len(frange)
-func PopFltGen(id, ninds, nova, noor, nbases int, noise float64, frange [][]float64) Population {
-	o := make([]*Individual, ninds)
+func PopFltGen(id int, C *ConfParams, frange [][]float64) Population {
+	o := make([]*Individual, C.Ninds)
 	ngenes := len(frange)
-	for i := 0; i < ninds; i++ {
-		o[i] = NewIndividual(nova, noor, nbases, make([]float64, ngenes))
+	for i := 0; i < C.Ninds; i++ {
+		o[i] = NewIndividual(C.Nova, C.Noor, C.Nbases, make([]float64, ngenes))
 	}
-	npts := int(math.Pow(float64(ninds), 1.0/float64(ngenes))) // num points in 'square' grid
-	ntot := int(math.Pow(float64(npts), float64(ngenes)))      // total num of individuals in grid
-	den := 1.0                                                 // denominator to calculate dx
+	npts := int(math.Pow(float64(C.Ninds), 1.0/float64(ngenes))) // num points in 'square' grid
+	ntot := int(math.Pow(float64(npts), float64(ngenes)))        // total num of individuals in grid
+	den := 1.0                                                   // denominator to calculate dx
 	if npts > 1 {
 		den = float64(npts - 1)
 	}
@@ -49,7 +49,7 @@ func PopFltGen(id, ninds, nova, noor, nbases int, noise float64, frange [][]floa
 	var rdim int // reduced dimension, e.g. (nx*ny)
 	var idx int  // index of gene in grid
 	var dx, x, mul, xmin, xmax float64
-	for i := 0; i < ninds; i++ {
+	for i := 0; i < C.Ninds; i++ {
 		if i < ntot { // on grid
 			lfto = i
 			for j := 0; j < ngenes; j++ {
@@ -60,8 +60,8 @@ func PopFltGen(id, ninds, nova, noor, nbases int, noise float64, frange [][]floa
 				xmax = frange[j][1]
 				dx = xmax - xmin
 				x = xmin + float64(idx+id)*dx/den
-				if noise > 0 {
-					mul = rnd.Float64(0, noise)
+				if C.Noise > 0 {
+					mul = rnd.Float64(0, C.Noise)
 					if rnd.FlipCoin(0.5) {
 						x += mul * x
 					} else {
@@ -90,11 +90,11 @@ func PopFltGen(id, ninds, nova, noor, nbases int, noise float64, frange [][]floa
 
 // PopOrdGen generates a population of individuals with ordered integers
 // Notes: (1) ngenes = len(frange)
-func PopOrdGen(id, ninds, nova, noor, nbases int, noise float64, nints int, unused [][]int) Population {
-	o := make([]*Individual, ninds)
+func PopOrdGen(id int, C *ConfParams, nints int, unused [][]int) Population {
+	o := make([]*Individual, C.Ninds)
 	ngenes := nints
-	for i := 0; i < ninds; i++ {
-		o[i] = NewIndividual(nova, noor, nbases, make([]int, ngenes))
+	for i := 0; i < C.Ninds; i++ {
+		o[i] = NewIndividual(C.Nova, C.Noor, C.Nbases, make([]int, ngenes))
 		for j := 0; j < nints; j++ {
 			o[i].Ints[j] = j
 		}

@@ -30,6 +30,8 @@ func Test_island01(tst *testing.T) {
 	// parameters
 	C := NewConfParams()
 	C.Ninds = len(genes)
+	C.Nova = 2
+	C.Noor = 3
 	C.Nbases = 1
 	C.Rnk = false
 	C.RangeFlt = [][]float64{
@@ -40,10 +42,10 @@ func Test_island01(tst *testing.T) {
 	C.CalcDerived()
 
 	// generator
-	C.PopFltGen = func(id, ninds, nova, noor, nbases int, noise float64, frange [][]float64) Population {
-		o := make([]*Individual, ninds)
-		for i := 0; i < ninds; i++ {
-			o[i] = NewIndividual(nova, noor, nbases, genes[i])
+	C.PopFltGen = func(id int, cc *ConfParams, frange [][]float64) Population {
+		o := make([]*Individual, cc.Ninds)
+		for i := 0; i < cc.Ninds; i++ {
+			o[i] = NewIndividual(cc.Nova, cc.Noor, cc.Nbases, genes[i])
 		}
 		return o
 	}
@@ -72,9 +74,7 @@ func Test_island01(tst *testing.T) {
 
 	// island
 	id := 0
-	nova := 2
-	noor := 3
-	isl := NewIsland(id, nova, noor, C)
+	isl := NewIsland(id, C)
 	io.Pf("\n%v", isl.Pop.Output(C))
 	io.Pf("best = %v\n", isl.Pop[0].Output(nil, false))
 	vals := make([]float64, 3)

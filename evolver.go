@@ -18,12 +18,12 @@ type Evolver struct {
 }
 
 // NewEvolverPop creates a new evolver based on given populations
-func NewEvolver(nova, noor int, C *ConfParams) (o *Evolver) {
+func NewEvolver(C *ConfParams) (o *Evolver) {
 	o = new(Evolver)
 	o.C = C
 	o.Islands = make([]*Island, o.C.Nisl)
 	for i := 0; i < o.C.Nisl; i++ {
-		o.Islands[i] = NewIsland(i, nova, noor, o.C)
+		o.Islands[i] = NewIsland(i, o.C)
 	}
 	o.Best = o.Islands[0].Pop[0]
 	return
@@ -182,7 +182,7 @@ func (o *Evolver) Run() {
 // ResetAllPop resets/re-generates all populations in all islands
 func (o *Evolver) ResetAllPop() {
 	for id, isl := range o.Islands {
-		isl.Pop = o.C.PopFltGen(id, o.C.Ninds, isl.Nova, isl.Noor, o.C.Nbases, o.C.Noise, o.C.RangeFlt)
+		isl.Pop = o.C.PopFltGen(id, o.C, o.C.RangeFlt)
 		isl.CalcOvs(isl.Pop, 0)
 		isl.CalcDemeritsAndSort(isl.Pop)
 	}
@@ -226,16 +226,14 @@ func (o *Evolver) GetFeasible() (feasible []*Individual) {
 //   ovas -- [len(subset)][nova] objective values
 //   oors -- [len(subset)][noor] out-of-range values
 func (o *Evolver) GetResults(subset []*Individual) (ovas, oors [][]float64) {
-	nova := o.Islands[0].Nova
-	noor := o.Islands[0].Noor
 	ninds := len(subset)
-	ovas = utl.DblsAlloc(ninds, nova)
-	oors = utl.DblsAlloc(ninds, noor)
+	ovas = utl.DblsAlloc(ninds, o.C.Nova)
+	oors = utl.DblsAlloc(ninds, o.C.Noor)
 	for i, ind := range subset {
-		for j := 0; j < nova; j++ {
+		for j := 0; j < o.C.Nova; j++ {
 			ovas[i][j] = ind.Ovas[j]
 		}
-		for j := 0; j < noor; j++ {
+		for j := 0; j < o.C.Noor; j++ {
 			oors[i][j] = ind.Oors[j]
 		}
 	}
