@@ -218,6 +218,15 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 	o.Pop, o.Bkp = o.Bkp, o.Pop
 	o.CalcDemeritsAndSort(o.Pop)
 
+	// elitism
+	if o.C.Elite {
+		prev_best, cur_worst := o.Bkp[0], o.Pop[o.C.Ninds-1]
+		prev_dominates, _ := IndCompareDet(prev_best, cur_worst)
+		if prev_dominates {
+			prev_best.CopyInto(cur_worst)
+		}
+	}
+
 	// statistics and regeneration of float-point individuals
 	var averho float64
 	if o.Pop[0].Nfltgenes > 0 {
@@ -386,15 +395,6 @@ func (o *Island) update_sharing(time int) {
 
 	// compute objective values
 	o.CalcOvs(o.Bkp, time+1) // +1 => this is an updated generation
-
-	// elitism
-	if o.C.Elite {
-		iold, inew := o.Pop[0], o.Bkp[o.C.Ninds-1]
-		old_dominates, _ := IndCompareDet(iold, inew)
-		if old_dominates {
-			iold.CopyInto(inew)
-		}
-	}
 }
 
 // update_standard performs the selection, reproduction and regeneration processes
@@ -451,15 +451,6 @@ func (o *Island) update_standard(time int) {
 
 	// compute objective values
 	o.CalcOvs(o.Bkp, time+1) // +1 => this is an updated generation
-
-	// elitism
-	if o.C.Elite {
-		iold, inew := o.Pop[0], o.Bkp[o.C.Ninds-1]
-		old_dominates, _ := IndCompareDet(iold, inew)
-		if old_dominates {
-			iold.CopyInto(inew)
-		}
-	}
 }
 
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////

@@ -436,6 +436,7 @@ func Test_evo05(tst *testing.T) {
 	//C.GAtype = "sharing"
 	C.CrowdSize = 2
 	C.ParetoPhi = 0.01
+	C.Elite = false
 	C.Noise = 0.05
 	C.DoPlot = false
 	C.RegTol = 0
@@ -538,9 +539,10 @@ func Test_evo06(tst *testing.T) {
 	C.Noor = 2
 	C.Nisl = 4
 	C.Ninds = 24
+	//C.GAtype = "std"
 	C.GAtype = "crowd"
 	//C.GAtype = "sharing"
-	//C.Elite = true
+	C.Elite = true
 	C.CrowdSize = 2
 	C.ParetoPhi = 0.05
 	C.ShAlp = 0.5
