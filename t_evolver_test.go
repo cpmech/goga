@@ -195,11 +195,12 @@ func Test_evo03(tst *testing.T) {
 	//C.GAtype = "std"
 	C.GAtype = "crowd"
 	//C.GAtype = "sharing"
-	C.Elite = true
+	C.Elite = false
 	C.RangeFlt = [][]float64{
 		{-1, 3}, // gene # 0: min and max
 		{-1, 3}, // gene # 1: min and max
 	}
+	C.Latin = true
 	C.PopFltGen = PopFltGen
 	if chk.Verbose {
 		C.FnKey = "" //"test_evo03"
@@ -555,6 +556,7 @@ func Test_evo06(tst *testing.T) {
 	C.Dtmig = 25
 	C.RangeFlt = [][]float64{{0.1, 2.25}, {0.5, 2.5}}
 	C.PopFltGen = PopFltGen
+	C.Latin = true
 	C.CalcDerived()
 
 	// initialise random numbers generator

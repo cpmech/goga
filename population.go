@@ -54,6 +54,19 @@ func PopFltGen(id int, C *ConfParams) Population {
 	for i := 0; i < C.Ninds; i++ {
 		o[i] = NewIndividual(C.Nova, C.Noor, C.Nbases, make([]float64, ngenes))
 	}
+	if C.Latin {
+		K := rnd.LatinIHS(ngenes, C.Ninds, C.LatinDf)
+		dx := make([]float64, ngenes)
+		for i := 0; i < ngenes; i++ {
+			dx[i] = (C.RangeFlt[i][1] - C.RangeFlt[i][0]) / float64(C.Ninds-1)
+		}
+		for i := 0; i < ngenes; i++ {
+			for j := 0; j < C.Ninds; j++ {
+				o[j].SetFloat(i, C.RangeFlt[i][0]+float64(K[i][j]-1)*dx[i])
+			}
+		}
+		return o
+	}
 	npts := int(math.Pow(float64(C.Ninds), 1.0/float64(ngenes))) // num points in 'square' grid
 	ntot := int(math.Pow(float64(npts), float64(ngenes)))        // total num of individuals in grid
 	den := 1.0                                                   // denominator to calculate dx

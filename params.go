@@ -84,7 +84,9 @@ type ConfParams struct {
 	OvaOor Objectives_t // compute objective value (ova) and out-of-range value (oor)
 
 	// generation of individuals
-	Noise    float64     // apply noise when generate based on grid (if Noise > 0)
+	Latin    bool        // use latin hypercube during generation
+	LatinDf  int         // duplication factor when using latin hypercube
+	Noise    float64     // apply noise when generating based on grid (if Noise > 0)
 	NumInts  int         // number of integers for "ordered" and "binary" populations
 	RangeInt [][]int     // [ngene][2] min and max integers
 	RangeFlt [][]float64 // [ngene][2] min and max float point numbers
@@ -166,6 +168,8 @@ func (o *ConfParams) SetDefault() {
 	o.Check = false
 
 	// generation of individuals
+	o.Latin = true
+	o.LatinDf = 5
 	o.Noise = 0.1
 }
 
