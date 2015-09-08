@@ -160,8 +160,8 @@ func Test_pop03(tst *testing.T) {
 	rnd.Init(0)
 
 	C := NewConfParams()
+	C.NumInts = 7
 
-	nints := 7
-	pop := PopBinGen(0, C, nints, nil)
+	pop := PopBinGen(0, C)
 	io.Pforan("%v\n", pop.Output(C))
 }

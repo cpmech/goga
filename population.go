@@ -19,11 +19,11 @@ import (
 type Population []*Individual
 
 // PopBinGen generates a population of binary numbers [0,1]
-func PopBinGen(id int, C *ConfParams, nints int, unused [][]int) Population {
+func PopBinGen(id int, C *ConfParams) Population {
 	pop := make([]*Individual, C.Ninds)
-	genes := make([]int, nints)
+	genes := make([]int, C.NumInts)
 	for i := 0; i < C.Ninds; i++ {
-		for j := 0; j < nints; j++ {
+		for j := 0; j < C.NumInts; j++ {
 			genes[j] = rand.Intn(2)
 		}
 		pop[i] = NewIndividual(C.Nova, C.Noor, C.Nbases, genes)
@@ -31,11 +31,26 @@ func PopBinGen(id int, C *ConfParams, nints int, unused [][]int) Population {
 	return pop
 }
 
-// PopFltGen generates a population of individuals with float point numbers
-// Notes: (1) ngenes = len(frange)
-func PopFltGen(id int, C *ConfParams, frange [][]float64) Population {
+// PopOrdGen generates a population of individuals with ordered integers
+// Notes: (1) ngenes = C.NumInts
+func PopOrdGen(id int, C *ConfParams) Population {
 	o := make([]*Individual, C.Ninds)
-	ngenes := len(frange)
+	ngenes := C.NumInts
+	for i := 0; i < C.Ninds; i++ {
+		o[i] = NewIndividual(C.Nova, C.Noor, C.Nbases, make([]int, ngenes))
+		for j := 0; j < C.NumInts; j++ {
+			o[i].Ints[j] = j
+		}
+		rnd.IntShuffle(o[i].Ints)
+	}
+	return o
+}
+
+// PopFltGen generates a population of individuals with float point numbers
+// Notes: (1) ngenes = len(C.RangeFlt)
+func PopFltGen(id int, C *ConfParams) Population {
+	o := make([]*Individual, C.Ninds)
+	ngenes := len(C.RangeFlt)
 	for i := 0; i < C.Ninds; i++ {
 		o[i] = NewIndividual(C.Nova, C.Noor, C.Nbases, make([]float64, ngenes))
 	}
@@ -56,8 +71,8 @@ func PopFltGen(id int, C *ConfParams, frange [][]float64) Population {
 				rdim = int(math.Pow(float64(npts), float64(ngenes-1-j)))
 				idx = lfto / rdim
 				lfto = lfto % rdim
-				xmin = frange[j][0]
-				xmax = frange[j][1]
+				xmin = C.RangeFlt[j][0]
+				xmax = C.RangeFlt[j][1]
 				dx = xmax - xmin
 				x = xmin + float64(idx+id)*dx/den
 				if C.Noise > 0 {
@@ -78,27 +93,12 @@ func PopFltGen(id int, C *ConfParams, frange [][]float64) Population {
 			}
 		} else { // additional individuals
 			for j := 0; j < ngenes; j++ {
-				xmin = frange[j][0]
-				xmax = frange[j][1]
+				xmin = C.RangeFlt[j][0]
+				xmax = C.RangeFlt[j][1]
 				x = rnd.Float64(xmin, xmax)
 				o[i].SetFloat(j, x)
 			}
 		}
-	}
-	return o
-}
-
-// PopOrdGen generates a population of individuals with ordered integers
-// Notes: (1) ngenes = len(frange)
-func PopOrdGen(id int, C *ConfParams, nints int, unused [][]int) Population {
-	o := make([]*Individual, C.Ninds)
-	ngenes := nints
-	for i := 0; i < C.Ninds; i++ {
-		o[i] = NewIndividual(C.Nova, C.Noor, C.Nbases, make([]int, ngenes))
-		for j := 0; j < nints; j++ {
-			o[i].Ints[j] = j
-		}
-		rnd.IntShuffle(o[i].Ints)
 	}
 	return o
 }

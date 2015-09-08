@@ -59,11 +59,11 @@ func Test_evo01(tst *testing.T) {
 	}
 
 	// generation function
-	C.PopIntGen = func(id int, cc *ConfParams, nvals int, dummy [][]int) Population {
+	C.PopIntGen = func(id int, cc *ConfParams) Population {
 		o := make([]*Individual, cc.Ninds)
-		genes := make([]int, nvals)
+		genes := make([]int, cc.NumInts)
 		for i := 0; i < cc.Ninds; i++ {
-			for j := 0; j < nvals; j++ {
+			for j := 0; j < cc.NumInts; j++ {
 				genes[j] = rand.Intn(2)
 			}
 			o[i] = NewIndividual(cc.Nova, cc.Noor, cc.Nbases, genes)
@@ -195,7 +195,7 @@ func Test_evo03(tst *testing.T) {
 	//C.GAtype = "std"
 	C.GAtype = "crowd"
 	//C.GAtype = "sharing"
-	//C.Elite = true
+	C.Elite = true
 	C.RangeFlt = [][]float64{
 		{-1, 3}, // gene # 0: min and max
 		{-1, 3}, // gene # 1: min and max

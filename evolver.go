@@ -182,7 +182,7 @@ func (o *Evolver) Run() {
 // ResetAllPop resets/re-generates all populations in all islands
 func (o *Evolver) ResetAllPop() {
 	for id, isl := range o.Islands {
-		isl.Pop = o.C.PopFltGen(id, o.C, o.C.RangeFlt)
+		isl.Pop = o.C.PopFltGen(id, o.C)
 		isl.CalcOvs(isl.Pop, 0)
 		isl.CalcDemeritsAndSort(isl.Pop)
 	}

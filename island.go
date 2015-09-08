@@ -76,22 +76,22 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 
 	// create population
 	if o.C.PopIntGen != nil {
-		o.Pop = o.C.PopIntGen(id, o.C, o.C.NumInts, o.C.RangeInt)
+		o.Pop = o.C.PopIntGen(id, o.C)
 	}
 	if o.C.PopFltGen != nil {
-		o.Pop = o.C.PopFltGen(id, o.C, o.C.RangeFlt)
+		o.Pop = o.C.PopFltGen(id, o.C)
 	}
 	if o.C.PopStrGen != nil {
-		o.Pop = o.C.PopStrGen(id, o.C, o.C.PoolStr)
+		o.Pop = o.C.PopStrGen(id, o.C)
 	}
 	if o.C.PopKeyGen != nil {
-		o.Pop = o.C.PopKeyGen(id, o.C, o.C.PoolKey)
+		o.Pop = o.C.PopKeyGen(id, o.C)
 	}
 	if o.C.PopBytGen != nil {
-		o.Pop = o.C.PopBytGen(id, o.C, o.C.PoolByt)
+		o.Pop = o.C.PopBytGen(id, o.C)
 	}
 	if o.C.PopFunGen != nil {
-		o.Pop = o.C.PopFunGen(id, o.C, o.C.PoolFun)
+		o.Pop = o.C.PopFunGen(id, o.C)
 	}
 	if len(o.Pop) != o.C.Ninds {
 		chk.Panic("generation of population failed:\nat least one generator function in Params must be non nil")

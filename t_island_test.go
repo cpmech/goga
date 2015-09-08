@@ -42,7 +42,7 @@ func Test_island01(tst *testing.T) {
 	C.CalcDerived()
 
 	// generator
-	C.PopFltGen = func(id int, cc *ConfParams, frange [][]float64) Population {
+	C.PopFltGen = func(id int, cc *ConfParams) Population {
 		o := make([]*Individual, cc.Ninds)
 		for i := 0; i < cc.Ninds; i++ {
 			o[i] = NewIndividual(cc.Nova, cc.Noor, cc.Nbases, genes[i])
