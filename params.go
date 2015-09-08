@@ -20,12 +20,10 @@ type ConfParams struct {
 	Nbases int // number of bases in chromosome
 
 	// initialisation
-	Seed  int     // seed to initialise random numbers generator. Seed ≤ 0 means use current time
-	Pll   bool    // allow running islands in parallel (go-routines)
-	Nisl  int     // number of islands
-	Ninds int     // number of individuals: population size
-	Grid  bool    // generate individuals based on grid
-	Noise float64 // apply noise when generate based on grid (if Noise > 0)
+	Seed  int  // seed to initialise random numbers generator. Seed ≤ 0 means use current time
+	Pll   bool // allow running islands in parallel (go-routines)
+	Nisl  int  // number of islands
+	Ninds int  // number of individuals: population size
 
 	// time control
 	Tf    int // number of generations
@@ -48,10 +46,12 @@ type ConfParams struct {
 	GAtype    string  // type of GA; e.g. "std", "crowd", "sharing"
 	CrowdSize int     // crowd size
 	ParetoPhi float64 // φ coefficient for probabilistic Pareto comparison
-	ShSize    float64 // sharing sample size. percentage of Ninds; e.g. 0.1
-	ShAlp     float64 // αshare
-	ShSig     float64 // σshare
-	ShPhen    bool    // use phenotype distance analysis in sharing; otherwise use objective values
+
+	// sharing
+	ShSize float64 // sharing sample size. percentage of Ninds; e.g. 0.1
+	ShAlp  float64 // αshare
+	ShSig  float64 // σshare
+	ShPhen bool    // use phenotype distance analysis in sharing; otherwise use objective values
 
 	// output
 	Verbose   bool       // show messages during optimisation
@@ -84,6 +84,7 @@ type ConfParams struct {
 	OvaOor Objectives_t // compute objective value (ova) and out-of-range value (oor)
 
 	// generation of individuals
+	Noise    float64     // apply noise when generate based on grid (if Noise > 0)
 	NumInts  int         // number of integers for "ordered" and "binary" populations
 	RangeInt [][]int     // [ngene][2] min and max integers
 	RangeFlt [][]float64 // [ngene][2] min and max float point numbers
@@ -114,8 +115,6 @@ func (o *ConfParams) SetDefault() {
 	o.Pll = true
 	o.Nisl = 4
 	o.Ninds = 20
-	o.Grid = true
-	o.Noise = 0.1
 
 	// time control
 	o.Tf = 100
@@ -138,6 +137,8 @@ func (o *ConfParams) SetDefault() {
 	o.GAtype = "crowd"
 	o.CrowdSize = 2
 	o.ParetoPhi = 0
+
+	// sharing
 	o.ShSize = 0.5
 	o.ShAlp = 2.0
 	o.ShSig = 1.0
@@ -153,6 +154,7 @@ func (o *ConfParams) SetDefault() {
 	o.PltTi = 0
 	o.PltTf = -1
 	o.ShowOor = true
+	o.ShowDem = false
 	o.ShowBases = false
 	o.ShowNinds = -1
 
@@ -162,6 +164,9 @@ func (o *ConfParams) SetDefault() {
 	o.Ntrials = 100
 	o.Eps1 = 0.1
 	o.Check = false
+
+	// generation of individuals
+	o.Noise = 0.1
 }
 
 // SetNbases sets number of bases and fixes corresponding operators
