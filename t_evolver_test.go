@@ -189,7 +189,7 @@ func Test_evo03(tst *testing.T) {
 	}
 	C.Verbose = false
 	C.Dtmig = 50
-	C.Ops.Pm = 0.1
+	C.Ops.Pm = 0.01
 	C.CrowdSize = 2
 	C.ParetoPhi = 1.0
 	C.CompProb = false

@@ -244,22 +244,22 @@ func IndCompareProb(A, B *Individual, φ float64) (A_dominates bool) {
 }
 
 // IndDistance computes a distance measure from individual 'A' to another individual 'B'
-func IndDistance(A, B *Individual) (dist float64) {
+func IndDistance(A, B *Individual, imin, imax []int, fmin, fmax []float64) (dist float64) {
 	nints := len(A.Ints)
 	dints := 0.0
 	for i := 0; i < nints; i++ {
-		dints += math.Abs(float64(A.Ints[i] - B.Ints[i]))
+		dints += math.Pow(float64(A.Ints[i]-B.Ints[i])/(1e-15+float64(imax[i]-imin[i])), 2.0)
 	}
 	if nints > 0 {
-		dints /= float64(nints)
+		dints = math.Sqrt(dints)
 	}
 	nflts := len(A.Floats)
 	dflts := 0.0
 	for i := 0; i < nflts; i++ {
-		dflts += math.Abs(A.Floats[i] - B.Floats[i])
+		dflts += math.Pow((A.Floats[i]-B.Floats[i])/(1e-15+fmax[i]-fmin[i]), 2.0)
 	}
 	if nflts > 0 {
-		dflts /= float64(nflts)
+		dflts = math.Sqrt(dflts)
 	}
 	return dints + dflts
 }

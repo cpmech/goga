@@ -56,6 +56,10 @@ type Island struct {
 	crowds  [][]int       // [ninds/crowd_size][crowd_size]
 	dist    [][]float64   // [crowd_size][cowd_size]
 	match   graph.Munkres // matches
+
+	// limits
+	intXmin, intXmax []int     // int genes range
+	fltXmin, fltXmax []float64 // flt genes range
 }
 
 // NewIsland creates a new island
@@ -132,11 +136,11 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	}
 
 	// stat
+	nflts := o.Pop[0].Nfltgenes * o.Pop[0].Nbases
 	if o.Pop[0].Nfltgenes > 0 {
-		size := o.Pop[0].Nfltgenes * o.Pop[0].Nbases
-		o.allbases = la.MatAlloc(size, o.C.Ninds)
-		o.devbases = make([]float64, size)
-		o.larbases = make([]float64, size)
+		o.allbases = la.MatAlloc(nflts, o.C.Ninds)
+		o.devbases = make([]float64, nflts)
+		o.larbases = make([]float64, nflts)
 	}
 
 	// for crowding
@@ -148,6 +152,17 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	o.crowds = utl.IntsAlloc(o.C.Ninds/n, n)
 	o.dist = la.MatAlloc(n, n)
 	o.match.Init(n, n)
+
+	// limits
+	nints := len(o.Pop[0].Ints)
+	if nints > 0 {
+		o.intXmin = make([]int, nints)
+		o.intXmax = make([]int, nints)
+	}
+	if nflts > 0 {
+		o.fltXmin = make([]float64, nflts)
+		o.fltXmax = make([]float64, nflts)
+	}
 	return
 }
 
@@ -282,6 +297,9 @@ func (o *Island) update_crowding(time int) {
 	// select groups (crowds)
 	rnd.IntGetGroups(o.crowds, o.indices)
 
+	// compute float gene limits
+	o.calc_float_lims()
+
 	// run tournaments
 	n := o.C.CrowdSize
 	for _, crowd := range o.crowds {
@@ -304,7 +322,7 @@ func (o *Island) update_crowding(time int) {
 			A := o.Pop[crowd[i]]
 			for j := 0; j < n; j++ {
 				a := o.Bkp[crowd[j]]
-				o.dist[i][j] = IndDistance(A, a)
+				o.dist[i][j] = IndDistance(A, a, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
 			}
 		}
 
@@ -338,6 +356,9 @@ func (o *Island) update_crowding(time int) {
 
 // update_sharing runs the evolutionary process with pareto-niching and sharing
 func (o *Island) update_sharing(time int) {
+
+	// compute float gene limits
+	o.calc_float_lims()
 
 	// selection
 	nsample := int(o.C.ShSize * float64(o.C.Ninds))
@@ -526,7 +547,7 @@ func (o *Island) calc_sharing(idxind int) (sh float64) {
 	var dova, door, d float64
 	for _, B := range o.Pop {
 		if o.C.ShPhen {
-			d = IndDistance(A, B)
+			d = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
 		} else {
 			dova, door = 0, 0
 			for i := 0; i < o.C.Nova; i++ {
@@ -542,4 +563,26 @@ func (o *Island) calc_sharing(idxind int) (sh float64) {
 		}
 	}
 	return
+}
+
+// calc_float_lims find float genes limits
+func (o *Island) calc_float_lims() {
+	for i, ind := range o.Pop {
+		for j, x := range ind.Ints {
+			if i == 0 {
+				o.intXmin[j], o.intXmax[j] = x, x
+			} else {
+				o.intXmin[j] = utl.Imin(o.intXmin[j], x)
+				o.intXmax[j] = utl.Imax(o.intXmax[j], x)
+			}
+		}
+		for j, x := range ind.Floats {
+			if i == 0 {
+				o.fltXmin[j], o.fltXmax[j] = x, x
+			} else {
+				o.fltXmin[j] = utl.Min(o.fltXmin[j], x)
+				o.fltXmax[j] = utl.Max(o.fltXmax[j], x)
+			}
+		}
+	}
 }
