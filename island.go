@@ -318,7 +318,7 @@ func (o *Island) update_crowding(time int) {
 				a := o.Bkp[crowd[i]]
 				for s := 0; s < nflts; s++ {
 					if rnd.FlipCoin(0.1) || s == srand {
-						x = B.Floats[s] + 0.5*(C.Floats[s]+D.Floats[s])
+						x = B.Floats[s] + 0.5*(C.Floats[s]-D.Floats[s])
 					} else {
 						x = A.Floats[s]
 					}
