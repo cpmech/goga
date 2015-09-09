@@ -127,7 +127,7 @@ func (o *ConfParams) SetDefault() {
 	o.Dtmig = 40
 
 	// migration and regeneration
-	o.NmigInd = 4
+	o.NmigInd = 2
 	o.RegTol = 0
 	o.RegPct = 0.2
 	o.UseStdDev = false

@@ -19,7 +19,7 @@ type Evolver struct {
 	Best    *Individual // best individual among all in all islands
 
 	// auxiliary
-	receiveFrom [][]int // indices for migration
+	receiveFrom [][]int // [nisl][nisl-1] indices for migration
 }
 
 // NewEvolverPop creates a new evolver based on given populations
@@ -119,6 +119,9 @@ func (o *Evolver) Run() {
 		}
 
 		// migration
+		if o.C.Verbose {
+			io.Pfyel(" %d", t)
+		}
 		o.std_migration(t)
 	}
 
@@ -276,9 +279,6 @@ func (o *Evolver) std_migration(t int) {
 	}
 
 	// migration
-	if o.C.Verbose {
-		io.Pfyel(" %d", t)
-	}
 	for i, from := range o.receiveFrom {
 		k := 0
 		for _, j := range from {
