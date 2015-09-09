@@ -12,13 +12,20 @@ import (
 
 // Evolver realises the evolutionary process
 type Evolver struct {
+
+	// data
 	C       *ConfParams // configuration parameters
 	Islands []*Island   // islands
 	Best    *Individual // best individual among all in all islands
+
+	// auxiliary
+	receiveFrom [][]int // indices for migration
 }
 
 // NewEvolverPop creates a new evolver based on given populations
 func NewEvolver(C *ConfParams) (o *Evolver) {
+
+	// data
 	o = new(Evolver)
 	o.C = C
 	o.Islands = make([]*Island, o.C.Nisl)
@@ -26,6 +33,9 @@ func NewEvolver(C *ConfParams) (o *Evolver) {
 		o.Islands[i] = NewIsland(i, o.C)
 	}
 	o.Best = o.Islands[0].Pop[0]
+
+	// auxiliary
+	o.receiveFrom = utl.IntsAlloc(o.C.Nisl, o.C.Nisl-1)
 	return
 }
 
@@ -33,11 +43,10 @@ func NewEvolver(C *ConfParams) (o *Evolver) {
 func (o *Evolver) Run() {
 
 	// check
-	nislands := len(o.Islands)
-	if nislands < 1 {
+	if o.C.Nisl < 1 {
 		return
 	}
-	if o.C.Ninds < nislands {
+	if o.C.Ninds < o.C.Nisl {
 		chk.Panic("number of individuals must be greater than the number of islands")
 	}
 
@@ -56,10 +65,6 @@ func (o *Evolver) Run() {
 		}
 	}
 
-	// for migration
-	iworst := o.C.Ninds - 1
-	receiveFrom := utl.IntsAlloc(nislands, nislands-1)
-
 	// time loop
 	t = 1
 	tmig := o.C.Dtmig
@@ -68,12 +73,12 @@ func (o *Evolver) Run() {
 		tmig = o.C.Tf
 		nomig = true
 	}
-	done := make(chan int, nislands)
+	done := make(chan int, o.C.Nisl)
 	for t < o.C.Tf {
 
 		// evolve up to migration time
 		if o.C.Pll {
-			for i := 0; i < nislands; i++ {
+			for i := 0; i < o.C.Nisl; i++ {
 				go func(isl *Island) {
 					for time := t; time < tmig; time++ {
 						report := o.calc_report(time)
@@ -85,7 +90,7 @@ func (o *Evolver) Run() {
 					done <- 1
 				}(o.Islands[i])
 			}
-			for i := 0; i < nislands; i++ {
+			for i := 0; i < o.C.Nisl; i++ {
 				<-done
 			}
 		} else {
@@ -113,43 +118,8 @@ func (o *Evolver) Run() {
 			continue
 		}
 
-		// reset receiveFrom matrix
-		for i := 0; i < nislands; i++ {
-			for j := 0; j < nislands-1; j++ {
-				receiveFrom[i][j] = -1
-			}
-		}
-
-		// compute destinations
-		for i := 0; i < nislands; i++ {
-			Aworst := o.Islands[i].Pop[iworst]
-			k := 0
-			for j := 0; j < nislands; j++ {
-				if i != j {
-					Bbest := o.Islands[j].Pop[0]
-					send, _ := IndCompareDet(Bbest, Aworst)
-					if send {
-						receiveFrom[i][k] = j // i gets individual from j
-						k++
-					}
-				}
-			}
-		}
-
 		// migration
-		if o.C.Verbose {
-			io.Pfyel(" %d", t)
-		}
-		for i, from := range receiveFrom {
-			k := 0
-			for _, j := range from {
-				if j >= 0 {
-					o.Islands[j].Pop[0].CopyInto(o.Islands[i].Pop[iworst-k])
-					k++
-				}
-			}
-			o.Islands[i].CalcDemeritsAndSort(o.Islands[i].Pop)
-		}
+		o.std_migration(t)
 	}
 
 	// best individual
@@ -277,6 +247,49 @@ func (o *Evolver) GetFrontOvas(r, s int, front []*Individual) (x, y []float64) {
 //}
 
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////
+
+// std_migration performs standard migration
+func (o *Evolver) std_migration(t int) {
+
+	// reset receiveFrom matrix
+	for i := 0; i < o.C.Nisl; i++ {
+		for j := 0; j < o.C.Nisl-1; j++ {
+			o.receiveFrom[i][j] = -1
+		}
+	}
+
+	// compute destinations
+	iworst := o.C.Ninds - 1
+	for i := 0; i < o.C.Nisl; i++ {
+		Aworst := o.Islands[i].Pop[iworst]
+		k := 0
+		for j := 0; j < o.C.Nisl; j++ {
+			if i != j {
+				Bbest := o.Islands[j].Pop[0]
+				send, _ := IndCompareDet(Bbest, Aworst)
+				if send {
+					o.receiveFrom[i][k] = j // i gets individual from j
+					k++
+				}
+			}
+		}
+	}
+
+	// migration
+	if o.C.Verbose {
+		io.Pfyel(" %d", t)
+	}
+	for i, from := range o.receiveFrom {
+		k := 0
+		for _, j := range from {
+			if j >= 0 {
+				o.Islands[j].Pop[0].CopyInto(o.Islands[i].Pop[iworst-k])
+				k++
+			}
+		}
+		o.Islands[i].CalcDemeritsAndSort(o.Islands[i].Pop)
+	}
+}
 
 func (o Evolver) calc_report(t int) bool {
 	return t%o.C.Dtout == 0

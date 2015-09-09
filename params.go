@@ -30,7 +30,8 @@ type ConfParams struct {
 	Dtout int // increment of time for output
 	Dtmig int // increment of time for migration
 
-	// regeneration
+	// migration and regeneration
+	NmigInd   int     // number of individuals migrating
 	RegTol    float64 // tolerance for ρ to activate regeneration
 	RegPct    float64 // percentage of individuals to be regenerated; e.g. 0.3
 	UseStdDev bool    // use standard deviation (σ) instead of average deviation in Stat
@@ -125,7 +126,8 @@ func (o *ConfParams) SetDefault() {
 	o.Dtout = 10
 	o.Dtmig = 40
 
-	// regeneration
+	// migration and regeneration
+	o.NmigInd = 4
 	o.RegTol = 0
 	o.RegPct = 0.2
 	o.UseStdDev = false
