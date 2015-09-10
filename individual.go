@@ -251,7 +251,7 @@ func IndDistance(A, B *Individual, imin, imax []int, fmin, fmax []float64) (dist
 		dints += math.Pow(float64(A.Ints[i]-B.Ints[i])/(1e-15+float64(imax[i]-imin[i])), 2.0)
 	}
 	if nints > 0 {
-		dints = math.Sqrt(dints)
+		dints = math.Sqrt(dints / float64(nints))
 	}
 	nflts := len(A.Floats)
 	dflts := 0.0
@@ -259,7 +259,7 @@ func IndDistance(A, B *Individual, imin, imax []int, fmin, fmax []float64) (dist
 		dflts += math.Pow((A.Floats[i]-B.Floats[i])/(1e-15+fmax[i]-fmin[i]), 2.0)
 	}
 	if nflts > 0 {
-		dflts = math.Sqrt(dflts)
+		dflts = math.Sqrt(dflts / float64(nflts))
 	}
 	return dints + dflts
 }
