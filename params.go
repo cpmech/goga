@@ -31,13 +31,12 @@ type ConfParams struct {
 	Dtmig int // increment of time for migration
 
 	// migration and regeneration
-	NmigInd   int     // number of individuals migrating
 	RegTol    float64 // tolerance for ρ to activate regeneration
 	RegPct    float64 // percentage of individuals to be regenerated; e.g. 0.3
 	UseStdDev bool    // use standard deviation (σ) instead of average deviation in Stat
 
 	// operators' data
-	Ops OpsData
+	Ops OpsData // operators' data
 
 	// selection and reproduction
 	Elite     bool    // use elitism
@@ -49,7 +48,6 @@ type ConfParams struct {
 	ParetoPhi float64 // φ coefficient for probabilistic Pareto comparison
 	CompProb  bool    // use probabilistic comparision in crowding
 	DiffEvol  bool    // use differential evolution-like crossover
-	CrowdAll  bool    // consider all offspring in crowds
 
 	// output
 	Verbose   bool       // show messages during optimisation
@@ -122,7 +120,6 @@ func (o *ConfParams) SetDefault() {
 	o.Dtmig = 25
 
 	// migration and regeneration
-	o.NmigInd = 2
 	o.RegTol = 0
 	o.RegPct = 0.2
 	o.UseStdDev = false
@@ -140,7 +137,6 @@ func (o *ConfParams) SetDefault() {
 	o.ParetoPhi = 0
 	o.CompProb = false
 	o.DiffEvol = false
-	o.CrowdAll = true
 
 	// output
 	o.Verbose = false

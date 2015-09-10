@@ -149,22 +149,15 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	}
 
 	// for crowding
-	n, m := o.C.CrowdSize, o.C.CrowdSize
-	if o.C.CrowdAll {
-		m = (o.C.CrowdSize - 1) * 2
-	}
+	n := o.C.CrowdSize
+	m := (o.C.CrowdSize - 1) * 2
 	if o.C.Ninds%n > 0 {
 		chk.Panic("number of individuals must be multiple of crowd size")
 	}
 	o.indices = utl.IntRange(o.C.Ninds)
 	o.crowds = utl.IntsAlloc(o.C.Ninds/n, n)
-
-	//o.dist = la.MatAlloc(n, n)
-	//o.match.Init(n, n)
-
 	o.dist = la.MatAlloc(n, m)
 	o.match.Init(n, m)
-
 	if m-n > 0 {
 		o.distR2 = la.MatAlloc(n, m-n)
 		o.matchR2.Init(n, m-n)
@@ -315,10 +308,8 @@ func (o *Island) update_crowding(time int) {
 	o.calc_float_lims()
 
 	// auxiliary variables
-	n, m := o.C.CrowdSize, o.C.CrowdSize
-	if o.C.CrowdAll {
-		m = (o.C.CrowdSize - 1) * 2
-	}
+	n := o.C.CrowdSize
+	m := (o.C.CrowdSize - 1) * 2
 	ncrowd := len(o.crowds)
 
 	// run tournaments
@@ -524,8 +515,6 @@ func (o *Island) update_standard(time int) {
 
 // Regenerate regenerates population with basis on best individual(s)
 func (o *Island) Regenerate(time int) {
-	//chk.Panic("regenerate is deactivated")
-	//io.Pfred("regenerating\n")
 	ninds := len(o.Pop)
 	start := ninds - int(o.C.RegPct*float64(ninds))
 	for i := start; i < ninds; i++ {
