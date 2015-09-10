@@ -11,6 +11,7 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
+	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
 
@@ -194,6 +195,24 @@ func (o *SimpleFltProb) Run(verbose bool) {
 	}
 }
 
+// Stat prints statistical analysis
+func (o *SimpleFltProb) Stat(idxF, hlen int) {
+	if o.C.Ntrials < 2 || o.Nfeasible < 2 {
+		return
+	}
+	F := make([]float64, o.Nfeasible)
+	for i := 0; i < o.Nfeasible; i++ {
+		o.Fcn(o.ff[0], o.gg[0], o.hh[0], o.Xbest[i])
+		F[i] = o.ff[0][idxF]
+	}
+	fmin, fave, fmax, fdev := rnd.StatBasic(F, true)
+	io.Pf("fmin = %v\n", fmin)
+	io.PfYel("fave = %v\n", fave)
+	io.Pf("fmax = %v\n", fmax)
+	io.Pf("fdev = %v\n\n", fdev)
+	io.Pf(rnd.BuildTextHist(nice_num(fmin-0.05), nice_num(fmax+0.05), 11, F, "%.2f", hlen))
+}
+
 // Plot plots contour
 func (o *SimpleFltProb) Plot(fnkey string) {
 
@@ -327,4 +346,10 @@ func (o *SimpleFltProb) find_best() (x, f, g, h []float64) {
 		}
 	}
 	return
+}
+
+// nice_num returns a truncated float
+func nice_num(x float64) float64 {
+	s := io.Sf("%.2f", x)
+	return io.Atof(s)
 }

@@ -120,6 +120,10 @@ func Test_flt02(tst *testing.T) {
 	sim := NewSimpleFltProb(fcn, 1, 0, 1, C)
 	sim.Run(chk.Verbose)
 
+	// stat
+	io.Pf("\n")
+	sim.Stat(0, 60)
+
 	// plot
 	sim.PltExtra = func() {
 		plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
