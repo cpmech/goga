@@ -155,7 +155,7 @@ func (o *ConfParams) SetDefault() {
 	o.ShPhen = false
 
 	// output
-	o.Verbose = true
+	o.Verbose = false
 	o.DoReport = false
 	o.Json = false
 	o.DirOut = "/tmp/goga"
@@ -171,7 +171,7 @@ func (o *ConfParams) SetDefault() {
 	// auxiliary
 	o.Problem = 1
 	o.Strategy = 1
-	o.Ntrials = 100
+	o.Ntrials = 1
 	o.Eps1 = 0.1
 	o.Check = false
 
