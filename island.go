@@ -251,10 +251,7 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 	// run
 	switch o.C.GAtype {
 	case "crowd":
-		//o.update_crowding_prev(time)
 		o.update_crowding(time)
-	case "sharing":
-		o.update_sharing(time)
 	default:
 		o.update_standard(time)
 	}
@@ -346,7 +343,6 @@ func (o *Island) update_crowding(time int) {
 			o.C.OvaOor(a, o.Id, time+1, &o.Report)
 			o.C.OvaOor(b, o.Id, time+1, &o.Report)
 		}
-		//chk.Panic("stop")
 
 		// round 1: compute distances
 		for i := 0; i < n; i++ {
@@ -357,7 +353,6 @@ func (o *Island) update_crowding(time int) {
 				o.dist[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
 			}
 		}
-		//la.PrintMat("dist", o.dist, "%12.6f", false)
 
 		// round 1: match competitors
 		o.match.SetCostMatrix(o.dist)
@@ -393,7 +388,6 @@ func (o *Island) update_crowding(time int) {
 					o.distR2[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
 				}
 			}
-			//la.PrintMat("distR2", o.distR2, "%12.6f", false)
 
 			// round 2: match competitors
 			o.matchR2.SetCostMatrix(o.distR2)
@@ -410,11 +404,11 @@ func (o *Island) update_crowding(time int) {
 				}
 			}
 		}
-
 	}
-	//chk.Panic("stop")
 }
 
+// diff_evol_crossover implements the differential-evolution crossover
+// TODO: move this to operators file
 func (o *Island) diff_evol_crossover(a, b, A, B, C, D *Individual) {
 	nflts := len(A.Floats)
 	sa := rnd.Int(0, nflts-1)
@@ -440,6 +434,7 @@ func (o *Island) diff_evol_crossover(a, b, A, B, C, D *Individual) {
 	}
 }
 
+// tournament runs game between A and B
 func (o *Island) tournament(A, B *Individual, saveInto int) {
 
 	// probabilistic
@@ -467,157 +462,6 @@ func (o *Island) tournament(A, B *Individual, saveInto int) {
 		return
 	}
 	B.CopyInto(o.Bkp[saveInto]) // B wins by chance
-}
-
-// update_crowding runs the evolutionary process with niching via crowding and tournament selection
-func (o *Island) update_crowding_prev(time int) {
-
-	// select groups (crowds)
-	rnd.IntGetGroups(o.crowds, o.indices)
-
-	// compute float gene limits
-	o.calc_float_lims()
-
-	// run tournaments
-	n := o.C.CrowdSize
-	for _, crowd := range o.crowds {
-
-		// crossover, mutation and new objective values
-		if o.C.DiffEvol {
-			nflts := o.Pop[0].Nfltgenes * o.Pop[0].Nbases
-			srand := rnd.Int(0, nflts-1)
-			var x float64
-			for r := 0; r < 4; r++ {
-				i, j, k, l := r, (r+1)%4, (r+2)%4, (r+3)%4
-				A := o.Pop[crowd[i]]
-				B := o.Pop[crowd[j]]
-				C := o.Pop[crowd[k]]
-				D := o.Pop[crowd[l]]
-				a := o.Bkp[crowd[i]]
-				for s := 0; s < nflts; s++ {
-					if rnd.FlipCoin(0.1) || s == srand {
-						x = B.Floats[s] + 0.5*(C.Floats[s]-D.Floats[s])
-					} else {
-						x = A.Floats[s]
-					}
-					a.Floats[s] = o.C.Ops.EnforceRange(s, x)
-				}
-				IndMutation(a, time, &o.C.Ops)
-				o.C.OvaOor(a, o.Id, time+1, &o.Report)
-			}
-		} else {
-			for k := 0; k < n; k += 2 { // NOTE: for odd crowd_size, one child is overwritten
-				i, j := k, (k+1)%n
-				I, J := crowd[i], crowd[j]
-				A, B := o.Pop[I], o.Pop[J]
-				a, b := o.Bkp[I], o.Bkp[J]
-				IndCrossover(a, b, A, B, time, &o.C.Ops)
-				IndMutation(a, time, &o.C.Ops)
-				IndMutation(b, time, &o.C.Ops)
-				o.C.OvaOor(a, o.Id, time+1, &o.Report)
-				o.C.OvaOor(b, o.Id, time+1, &o.Report)
-			}
-		}
-
-		// compute distances
-		for i := 0; i < n; i++ {
-			A := o.Pop[crowd[i]]
-			for j := 0; j < n; j++ {
-				a := o.Bkp[crowd[j]]
-				o.dist[i][j] = IndDistance(A, a, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
-			}
-		}
-
-		// match competitors
-		o.match.SetCostMatrix(o.dist)
-		o.match.Run()
-
-		// perform tournament
-		for i := 0; i < n; i++ {
-			j := o.match.Links[i]
-			A, a := o.Pop[crowd[i]], o.Bkp[crowd[j]]
-			if o.C.CompProb {
-				if IndCompareProb(A, a, o.C.ParetoPhi) {
-					A.CopyInto(a) // parent wins
-				}
-			} else {
-				A_dominates, B_dominates := IndCompareDet(A, a)
-				if A_dominates {
-					A.CopyInto(a) // parent wins
-					continue
-				}
-				if !B_dominates {
-					if rnd.FlipCoin(0.5) {
-						A.CopyInto(a) // parent wins by chance
-					}
-				}
-			}
-		}
-	}
-}
-
-// update_sharing runs the evolutionary process with pareto-niching and sharing
-func (o *Island) update_sharing(time int) {
-
-	// compute float gene limits
-	o.calc_float_lims()
-
-	// selection
-	nsample := int(o.C.ShSize * float64(o.C.Ninds))
-	for k := 0; k < o.C.Ninds; k++ {
-		sample := rnd.IntGetUniqueN(0, o.C.Ninds, nsample)
-		pair := rnd.IntGetUniqueN(0, o.C.Ninds, 2)
-		i, j := pair[0], pair[1]
-		A, B := o.Pop[i], o.Pop[j]
-		A_is_dominated, B_is_dominated := false, false
-		for _, s := range sample {
-			if s != i {
-				_, other_dominates := IndCompareDet(A, o.Pop[s])
-				if other_dominates {
-					A_is_dominated = true
-					break
-				}
-			}
-		}
-		for _, s := range sample {
-			if s != j {
-				_, other_dominates := IndCompareDet(B, o.Pop[s])
-				if other_dominates {
-					B_is_dominated = true
-					break
-				}
-			}
-		}
-		if !A_is_dominated && B_is_dominated {
-			o.selinds[k] = i
-			continue
-		}
-		if A_is_dominated && !B_is_dominated {
-			o.selinds[k] = j
-			continue
-		}
-		shA := o.calc_sharing(i)
-		shB := o.calc_sharing(j)
-		if shA < shB {
-			o.selinds[k] = i
-		} else {
-			o.selinds[k] = j
-		}
-	}
-
-	// filter pairs
-	FilterPairs(o.A, o.B, o.selinds)
-
-	// reproduction
-	h := o.C.Ninds / 2
-	for i := 0; i < o.C.Ninds/2; i++ {
-		IndCrossover(o.Bkp[i], o.Bkp[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], time, &o.C.Ops)
-		IndMutation(o.Bkp[i], time, &o.C.Ops)
-		IndMutation(o.Bkp[h+i], time, &o.C.Ops)
-	}
-
-	// compute objective values
-	o.CalcOvs(o.Bkp, time+1) // +1 => this is an updated generation
 }
 
 // update_standard performs the selection, reproduction and regeneration processes
