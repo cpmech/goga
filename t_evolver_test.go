@@ -171,7 +171,7 @@ func Test_evo02(tst *testing.T) {
 
 func Test_evo03(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo03")
 
 	rnd.Init(0)
@@ -185,7 +185,7 @@ func Test_evo03(tst *testing.T) {
 	C.Ninds = 12
 	C.Ntrials = 1
 	if chk.Verbose {
-		C.Ntrials = 1
+		C.Ntrials = 40
 	}
 	C.Verbose = false
 	C.Dtmig = 50
@@ -539,7 +539,7 @@ func Test_evo05(tst *testing.T) {
 
 func Test_evo06(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("evo06. two-bar truss. Pareto-optimal")
 
 	// configuration

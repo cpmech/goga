@@ -213,9 +213,9 @@ func (o *ConfParams) SetIntOrd(nstations int) {
 // CalcDerived calculates derived quantities
 func (o *ConfParams) CalcDerived() {
 	o.Ops.CalcDerived(o.Tf, o.RangeFlt)
-	if o.DiffEvol {
-		o.CrowdSize = 4
-	}
+	//if o.DiffEvol {
+	//o.CrowdSize = 4
+	//}
 }
 
 // NewConfParams returns a new ConfParams structure, with default values set

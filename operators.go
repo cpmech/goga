@@ -66,8 +66,8 @@ func (o *OpsData) SetDefault() {
 	o.EnfRange = true
 	o.DebEtac = 1
 	o.DebEtam = 1
-	o.DEpc = 0.8
-	o.DEmult = 0.5
+	o.DEpc = 0.9
+	o.DEmult = 0.1
 
 	// crossover functions
 	o.CxInt = IntCrossover
