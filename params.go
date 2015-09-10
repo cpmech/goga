@@ -112,7 +112,7 @@ func (o *ConfParams) SetDefault() {
 	o.Seed = 0
 	o.Pll = true
 	o.Nisl = 4
-	o.Ninds = 20
+	o.Ninds = 24
 
 	// time control
 	o.Tf = 100
@@ -133,8 +133,8 @@ func (o *ConfParams) SetDefault() {
 	o.Rnk = true
 	o.RnkSp = 1.2
 	o.GAtype = "crowd"
-	o.CrowdSize = 3
-	o.ParetoPhi = 0
+	o.CrowdSize = 2
+	o.ParetoPhi = 0.01
 	o.CompProb = false
 	o.DiffEvol = false
 
