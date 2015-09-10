@@ -7,8 +7,6 @@ package goga
 import (
 	"bytes"
 	"math"
-	"math/rand"
-	"sort"
 	"testing"
 
 	"github.com/cpmech/gosl/chk"
@@ -18,102 +16,22 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-func Test_evo01(tst *testing.T) {
+func Test_flt01(tst *testing.T) {
 
 	//verbose()
-	chk.PrintTitle("evo01. organise sequence of ints")
-	io.Pf("\n")
+	chk.PrintTitle("flt01. quadratic with inequalities")
 
 	// initialise random numbers generator
 	rnd.Init(0) // 0 => use current time as seed
-
-	// parameters
-	C := NewConfParams()
-	C.Nova = 1
-	C.Noor = 0
-	C.Nisl = 1
-	C.Ninds = 20
-	C.RegTol = 0
-	C.NumInts = 20
-	//C.GAtype = "crowd"
-	C.CrowdSize = 2
-	C.Tf = 50
-	C.Verbose = chk.Verbose
-	C.CalcDerived()
-
-	// mutation function
-	C.Ops.MtInt = func(A []int, time int, ops *OpsData) {
-		size := len(A)
-		if !rnd.FlipCoin(ops.Pm) || size < 1 {
-			return
-		}
-		pos := rnd.IntGetUniqueN(0, size, ops.Nchanges)
-		for _, i := range pos {
-			if A[i] == 1 {
-				A[i] = 0
-			}
-			if A[i] == 0 {
-				A[i] = 1
-			}
-		}
-	}
-
-	// generation function
-	C.PopIntGen = func(id int, cc *ConfParams) Population {
-		o := make([]*Individual, cc.Ninds)
-		genes := make([]int, cc.NumInts)
-		for i := 0; i < cc.Ninds; i++ {
-			for j := 0; j < cc.NumInts; j++ {
-				genes[j] = rand.Intn(2)
-			}
-			o[i] = NewIndividual(cc.Nova, cc.Noor, cc.Nbases, genes)
-		}
-		return o
-	}
-
-	// objective function
-	C.OvaOor = func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
-		score := 0.0
-		count := 0
-		for _, val := range ind.Ints {
-			if val == 0 && count%2 == 0 {
-				score += 1.0
-			}
-			if val == 1 && count%2 != 0 {
-				score += 1.0
-			}
-			count++
-		}
-		ind.Ovas[0] = 1.0 / (1.0 + score)
-		return
-	}
-
-	// run optimisation
-	evo := NewEvolver(C)
-	evo.Run()
-
-	// results
-	ideal := 1.0 / (1.0 + float64(C.NumInts))
-	io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.Ovas[0], ideal)
-}
-
-func Test_evo02(tst *testing.T) {
-
-	//verbose()
-	chk.PrintTitle("evo02")
-
-	// initialise random numbers generator
-	rnd.Init(0) // 0 => use current time as seed
-	//rnd.Init(1111) // 0 => use current time as seed
 
 	// parameters
 	C := NewConfParams()
 	C.Pll = false
-	C.Nisl = 4
+	C.Nisl = 1
 	C.Ninds = 12
-	C.RegTol = 0
 	C.GAtype = "crowd"
-	C.CrowdSize = 2
+	C.CrowdSize = 3
+	C.DiffEvol = true
 	C.RangeFlt = [][]float64{
 		{-2, 2}, // gene # 0: min and max
 		{-2, 2}, // gene # 1: min and max
@@ -139,14 +57,15 @@ func Test_evo02(tst *testing.T) {
 	sim.Run(chk.Verbose)
 
 	// plot
-	sim.Plot("test_evo02")
+	sim.Plot("test_flt01")
 }
 
-func Test_evo03(tst *testing.T) {
+func Test_flt02(tst *testing.T) {
 
 	//verbose()
-	chk.PrintTitle("evo03")
+	chk.PrintTitle("flt02. circle with equality constraint")
 
+	// initialise random numbers generator
 	rnd.Init(0)
 
 	// parameters
@@ -161,16 +80,10 @@ func Test_evo03(tst *testing.T) {
 	}
 	C.Verbose = false
 	C.Dtmig = 50
-	C.Ops.Pc = 0.9
-	C.Ops.Pm = 1.0
-	C.Ops.DebEtac = 1.0
-	C.Ops.DebEtam = 1.0
 	C.CrowdSize = 3
-	C.ParetoPhi = 1.0
 	C.CompProb = false
 	C.GAtype = "crowd"
 	C.DiffEvol = true
-	C.Elite = false
 	C.RangeFlt = [][]float64{
 		{-1, 3}, // gene # 0: min and max
 		{-1, 3}, // gene # 1: min and max
@@ -178,7 +91,7 @@ func Test_evo03(tst *testing.T) {
 	C.Latin = true
 	C.PopFltGen = PopFltGen
 	if chk.Verbose {
-		C.FnKey = "" //"test_evo03"
+		C.FnKey = ""
 		if C.Ntrials == 1 {
 			C.DoPlot = true
 		}
@@ -215,137 +128,13 @@ func Test_evo03(tst *testing.T) {
 	sim.PltExtra = func() {
 		plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
 	}
-	sim.Plot("test_evo03")
+	sim.Plot("test_flt02")
 }
 
-func Test_evo04(tst *testing.T) {
+func Test_flt03(tst *testing.T) {
 
 	//verbose()
-	chk.PrintTitle("evo04. TSP")
-
-	// location / coordinates of stations
-	locations := [][]float64{
-		{60, 200}, {180, 200}, {80, 180}, {140, 180}, {20, 160}, {100, 160}, {200, 160},
-		{140, 140}, {40, 120}, {100, 120}, {180, 100}, {60, 80}, {120, 80}, {180, 60},
-		{20, 40}, {100, 40}, {200, 40}, {20, 20}, {60, 20}, {160, 20},
-	}
-	nstations := len(locations)
-
-	// parameters
-	C := NewConfParams()
-	C.Nova = 1
-	C.Noor = 0
-	C.Nisl = 1
-	C.Ninds = 20
-	C.RegTol = 0.3
-	C.RegPct = 0.2
-	//C.Dtmig = 30
-	C.GAtype = "crowd"
-	C.ParetoPhi = 0.1
-	C.Elite = false
-	C.DoPlot = false //chk.Verbose
-	//C.Rws = true
-	C.SetIntOrd(nstations)
-	C.CalcDerived()
-
-	// initialise random numbers generator
-	rnd.Init(0)
-
-	// objective value function
-	C.OvaOor = func(ind *Individual, idIsland, t int, report *bytes.Buffer) {
-		L := locations
-		ids := ind.Ints
-		//io.Pforan("ids = %v\n", ids)
-		dist := 0.0
-		for i := 1; i < nstations; i++ {
-			a, b := ids[i-1], ids[i]
-			dist += math.Sqrt(math.Pow(L[b][0]-L[a][0], 2.0) + math.Pow(L[b][1]-L[a][1], 2.0))
-		}
-		a, b := ids[nstations-1], ids[0]
-		dist += math.Sqrt(math.Pow(L[b][0]-L[a][0], 2.0) + math.Pow(L[b][1]-L[a][1], 2.0))
-		ind.Ovas[0] = dist
-		return
-	}
-
-	// evolver
-	evo := NewEvolver(C)
-
-	// print initial population
-	pop := evo.Islands[0].Pop
-	//io.Pf("\n%v\n", pop.Output(nil, false))
-
-	// 0,4,8,11,14,17,18,15,12,19,13,16,10,6,1,3,7,9,5,2 894.363
-	if false {
-		for i, x := range []int{0, 4, 8, 11, 14, 17, 18, 15, 12, 19, 13, 16, 10, 6, 1, 3, 7, 9, 5, 2} {
-			pop[0].Ints[i] = x
-		}
-		evo.Islands[0].CalcOvs(pop, 0)
-		evo.Islands[0].CalcDemeritsAndSort(pop)
-	}
-
-	// check initial population
-	ints := make([]int, nstations)
-	if false {
-		for i := 0; i < C.Ninds; i++ {
-			for j := 0; j < nstations; j++ {
-				ints[j] = pop[i].Ints[j]
-			}
-			sort.Ints(ints)
-			chk.Ints(tst, "ints", ints, utl.IntRange(nstations))
-		}
-	}
-
-	// run
-	evo.Run()
-	//io.Pf("%v\n", pop.Output(nil, false))
-	io.Pfgreen("best = %v\n", evo.Best.Ints)
-	io.Pfgreen("best OVA = %v  (871.117353844847)\n\n", evo.Best.Ovas[0])
-
-	// best = [18 17 14 11 8 4 0 2 5 9 12 7 6 1 3 10 16 13 19 15]
-	// best OVA = 953.4643474956656
-
-	// best = [8 11 14 17 18 15 12 19 16 13 10 6 1 3 7 9 5 2 0 4]
-	// best OVA = 871.117353844847
-
-	// best = [5 2 0 4 8 11 14 17 18 15 12 19 16 13 10 6 1 3 7 9]
-	// best OVA = 871.1173538448469
-
-	// best = [6 10 13 16 19 15 18 17 14 11 8 4 0 2 5 9 12 7 3 1]
-	// best OVA = 880.7760751923065
-
-	// check final population
-	if false {
-		for i := 0; i < C.Ninds; i++ {
-			for j := 0; j < nstations; j++ {
-				ints[j] = pop[i].Ints[j]
-			}
-			sort.Ints(ints)
-			chk.Ints(tst, "ints", ints, utl.IntRange(nstations))
-		}
-	}
-
-	// plot travelling salesman path
-	if C.DoPlot {
-		plt.SetForEps(1, 300)
-		X, Y := make([]float64, nstations), make([]float64, nstations)
-		for k, id := range evo.Best.Ints {
-			X[k], Y[k] = locations[id][0], locations[id][1]
-			plt.PlotOne(X[k], Y[k], "'r.', ms=5, clip_on=0, zorder=20")
-			plt.Text(X[k], Y[k], io.Sf("%d", id), "fontsize=7, clip_on=0, zorder=30")
-		}
-		plt.Plot(X, Y, "'b-', clip_on=0, zorder=10")
-		plt.Plot([]float64{X[0], X[nstations-1]}, []float64{Y[0], Y[nstations-1]}, "'b-', clip_on=0, zorder=10")
-		plt.Equal()
-		plt.AxisRange(10, 210, 10, 210)
-		plt.Gll("$x$", "$y$", "")
-		plt.SaveD("/tmp/goga", "test_evo04.eps")
-	}
-}
-
-func Test_evo05(tst *testing.T) {
-
-	//verbose()
-	chk.PrintTitle("evo05. sin⁶(5 π x)")
+	chk.PrintTitle("flt03. sin⁶(5 π x) multimodal")
 
 	// configuration
 	C := NewConfParams()
@@ -354,7 +143,6 @@ func Test_evo05(tst *testing.T) {
 	C.Nisl = 4
 	C.Ninds = 12
 	C.GAtype = "crowd"
-	//C.GAtype = "sharing"
 	C.CrowdSize = 2
 	C.ParetoPhi = 0.01
 	C.CompProb = true
@@ -421,7 +209,7 @@ func Test_evo05(tst *testing.T) {
 			}
 			io.Ff(&buf, "\ntime=%d\n%v", k*10, rnd.TextHist(hist.GenLabels("%4.2f"), hist.Counts, 60))
 		}
-		io.WriteFileVD("/tmp/goga", "test_evo05_hist.txt", &buf)
+		io.WriteFileVD("/tmp/goga", "test_flt03_hist.txt", &buf)
 
 		// plot
 		plt.SetForEps(0.8, 300)
@@ -446,14 +234,14 @@ func Test_evo05(tst *testing.T) {
 		plt.Plot(X, Y, "'b-',clip_on=0,zorder=10")
 		plt.Gll("$x$", "$y$", "")
 		//plt.AxisXrange(0, 1)
-		plt.SaveD("/tmp/goga", "test_evo05_func.eps")
+		plt.SaveD("/tmp/goga", "test_flt03_func.eps")
 	}
 }
 
-func Test_evo06(tst *testing.T) {
+func Test_flt04(tst *testing.T) {
 
 	//verbose()
-	chk.PrintTitle("evo06. two-bar truss. Pareto-optimal")
+	chk.PrintTitle("flt04. two-bar truss. Pareto-optimal")
 
 	// configuration
 	C := NewConfParams()
@@ -542,6 +330,6 @@ func Test_evo06(tst *testing.T) {
 		plt.Plot(x, y, "'r.'")
 		plt.Plot(xova, yova, "'ko',markerfacecolor='none',ms=6")
 		plt.Gll("$f_1$", "$f_2$", "")
-		plt.SaveD("/tmp/goga", "test_evo06.eps")
+		plt.SaveD("/tmp/goga", "test_flt04.eps")
 	}
 }
