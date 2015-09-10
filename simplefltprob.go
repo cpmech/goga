@@ -112,9 +112,6 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 	o.Xbest = utl.DblsAlloc(o.C.Ntrials, nx)
 
 	// plotting
-	if nx != 2 {
-		o.C.DoPlot = false
-	}
 	if o.C.DoPlot {
 		o.PopsIni = o.Evo.GetPopulations()
 		o.PltDirout = "/tmp/goga"
