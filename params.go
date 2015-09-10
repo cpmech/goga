@@ -44,18 +44,12 @@ type ConfParams struct {
 	Rws       bool    // use Roulette-Wheel selection method
 	Rnk       bool    // ranking
 	RnkSp     float64 // selective pressure for ranking
-	GAtype    string  // type of GA; e.g. "std", "crowd", "sharing"
+	GAtype    string  // type of GA; e.g. "std", "crowd"
 	CrowdSize int     // crowd size
 	ParetoPhi float64 // φ coefficient for probabilistic Pareto comparison
 	CompProb  bool    // use probabilistic comparision in crowding
 	DiffEvol  bool    // use differential evolution-like crossover
 	CrowdAll  bool    // consider all offspring in crowds
-
-	// sharing
-	ShSize float64 // sharing sample size. percentage of Ninds; e.g. 0.1
-	ShAlp  float64 // αshare
-	ShSig  float64 // σshare
-	ShPhen bool    // use phenotype distance analysis in sharing; otherwise use objective values
 
 	// output
 	Verbose   bool       // show messages during optimisation
@@ -142,17 +136,11 @@ func (o *ConfParams) SetDefault() {
 	o.Rnk = true
 	o.RnkSp = 1.2
 	o.GAtype = "crowd"
-	o.CrowdSize = 2
+	o.CrowdSize = 3
 	o.ParetoPhi = 0
 	o.CompProb = false
 	o.DiffEvol = false
 	o.CrowdAll = true
-
-	// sharing
-	o.ShSize = 0.5
-	o.ShAlp = 2.0
-	o.ShSig = 1.0
-	o.ShPhen = false
 
 	// output
 	o.Verbose = false

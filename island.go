@@ -587,30 +587,6 @@ func (o Island) SaveReport(verbose bool) {
 	}
 }
 
-// calc_sharing computes sharing coefficient
-func (o *Island) calc_sharing(idxind int) (sh float64) {
-	A := o.Pop[idxind]
-	var dova, door, d float64
-	for _, B := range o.Pop {
-		if o.C.ShPhen {
-			d = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
-		} else {
-			dova, door = 0, 0
-			for i := 0; i < o.C.Nova; i++ {
-				dova += math.Pow((A.Ovas[i]-B.Ovas[i])/(1+o.ovamax[i]-o.ovamin[i]), 2.0)
-			}
-			for i := 0; i < o.C.Noor; i++ {
-				door += math.Pow((A.Oors[i]-B.Oors[i])/(1+o.oormax[i]-o.oormin[i]), 2.0)
-			}
-			d = math.Sqrt(dova) + math.Sqrt(door)
-		}
-		if d < o.C.ShSig {
-			sh += 1.0 - math.Pow(d/o.C.ShSig, o.C.ShAlp)
-		}
-	}
-	return
-}
-
 // calc_float_lims find float genes limits
 func (o *Island) calc_float_lims() {
 	for i, ind := range o.Pop {
