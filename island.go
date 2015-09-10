@@ -54,9 +54,9 @@ type Island struct {
 	// for crowding
 	indices   []int         // [ninds]
 	crowds    [][]int       // [ninds/crowd_size][crowd_size]
-	dist      [][]float64   // [crowd_size][cowd_size]
-	distR2    [][]float64   // dist for round 2
-	match     graph.Munkres // matches
+	distR1    [][]float64   // [crowd_size][cowd_size] dist for round 1
+	distR2    [][]float64   // [crowd_size][(crowd_size-1)*2] dist for round 2
+	matchR1   graph.Munkres // matches for round 1
 	matchR2   graph.Munkres // matches for round 2
 	winners   []*Individual // winners
 	offspring []*Individual // offspring
@@ -156,8 +156,8 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	}
 	o.indices = utl.IntRange(o.C.Ninds)
 	o.crowds = utl.IntsAlloc(o.C.Ninds/n, n)
-	o.dist = la.MatAlloc(n, m)
-	o.match.Init(n, m)
+	o.distR1 = la.MatAlloc(n, m)
+	o.matchR1.Init(n, m)
 	if m-n > 0 {
 		o.distR2 = la.MatAlloc(n, m-n)
 		o.matchR2.Init(n, m-n)
@@ -341,18 +341,18 @@ func (o *Island) update_crowding(time int) {
 			A := o.Pop[I]
 			for j := 0; j < m; j++ {
 				B := o.offspring[j]
-				o.dist[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
+				o.distR1[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
 			}
 		}
 
 		// round 1: match competitors
-		o.match.SetCostMatrix(o.dist)
-		o.match.Run()
+		o.matchR1.SetCostMatrix(o.distR1)
+		o.matchR1.Run()
 
 		// compute next round
 		k := 0
 		for i := 0; i < m; i++ {
-			if utl.IntIndexSmall(o.match.Links, i) < 0 {
+			if utl.IntIndexSmall(o.matchR1.Links, i) < 0 {
 				o.nextround[k] = i
 				k++
 			}
@@ -361,7 +361,7 @@ func (o *Island) update_crowding(time int) {
 		// round 1: tournament
 		for i := 0; i < n; i++ {
 			I := crowd[i]
-			j := o.match.Links[i]
+			j := o.matchR1.Links[i]
 			A, B := o.Pop[I], o.offspring[j]
 			o.tournament(A, B, I)
 		}
