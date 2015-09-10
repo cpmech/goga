@@ -108,65 +108,38 @@ func Test_evo02(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
-	C.Nova = 1
-	C.Noor = 5
 	C.Pll = false
-	C.Nisl = 1
-	C.Ninds = 20
+	C.Nisl = 4
+	C.Ninds = 12
 	C.RegTol = 0
-	//C.GAtype = "std"
 	C.GAtype = "crowd"
 	C.CrowdSize = 2
-	C.ParetoPhi = 0.01
-	//C.Elite = true
-	C.Verbose = false
 	C.RangeFlt = [][]float64{
 		{-2, 2}, // gene # 0: min and max
 		{-2, 2}, // gene # 1: min and max
 	}
 	C.PopFltGen = PopFltGen
 	if chk.Verbose {
-		C.FnKey = "test_evo02"
-		C.DoPlot = false
+		C.DoPlot = chk.Verbose
 	}
-	//C.SetNbasesFixOp(8)
 	C.CalcDerived()
 
-	f := func(x []float64) float64 { return x[0]*x[0]/2.0 + x[1]*x[1] - x[0]*x[1] - 2.0*x[0] - 6.0*x[1] }
-	c1 := func(x []float64) float64 { return x[0] + x[1] - 2.0 }      // ≤ 0
-	c2 := func(x []float64) float64 { return -x[0] + 2.0*x[1] - 2.0 } // ≤ 0
-	c3 := func(x []float64) float64 { return 2.0*x[0] + x[1] - 3.0 }  // ≤ 0
-	c4 := func(x []float64) float64 { return -x[0] }                  // ≤ 0
-	c5 := func(x []float64) float64 { return -x[1] }                  // ≤ 0
-
-	// objective function
-	p := 1.0
-	C.OvaOor = func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
-		x := ind.GetFloats()
-		ind.Ovas[0] = f(x)
-		ind.Oors[0] = utl.GtePenalty(0, c1(x), p)
-		ind.Oors[1] = utl.GtePenalty(0, c2(x), p)
-		ind.Oors[2] = utl.GtePenalty(0, c3(x), p)
-		ind.Oors[3] = utl.GtePenalty(0, c4(x), p)
-		ind.Oors[4] = utl.GtePenalty(0, c5(x), p)
-		return
+	// functions
+	fcn := func(f, g, h []float64, x []float64) {
+		f[0] = x[0]*x[0]/2.0 + x[1]*x[1] - x[0]*x[1] - 2.0*x[0] - 6.0*x[1]
+		g[0] = 2.0 - x[0] - x[1]     // ≥ 0
+		g[1] = 2.0 + x[0] - 2.0*x[1] // ≥ 0
+		g[2] = 3.0 - 2.0*x[0] - x[1] // ≥ 0
+		g[3] = x[0]                  // ≥ 0
+		g[4] = x[1]                  // ≥ 0
 	}
 
-	// evolver
-	evo := NewEvolver(C)
-	pop0 := evo.Islands[0].Pop.GetCopy()
-	evo.Run()
+	// simple problem
+	sim := NewSimpleFltProb(fcn, 1, 5, 0, C)
+	sim.Run(chk.Verbose)
 
-	// results
-	io.PfGreen("\nx=%g (%g)\n", evo.Best.GetFloat(0), 2.0/3.0)
-	io.PfGreen("y=%g (%g)\n", evo.Best.GetFloat(1), 4.0/3.0)
-	io.PfGreen("BestOV=%g (%g)\n", evo.Best.Ovas[0], f([]float64{2.0 / 3.0, 4.0 / 3.0}))
-
-	// plot contour
-	if C.DoPlot {
-		PlotTwoVarsContour("/tmp/goga", "contour_evo02", pop0, evo.Islands[0].Pop, evo.Best, 41, 2, "", nil, false, true,
-			C.RangeFlt, false, false, nil, nil, f, c1, c2, c3, c4, c5)
-	}
+	// plot
+	sim.Plot("test_evo02")
 }
 
 func Test_evo03(tst *testing.T) {
@@ -178,8 +151,7 @@ func Test_evo03(tst *testing.T) {
 
 	// parameters
 	C := NewConfParams()
-	C.Nova = 1
-	C.Noor = 1
+	C.Eps1 = 1e-3
 	C.Pll = false
 	C.Nisl = 4
 	C.Ninds = 12
@@ -196,9 +168,7 @@ func Test_evo03(tst *testing.T) {
 	C.CrowdSize = 3
 	C.ParetoPhi = 1.0
 	C.CompProb = false
-	//C.GAtype = "std"
 	C.GAtype = "crowd"
-	//C.GAtype = "sharing"
 	C.DiffEvol = true
 	C.Elite = false
 	C.RangeFlt = [][]float64{
@@ -213,8 +183,6 @@ func Test_evo03(tst *testing.T) {
 			C.DoPlot = true
 		}
 	}
-	//C.SetBlxMwicz()
-	//C.SetNbasesFixOp(8)
 	C.Ops.EnfRange = true
 	C.NumFmts = map[string][]string{"flt": {"%8.4f", "%8.4f"}}
 	C.ShowDem = true
@@ -228,81 +196,26 @@ func Test_evo03(tst *testing.T) {
 	y0 := 2.0*ys + xe              // vertical axis intersect of straight line defined by c(x)
 	xc := []float64{xe, xe}        // centre
 	nx := len(xc)
-	f := func(x []float64) (res float64) {
+
+	// functions
+	fcn := func(f, g, h []float64, x []float64) {
+		res := 0.0
 		for i := 0; i < nx; i++ {
 			res += (x[i] - xc[i]) * (x[i] - xc[i])
 		}
-		return math.Sqrt(res) - 1
-	}
-	c := func(x []float64) (res float64) {
-		return x[0] + x[1] + xe - y0
+		f[0] = math.Sqrt(res) - 1
+		h[0] = x[0] + x[1] + xe - y0
 	}
 
-	// objective function
-	p := 1.0
-	C.OvaOor = func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
-		x := ind.GetFloats()
-		fp := utl.GtePenalty(1e-2, math.Abs(c(x)), p)
-		ind.Ovas[0] = f(x) + fp
-		ind.Oors[0] = fp
-		return
+	// simple problem
+	sim := NewSimpleFltProb(fcn, 1, 0, 1, C)
+	sim.Run(chk.Verbose)
+
+	// plot
+	sim.PltExtra = func() {
+		plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
 	}
-
-	// evolver
-	evo := NewEvolver(C)
-
-	// run ntrials times
-	pops0 := make([]Population, C.Nisl)
-	for i := 0; i < C.Ntrials; i++ {
-
-		// reset populations
-		if i > 0 {
-			evo.ResetAllPop()
-		}
-
-		// initial populations
-		for k, isl := range evo.Islands {
-			pops0[k] = isl.Pop.GetCopy()
-		}
-
-		// run
-		evo.Run()
-
-		// results
-		if false {
-			xbest := []float64{evo.Best.GetFloat(0), evo.Best.GetFloat(1)}
-			io.PfGreen("\nx=%g (%g)\n", xbest[0], ys)
-			io.PfGreen("y=%g (%g)\n", xbest[1], ys)
-		}
-		ova := evo.Best.Ovas[0]
-		if ova > 0 {
-			io.PfRed("BestOV=%g (%g)\n", ova, le)
-		} else if math.Abs(ova)-0.25 < 0.1 {
-			io.Pforan("BestOV=%g (%g)\n", ova, le)
-		} else {
-			io.PfGreen("BestOV=%g (%g)\n", ova, le)
-		}
-		//io.Pf("%v\n", evo.Islands[0].Pop.Output(C))
-
-		// plot contour
-		if C.DoPlot {
-			extra := func() {
-				plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
-				for k := 1; k < C.Nisl; k++ {
-					for _, ind := range pops0[k] {
-						v := ind.GetFloats()
-						plt.PlotOne(v[0], v[1], "'k.', zorder=20, clip_on=0")
-					}
-					for _, ind := range evo.Islands[k].Pop {
-						v := ind.GetFloats()
-						plt.PlotOne(v[0], v[1], "'ko', ms=6, zorder=30, clip_on=0, markerfacecolor='none'")
-					}
-				}
-			}
-			PlotTwoVarsContour("/tmp/goga", io.Sf("contour_evo03_%02d", i), pops0[0], evo.Islands[0].Pop, evo.Best, 41, 2, "", extra, false, true,
-				C.RangeFlt, false, false, nil, nil, f, c)
-		}
-	}
+	sim.Plot("test_evo03")
 }
 
 func Test_evo04(tst *testing.T) {
