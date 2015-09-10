@@ -58,9 +58,8 @@ type Island struct {
 	distR2    [][]float64   // [crowd_size][(crowd_size-1)*2] dist for round 2
 	matchR1   graph.Munkres // matches for round 1
 	matchR2   graph.Munkres // matches for round 2
-	winners   []*Individual // winners
 	offspring []*Individual // offspring
-	nextround []int         // next tournament
+	round2    []int         // ids for round 2
 
 	// limits
 	intXmin, intXmax []int     // int genes range
@@ -161,18 +160,11 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	if m-n > 0 {
 		o.distR2 = la.MatAlloc(n, m-n)
 		o.matchR2.Init(n, m-n)
-		o.nextround = make([]int, m-n)
+		o.round2 = make([]int, m-n)
 	}
-	o.winners = make([]*Individual, n)
 	o.offspring = make([]*Individual, m)
-	for i := 0; i < n; i++ {
-		o.winners[i] = o.Pop[0].GetCopy()
-	}
 	for i := 0; i < m; i++ {
 		o.offspring[i] = o.Pop[0].GetCopy()
-		for j := 0; j < len(o.offspring[i].Floats); j++ {
-			o.offspring[i].Floats[j] = 0
-		}
 	}
 
 	// limits
@@ -353,7 +345,7 @@ func (o *Island) update_crowding(time int) {
 		k := 0
 		for i := 0; i < m; i++ {
 			if utl.IntIndexSmall(o.matchR1.Links, i) < 0 {
-				o.nextround[k] = i
+				o.round2[k] = i
 				k++
 			}
 		}
@@ -374,7 +366,7 @@ func (o *Island) update_crowding(time int) {
 				I := crowd[i]
 				A := o.Bkp[I]
 				for j := 0; j < m-n; j++ {
-					J := o.nextround[j]
+					J := o.round2[j]
 					B := o.offspring[J]
 					o.distR2[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
 				}
@@ -389,7 +381,7 @@ func (o *Island) update_crowding(time int) {
 				I := crowd[i]
 				k := o.matchR2.Links[i]
 				if k >= 0 {
-					j := o.nextround[k]
+					j := o.round2[k]
 					A, B := o.Bkp[I], o.offspring[j]
 					o.tournament(A, B, I)
 				}

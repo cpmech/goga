@@ -99,7 +99,7 @@ func Test_int01(tst *testing.T) {
 
 func Test_int02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("int02. TSP")
 
 	// location / coordinates of stations

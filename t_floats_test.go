@@ -60,7 +60,7 @@ func Test_flt01(tst *testing.T) {
 
 func Test_flt02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt02. circle with equality constraint")
 
 	// parameters
