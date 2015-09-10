@@ -171,7 +171,7 @@ func Test_evo02(tst *testing.T) {
 
 func Test_evo03(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo03")
 
 	rnd.Init(0)
@@ -185,12 +185,15 @@ func Test_evo03(tst *testing.T) {
 	C.Ninds = 12
 	C.Ntrials = 1
 	if chk.Verbose {
-		C.Ntrials = 40
+		C.Ntrials = 1
 	}
 	C.Verbose = false
 	C.Dtmig = 50
-	C.Ops.Pm = 0.01
-	C.CrowdSize = 2
+	C.Ops.Pc = 0.9
+	C.Ops.Pm = 1.0
+	C.Ops.DebEtac = 1.0
+	C.Ops.DebEtam = 1.0
+	C.CrowdSize = 3
 	C.ParetoPhi = 1.0
 	C.CompProb = false
 	//C.GAtype = "std"
@@ -536,7 +539,7 @@ func Test_evo05(tst *testing.T) {
 
 func Test_evo06(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("evo06. two-bar truss. Pareto-optimal")
 
 	// configuration
@@ -548,8 +551,9 @@ func Test_evo06(tst *testing.T) {
 	//C.GAtype = "std"
 	C.GAtype = "crowd"
 	//C.GAtype = "sharing"
-	C.Elite = true
-	C.CrowdSize = 2
+	C.DiffEvol = true
+	C.Elite = false
+	C.CrowdSize = 3
 	C.ParetoPhi = 0.05
 	C.ShAlp = 0.5
 	C.ShSig = 0.001

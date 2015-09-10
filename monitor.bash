@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FILES="evolver.go island.go t_evolver_test.go"
-TEST="evo03"
+TEST="evo06"
 
 refresh(){
     go test -test.run="$TEST"

@@ -32,6 +32,8 @@ type OpsData struct {
 	EnfRange bool        // do enforce range
 	DebEtac  float64     // Deb's SBX crossover parameter
 	DebEtam  float64     // Deb's parameter-based mutation parameter
+	DEpc     float64     // differential-evolution crossover probability
+	DEmult   float64     // differential-evolution multiplier
 
 	// crossover functions
 	CxInt CxIntFunc_t // int crossover function
@@ -64,6 +66,8 @@ func (o *OpsData) SetDefault() {
 	o.EnfRange = true
 	o.DebEtac = 1
 	o.DebEtam = 1
+	o.DEpc = 0.8
+	o.DEmult = 0.5
 
 	// crossover functions
 	o.CxInt = IntCrossover

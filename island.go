@@ -52,10 +52,15 @@ type Island struct {
 	larbases []float64   // [ngenes*nbases] largest bases; max(abs(bases))
 
 	// for crowding
-	indices []int         // [ninds]
-	crowds  [][]int       // [ninds/crowd_size][crowd_size]
-	dist    [][]float64   // [crowd_size][cowd_size]
-	match   graph.Munkres // matches
+	indices   []int         // [ninds]
+	crowds    [][]int       // [ninds/crowd_size][crowd_size]
+	dist      [][]float64   // [crowd_size][cowd_size]
+	distR2    [][]float64   // dist for round 2
+	match     graph.Munkres // matches
+	matchR2   graph.Munkres // matches for round 2
+	winners   []*Individual // winners
+	offspring []*Individual // offspring
+	nextround []int         // next tournament
 
 	// limits
 	intXmin, intXmax []int     // int genes range
@@ -144,14 +149,38 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	}
 
 	// for crowding
-	n := o.C.CrowdSize
+	n, m := o.C.CrowdSize, o.C.CrowdSize
+	if o.C.CrowdAll {
+		m = (o.C.CrowdSize - 1) * 2
+	}
 	if o.C.Ninds%n > 0 {
 		chk.Panic("number of individuals must be multiple of crowd size")
 	}
 	o.indices = utl.IntRange(o.C.Ninds)
 	o.crowds = utl.IntsAlloc(o.C.Ninds/n, n)
-	o.dist = la.MatAlloc(n, n)
-	o.match.Init(n, n)
+
+	//o.dist = la.MatAlloc(n, n)
+	//o.match.Init(n, n)
+
+	o.dist = la.MatAlloc(n, m)
+	o.match.Init(n, m)
+
+	if m-n > 0 {
+		o.distR2 = la.MatAlloc(n, m-n)
+		o.matchR2.Init(n, m-n)
+		o.nextround = make([]int, m-n)
+	}
+	o.winners = make([]*Individual, n)
+	o.offspring = make([]*Individual, m)
+	for i := 0; i < n; i++ {
+		o.winners[i] = o.Pop[0].GetCopy()
+	}
+	for i := 0; i < m; i++ {
+		o.offspring[i] = o.Pop[0].GetCopy()
+		for j := 0; j < len(o.offspring[i].Floats); j++ {
+			o.offspring[i].Floats[j] = 0
+		}
+	}
 
 	// limits
 	nints := len(o.Pop[0].Ints)
@@ -222,6 +251,7 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 	// run
 	switch o.C.GAtype {
 	case "crowd":
+		//o.update_crowding_prev(time)
 		o.update_crowding(time)
 	case "sharing":
 		o.update_sharing(time)
@@ -293,6 +323,189 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 
 // update_crowding runs the evolutionary process with niching via crowding and tournament selection
 func (o *Island) update_crowding(time int) {
+
+	// select groups (crowds)
+	rnd.IntGetGroups(o.crowds, o.indices)
+
+	// compute float gene limits
+	o.calc_float_lims()
+
+	// run tournaments
+	n, m := o.C.CrowdSize, o.C.CrowdSize
+	if o.C.CrowdAll {
+		m = (o.C.CrowdSize - 1) * 2
+	}
+	//io.Pforan("n=%v m=%v\n", n, m)
+	ncrowd := len(o.crowds)
+	for icrowd, crowd := range o.crowds {
+
+		//io.Pf("\ncrowd = %v\n", crowd)
+
+		// crossover, mutation and new objective values
+		for r := 0; r < n-1; r++ {
+			i, j := r, r+1
+			k, l := r*2, r*2+1
+			I, J := crowd[i], crowd[j]
+			//io.Pforan("i=%d j=%v k=%v l=%v   I=%d J=%v\n", i, j, k, l, I, J)
+			A, B := o.Pop[I], o.Pop[J]
+			//io.Pfyel("A=%v B=%v\n", A.Floats, B.Floats)
+			a, b := o.offspring[k], o.offspring[l]
+			if o.C.DiffEvol {
+				jcrowd := (icrowd + 1) % ncrowd
+				C, D := o.Pop[o.crowds[jcrowd][0]], o.Pop[o.crowds[jcrowd][1]]
+				//io.Pforan("A=%v B=%v\n", A.Floats, B.Floats)
+				//io.Pforan("C=%v D=%v\n", C.Floats, D.Floats)
+				o.diff_evol_crossover(a, b, A, B, C, D)
+			} else {
+				IndCrossover(a, b, A, B, time, &o.C.Ops)
+			}
+			IndMutation(a, time, &o.C.Ops)
+			IndMutation(b, time, &o.C.Ops)
+			o.C.OvaOor(a, o.Id, time+1, &o.Report)
+			o.C.OvaOor(b, o.Id, time+1, &o.Report)
+			//io.Pfcyan("a=%v b=%v\n", a.Floats, b.Floats)
+		}
+		//chk.Panic("stop")
+
+		// round 1: compute distances
+		for i := 0; i < n; i++ {
+			I := crowd[i]
+			A := o.Pop[I]
+			//io.Pf("\n")
+			for j := 0; j < m; j++ {
+				B := o.offspring[j]
+				//io.Pfpink("A=%v B=%v\n", A.Floats, B.Floats)
+				o.dist[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
+			}
+		}
+		//la.PrintMat("dist", o.dist, "%12.6f", false)
+
+		// round 1: match competitors
+		o.match.SetCostMatrix(o.dist)
+		o.match.Run()
+
+		// compute next round
+		k := 0
+		for i := 0; i < m; i++ {
+			if utl.IntIndexSmall(o.match.Links, i) < 0 {
+				o.nextround[k] = i
+				k++
+			}
+		}
+		//io.Pforan("\nlinks = %v\n", o.match.Links)
+		//io.Pforan("nextround = %v\n", o.nextround)
+
+		// round 1: tournament
+		for i := 0; i < n; i++ {
+			I := crowd[i]
+			j := o.match.Links[i]
+			//io.Pforan("i=%d j=%v  I=%v\n", i, j, I)
+			A, B := o.Pop[I], o.offspring[j]
+			//io.Pfyel("A=%v B=%v\n", A.Floats, B.Floats)
+			o.tournament(A, B, I)
+		}
+
+		// next round
+		if m-n > 0 {
+			//io.Pf("\n ################## next round ##################\n")
+
+			// round 2: compute distances
+			//io.Pf("\n")
+			for i := 0; i < n; i++ {
+				I := crowd[i]
+				A := o.Bkp[I]
+				for j := 0; j < m-n; j++ {
+					J := o.nextround[j]
+					B := o.offspring[J]
+					//io.Pfblue2("A=%v B=%v\n", A.Floats, B.Floats)
+					o.distR2[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
+				}
+			}
+			//la.PrintMat("distR2", o.distR2, "%12.6f", false)
+
+			// round 2: match competitors
+			o.matchR2.SetCostMatrix(o.distR2)
+			o.matchR2.Run()
+			//io.Pforan("\nlinks = %v\n", o.matchR2.Links)
+
+			// round 2: tournament
+			for i := 0; i < n; i++ {
+				I := crowd[i]
+				k := o.matchR2.Links[i]
+				if k >= 0 {
+					j := o.nextround[k]
+					//io.Pforan("i=%d k=%v  I=%v j=%v\n", i, k, I, j)
+					A, B := o.Bkp[I], o.offspring[j]
+					//io.Pfyel("A=%v B=%v\n", A.Floats, B.Floats)
+					o.tournament(A, B, I)
+				}
+			}
+		}
+
+	}
+	//chk.Panic("stop")
+}
+
+func (o *Island) diff_evol_crossover(a, b, A, B, C, D *Individual) {
+	nflts := len(A.Floats)
+	sa := rnd.Int(0, nflts-1)
+	sb := rnd.Int(0, nflts-1)
+	var x float64
+	for s := 0; s < nflts; s++ {
+
+		// a
+		if rnd.FlipCoin(o.C.Ops.DEpc) || s == sa {
+			x = B.Floats[s] + o.C.Ops.DEmult*(C.Floats[s]-D.Floats[s])
+		} else {
+			x = A.Floats[s]
+		}
+		a.Floats[s] = o.C.Ops.EnforceRange(s, x)
+
+		// b
+		if rnd.FlipCoin(o.C.Ops.DEpc) || s == sb {
+			x = A.Floats[s] + o.C.Ops.DEmult*(C.Floats[s]-D.Floats[s])
+		} else {
+			x = B.Floats[s]
+		}
+		b.Floats[s] = o.C.Ops.EnforceRange(s, x)
+	}
+}
+
+func (o *Island) tournament(A, B *Individual, saveInto int) {
+
+	// probabilistic
+	if o.C.CompProb {
+		if IndCompareProb(A, B, o.C.ParetoPhi) {
+			A.CopyInto(o.Bkp[saveInto]) // A wins
+			return
+		}
+		B.CopyInto(o.Bkp[saveInto]) // B wins
+		return
+	}
+
+	// deterministic
+	A_dom, B_dom := IndCompareDet(A, B)
+	if A_dom {
+		A.CopyInto(o.Bkp[saveInto]) // A wins
+		//io.Pf("A wins\n")
+		return
+	}
+	if B_dom {
+		B.CopyInto(o.Bkp[saveInto]) // B wins
+		//io.Pf("B wins\n")
+		return
+	}
+	if rnd.FlipCoin(0.5) { // tie => roll dice
+		A.CopyInto(o.Bkp[saveInto]) // A wins by chance
+		//io.Pf("A wins by chance\n")
+		return
+	}
+	B.CopyInto(o.Bkp[saveInto]) // B wins by chance
+	//io.Pf("B wins by chance\n")
+}
+
+// update_crowding runs the evolutionary process with niching via crowding and tournament selection
+func (o *Island) update_crowding_prev(time int) {
 
 	// select groups (crowds)
 	rnd.IntGetGroups(o.crowds, o.indices)

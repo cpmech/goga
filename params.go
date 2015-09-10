@@ -49,6 +49,7 @@ type ConfParams struct {
 	ParetoPhi float64 // φ coefficient for probabilistic Pareto comparison
 	CompProb  bool    // use probabilistic comparision in crowding
 	DiffEvol  bool    // use differential evolution-like crossover
+	CrowdAll  bool    // consider all offspring in crowds
 
 	// sharing
 	ShSize float64 // sharing sample size. percentage of Ninds; e.g. 0.1
@@ -145,6 +146,7 @@ func (o *ConfParams) SetDefault() {
 	o.ParetoPhi = 0
 	o.CompProb = false
 	o.DiffEvol = false
+	o.CrowdAll = true
 
 	// sharing
 	o.ShSize = 0.5
