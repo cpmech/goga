@@ -246,6 +246,15 @@ func (o *Evolver) GetFrontOvas(r, s int, front []*Individual) (x, y []float64) {
 	return
 }
 
+// GetPopulations returns all populations from all islands
+func (o *Evolver) GetPopulations() (pops []Population) {
+	pops = make([]Population, o.C.Nisl)
+	for i, isl := range o.Islands {
+		pops[i] = isl.Pop.GetCopy()
+	}
+	return
+}
+
 //func (o *Evolver) GetCompromise(feasible []*Individual) (xova, yova, xoor, yoor []float64) {
 //}
 
