@@ -15,7 +15,7 @@ import (
 )
 
 // SimpleFltFcn_t simple float problem function type
-type SimpleFltFcn_t func(f, g, h []float64, x []float64)
+type SimpleFltFcn_t func(f, g, h, x []float64)
 
 // SimpleFltProb implements optimisation problems defined by:
 //  min  {f0(x), f1(x), f2(x), ...}  nf functions
