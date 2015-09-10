@@ -288,19 +288,6 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 		}
 	}
 
-	// check individuals
-	/*
-		xxmin := o.Pop[0].GetFloat(0)
-		xxmax := xxmin
-		for _, ind := range o.Pop {
-			xmin, xmax := la.VecMinMax(ind.Floats)
-			xxmin = utl.Min(xxmin, xmin)
-			xxmax = utl.Max(xxmax, xmax)
-		}
-		io.Pforan("xxmin = %v\n", xxmin)
-		io.Pforan("xxmax = %v\n", xxmax)
-	*/
-
 	// report
 	if doreport {
 		o.WritePopToReport(time, averho)
@@ -330,31 +317,26 @@ func (o *Island) update_crowding(time int) {
 	// compute float gene limits
 	o.calc_float_lims()
 
-	// run tournaments
+	// auxiliary variables
 	n, m := o.C.CrowdSize, o.C.CrowdSize
 	if o.C.CrowdAll {
 		m = (o.C.CrowdSize - 1) * 2
 	}
-	//io.Pforan("n=%v m=%v\n", n, m)
 	ncrowd := len(o.crowds)
-	for icrowd, crowd := range o.crowds {
 
-		//io.Pf("\ncrowd = %v\n", crowd)
+	// run tournaments
+	for icrowd, crowd := range o.crowds {
 
 		// crossover, mutation and new objective values
 		for r := 0; r < n-1; r++ {
 			i, j := r, r+1
 			k, l := r*2, r*2+1
 			I, J := crowd[i], crowd[j]
-			//io.Pforan("i=%d j=%v k=%v l=%v   I=%d J=%v\n", i, j, k, l, I, J)
 			A, B := o.Pop[I], o.Pop[J]
-			//io.Pfyel("A=%v B=%v\n", A.Floats, B.Floats)
 			a, b := o.offspring[k], o.offspring[l]
 			if o.C.DiffEvol {
 				jcrowd := (icrowd + 1) % ncrowd
 				C, D := o.Pop[o.crowds[jcrowd][0]], o.Pop[o.crowds[jcrowd][1]]
-				//io.Pforan("A=%v B=%v\n", A.Floats, B.Floats)
-				//io.Pforan("C=%v D=%v\n", C.Floats, D.Floats)
 				o.diff_evol_crossover(a, b, A, B, C, D)
 			} else {
 				IndCrossover(a, b, A, B, time, &o.C.Ops)
@@ -363,7 +345,6 @@ func (o *Island) update_crowding(time int) {
 			IndMutation(b, time, &o.C.Ops)
 			o.C.OvaOor(a, o.Id, time+1, &o.Report)
 			o.C.OvaOor(b, o.Id, time+1, &o.Report)
-			//io.Pfcyan("a=%v b=%v\n", a.Floats, b.Floats)
 		}
 		//chk.Panic("stop")
 
@@ -371,10 +352,8 @@ func (o *Island) update_crowding(time int) {
 		for i := 0; i < n; i++ {
 			I := crowd[i]
 			A := o.Pop[I]
-			//io.Pf("\n")
 			for j := 0; j < m; j++ {
 				B := o.offspring[j]
-				//io.Pfpink("A=%v B=%v\n", A.Floats, B.Floats)
 				o.dist[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
 			}
 		}
@@ -392,32 +371,25 @@ func (o *Island) update_crowding(time int) {
 				k++
 			}
 		}
-		//io.Pforan("\nlinks = %v\n", o.match.Links)
-		//io.Pforan("nextround = %v\n", o.nextround)
 
 		// round 1: tournament
 		for i := 0; i < n; i++ {
 			I := crowd[i]
 			j := o.match.Links[i]
-			//io.Pforan("i=%d j=%v  I=%v\n", i, j, I)
 			A, B := o.Pop[I], o.offspring[j]
-			//io.Pfyel("A=%v B=%v\n", A.Floats, B.Floats)
 			o.tournament(A, B, I)
 		}
 
 		// next round
 		if m-n > 0 {
-			//io.Pf("\n ################## next round ##################\n")
 
 			// round 2: compute distances
-			//io.Pf("\n")
 			for i := 0; i < n; i++ {
 				I := crowd[i]
 				A := o.Bkp[I]
 				for j := 0; j < m-n; j++ {
 					J := o.nextround[j]
 					B := o.offspring[J]
-					//io.Pfblue2("A=%v B=%v\n", A.Floats, B.Floats)
 					o.distR2[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
 				}
 			}
@@ -426,7 +398,6 @@ func (o *Island) update_crowding(time int) {
 			// round 2: match competitors
 			o.matchR2.SetCostMatrix(o.distR2)
 			o.matchR2.Run()
-			//io.Pforan("\nlinks = %v\n", o.matchR2.Links)
 
 			// round 2: tournament
 			for i := 0; i < n; i++ {
@@ -434,9 +405,7 @@ func (o *Island) update_crowding(time int) {
 				k := o.matchR2.Links[i]
 				if k >= 0 {
 					j := o.nextround[k]
-					//io.Pforan("i=%d k=%v  I=%v j=%v\n", i, k, I, j)
 					A, B := o.Bkp[I], o.offspring[j]
-					//io.Pfyel("A=%v B=%v\n", A.Floats, B.Floats)
 					o.tournament(A, B, I)
 				}
 			}
@@ -487,21 +456,17 @@ func (o *Island) tournament(A, B *Individual, saveInto int) {
 	A_dom, B_dom := IndCompareDet(A, B)
 	if A_dom {
 		A.CopyInto(o.Bkp[saveInto]) // A wins
-		//io.Pf("A wins\n")
 		return
 	}
 	if B_dom {
 		B.CopyInto(o.Bkp[saveInto]) // B wins
-		//io.Pf("B wins\n")
 		return
 	}
 	if rnd.FlipCoin(0.5) { // tie => roll dice
 		A.CopyInto(o.Bkp[saveInto]) // A wins by chance
-		//io.Pf("A wins by chance\n")
 		return
 	}
 	B.CopyInto(o.Bkp[saveInto]) // B wins by chance
-	//io.Pf("B wins by chance\n")
 }
 
 // update_crowding runs the evolutionary process with niching via crowding and tournament selection

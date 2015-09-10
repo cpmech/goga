@@ -7,6 +7,7 @@ package goga
 import (
 	"bytes"
 	"math"
+	"time"
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
@@ -127,6 +128,14 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 // Run runs optimisations
 func (o *SimpleFltProb) Run(verbose bool) {
 
+	// benchmark
+	if verbose {
+		time0 := time.Now()
+		defer func() {
+			io.Pfblue2("\ncpu time = %v\n", time.Now().Sub(time0))
+		}()
+	}
+
 	// run all trials
 	for itrial := 0; itrial < o.C.Ntrials; itrial++ {
 
@@ -171,7 +180,7 @@ func (o *SimpleFltProb) Run(verbose bool) {
 
 		// message
 		if verbose {
-			io.Pfyel("x*="+o.NumfmtX+" f="+o.NumfmtF, xbest, o.ff[0])
+			io.Pfyel("%3d x*="+o.NumfmtX+" f="+o.NumfmtF, itrial, xbest, o.ff[0])
 			if unfeasible {
 				io.Pfred(" unfeasible\n")
 			} else {
@@ -196,7 +205,7 @@ func (o *SimpleFltProb) Run(verbose bool) {
 }
 
 // Stat prints statistical analysis
-func (o *SimpleFltProb) Stat(idxF, hlen int) {
+func (o *SimpleFltProb) Stat(idxF, hlen int, Fref float64) {
 	if o.C.Ntrials < 2 || o.Nfeasible < 2 {
 		return
 	}
@@ -207,7 +216,7 @@ func (o *SimpleFltProb) Stat(idxF, hlen int) {
 	}
 	fmin, fave, fmax, fdev := rnd.StatBasic(F, true)
 	io.Pf("fmin = %v\n", fmin)
-	io.PfYel("fave = %v\n", fave)
+	io.PfYel("fave = %v (%v)\n", fave, Fref)
 	io.Pf("fmax = %v\n", fmax)
 	io.Pf("fdev = %v\n\n", fdev)
 	io.Pf(rnd.BuildTextHist(nice_num(fmin-0.05), nice_num(fmax+0.05), 11, F, "%.2f", hlen))
