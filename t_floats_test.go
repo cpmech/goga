@@ -21,9 +21,6 @@ func Test_flt01(tst *testing.T) {
 	//verbose()
 	chk.PrintTitle("flt01. quadratic with inequalities")
 
-	// initialise random numbers generator
-	rnd.Init(0) // 0 => use current time as seed
-
 	// parameters
 	C := NewConfParams()
 	C.Pll = false
@@ -41,6 +38,7 @@ func Test_flt01(tst *testing.T) {
 		C.DoPlot = chk.Verbose
 	}
 	C.CalcDerived()
+	rnd.Init(C.Seed)
 
 	// functions
 	fcn := func(f, g, h []float64, x []float64) {
@@ -64,9 +62,6 @@ func Test_flt02(tst *testing.T) {
 
 	//verbose()
 	chk.PrintTitle("flt02. circle with equality constraint")
-
-	// initialise random numbers generator
-	rnd.Init(0)
 
 	// parameters
 	C := NewConfParams()
@@ -101,6 +96,7 @@ func Test_flt02(tst *testing.T) {
 	C.ShowDem = true
 	C.RegTol = 0.01
 	C.CalcDerived()
+	rnd.Init(C.Seed)
 
 	// geometry
 	xe := 1.0                      // centre of circle
@@ -141,42 +137,23 @@ func Test_flt03(tst *testing.T) {
 	C.Nova = 1
 	C.Noor = 2
 	C.Nisl = 4
-	C.Ninds = 12
+	C.Ninds = 24
 	C.GAtype = "crowd"
-	C.CrowdSize = 2
+	C.DiffEvol = true
+	C.CrowdSize = 3
 	C.ParetoPhi = 0.01
 	C.CompProb = true
-	C.Elite = false
-	C.Noise = 0.05
-	C.DoPlot = false
-	C.RegTol = 0
 	C.Tf = 100
 	C.Dtmig = 60
-	C.RangeFlt = [][]float64{{0, 1}}
+	C.RangeFlt = [][]float64{{0, 0.9999999999999}}
 	C.PopFltGen = PopFltGen
-	C.SetNbasesFixOp(8)
 	C.CalcDerived()
-
-	// initialise random numbers generator
-	rnd.Init(0)
-
-	// function
-	yfcn := func(x float64) float64 {
-		return math.Pow(math.Sin(5.0*math.Pi*x), 6.0)
-	}
-
-	// objective value function
-	C.OvaOor = func(ind *Individual, idIsland, t int, report *bytes.Buffer) {
-		x := ind.GetFloat(0)
-		ind.Ovas[0] = -yfcn(x)
-		ind.Oors[0] = utl.GtePenalty(x, 0, 1)
-		ind.Oors[1] = utl.GtePenalty(1, x, 1)
-	}
+	rnd.Init(C.Seed)
 
 	// post-processing function
 	values := utl.Deep3alloc(C.Tf/10, C.Nisl, C.Ninds)
 	C.PostProc = func(idIsland, time int, pop Population) {
-		if time%10 == 0 && false {
+		if time%10 == 0 {
 			k := time / 10
 			for i, ind := range pop {
 				values[k][idIsland][i] = ind.GetFloat(0)
@@ -184,21 +161,22 @@ func Test_flt03(tst *testing.T) {
 		}
 	}
 
-	// run
-	evo := NewEvolver(C)
-	evo.Run()
-
-	// print population
-	for _, isl := range evo.Islands {
-		io.Pf("%v", isl.Pop.Output(C))
+	// functions
+	yfcn := func(x float64) float64 { return math.Pow(math.Sin(5.0*math.Pi*x), 6.0) }
+	fcn := func(f, g, h []float64, x []float64) {
+		f[0] = -yfcn(x[0])
 	}
+
+	// simple problem
+	sim := NewSimpleFltProb(fcn, 1, 0, 0, C)
+	sim.Run(chk.Verbose)
 
 	// write histograms and plot
 	if chk.Verbose {
 
 		// write histograms
 		var buf bytes.Buffer
-		hist := rnd.Histogram{Stations: utl.LinSpace(0, 1, 26)}
+		hist := rnd.Histogram{Stations: utl.LinSpace(0, 1, 13)}
 		for k := 0; k < C.Tf/10; k++ {
 			for i := 0; i < C.Nisl; i++ {
 				clear := false
@@ -213,10 +191,10 @@ func Test_flt03(tst *testing.T) {
 
 		// plot
 		plt.SetForEps(0.8, 300)
-		xmin := evo.Islands[0].Pop[0].GetFloat(0)
+		xmin := sim.Evo.Islands[0].Pop[0].GetFloat(0)
 		xmax := xmin
 		for k := 0; k < C.Nisl; k++ {
-			for _, ind := range evo.Islands[k].Pop {
+			for _, ind := range sim.Evo.Islands[k].Pop {
 				x := ind.GetFloat(0)
 				y := yfcn(x)
 				xmin = utl.Min(xmin, x)
@@ -225,7 +203,6 @@ func Test_flt03(tst *testing.T) {
 			}
 		}
 		np := 401
-		//X := utl.LinSpace(xmin, xmax, np)
 		X := utl.LinSpace(0, 1, np)
 		Y := make([]float64, np)
 		for i := 0; i < np; i++ {
@@ -233,7 +210,6 @@ func Test_flt03(tst *testing.T) {
 		}
 		plt.Plot(X, Y, "'b-',clip_on=0,zorder=10")
 		plt.Gll("$x$", "$y$", "")
-		//plt.AxisXrange(0, 1)
 		plt.SaveD("/tmp/goga", "test_flt03_func.eps")
 	}
 }
@@ -245,84 +221,65 @@ func Test_flt04(tst *testing.T) {
 
 	// configuration
 	C := NewConfParams()
-	C.Nova = 2
-	C.Noor = 2
 	C.Nisl = 4
 	C.Ninds = 24
-	//C.GAtype = "std"
 	C.GAtype = "crowd"
-	//C.GAtype = "sharing"
 	C.DiffEvol = true
-	C.Elite = false
 	C.CrowdSize = 3
 	C.ParetoPhi = 0.05
-	C.ShAlp = 0.5
-	C.ShSig = 0.001
-	C.ShPhen = false
-	C.Noise = 0.05
-	C.DoPlot = false
-	C.RegTol = 0
 	C.Tf = 100
 	C.Dtmig = 25
 	C.RangeFlt = [][]float64{{0.1, 2.25}, {0.5, 2.5}}
 	C.PopFltGen = PopFltGen
-	C.Latin = true
 	C.CalcDerived()
-
-	// initialise random numbers generator
-	rnd.Init(0)
+	rnd.Init(C.Seed)
 
 	// data
 	// from Coelho (2007) page 19
 	ρ := 0.283 // lb/in³
-	h := 100.0 // in
+	H := 100.0 // in
 	P := 1e4   // lb
 	E := 3e7   // lb/in²
 	σ0 := 2e4  // lb/in²
 
 	// functions
-	twosq2 := 2.0 * math.Sqrt2
-	f1 := func(x []float64) float64 {
-		return 2.0 * ρ * h * x[1] * math.Sqrt(1.0+x[0]*x[0])
-	}
-	f2 := func(x []float64) float64 {
-		return P * h * math.Pow(1.0+x[0]*x[0], 1.5) * math.Sqrt(1.0+math.Pow(x[0], 4.0)) / (twosq2 * E * x[0] * x[0] * x[1])
-	}
-	g1 := func(x []float64) float64 {
-		return P*(1.0+x[0])*math.Sqrt(1.0+x[0]*x[0])/(twosq2*x[0]*x[1]) - σ0
-	}
-	g2 := func(x []float64) float64 {
-		return P*(1.0-x[0])*math.Sqrt(1.0+x[0]*x[0])/(twosq2*x[0]*x[1]) - σ0
+	TSQ2 := 2.0 * math.Sqrt2
+	fcn := func(f, g, h []float64, x []float64) {
+		f[0] = 2.0 * ρ * H * x[1] * math.Sqrt(1.0+x[0]*x[0])
+		f[1] = P * H * math.Pow(1.0+x[0]*x[0], 1.5) * math.Sqrt(1.0+math.Pow(x[0], 4.0)) / (TSQ2 * E * x[0] * x[0] * x[1])
+		g[0] = σ0 - P*(1.0+x[0])*math.Sqrt(1.0+x[0]*x[0])/(TSQ2*x[0]*x[1])
+		g[1] = σ0 - P*(1.0-x[0])*math.Sqrt(1.0+x[0]*x[0])/(TSQ2*x[0]*x[1])
 	}
 
 	// objective value function
 	C.OvaOor = func(ind *Individual, idIsland, t int, report *bytes.Buffer) {
 		x := ind.GetFloats()
-		ind.Ovas[0] = f1(x)
-		ind.Ovas[1] = f2(x)
-		ind.Oors[0] = utl.GtePenalty(0, g1(x), 1)
-		ind.Oors[1] = utl.GtePenalty(0, g2(x), 1)
-		//ind.Oors[2] = utl.GtePenalty(x[0], 0, 1)
-		//ind.Oors[3] = utl.GtePenalty(x[1], 0, 1)
+		f := make([]float64, 2)
+		g := make([]float64, 2)
+		fcn(f, g, nil, x)
+		ind.Ovas[0] = f[0]
+		ind.Ovas[1] = f[1]
+		ind.Oors[0] = utl.GtePenalty(g[0], 0, 1)
+		ind.Oors[1] = utl.GtePenalty(g[1], 0, 1)
 	}
 
-	// run
-	evo := NewEvolver(C)
-	evo.Run()
+	// simple problem
+	sim := NewSimpleFltProb(fcn, 2, 2, 0, C)
+	sim.Run(chk.Verbose)
 
 	// results
 	if chk.Verbose {
+
+		// reference data
 		_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
-		feasible := evo.GetFeasible()
-		ovas, _ := evo.GetResults(feasible)
-		ovafront, _ := evo.GetParetoFront(feasible, ovas, nil)
-		xova, yova := evo.GetFrontOvas(0, 1, ovafront)
-		//for _, ind := range feasible {
-		//x := ind.GetFloats()
-		//io.Pforan("f1=%8.4f f2=%8.4f g1=%12.4f g2=%12.4f\n", f1(x), f2(x), g1(x), g2(x))
-		//io.Pfyel("ovas = %v\n", ind.Ovas)
-		//io.Pfpink("oors = %v\n", ind.Oors)
-		//}
+
+		// Pareto-front
+		feasible := sim.Evo.GetFeasible()
+		ovas, _ := sim.Evo.GetResults(feasible)
+		ovafront, _ := sim.Evo.GetParetoFront(feasible, ovas, nil)
+		xova, yova := sim.Evo.GetFrontOvas(0, 1, ovafront)
+
+		// plot
 		plt.SetForEps(0.75, 355)
 		plt.Plot(dat["f1"], dat["f2"], "'k+',ms=3")
 		x := utl.DblsGetColumn(0, ovas)

@@ -29,11 +29,18 @@ type SimpleFltProb struct {
 
 	// data
 	Fcn SimpleFltFcn_t // function evaluator
-	F   []float64      // functions
-	G   []float64      // inequalities
-	H   []float64      // equalities
 	C   *ConfParams    // configuration parameters
-	Evo *Evolver       // evolver
+
+	// sandbox
+	nf int         // number of functions
+	ng int         // number of inequalities
+	nh int         // number of equalities
+	ff [][]float64 // [nisl][nf] functions
+	gg [][]float64 // [nisl][ng] inequalities
+	hh [][]float64 // [nisl][nh] equalities
+
+	// evolver
+	Evo *Evolver // evolver
 
 	// auxiliary
 	NumfmtX string // number format for x
@@ -64,25 +71,27 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 	// data
 	o = new(SimpleFltProb)
 	o.Fcn = fcn
-	o.F = make([]float64, nf)
-	o.G = make([]float64, ng)
-	o.H = make([]float64, nh)
 	o.C = C
 	o.C.Nova = nf
 	o.C.Noor = ng + nh
 
+	// sandbox
+	o.nf, o.ng, o.nh = nf, ng, nh
+	o.ff = utl.DblsAlloc(o.C.Nisl, o.nf)
+	o.gg = utl.DblsAlloc(o.C.Nisl, o.ng)
+	o.hh = utl.DblsAlloc(o.C.Nisl, o.nh)
+
 	// objective function
-	o.C.OvaOor = func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
+	o.C.OvaOor = func(ind *Individual, isl, time int, report *bytes.Buffer) {
 		x := ind.GetFloats()
-		o.Fcn(o.F, o.G, o.H, x)
-		for i, f := range o.F {
+		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], x)
+		for i, f := range o.ff[isl] {
 			ind.Ovas[i] = f
 		}
-		for i, g := range o.G {
+		for i, g := range o.gg[isl] {
 			ind.Oors[i] = utl.GtePenalty(g, 0.0, 1) // g[i] ≥ 0
 		}
-		ng := len(o.G)
-		for i, h := range o.H {
+		for i, h := range o.hh[isl] {
 			h = math.Abs(h)
 			ind.Ovas[0] += h
 			ind.Oors[ng+i] = utl.GtePenalty(o.C.Eps1, h, 1) // ϵ ≥ |h[i]|
@@ -134,17 +143,17 @@ func (o *SimpleFltProb) Run(verbose bool) {
 
 		// results
 		xbest := o.Evo.Best.GetFloats()
-		o.Fcn(o.F, o.G, o.H, xbest)
+		o.Fcn(o.ff[0], o.gg[0], o.hh[0], xbest)
 
 		// check if best is unfeasible
 		unfeasible := false
-		for _, g := range o.G {
+		for _, g := range o.gg[0] {
 			if g < 0 {
 				unfeasible = true
 				break
 			}
 		}
-		for _, h := range o.H {
+		for _, h := range o.hh[0] {
 			if math.Abs(h) > o.C.Eps1 {
 				unfeasible = true
 				break
@@ -161,7 +170,7 @@ func (o *SimpleFltProb) Run(verbose bool) {
 
 		// message
 		if verbose {
-			io.Pfyel("x*="+o.NumfmtX+" f="+o.NumfmtF, xbest, o.F)
+			io.Pfyel("x*="+o.NumfmtX+" f="+o.NumfmtF, xbest, o.ff[0])
 			if unfeasible {
 				io.Pfred(" unfeasible\n")
 			} else {
@@ -174,9 +183,9 @@ func (o *SimpleFltProb) Run(verbose bool) {
 			if o.Nfeasible == 1 {
 				o.PopsBest = o.Evo.GetPopulations()
 			} else {
-				fcur := utl.DblCopy(o.F)
-				o.Fcn(o.F, o.G, o.H, o.Xbest[o.Nfeasible-1])
-				cur_dom, _ := utl.DblsParetoMin(fcur, o.F)
+				fcur := utl.DblCopy(o.ff[0])
+				o.Fcn(o.ff[0], o.gg[0], o.hh[0], o.Xbest[o.Nfeasible-1])
+				cur_dom, _ := utl.DblsParetoMin(fcur, o.ff[0])
 				if cur_dom {
 					o.PopsBest = o.Evo.GetPopulations()
 				}
@@ -202,13 +211,11 @@ func (o *SimpleFltProb) Plot(fnkey string) {
 	Zf := utl.DblsAlloc(o.PltNpts, o.PltNpts)
 	var Zg [][][]float64
 	var Zh [][][]float64
-	ng := len(o.G)
-	nh := len(o.H)
-	if ng > 0 {
-		Zg = utl.Deep3alloc(ng, o.PltNpts, o.PltNpts)
+	if o.ng > 0 {
+		Zg = utl.Deep3alloc(o.ng, o.PltNpts, o.PltNpts)
 	}
-	if nh > 0 {
-		Zh = utl.Deep3alloc(nh, o.PltNpts, o.PltNpts)
+	if o.nh > 0 {
+		Zh = utl.Deep3alloc(o.nh, o.PltNpts, o.PltNpts)
 	}
 
 	// compute values
@@ -216,12 +223,12 @@ func (o *SimpleFltProb) Plot(fnkey string) {
 	for i := 0; i < o.PltNpts; i++ {
 		for j := 0; j < o.PltNpts; j++ {
 			x[0], x[1] = X[i][j], Y[i][j]
-			o.Fcn(o.F, o.G, o.H, x)
-			Zf[i][j] = o.F[o.PltIdxF]
-			for k, g := range o.G {
+			o.Fcn(o.ff[0], o.gg[0], o.hh[0], x)
+			Zf[i][j] = o.ff[0][o.PltIdxF]
+			for k, g := range o.gg[0] {
 				Zg[k][i][j] = g
 			}
-			for k, h := range o.H {
+			for k, h := range o.hh[0] {
 				Zh[k][i][j] = h
 			}
 		}
@@ -303,23 +310,20 @@ func (o *SimpleFltProb) Plot(fnkey string) {
 func (o *SimpleFltProb) find_best() (x, f, g, h []float64) {
 	chk.IntAssertLessThan(0, o.Nfeasible) // 0 < nfeasible
 	nx := len(o.C.RangeFlt)
-	nf := len(o.F)
-	ng := len(o.G)
-	nh := len(o.H)
 	x = make([]float64, nx)
-	f = make([]float64, nf)
-	g = make([]float64, ng)
-	h = make([]float64, nh)
+	f = make([]float64, o.nf)
+	g = make([]float64, o.ng)
+	h = make([]float64, o.nh)
 	copy(x, o.Xbest[0])
 	o.Fcn(f, g, h, x)
 	for i := 1; i < o.Nfeasible; i++ {
-		o.Fcn(o.F, o.G, o.H, o.Xbest[i])
-		_, other_dom := utl.DblsParetoMin(f, o.F)
+		o.Fcn(o.ff[0], o.gg[0], o.hh[0], o.Xbest[i])
+		_, other_dom := utl.DblsParetoMin(f, o.ff[0])
 		if other_dom {
 			copy(x, o.Xbest[i])
-			copy(f, o.F)
-			copy(g, o.G)
-			copy(h, o.H)
+			copy(f, o.ff[0])
+			copy(g, o.gg[0])
+			copy(h, o.hh[0])
 		}
 	}
 	return

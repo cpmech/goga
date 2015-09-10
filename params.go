@@ -125,7 +125,7 @@ func (o *ConfParams) SetDefault() {
 	// time control
 	o.Tf = 100
 	o.Dtout = 10
-	o.Dtmig = 40
+	o.Dtmig = 25
 
 	// migration and regeneration
 	o.NmigInd = 2

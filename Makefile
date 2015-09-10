@@ -3,4 +3,4 @@
 # license that can be found in the LICENSE file.
 
 race:
-	go test -race -test.run="evo05"
+	go test -race -test.run="flt04"
