@@ -25,6 +25,9 @@ type Evolver struct {
 // NewEvolverPop creates a new evolver based on given populations
 func NewEvolver(C *ConfParams) (o *Evolver) {
 
+	// check input
+	C.check_input()
+
 	// data
 	o = new(Evolver)
 	o.C = C

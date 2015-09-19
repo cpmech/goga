@@ -98,6 +98,9 @@ type ConfParams struct {
 	PopKeyGen PopKeyGen_t // generate population of keys (bytes)
 	PopBytGen PopBytGen_t // generate population of bytes
 	PopFunGen PopFunGen_t // generate population of functions
+
+	// auxiliary
+	derived_called bool // flags whether CalcDerived was called or not
 }
 
 // SetDefault sets default parameters
@@ -197,9 +200,23 @@ func (o *ConfParams) SetIntOrd(nstations int) {
 // CalcDerived calculates derived quantities
 func (o *ConfParams) CalcDerived() {
 	o.Ops.CalcDerived(o.Tf, o.RangeFlt)
-	//if o.DiffEvol {
-	//o.CrowdSize = 4
-	//}
+	o.derived_called = true
+}
+
+// check_input checks whether paramters are consistent or not
+func (o *ConfParams) check_input() {
+	if !o.derived_called {
+		chk.Panic("ConfParams.CalcDerived must be called before Run")
+	}
+	if o.Nova < 1 {
+		chk.Panic("number of objective values (nova) must be greater than 0")
+	}
+	if len(o.RangeFlt) != len(o.Ops.Xrange) {
+		chk.Panic("number of genes in RangeFlt must be equal to number of genes in Ops.Xrange => ConfParams.CalcDerived must be called. %d != %d", len(o.RangeFlt), len(o.Ops.Xrange))
+	}
+	if o.Nbases != 1 && o.DiffEvol {
+		chk.Panic("number of bases must be 1 when using DiffEvol operator")
+	}
 }
 
 // NewConfParams returns a new ConfParams structure, with default values set
