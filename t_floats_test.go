@@ -41,7 +41,7 @@ func Test_flt01(tst *testing.T) {
 	rnd.Init(C.Seed)
 
 	// functions
-	fcn := func(f, g, h []float64, x []float64) {
+	fcn := func(f, g, h []float64, x []float64, isl int) {
 		f[0] = x[0]*x[0]/2.0 + x[1]*x[1] - x[0]*x[1] - 2.0*x[0] - 6.0*x[1]
 		g[0] = 2.0 - x[0] - x[1]     // ≥ 0
 		g[1] = 2.0 + x[0] - 2.0*x[1] // ≥ 0
@@ -107,7 +107,7 @@ func Test_flt02(tst *testing.T) {
 	nx := len(xc)
 
 	// functions
-	fcn := func(f, g, h []float64, x []float64) {
+	fcn := func(f, g, h []float64, x []float64, isl int) {
 		res := 0.0
 		for i := 0; i < nx; i++ {
 			res += (x[i] - xc[i]) * (x[i] - xc[i])
@@ -167,7 +167,7 @@ func Test_flt03(tst *testing.T) {
 
 	// functions
 	yfcn := func(x float64) float64 { return math.Pow(math.Sin(5.0*math.Pi*x), 6.0) }
-	fcn := func(f, g, h []float64, x []float64) {
+	fcn := func(f, g, h []float64, x []float64, isl int) {
 		f[0] = -yfcn(x[0])
 	}
 
@@ -248,7 +248,7 @@ func Test_flt04(tst *testing.T) {
 
 	// functions
 	TSQ2 := 2.0 * math.Sqrt2
-	fcn := func(f, g, h []float64, x []float64) {
+	fcn := func(f, g, h []float64, x []float64, isl int) {
 		f[0] = 2.0 * ρ * H * x[1] * math.Sqrt(1.0+x[0]*x[0])
 		f[1] = P * H * math.Pow(1.0+x[0]*x[0], 1.5) * math.Sqrt(1.0+math.Pow(x[0], 4.0)) / (TSQ2 * E * x[0] * x[0] * x[1])
 		g[0] = σ0 - P*(1.0+x[0])*math.Sqrt(1.0+x[0]*x[0])/(TSQ2*x[0]*x[1])
@@ -256,11 +256,11 @@ func Test_flt04(tst *testing.T) {
 	}
 
 	// objective value function
-	C.OvaOor = func(ind *Individual, idIsland, t int, report *bytes.Buffer) {
+	C.OvaOor = func(ind *Individual, isl, t int, report *bytes.Buffer) {
 		x := ind.GetFloats()
 		f := make([]float64, 2)
 		g := make([]float64, 2)
-		fcn(f, g, nil, x)
+		fcn(f, g, nil, x, isl)
 		ind.Ovas[0] = f[0]
 		ind.Ovas[1] = f[1]
 		ind.Oors[0] = utl.GtePenalty(g[0], 0, 1)

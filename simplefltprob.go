@@ -17,7 +17,7 @@ import (
 )
 
 // SimpleFltFcn_t simple float problem function type
-type SimpleFltFcn_t func(f, g, h, x []float64)
+type SimpleFltFcn_t func(f, g, h, x []float64, isl int)
 
 // SimpleFltProb implements optimisation problems defined by:
 //  min  {f0(x), f1(x), f2(x), ...}  nf functions
@@ -87,7 +87,7 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 	// objective function
 	o.C.OvaOor = func(ind *Individual, isl, time int, report *bytes.Buffer) {
 		x := ind.GetFloats()
-		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], x)
+		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], x, isl)
 		for i, f := range o.ff[isl] {
 			ind.Ovas[i] = f
 		}
@@ -150,8 +150,9 @@ func (o *SimpleFltProb) Run(verbose bool) {
 		o.Evo.Run()
 
 		// results
+		isl := 0
 		xbest := o.Evo.Best.GetFloats()
-		o.Fcn(o.ff[0], o.gg[0], o.hh[0], xbest)
+		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], xbest, isl)
 
 		// check if best is unfeasible
 		unfeasible := false
@@ -200,7 +201,7 @@ func (o *SimpleFltProb) Run(verbose bool) {
 				o.PopsBest = o.Evo.GetPopulations()
 			} else {
 				fcur := utl.DblCopy(o.ff[0])
-				o.Fcn(o.ff[0], o.gg[0], o.hh[0], o.Xbest[o.Nfeasible-1])
+				o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[o.Nfeasible-1], isl)
 				cur_dom, _ := utl.DblsParetoMin(fcur, o.ff[0])
 				if cur_dom {
 					o.PopsBest = o.Evo.GetPopulations()
@@ -216,9 +217,10 @@ func (o *SimpleFltProb) Stat(idxF, hlen int, Fref float64) {
 		return
 	}
 	F := make([]float64, o.Nfeasible)
+	isl := 0
 	for i := 0; i < o.Nfeasible; i++ {
-		o.Fcn(o.ff[0], o.gg[0], o.hh[0], o.Xbest[i])
-		F[i] = o.ff[0][idxF]
+		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[i], isl)
+		F[i] = o.ff[isl][idxF]
 	}
 	fmin, fave, fmax, fdev := rnd.StatBasic(F, true)
 	io.Pf("fmin = %v\n", fmin)
@@ -254,10 +256,11 @@ func (o *SimpleFltProb) Plot(fnkey string) {
 
 	// compute values
 	x := make([]float64, 2)
+	isl := 0
 	for i := 0; i < o.PltNpts; i++ {
 		for j := 0; j < o.PltNpts; j++ {
 			x[0], x[1] = X[i][j], Y[i][j]
-			o.Fcn(o.ff[0], o.gg[0], o.hh[0], x)
+			o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], x, isl)
 			Zf[i][j] = o.ff[0][o.PltIdxF]
 			for k, g := range o.gg[0] {
 				Zg[k][i][j] = g
@@ -349,9 +352,10 @@ func (o *SimpleFltProb) find_best() (x, f, g, h []float64) {
 	g = make([]float64, o.ng)
 	h = make([]float64, o.nh)
 	copy(x, o.Xbest[0])
-	o.Fcn(f, g, h, x)
+	isl := 0
+	o.Fcn(f, g, h, x, isl)
 	for i := 1; i < o.Nfeasible; i++ {
-		o.Fcn(o.ff[0], o.gg[0], o.hh[0], o.Xbest[i])
+		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[i], isl)
 		_, other_dom := utl.DblsParetoMin(f, o.ff[0])
 		if other_dom {
 			copy(x, o.Xbest[i])
