@@ -47,6 +47,7 @@ type SimpleFltProb struct {
 	// auxiliary
 	NumfmtX string // number format for x
 	NumfmtF string // number format for f(x)
+	ShowCts bool   // show g(x) and/or h(x) values if verbose
 
 	// results and stat
 	Xbest     [][]float64 // [nfeasible][nx] (max=ntrials) the best feasible floats
@@ -178,6 +179,14 @@ func (o *SimpleFltProb) Run(verbose bool) {
 		// message
 		if verbose {
 			io.Pfyel("%3d x*="+o.NumfmtX+" f="+o.NumfmtF, itrial, xbest, o.ff[0])
+			if o.ShowCts {
+				if o.ng > 0 {
+					io.Pfcyan(" g="+o.NumfmtF, o.gg[0])
+				}
+				if o.nh > 0 {
+					io.Pfcyan(" h="+o.NumfmtF, o.hh[0])
+				}
+			}
 			if unfeasible {
 				io.Pfred(" unfeasible\n")
 			} else {
