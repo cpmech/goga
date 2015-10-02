@@ -213,7 +213,8 @@ func (o *SimpleFltProb) Run(verbose bool) {
 
 // Stat prints statistical analysis
 func (o *SimpleFltProb) Stat(idxF, hlen int, Fref float64) (fmin, fave, fmax, fdev float64) {
-	if o.C.Ntrials < 2 || o.Nfeasible < 2 {
+	fmin, fave, fmax, fdev = 1e30, 1e30, 1e30, 1e30
+	if o.Nfeasible < 1 {
 		return
 	}
 	F := make([]float64, o.Nfeasible)
@@ -221,6 +222,10 @@ func (o *SimpleFltProb) Stat(idxF, hlen int, Fref float64) (fmin, fave, fmax, fd
 	for i := 0; i < o.Nfeasible; i++ {
 		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[i], isl)
 		F[i] = o.ff[isl][idxF]
+	}
+	if o.Nfeasible < 2 {
+		fmin, fave, fmax = F[0], F[0], F[0]
+		return
 	}
 	fmin, fave, fmax, fdev = rnd.StatBasic(F, true)
 	io.Pf("fmin = %v\n", fmin)
