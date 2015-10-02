@@ -212,7 +212,7 @@ func (o *SimpleFltProb) Run(verbose bool) {
 }
 
 // Stat prints statistical analysis
-func (o *SimpleFltProb) Stat(idxF, hlen int, Fref float64) {
+func (o *SimpleFltProb) Stat(idxF, hlen int, Fref float64) (fmin, fave, fmax, fdev float64) {
 	if o.C.Ntrials < 2 || o.Nfeasible < 2 {
 		return
 	}
@@ -222,12 +222,13 @@ func (o *SimpleFltProb) Stat(idxF, hlen int, Fref float64) {
 		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[i], isl)
 		F[i] = o.ff[isl][idxF]
 	}
-	fmin, fave, fmax, fdev := rnd.StatBasic(F, true)
+	fmin, fave, fmax, fdev = rnd.StatBasic(F, true)
 	io.Pf("fmin = %v\n", fmin)
 	io.PfYel("fave = %v (%v)\n", fave, Fref)
 	io.Pf("fmax = %v\n", fmax)
 	io.Pf("fdev = %v\n\n", fdev)
 	io.Pf(rnd.BuildTextHist(nice_num(fmin-0.05), nice_num(fmax+0.05), 11, F, "%.2f", hlen))
+	return
 }
 
 // Plot plots contour
