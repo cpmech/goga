@@ -54,18 +54,22 @@ type SimpleFltProb struct {
 	Nfeasible int         // counter for feasible results
 
 	// plotting
-	PopsIni    []Population // [nisl] initial populations in all islands for the best trial
-	PopsBest   []Population // [nisl] the best populations for the best trial
-	PltDirout  string       // directory to save files
-	PltIdxF    int          // index of which f[i] to plot
-	PltNpts    int          // number of points for contour
-	PltCmapIdx int          // colormap index
-	PltCsimple bool         // simple contour
-	PltAxEqual bool         // axes-equal
-	PltLwg     float64      // linewidth for g functions
-	PltLwh     float64      // linewidth for h functions
-	PltArgs    string       // extra arguments for plot
-	PltExtra   func()       // extra function
+	PopsIni         []Population // [nisl] initial populations in all islands for the best trial
+	PopsBest        []Population // [nisl] the best populations for the best trial
+	PltDirout       string       // directory to save files
+	PltIdxF         int          // index of which f[i] to plot
+	PltNpts         int          // number of points for contour
+	PltCmapIdx      int          // colormap index
+	PltCsimple      bool         // simple contour
+	PltAxEqual      bool         // axes-equal
+	PltLwg          float64      // linewidth for g functions
+	PltLwh          float64      // linewidth for h functions
+	PltArgs         string       // extra arguments for plot
+	PltExtra        func()       // extra function
+	PltXrange       []float64    // to override x-range
+	PltYrange       []float64    // to override y-range
+	PltShowIniPop   bool         // show ini population
+	PltShowFinalPop bool         // show final population
 }
 
 // Init initialises simple flot problem structure
@@ -119,6 +123,8 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 		o.PltNpts = 41
 		o.PltLwg = 1.5
 		o.PltLwh = 1.5
+		o.PltShowIniPop = true
+		o.PltShowFinalPop = true
 	}
 	return
 }
@@ -247,6 +253,12 @@ func (o *SimpleFltProb) Plot(fnkey string) {
 	// limits and meshgrid
 	xmin, xmax := o.C.RangeFlt[0][0], o.C.RangeFlt[0][1]
 	ymin, ymax := o.C.RangeFlt[1][0], o.C.RangeFlt[1][1]
+	if o.PltXrange != nil {
+		xmin, xmax = o.PltXrange[0], o.PltXrange[1]
+	}
+	if o.PltYrange != nil {
+		ymin, ymax = o.PltYrange[0], o.PltYrange[1]
+	}
 
 	// auxiliary variables
 	X, Y := utl.MeshGrid2D(xmin, xmax, ymin, ymax, o.PltNpts, o.PltNpts)
@@ -311,21 +323,25 @@ func (o *SimpleFltProb) Plot(fnkey string) {
 
 	// initial populations
 	l := "initial population"
-	for _, pop := range o.PopsIni {
-		for _, ind := range pop {
-			x := ind.GetFloats()
-			plt.PlotOne(x[0], x[1], io.Sf("'k.', zorder=20, clip_on=0, label='%s'", l))
-			l = ""
+	if o.PltShowIniPop {
+		for _, pop := range o.PopsIni {
+			for _, ind := range pop {
+				x := ind.GetFloats()
+				plt.PlotOne(x[0], x[1], io.Sf("'k.', zorder=20, clip_on=0, label='%s'", l))
+				l = ""
+			}
 		}
 	}
 
 	// final populations
 	l = "final population"
-	for _, pop := range o.PopsBest {
-		for _, ind := range pop {
-			x := ind.GetFloats()
-			plt.PlotOne(x[0], x[1], io.Sf("'ko', ms=6, zorder=30, clip_on=0, label='%s', markerfacecolor='none'", l))
-			l = ""
+	if o.PltShowFinalPop {
+		for _, pop := range o.PopsBest {
+			for _, ind := range pop {
+				x := ind.GetFloats()
+				plt.PlotOne(x[0], x[1], io.Sf("'ko', ms=6, zorder=30, clip_on=0, label='%s', markerfacecolor='none'", l))
+				l = ""
+			}
 		}
 	}
 
