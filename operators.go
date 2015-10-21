@@ -21,23 +21,28 @@ import (
 // OpsData holds data for crossover and mutation operators
 type OpsData struct {
 
-	// constants
-	Pc       float64     // probability of crossover
-	Pm       float64     // probability of mutation
-	Ncuts    int         // number of cuts during crossover
-	Nchanges int         // number of changes during mutation
+	// input
+	Pc        float64 // probability of crossover
+	Pm        float64 // probability of mutation
+	Ncuts     int     // number of cuts during crossover
+	Nchanges  int     // number of changes during mutation
+	MwiczB    float64 // Michalewicz' power coefficient
+	BlxAlp    float64 // BLX-α coefficient
+	Mmax      float64 // multiplier for mutation
+	Cuts      []int   // specified cuts for crossover. can be <nil>
+	OrdSti    []int   // {start, end, insertPoint}. can be <nil>
+	EnfRange  bool    // do enforce range
+	DebEtac   float64 // Deb's SBX crossover parameter
+	DebEtam   float64 // Deb's parameter-based mutation parameter
+	DEpc      float64 // differential-evolution crossover probability
+	DEmult    float64 // differential-evolution multiplier
+	FltCxName string  // crossover function name. ""=default; "mw"=BLX-α evolution; "db"=Deb's SBX; "de"=differential; "cl"=classic
+	FltMtName string  // mutation function name. ""=default; "mw"=Michaelewicz; "db"=Deb's parameter-based
+
+	// derived
+	Use4inds bool        // crossover needs 4 individuals (A,B,C,D); e.g. with differential evolution (de)
 	Tmax     float64     // max number of generations
-	MwiczB   float64     // Michalewicz' power coefficient
-	BlxAlp   float64     // BLX-α coefficient
-	Mmax     float64     // multiplier for mutation
-	Cuts     []int       // specified cuts for crossover. can be <nil>
-	OrdSti   []int       // {start, end, insertPoint}. can be <nil>
 	Xrange   [][]float64 // [ngenes][2] genes minimum and maximum values
-	EnfRange bool        // do enforce range
-	DebEtac  float64     // Deb's SBX crossover parameter
-	DebEtam  float64     // Deb's parameter-based mutation parameter
-	DEpc     float64     // differential-evolution crossover probability
-	DEmult   float64     // differential-evolution multiplier
 
 	// crossover functions
 	CxInt CxIntFunc_t // int crossover function
@@ -59,7 +64,7 @@ type OpsData struct {
 // SetDefault sets default values
 func (o *OpsData) SetDefault() {
 
-	// constants
+	// input
 	o.Pc = 0.8
 	o.Pm = 0.01
 	o.Ncuts = 2
@@ -75,7 +80,7 @@ func (o *OpsData) SetDefault() {
 
 	// crossover functions
 	o.CxInt = IntCrossover
-	o.CxFlt = FltCrossoverDeb
+	o.CxFlt = FltCrossoverDB
 	o.CxStr = StrCrossover
 	o.CxKey = KeyCrossover
 	o.CxByt = BytCrossover
@@ -83,7 +88,7 @@ func (o *OpsData) SetDefault() {
 
 	// mutation functions
 	o.MtInt = IntMutation
-	o.MtFlt = FltMutationDeb
+	o.MtFlt = FltMutationDB
 	o.MtStr = StrMutation
 	o.MtKey = KeyMutation
 	o.MtByt = BytMutation
@@ -94,6 +99,25 @@ func (o *OpsData) SetDefault() {
 func (o *OpsData) CalcDerived(Tf int, xrange [][]float64) {
 	o.Tmax = float64(Tf)
 	o.Xrange = xrange
+	switch o.FltCxName {
+	case "mw":
+		o.CxFlt = FltCrossoverMW
+	case "db":
+		o.CxFlt = FltCrossoverDB
+	case "de":
+		o.CxFlt = FltCrossoverDE
+		o.Use4inds = true
+	case "cl":
+		o.CxFlt = FltCrossover
+	}
+	switch o.FltMtName {
+	case "mw":
+		o.MtFlt = FltMutationMW
+	case "db":
+		o.MtFlt = FltMutationDB
+	case "cl":
+		o.MtFlt = FltMutation
+	}
 }
 
 // MwiczDelta computes Michalewicz' Δ function
@@ -123,23 +147,28 @@ func GetFunctionName(i interface{}) string {
 // Report generates report
 func (o *OpsData) Report(buf *bytes.Buffer) {
 	io.Ff(buf, `
-# constants
-Pc       = %v # probability of crossover
-Pm       = %v # probability of mutation
-Ncuts    = %v # number of cuts during crossover
-Nchanges = %v # number of changes during mutation
+# input
+Pc        = %v # probability of crossover
+Pm        = %v # probability of mutation
+Ncuts     = %v # number of cuts during crossover
+Nchanges  = %v # number of changes during mutation
+MwiczB    = %v # Michalewicz' power coefficient
+BlxAlp    = %v # BLX-α coefficient
+Mmax      = %v # multiplier for mutation
+Cuts      = %v # specified cuts for crossover. can be <nil>
+OrdSti    = %v # {start, end, insertPoint}. can be <nil>
+EnfRange  = %v # do enforce range
+DebEtac   = %v # Deb's SBX crossover parameter
+DebEtam   = %v # Deb's parameter-based mutation parameter
+DEpc      = %v # differential-evolution crossover probability
+DEmult    = %v # differential-evolution multiplier
+FltCxName = %q # crossover function name. ""=default; "deb"=Deb's SBX; "de"=differential; "blx"=BLX-α evolution; "classic"=classic
+FltMtName = %q # mutation function name. ""=default; "mw"=Michaelewicz; "deb"=Deb's parameter-based
+
+# derived
+Use4inds = %v # crossover needs 4 individuals (A,B,C,D); e.g. with differential evolution (de)
 Tmax     = %v # max number of generations
-MwiczB   = %v # Michalewicz' power coefficient
-BlxAlp   = %v # BLX-α coefficient
-Mmax     = %v # multiplier for mutation
-Cuts     = %v # specified cuts for crossover. can be <nil>
-OrdSti   = %v # {start, end, insertPoint}. can be <nil>
 Xrange   = %v # [ngenes][2] genes minimum and maximum values
-EnfRange = %v # do enforce range
-DebEtac  = %v # Deb's SBX crossover parameter
-DebEtam  = %v # Deb's parameter-based mutation parameter
-DEpc     = %v # differential-evolution crossover probability
-DEmult   = %v # differential-evolution multiplier
 
 # crossover functions
 CxInt = %v # int crossover function
@@ -156,8 +185,9 @@ MtStr = %v # str mutation function
 MtKey = %v # key mutation function
 MtByt = %v # byt mutation function
 MtFun = %v # fun mutation function
-`, o.Pc, o.Pm, o.Ncuts, o.Nchanges, o.Tmax, o.MwiczB, o.BlxAlp, o.Mmax,
-		o.Cuts, o.OrdSti, o.Xrange, o.EnfRange, o.DebEtac, o.DebEtam, o.DEpc, o.DEmult,
+`, o.Pc, o.Pm, o.Ncuts, o.Nchanges, o.MwiczB, o.BlxAlp, o.Mmax, o.Cuts, o.OrdSti, o.EnfRange,
+		o.DebEtac, o.DebEtam, o.DEpc, o.DEmult, o.FltCxName, o.FltMtName,
+		o.Use4inds, o.Tmax, o.Xrange,
 		chk.GetFunctionName(o.CxInt), chk.GetFunctionName(o.CxFlt), chk.GetFunctionName(o.CxStr),
 		chk.GetFunctionName(o.CxKey), chk.GetFunctionName(o.CxByt), chk.GetFunctionName(o.CxFun),
 		chk.GetFunctionName(o.MtInt), chk.GetFunctionName(o.MtFlt), chk.GetFunctionName(o.MtStr),

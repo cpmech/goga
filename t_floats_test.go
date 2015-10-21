@@ -27,8 +27,8 @@ func Test_flt01(tst *testing.T) {
 	C.Nisl = 1
 	C.Ninds = 12
 	C.GAtype = "crowd"
+	C.Ops.FltCxName = "de"
 	C.CrowdSize = 3
-	C.DiffEvol = true
 	C.RangeFlt = [][]float64{
 		{-2, 2}, // gene # 0: min and max
 		{-2, 2}, // gene # 1: min and max
@@ -56,6 +56,7 @@ func Test_flt01(tst *testing.T) {
 
 	// plot
 	sim.Plot("test_flt01")
+	C.Report("/tmp/goga", "tst_flt01")
 }
 
 func Test_flt02(tst *testing.T) {
@@ -78,7 +79,7 @@ func Test_flt02(tst *testing.T) {
 	C.CrowdSize = 3
 	C.CompProb = false
 	C.GAtype = "crowd"
-	C.DiffEvol = true
+	C.Ops.FltCxName = "de"
 	C.RangeFlt = [][]float64{
 		{-1, 3}, // gene # 0: min and max
 		{-1, 3}, // gene # 1: min and max
@@ -143,7 +144,7 @@ func Test_flt03(tst *testing.T) {
 	C.Nisl = 4
 	C.Ninds = 24
 	C.GAtype = "crowd"
-	C.DiffEvol = true
+	C.Ops.FltCxName = "sbx"
 	C.CrowdSize = 3
 	C.ParetoPhi = 0.01
 	C.CompProb = true
@@ -220,7 +221,7 @@ func Test_flt03(tst *testing.T) {
 
 func Test_flt04(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt04. two-bar truss. Pareto-optimal")
 
 	// configuration
@@ -228,7 +229,7 @@ func Test_flt04(tst *testing.T) {
 	C.Nisl = 4
 	C.Ninds = 24
 	C.GAtype = "crowd"
-	C.DiffEvol = true
+	C.Ops.FltCxName = "de"
 	C.CrowdSize = 3
 	C.ParetoPhi = 0.05
 	C.Tf = 100
@@ -285,7 +286,7 @@ func Test_flt04(tst *testing.T) {
 
 		// plot
 		plt.SetForEps(0.75, 355)
-		plt.Plot(dat["f1"], dat["f2"], "'k+',ms=3")
+		plt.Plot(dat["f1"], dat["f2"], "'b-',ms=3")
 		x := utl.DblsGetColumn(0, ovas)
 		y := utl.DblsGetColumn(1, ovas)
 		plt.Plot(x, y, "'r.'")

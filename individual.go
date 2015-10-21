@@ -268,24 +268,48 @@ func IndDistance(A, B *Individual, imin, imax []int, fmin, fmax []float64) (dist
 
 // IndCrossover performs the crossover between chromosomes of two individuals A and B
 // resulting in the chromosomes of other two individuals a and b
-func IndCrossover(a, b, A, B *Individual, time int, ops *OpsData) {
+func IndCrossover(a, b, A, B, C, D *Individual, time int, ops *OpsData) {
 	if A.Ints != nil {
-		ops.CxInt(a.Ints, b.Ints, A.Ints, B.Ints, time, ops)
+		if D == nil {
+			ops.CxInt(a.Ints, b.Ints, A.Ints, B.Ints, nil, nil, time, ops)
+		} else {
+			ops.CxInt(a.Ints, b.Ints, A.Ints, B.Ints, C.Ints, D.Ints, time, ops)
+		}
 	}
 	if A.Floats != nil {
-		ops.CxFlt(a.Floats, b.Floats, A.Floats, B.Floats, time, ops)
+		if D == nil {
+			ops.CxFlt(a.Floats, b.Floats, A.Floats, B.Floats, nil, nil, time, ops)
+		} else {
+			ops.CxFlt(a.Floats, b.Floats, A.Floats, B.Floats, C.Floats, D.Floats, time, ops)
+		}
 	}
 	if A.Strings != nil {
-		ops.CxStr(a.Strings, b.Strings, A.Strings, B.Strings, time, ops)
+		if D == nil {
+			ops.CxStr(a.Strings, b.Strings, A.Strings, B.Strings, nil, nil, time, ops)
+		} else {
+			ops.CxStr(a.Strings, b.Strings, A.Strings, B.Strings, C.Strings, D.Strings, time, ops)
+		}
 	}
 	if A.Keys != nil {
-		ops.CxKey(a.Keys, b.Keys, A.Keys, B.Keys, time, ops)
+		if D == nil {
+			ops.CxKey(a.Keys, b.Keys, A.Keys, B.Keys, nil, nil, time, ops)
+		} else {
+			ops.CxKey(a.Keys, b.Keys, A.Keys, B.Keys, C.Keys, D.Keys, time, ops)
+		}
 	}
 	if A.Bytes != nil {
-		ops.CxByt(a.Bytes, b.Bytes, A.Bytes, B.Bytes, time, ops)
+		if D == nil {
+			ops.CxByt(a.Bytes, b.Bytes, A.Bytes, B.Bytes, nil, nil, time, ops)
+		} else {
+			ops.CxByt(a.Bytes, b.Bytes, A.Bytes, B.Bytes, C.Bytes, D.Bytes, time, ops)
+		}
 	}
 	if A.Funcs != nil {
-		ops.CxFun(a.Funcs, b.Funcs, A.Funcs, B.Funcs, time, ops)
+		if D == nil {
+			ops.CxFun(a.Funcs, b.Funcs, A.Funcs, B.Funcs, nil, nil, time, ops)
+		} else {
+			ops.CxFun(a.Funcs, b.Funcs, A.Funcs, B.Funcs, C.Funcs, D.Funcs, time, ops)
+		}
 	}
 }
 

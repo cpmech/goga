@@ -314,12 +314,12 @@ func (o *Island) update_crowding(time int) {
 			I, J := crowd[i], crowd[j]
 			A, B := o.Pop[I], o.Pop[J]
 			a, b := o.offspring[k], o.offspring[l]
-			if o.C.DiffEvol {
+			if o.C.Ops.Use4inds {
 				jcrowd := (icrowd + 1) % ncrowd
 				C, D := o.Pop[o.crowds[jcrowd][0]], o.Pop[o.crowds[jcrowd][1]]
-				o.diff_evol_crossover(a, b, A, B, C, D)
+				IndCrossover(a, b, A, B, C, D, time, &o.C.Ops)
 			} else {
-				IndCrossover(a, b, A, B, time, &o.C.Ops)
+				IndCrossover(a, b, A, B, nil, nil, time, &o.C.Ops)
 			}
 			IndMutation(a, time, &o.C.Ops)
 			IndMutation(b, time, &o.C.Ops)
@@ -387,33 +387,6 @@ func (o *Island) update_crowding(time int) {
 				}
 			}
 		}
-	}
-}
-
-// diff_evol_crossover implements the differential-evolution crossover
-// TODO: move this to operators file
-func (o *Island) diff_evol_crossover(a, b, A, B, C, D *Individual) {
-	nflts := len(A.Floats)
-	sa := rnd.Int(0, nflts-1)
-	sb := rnd.Int(0, nflts-1)
-	var x float64
-	for s := 0; s < nflts; s++ {
-
-		// a
-		if rnd.FlipCoin(o.C.Ops.DEpc) || s == sa {
-			x = B.Floats[s] + o.C.Ops.DEmult*(C.Floats[s]-D.Floats[s])
-		} else {
-			x = A.Floats[s]
-		}
-		a.Floats[s] = o.C.Ops.EnforceRange(s, x)
-
-		// b
-		if rnd.FlipCoin(o.C.Ops.DEpc) || s == sb {
-			x = A.Floats[s] + o.C.Ops.DEmult*(C.Floats[s]-D.Floats[s])
-		} else {
-			x = B.Floats[s]
-		}
-		b.Floats[s] = o.C.Ops.EnforceRange(s, x)
 	}
 }
 
@@ -494,7 +467,7 @@ func (o *Island) update_standard(time int) {
 	// reproduction
 	h := ninds / 2
 	for i := 0; i < ninds/2; i++ {
-		IndCrossover(o.Bkp[i], o.Bkp[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], time, &o.C.Ops)
+		IndCrossover(o.Bkp[i], o.Bkp[h+i], o.Pop[o.A[i]], o.Pop[o.B[i]], nil, nil, time, &o.C.Ops)
 		IndMutation(o.Bkp[i], time, &o.C.Ops)
 		IndMutation(o.Bkp[h+i], time, &o.C.Ops)
 	}

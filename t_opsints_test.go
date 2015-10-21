@@ -28,7 +28,7 @@ func Test_cxint01(tst *testing.T) {
 	B := []int{-1, -2}
 	a := make([]int, len(A))
 	b := make([]int, len(A))
-	IntCrossover(a, b, A, B, 0, &ops)
+	IntCrossover(a, b, A, B, nil, nil, 0, &ops)
 	io.Pfred("A = %2d\n", A)
 	io.PfRed("B = %2d\n", B)
 	io.Pfcyan("a = %2d\n", a)
@@ -42,7 +42,7 @@ func Test_cxint01(tst *testing.T) {
 	a = make([]int, len(A))
 	b = make([]int, len(A))
 	ops.Cuts = []int{1, 3}
-	IntCrossover(a, b, A, B, 0, &ops)
+	IntCrossover(a, b, A, B, nil, nil, 0, &ops)
 	io.Pfred("A = %2v\n", A)
 	io.PfRed("B = %2v\n", B)
 	io.Pfcyan("a = %2v\n", a)
@@ -51,7 +51,7 @@ func Test_cxint01(tst *testing.T) {
 	chk.Ints(tst, "b", b, []int{-1, 2, 3, -4, -5, -6, -7, -8})
 
 	ops.Cuts = []int{5, 7}
-	IntCrossover(a, b, A, B, 0, &ops)
+	IntCrossover(a, b, A, B, nil, nil, 0, &ops)
 	io.Pfred("A = %2v\n", A)
 	io.PfRed("B = %2v\n", B)
 	io.Pfcyan("a = %2v\n", a)
@@ -76,7 +76,7 @@ func Test_intordcx01(tst *testing.T) {
 	a := make([]int, len(A))
 	b := make([]int, len(A))
 	ops.Cuts = []int{2, 5}
-	IntOrdCrossover(a, b, A, B, 0, &ops)
+	IntOrdCrossover(a, b, A, B, nil, nil, 0, &ops)
 	io.Pforan("A = %v\n", A)
 	io.Pfblue2("B = %v\n", B)
 	io.Pfgreen("a = %v\n", a)
@@ -94,7 +94,7 @@ func Test_intordcx01(tst *testing.T) {
 	A = []int{1, 3, 5, 7, 6, 2, 4, 8}
 	B = []int{5, 6, 3, 8, 2, 1, 4, 7}
 	ops.Cuts = []int{3, 6}
-	IntOrdCrossover(a, b, A, B, 0, &ops)
+	IntOrdCrossover(a, b, A, B, nil, nil, 0, &ops)
 	io.Pforan("\nA = %v\n", A)
 	io.Pfblue2("B = %v\n", B)
 	io.Pfgreen("a = %v\n", a)
@@ -111,7 +111,7 @@ func Test_intordcx01(tst *testing.T) {
 	A = []int{1, 2, 3, 4, 5, 6, 7, 8}
 	B = []int{2, 4, 6, 8, 7, 5, 3, 1}
 	ops.Cuts = []int{}
-	IntOrdCrossover(a, b, A, B, 0, &ops)
+	IntOrdCrossover(a, b, A, B, nil, nil, 0, &ops)
 	io.Pforan("\nA = %v\n", A)
 	io.Pfblue2("B = %v\n", B)
 	io.Pfgreen("a = %v\n", a)
@@ -125,7 +125,7 @@ func Test_intordcx01(tst *testing.T) {
 	D := []int{3, 1, 2}
 	c := make([]int, len(C))
 	d := make([]int, len(D))
-	IntOrdCrossover(c, d, C, D, 0, &ops)
+	IntOrdCrossover(c, d, C, D, nil, nil, 0, &ops)
 	io.Pforan("\nC = %v\n", C)
 	io.Pfblue2("D = %v\n", D)
 	io.Pfgreen("c = %v\n", c)

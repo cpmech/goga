@@ -22,7 +22,7 @@ import (
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func IntCrossover(a, b, A, B []int, time int, ops *OpsData) (ends []int) {
+func IntCrossover(a, b, A, B, unusedC, unusedD []int, time int, ops *OpsData) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(ops.Pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -75,7 +75,7 @@ func IntCrossover(a, b, A, B []int, time int, ops *OpsData) (ends []int) {
 //                       ↓                           5 6 7   0 1   2 3 4
 //     a = d e | f h g | a b c         get from A: | f̶ g̶ h̶ | a b | c d e
 //     b = h g | c d e | a b f         get from B: | e̶ c̶ a | b d̶ | f h g
-func IntOrdCrossover(a, b, A, B []int, time int, ops *OpsData) (notused []int) {
+func IntOrdCrossover(a, b, A, B, unusedC, unusedD []int, time int, ops *OpsData) (notused []int) {
 	size := len(A)
 	if !rnd.FlipCoin(ops.Pc) || size < 3 {
 		for i := 0; i < len(A); i++ {

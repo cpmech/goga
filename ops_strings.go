@@ -17,7 +17,7 @@ import "github.com/cpmech/gosl/rnd"
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func StrCrossover(a, b, A, B []string, time int, ops *OpsData) (ends []int) {
+func StrCrossover(a, b, A, B, unusedC, unusedD []string, time int, ops *OpsData) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(ops.Pc) || size < 2 {
 		for i := 0; i < len(A); i++ {

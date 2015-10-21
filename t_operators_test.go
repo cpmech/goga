@@ -211,7 +211,7 @@ func Test_cx01(tst *testing.T) {
 	B := []float64{9.1, 9.2, 9.3, 9.4, 9.5, 9.6}
 	a := make([]float64, len(A))
 	b := make([]float64, len(A))
-	FltCrossover(a, b, A, B, 0, &ops)
+	FltCrossover(a, b, A, B, nil, nil, 0, &ops)
 	io.Pfred("A = %3v\n", A)
 	io.PfRed("B = %3v\n", B)
 	io.Pfcyan("a = %3v\n", a)
@@ -225,7 +225,7 @@ func Test_cx01(tst *testing.T) {
 	c := make([]string, len(A))
 	d := make([]string, len(A))
 	ops.Cuts = []int{1, 3}
-	StrCrossover(c, d, C, D, 0, &ops)
+	StrCrossover(c, d, C, D, nil, nil, 0, &ops)
 	io.Pfred("C = %3v\n", C)
 	io.PfRed("D = %3v\n", D)
 	io.Pfcyan("c = %3v\n", c)
@@ -243,7 +243,7 @@ func Test_cx01(tst *testing.T) {
 		f[i] = make([]byte, 1)
 	}
 	ops.Cuts = []int{1, 3}
-	BytCrossover(e, f, E, F, 0, &ops)
+	BytCrossover(e, f, E, F, nil, nil, 0, &ops)
 	io.Pfred("E = %3s\n", E)
 	io.PfRed("F = %3s\n", F)
 	io.Pfcyan("e = %3s\n", e)
@@ -263,7 +263,7 @@ func Test_cx01(tst *testing.T) {
 	g := make([]byte, len(A))
 	h := make([]byte, len(A))
 	ops.Cuts = []int{1, 3}
-	KeyCrossover(g, h, G, H, 0, &ops)
+	KeyCrossover(g, h, G, H, nil, nil, 0, &ops)
 	io.Pfred("G = %3v\n", G)
 	io.PfRed("H = %3v\n", H)
 	io.Pfcyan("g = %3v\n", g)
@@ -283,7 +283,7 @@ func Test_cx01(tst *testing.T) {
 	m := make([]Func_t, len(A))
 	n := make([]Func_t, len(A))
 	ops.Cuts = []int{1, 3}
-	FunCrossover(m, n, M, N, 0, &ops)
+	FunCrossover(m, n, M, N, nil, nil, 0, &ops)
 	io.Pfred("M = %3v\n", M)
 	io.PfRed("N = %3v\n", N)
 	io.Pfcyan("m = %3v\n", m)

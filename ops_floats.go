@@ -25,7 +25,7 @@ import (
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func FltCrossover(a, b, A, B []float64, time int, ops *OpsData) (ends []int) {
+func FltCrossover(a, b, A, B, unusedC, unusedD []float64, time int, ops *OpsData) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(ops.Pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -72,10 +72,10 @@ func FltMutation(A []float64, time int, ops *OpsData) {
 
 // BLX-α and Michaelicz ///////////////////////////////////////////////////////////////////////////
 
-// FltCrossoverBlx implements the BLS-α crossover by Eshelman et al. (1993); see also Herrera (1998)
+// FltCrossoverMW implements the BLS-α crossover by Eshelman et al. (1993); see also Herrera (1998)
 //  Output:
 //   a and b -- offspring
-func FltCrossoverBlx(a, b, A, B []float64, time int, ops *OpsData) (ends []int) {
+func FltCrossoverMW(a, b, A, B, unusedC, unusedD []float64, time int, ops *OpsData) (ends []int) {
 	chk.IntAssert(len(ops.Xrange), len(A))
 	size := len(A)
 	if !rnd.FlipCoin(ops.Pc) {
@@ -98,9 +98,9 @@ func FltCrossoverBlx(a, b, A, B []float64, time int, ops *OpsData) (ends []int) 
 	return
 }
 
-// FltMutationMwicz implements the non-uniform mutation (Michaelewicz, 1992; Herrera, 1998)
+// FltMutationMW implements the non-uniform mutation (Michaelewicz, 1992; Herrera, 1998)
 // See also Michalewicz (1996) page 103
-func FltMutationMwicz(A []float64, time int, ops *OpsData) {
+func FltMutationMW(A []float64, time int, ops *OpsData) {
 	chk.IntAssert(len(ops.Xrange), len(A))
 	size := len(A)
 	if !rnd.FlipCoin(ops.Pm) || size < 1 {
@@ -121,8 +121,8 @@ func FltMutationMwicz(A []float64, time int, ops *OpsData) {
 
 // Deb and Tiwari /////////////////////////////////////////////////////////////////////////////////
 
-// FltCrossoverDeb implements Deb's simulated binary crossover (SBX)
-func FltCrossoverDeb(a, b, A, B []float64, time int, ops *OpsData) (ends []int) {
+// FltCrossoverDB implements Deb's simulated binary crossover (SBX)
+func FltCrossoverDB(a, b, A, B, unusedC, unusedD []float64, time int, ops *OpsData) (ends []int) {
 
 	// check
 	chk.IntAssert(len(ops.Xrange), len(A))
@@ -195,11 +195,11 @@ func FltCrossoverDeb(a, b, A, B []float64, time int, ops *OpsData) (ends []int) 
 	return
 }
 
-//  FltMutationDeb implements Deb's parameter-based mutation operator
+//  FltMutationDB implements Deb's parameter-based mutation operator
 //  References:
 //   [1] Deb K and Tiwari S (2008) Omni-optimizer: A generic evolutionary algorithm for single
 //       and multi-objective optimization. European Journal of Operational Research, 185:1062-1087.
-func FltMutationDeb(A []float64, time int, ops *OpsData) {
+func FltMutationDB(A []float64, time int, ops *OpsData) {
 
 	// check
 	size := len(A)
@@ -247,4 +247,33 @@ func FltMutationDeb(A []float64, time int, ops *OpsData) {
 		}
 		A[i] = ops.EnforceRange(i, A[i]+δb*Δx)
 	}
+}
+
+// Differential-Evolution /////////////////////////////////////////////////////////////////////////
+
+// FltCrossoverDE implements the differential-evolution crossover
+func FltCrossoverDE(a, b, A, B, C, D []float64, time int, ops *OpsData) (ends []int) {
+	n := len(A)
+	sa := rnd.Int(0, n-1)
+	sb := rnd.Int(0, n-1)
+	var x float64
+	for s := 0; s < n; s++ {
+
+		// a
+		if rnd.FlipCoin(ops.DEpc) || s == sa {
+			x = B[s] + ops.DEmult*(C[s]-D[s])
+		} else {
+			x = A[s]
+		}
+		a[s] = ops.EnforceRange(s, x)
+
+		// b
+		if rnd.FlipCoin(ops.DEpc) || s == sb {
+			x = A[s] + ops.DEmult*(C[s]-D[s])
+		} else {
+			x = B[s]
+		}
+		b[s] = ops.EnforceRange(s, x)
+	}
+	return
 }

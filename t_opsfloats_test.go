@@ -32,7 +32,7 @@ func Test_blx01(tst *testing.T) {
 	B := []float64{1, 2, 3, 5, 6}
 	a := make([]float64, len(A))
 	b := make([]float64, len(A))
-	FltCrossoverBlx(a, b, A, B, 0, &ops)
+	FltCrossoverMW(a, b, A, B, nil, nil, 0, &ops)
 	io.Pforan("A = %v\n", A)
 	io.Pforan("B = %v\n", B)
 	io.Pfcyan("a = %v\n", a)
@@ -58,7 +58,7 @@ func Test_mwicz01(tst *testing.T) {
 	}
 	for _, t := range T {
 		A := []float64{0, 1, 2, 3, 4}
-		FltMutationMwicz(A, t, &ops)
+		FltMutationMW(A, t, &ops)
 		io.Pforan("A = %.8f\n", A)
 	}
 
@@ -99,7 +99,7 @@ func Test_cxdeb01(tst *testing.T) {
 	B := []float64{1, 2}
 	a := make([]float64, len(A))
 	b := make([]float64, len(A))
-	FltCrossoverDeb(a, b, A, B, 0, &ops)
+	FltCrossoverDB(a, b, A, B, nil, nil, 0, &ops)
 	io.Pforan("A = %v\n", A)
 	io.Pforan("B = %v\n", B)
 	io.Pfcyan("a = %.6f\n", a)
@@ -109,7 +109,7 @@ func Test_cxdeb01(tst *testing.T) {
 	a0s, a1s := make([]float64, nsamples), make([]float64, nsamples)
 	b0s, b1s := make([]float64, nsamples), make([]float64, nsamples)
 	for i := 0; i < nsamples; i++ {
-		FltCrossoverDeb(a, b, B, A, 0, &ops)
+		FltCrossoverDB(a, b, B, A, nil, nil, 0, &ops)
 		a0s[i], a1s[i] = a[0], a[1]
 		b0s[i], b1s[i] = b[0], b[1]
 	}
@@ -148,7 +148,7 @@ func Test_mtdeb01(tst *testing.T) {
 
 	A := []float64{-1, 1}
 	io.Pforan("before: A = %v\n", A)
-	FltMutationDeb(A, 10, &ops)
+	FltMutationDB(A, 10, &ops)
 	io.Pforan("after:  A = %v\n", A)
 
 	ha0 := rnd.Histogram{Stations: utl.LinSpace(-3, 3, 11)}
@@ -159,7 +159,7 @@ func Test_mtdeb01(tst *testing.T) {
 	for _, t := range []int{0, 50, 100} {
 		for i := 0; i < nsamples; i++ {
 			copy(aa, A)
-			FltMutationDeb(aa, t, &ops)
+			FltMutationDB(aa, t, &ops)
 			a0s[i] = aa[0]
 		}
 		ha0.Count(a0s, true)

@@ -47,8 +47,7 @@ type ConfParams struct {
 	GAtype    string  // type of GA; e.g. "std", "crowd"
 	CrowdSize int     // crowd size
 	ParetoPhi float64 // φ coefficient for probabilistic Pareto comparison
-	CompProb  bool    // use probabilistic comparision in crowding
-	DiffEvol  bool    // use differential evolution-like crossover
+	CompProb  bool    // use probabilistic comparison in crowding
 
 	// output
 	Verbose   bool       // show messages during optimisation
@@ -140,7 +139,6 @@ func (o *ConfParams) SetDefault() {
 	o.CrowdSize = 2
 	o.ParetoPhi = 0.01
 	o.CompProb = false
-	o.DiffEvol = false
 
 	// output
 	o.Verbose = false
@@ -178,8 +176,8 @@ func (o *ConfParams) SetNbasesFixOp(nbases int) {
 
 // SetBlxMwicz sets BLX-α (crossover) and Michaelewicz (mutation) operators
 func (o *ConfParams) SetBlxMwicz() {
-	o.Ops.CxFlt = FltCrossoverBlx
-	o.Ops.MtFlt = FltMutationMwicz
+	o.Ops.CxFlt = FltCrossoverMW
+	o.Ops.MtFlt = FltMutationMW
 }
 
 // SetIntBin sets functions to handle binary numbers [0,1]
@@ -239,18 +237,17 @@ Elite     = %v # use elitism
 Rws       = %v # use Roulette-Wheel selection method
 Rnk       = %v # ranking
 RnkSp     = %v # selective pressure for ranking
-GAtype    = %v # type of GA; e.g. "std", "crowd"
+GAtype    = %q # type of GA; e.g. "std", "crowd"
 CrowdSize = %v # crowd size
 ParetoPhi = %v # φ coefficient for probabilistic Pareto comparison
 CompProb  = %v # use probabilistic comparision in crowding
-DiffEvol  = %v # use differential evolution-like crossover
 
 # output
 Verbose   = %v # show messages during optimisation
 DoReport  = %v # generate report
 Json      = %v # output results as .json files; not tables
-DirOut    = %v # directory to save output files. "" means "/tmp/goga"
-FnKey     = %v # filename key for output files. "" means no output files
+DirOut    = %q # directory to save output files. "" means "/tmp/goga"
+FnKey     = %q # filename key for output files. "" means no output files
 DoPlot    = %v # plot results
 PltTi     = %v # initial time for plot
 PltTf     = %v # final time for plot
@@ -262,7 +259,7 @@ PostProc  = %v # function to post-process results
 
 # number formats. use nil for default values
 NumFmts   = %v # number formats used during printing of individuals.
-NumFmtOva = %v # number format for ova. use "" for default value
+NumFmtOva = %q # number format for ova. use "" for default value
 
 # auxiliary
 Problem  = %v # problem ID
@@ -293,7 +290,7 @@ PopStrGen = %v # generate population of strings
 PopKeyGen = %v # generate population of keys (bytes)
 PopBytGen = %v # generate population of bytes
 PopFunGen = %v # generate population of functions
-`, o.Elite, o.Rws, o.Rnk, o.RnkSp, o.GAtype, o.CrowdSize, o.ParetoPhi, o.CompProb, o.DiffEvol,
+`, o.Elite, o.Rws, o.Rnk, o.RnkSp, o.GAtype, o.CrowdSize, o.ParetoPhi, o.CompProb,
 		o.Verbose, o.DoReport, o.Json, o.DirOut, o.FnKey, o.DoPlot, o.PltTi, o.PltTf, o.ShowOor,
 		o.ShowDem, o.ShowBases, o.ShowNinds, o.PostProc, o.NumFmts, o.NumFmtOva, o.Problem,
 		o.Strategy, o.Ntrials, o.Eps1, o.Check, o.OvaOor, o.Latin, o.LatinDf, o.Noise, o.NumInts,
@@ -313,8 +310,10 @@ func (o *ConfParams) check_input() {
 	if len(o.RangeFlt) != len(o.Ops.Xrange) {
 		chk.Panic("number of genes in RangeFlt must be equal to number of genes in Ops.Xrange => ConfParams.CalcDerived must be called. %d != %d", len(o.RangeFlt), len(o.Ops.Xrange))
 	}
-	if o.Nbases != 1 && o.DiffEvol {
-		chk.Panic("number of bases must be 1 when using DiffEvol operator")
+	if o.Nbases != 1 {
+		if o.Ops.FltCxName == "blx" || o.Ops.FltCxName == "deb" || o.Ops.FltCxName == "de" {
+			chk.Panic("number of bases must be 1 when using %q operator", o.Ops.FltCxName)
+		}
 	}
 }
 

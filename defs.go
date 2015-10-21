@@ -35,12 +35,12 @@ type PopBytGen_t func(isl int, C *ConfParams) Population
 type PopFunGen_t func(isl int, C *ConfParams) Population
 
 // crossover functions
-type CxIntFunc_t func(a, b, A, B []int, time int, dat *OpsData) (ends []int)
-type CxFltFunc_t func(a, b, A, B []float64, time int, dat *OpsData) (ends []int)
-type CxStrFunc_t func(a, b, A, B []string, time int, dat *OpsData) (ends []int)
-type CxKeyFunc_t func(a, b, A, B []byte, time int, dat *OpsData) (ends []int)
-type CxBytFunc_t func(a, b, A, B [][]byte, time int, dat *OpsData) (ends []int)
-type CxFunFunc_t func(a, b, A, B []Func_t, time int, dat *OpsData) (ends []int)
+type CxIntFunc_t func(a, b, A, B, C, D []int, time int, dat *OpsData) (ends []int)
+type CxFltFunc_t func(a, b, A, B, C, D []float64, time int, dat *OpsData) (ends []int)
+type CxStrFunc_t func(a, b, A, B, C, D []string, time int, dat *OpsData) (ends []int)
+type CxKeyFunc_t func(a, b, A, B, C, D []byte, time int, dat *OpsData) (ends []int)
+type CxBytFunc_t func(a, b, A, B, C, D [][]byte, time int, dat *OpsData) (ends []int)
+type CxFunFunc_t func(a, b, A, B, C, D []Func_t, time int, dat *OpsData) (ends []int)
 
 // mutation functions
 type MtIntFunc_t func(a []int, time int, dat *OpsData)

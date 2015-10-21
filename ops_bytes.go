@@ -19,7 +19,7 @@ import "github.com/cpmech/gosl/rnd"
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func KeyCrossover(a, b, A, B []byte, time int, ops *OpsData) (ends []int) {
+func KeyCrossover(a, b, A, B, unusedC, unusedD []byte, time int, ops *OpsData) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(ops.Pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
@@ -57,7 +57,7 @@ func KeyCrossover(a, b, A, B []byte, time int, ops *OpsData) (ends []int) {
 //          1       5     8
 //     a = a . . . . f g h
 //     b = * b c d e * * *
-func BytCrossover(a, b, A, B [][]byte, time int, ops *OpsData) (ends []int) {
+func BytCrossover(a, b, A, B, unusedC, unusedD [][]byte, time int, ops *OpsData) (ends []int) {
 	size := len(A)
 	if !rnd.FlipCoin(ops.Pc) || size < 2 {
 		for i := 0; i < len(A); i++ {
