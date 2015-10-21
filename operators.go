@@ -162,8 +162,8 @@ DebEtac   = %v # Deb's SBX crossover parameter
 DebEtam   = %v # Deb's parameter-based mutation parameter
 DEpc      = %v # differential-evolution crossover probability
 DEmult    = %v # differential-evolution multiplier
-FltCxName = %v # crossover function name. ""=default; "mw"=BLX-α evolution; "db"=Deb's SBX; "de"=differential; "cl"=classic
-FltMtName = %v # mutation function name. ""=default; "mw"=Michaelewicz; "db"=Deb's parameter-based
+FltCxName = %q # crossover function name. ""=default; "mw"=BLX-α evolution; "db"=Deb's SBX; "de"=differential; "cl"=classic
+FltMtName = %q # mutation function name. ""=default; "mw"=Michaelewicz; "db"=Deb's parameter-based
 
 # derived
 Use4inds = %v # crossover needs 4 individuals (A,B,C,D); e.g. with differential evolution (de)
