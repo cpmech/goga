@@ -76,7 +76,7 @@ func Test_flt02(tst *testing.T) {
 	}
 	C.Verbose = false
 	C.Dtmig = 50
-	C.CrowdSize = 3
+	C.CrowdSize = 2
 	C.CompProb = false
 	C.GAtype = "crowd"
 	C.Ops.FltCxName = "de"
@@ -144,7 +144,7 @@ func Test_flt03(tst *testing.T) {
 	C.Nisl = 4
 	C.Ninds = 24
 	C.GAtype = "crowd"
-	C.Ops.FltCxName = "sbx"
+	C.Ops.FltCxName = "de"
 	C.CrowdSize = 3
 	C.ParetoPhi = 0.01
 	C.CompProb = true
