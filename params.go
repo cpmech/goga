@@ -5,6 +5,7 @@
 package goga
 
 import (
+	"bytes"
 	"encoding/json"
 
 	"github.com/cpmech/gosl/chk"
@@ -201,6 +202,104 @@ func (o *ConfParams) SetIntOrd(nstations int) {
 func (o *ConfParams) CalcDerived() {
 	o.Ops.CalcDerived(o.Tf, o.RangeFlt)
 	o.derived_called = true
+}
+
+// Report generates report with input data
+func (o *ConfParams) Report(dirout, fnkey string) {
+	var buf bytes.Buffer
+	io.Ff(&buf, `
+# essential
+Nova   = %v # number of objective values
+Noor   = %v # number of out-of-range variables
+Nbases = %v # number of bases in chromosome
+
+# initialisation
+Seed  = %v # seed to initialise random numbers generator. Seed ≤ 0 means use current time
+Pll   = %v # allow running islands in parallel (go-routines)
+Nisl  = %v # number of islands
+Ninds = %v # number of individuals: population size
+
+# time control
+Tf    = %v # number of generations
+Dtout = %v # increment of time for output
+Dtmig = %v # increment of time for migration
+
+# migration and regeneration
+RegTol    = %v # tolerance for ρ to activate regeneration
+RegPct    = %v # percentage of individuals to be regenerated; e.g. 0.3
+UseStdDev = %v # use standard deviation (σ) instead of average deviation in Stat
+`, o.Nova, o.Noor, o.Nbases, o.Seed, o.Pll, o.Nisl, o.Ninds, o.Tf, o.Dtout, o.Dtmig,
+		o.RegTol, o.RegPct, o.UseStdDev)
+
+	o.Ops.Report(&buf)
+
+	io.Ff(&buf, `
+# selection and reproduction
+Elite     = %v # use elitism
+Rws       = %v # use Roulette-Wheel selection method
+Rnk       = %v # ranking
+RnkSp     = %v # selective pressure for ranking
+GAtype    = %v # type of GA; e.g. "std", "crowd"
+CrowdSize = %v # crowd size
+ParetoPhi = %v # φ coefficient for probabilistic Pareto comparison
+CompProb  = %v # use probabilistic comparision in crowding
+DiffEvol  = %v # use differential evolution-like crossover
+
+# output
+Verbose   = %v # show messages during optimisation
+DoReport  = %v # generate report
+Json      = %v # output results as .json files; not tables
+DirOut    = %v # directory to save output files. "" means "/tmp/goga"
+FnKey     = %v # filename key for output files. "" means no output files
+DoPlot    = %v # plot results
+PltTi     = %v # initial time for plot
+PltTf     = %v # final time for plot
+ShowOor   = %v # show oor values when printing results (if any)
+ShowDem   = %v # show demerits when printing individuals
+ShowBases = %v # show also bases when printing results (if any)
+ShowNinds = %v # number of individuals to show. use -1 to show all individuals
+PostProc  = %v # function to post-process results
+
+# number formats. use nil for default values
+NumFmts   = %v # number formats used during printing of individuals.
+NumFmtOva = %v # number format for ova. use "" for default value
+
+# auxiliary
+Problem  = %v # problem ID
+Strategy = %v # strategy for implementing constraints
+Ntrials  = %v # number of trials
+Eps1     = %v # tolerance # 1; e.g. for strategy # 2 in reliability analyses
+Check    = %v # run checking code before GA
+
+# objective function
+OvaOor = %v # compute objective value (ova) and out-of-range value (oor)
+
+# generation of individuals
+Latin    = %v # use latin hypercube during generation
+LatinDf  = %v # duplication factor when using latin hypercube
+Noise    = %v # apply noise when generating based on grid (if Noise > 0)
+NumInts  = %v # number of integers for "ordered" and "binary" populations
+RangeInt = %v # [ngene][2] min and max integers
+RangeFlt = %v # [ngene][2] min and max float point numbers
+PoolStr  = %v # [ngene][nsamples] pool of words to be used in Gene.String
+PoolKey  = %v # [ngene][nsamples] pool of bytes to be used in Gene.Byte
+PoolByt  = %v # [ngene][nsamples] pool of byte-words to be used in Gene.Bytes
+PoolFun  = %v # [ngene][nsamples] pool of functions
+
+# generation of populations
+PopIntGen = %v # generate population of integers
+PopFltGen = %v # generate population of float point numbers
+PopStrGen = %v # generate population of strings
+PopKeyGen = %v # generate population of keys (bytes)
+PopBytGen = %v # generate population of bytes
+PopFunGen = %v # generate population of functions
+`, o.Elite, o.Rws, o.Rnk, o.RnkSp, o.GAtype, o.CrowdSize, o.ParetoPhi, o.CompProb, o.DiffEvol,
+		o.Verbose, o.DoReport, o.Json, o.DirOut, o.FnKey, o.DoPlot, o.PltTi, o.PltTf, o.ShowOor,
+		o.ShowDem, o.ShowBases, o.ShowNinds, o.PostProc, o.NumFmts, o.NumFmtOva, o.Problem,
+		o.Strategy, o.Ntrials, o.Eps1, o.Check, o.OvaOor, o.Latin, o.LatinDf, o.Noise, o.NumInts,
+		o.RangeInt, o.RangeFlt, o.PoolStr, o.PoolKey, o.PoolByt, o.PoolFun, o.PopIntGen,
+		o.PopFltGen, o.PopStrGen, o.PopKeyGen, o.PopBytGen, o.PopFunGen)
+	io.WriteFileVD(dirout, fnkey+".rpt", &buf)
 }
 
 // check_input checks whether paramters are consistent or not

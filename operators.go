@@ -5,11 +5,15 @@
 package goga
 
 import (
+	"bytes"
 	"math"
 	"math/rand"
+	"reflect"
+	"runtime"
 	"sort"
 
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 )
@@ -110,6 +114,54 @@ func (o *OpsData) EnforceRange(igene int, x float64) float64 {
 		return o.Xrange[igene][1]
 	}
 	return x
+}
+
+func GetFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
+// Report generates report
+func (o *OpsData) Report(buf *bytes.Buffer) {
+	io.Ff(buf, `
+# constants
+Pc       = %v # probability of crossover
+Pm       = %v # probability of mutation
+Ncuts    = %v # number of cuts during crossover
+Nchanges = %v # number of changes during mutation
+Tmax     = %v # max number of generations
+MwiczB   = %v # Michalewicz' power coefficient
+BlxAlp   = %v # BLX-α coefficient
+Mmax     = %v # multiplier for mutation
+Cuts     = %v # specified cuts for crossover. can be <nil>
+OrdSti   = %v # {start, end, insertPoint}. can be <nil>
+Xrange   = %v # [ngenes][2] genes minimum and maximum values
+EnfRange = %v # do enforce range
+DebEtac  = %v # Deb's SBX crossover parameter
+DebEtam  = %v # Deb's parameter-based mutation parameter
+DEpc     = %v # differential-evolution crossover probability
+DEmult   = %v # differential-evolution multiplier
+
+# crossover functions
+CxInt = %v # int crossover function
+CxFlt = %v # flt crossover function
+CxStr = %v # str crossover function
+CxKey = %v # key crossover function
+CxByt = %v # byt crossover function
+CxFun = %v # fun crossover function
+
+# mutation functions
+MtInt = %v # int mutation function
+MtFlt = %v # flt mutation function
+MtStr = %v # str mutation function
+MtKey = %v # key mutation function
+MtByt = %v # byt mutation function
+MtFun = %v # fun mutation function
+`, o.Pc, o.Pm, o.Ncuts, o.Nchanges, o.Tmax, o.MwiczB, o.BlxAlp, o.Mmax,
+		o.Cuts, o.OrdSti, o.Xrange, o.EnfRange, o.DebEtac, o.DebEtam, o.DEpc, o.DEmult,
+		chk.GetFunctionName(o.CxInt), chk.GetFunctionName(o.CxFlt), chk.GetFunctionName(o.CxStr),
+		chk.GetFunctionName(o.CxKey), chk.GetFunctionName(o.CxByt), chk.GetFunctionName(o.CxFun),
+		chk.GetFunctionName(o.MtInt), chk.GetFunctionName(o.MtFlt), chk.GetFunctionName(o.MtStr),
+		chk.GetFunctionName(o.MtKey), chk.GetFunctionName(o.MtByt), chk.GetFunctionName(o.MtFun))
 }
 
 // auxiliary ///////////////////////////////////////////////////////////////////////////////////////
