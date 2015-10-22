@@ -50,6 +50,7 @@ type Island struct {
 	allbases [][]float64 // [ngenes*nbases][ninds] all bases
 	devbases []float64   // [ngenes*nbases] deviations of bases
 	larbases []float64   // [ngenes*nbases] largest bases; max(abs(bases))
+	Nfeval   int         // number of objective function evaluations
 
 	// for crowding
 	indices   []int         // [ninds]
@@ -184,6 +185,7 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 func (o *Island) CalcOvs(pop Population, time int) {
 	for _, ind := range pop {
 		o.C.OvaOor(ind, o.Id, time, &o.Report)
+		o.Nfeval += 1
 		for _, oor := range ind.Oors {
 			if oor < 0 {
 				chk.Panic("out-of-range values must be positive (or zero) indicating the positive distance to constraints. oor=%g is invalid", oor)
@@ -325,6 +327,7 @@ func (o *Island) update_crowding(time int) {
 			IndMutation(b, time, &o.C.Ops)
 			o.C.OvaOor(a, o.Id, time+1, &o.Report)
 			o.C.OvaOor(b, o.Id, time+1, &o.Report)
+			o.Nfeval += 2
 		}
 
 		// round 1: compute distances

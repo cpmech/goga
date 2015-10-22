@@ -261,6 +261,13 @@ func (o *Evolver) GetPopulations() (pops []Population) {
 //func (o *Evolver) GetCompromise(feasible []*Individual) (xova, yova, xoor, yoor []float64) {
 //}
 
+func (o *Evolver) GetNfeval() (nfeval int) {
+	for _, isl := range o.Islands {
+		nfeval += isl.Nfeval
+	}
+	return
+}
+
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////
 
 // std_migration performs standard migration

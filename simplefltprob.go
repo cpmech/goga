@@ -130,7 +130,7 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 }
 
 // Run runs optimisations
-func (o *SimpleFltProb) Run(verbose bool) {
+func (o *SimpleFltProb) Run(verbose bool) (nfeval int) {
 
 	// benchmark
 	if verbose {
@@ -154,6 +154,11 @@ func (o *SimpleFltProb) Run(verbose bool) {
 
 		// run evolution
 		o.Evo.Run()
+
+		// number of function evaluations
+		if itrial == 0 {
+			nfeval = o.Evo.GetNfeval()
+		}
 
 		// results
 		isl := 0
@@ -215,6 +220,7 @@ func (o *SimpleFltProb) Run(verbose bool) {
 			}
 		}
 	}
+	return
 }
 
 // Stat prints statistical analysis
