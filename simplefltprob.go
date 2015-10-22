@@ -10,11 +10,15 @@ import (
 	"time"
 
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/gm"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
+
+// ParetoF1F0_t Pareto front solution
+type ParetoF1F0_t func(f0 float64) float64
 
 // SimpleFltFcn_t simple float problem function type
 type SimpleFltFcn_t func(f, g, h, x []float64, isl int)
@@ -52,6 +56,18 @@ type SimpleFltProb struct {
 	// results and stat
 	Xbest     [][]float64 // [nfeasible][nx] (max=ntrials) the best feasible floats
 	Nfeasible int         // counter for feasible results
+
+	// stat about Pareto front
+	ParNdiv   int          // number of divisions of bins
+	ParF1F0   ParetoF1F0_t // known solution
+	ParFmin   []float64    // known solution: ova min
+	ParFmax   []float64    // known solution: ova max
+	ParRadM   []float64    // radius multiplier to find near bins
+	ParNray   int          // number of rays to find near bins
+	ParBins   gm.Bins      // bins close to Pareto front
+	ParSelB   map[int]bool // selected bins
+	ParDisErr []float64    // dist errors
+	ParSpread []float64    // spreads
 
 	// plotting
 	PopsIni         []Population // [nisl] initial populations in all islands for the best trial
@@ -116,6 +132,11 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 	nx := len(o.C.RangeFlt)
 	o.Xbest = utl.DblsAlloc(o.C.Ntrials, nx)
 
+	// Pareto front
+	o.ParNdiv = 20
+	o.ParRadM = []float64{0.02, 0.04, 0.08}
+	o.ParNray = 8
+
 	// plotting
 	if o.C.DoPlot {
 		o.PopsIni = o.Evo.GetPopulations()
@@ -138,6 +159,15 @@ func (o *SimpleFltProb) Run(verbose bool) (nfeval int) {
 		defer func() {
 			io.Pfblue2("\ncpu time = %v\n", time.Now().Sub(time0))
 		}()
+	}
+
+	// Pareto front stat
+	pareto_stat := false
+	if o.C.Nova > 1 && o.ParF1F0 != nil && len(o.ParFmin) > 1 && len(o.ParFmax) > 1 {
+		pareto_stat = true
+		o.pareto_bins(0, 1)
+		o.ParDisErr = make([]float64, o.C.Ntrials)
+		o.ParSpread = make([]float64, o.C.Ntrials)
 	}
 
 	// run all trials
@@ -219,6 +249,11 @@ func (o *SimpleFltProb) Run(verbose bool) (nfeval int) {
 				}
 			}
 		}
+
+		// Pareto front
+		if pareto_stat {
+			o.ParDisErr[itrial], o.ParSpread[itrial] = o.pareto_front(0, 1)
+		}
 	}
 	return
 }
@@ -246,6 +281,34 @@ func (o *SimpleFltProb) Stat(idxF, hlen int, Fref float64) (fmin, fave, fmax, fd
 	io.Pf("fdev = %v\n\n", fdev)
 	io.Pf(rnd.BuildTextHist(nice_num(fmin-0.05), nice_num(fmax+0.05), 11, F, "%.2f", hlen))
 	return
+}
+
+// StatPareto print stat about Pareto front
+func (o *SimpleFltProb) StatPareto() {
+
+	// distance error
+	var emin, eave, emax, edev float64
+	if len(o.ParDisErr) > 1 {
+		emin, eave, emax, edev = rnd.StatBasic(o.ParDisErr, true)
+	} else {
+		emin, eave, emax = o.ParDisErr[0], o.ParDisErr[0], o.ParDisErr[0]
+	}
+	io.Pfcyan("\ndist_err_min = %g\n", emin)
+	io.PfCyan("dist_err_ave = %g\n", eave)
+	io.Pfcyan("dist_err_max = %g\n", emax)
+	io.Pfcyan("dist_err_dev = %g\n", edev)
+
+	// spread
+	var smin, save, smax, sdev float64
+	if len(o.ParSpread) > 1 {
+		smin, save, smax, sdev = rnd.StatBasic(o.ParSpread, true)
+	} else {
+		smin, save, smax = o.ParSpread[0], o.ParSpread[0], o.ParSpread[0]
+	}
+	io.Pfgreen("\nspread_min = %g\n", smin)
+	io.PfGreen("spread_ave = %g\n", save)
+	io.Pfgreen("spread_max = %g\n", smax)
+	io.Pfgreen("spread_dev = %g\n", sdev)
 }
 
 // Plot plots contour
@@ -392,6 +455,76 @@ func (o *SimpleFltProb) find_best() (x, f, g, h []float64) {
 			copy(h, o.hh[0])
 		}
 	}
+	return
+}
+
+// pareto_bins sets bins touching solution front
+func (o *SimpleFltProb) pareto_bins(I, J int) {
+	o.ParBins.Init(o.ParFmin, []float64{o.ParFmax[I] * 1.1, o.ParFmax[J] * 1.1}, o.ParNdiv)
+	o.ParSelB = make(map[int]bool)
+	select_bin := func(pt []float64) {
+		idx := o.ParBins.CalcIdx(pt)
+		if idx >= 0 {
+			o.ParSelB[idx] = true
+		}
+	}
+	diag := math.Sqrt(math.Pow(o.ParFmax[I]-o.ParFmin[I], 2.0) + math.Pow(o.ParFmax[J]-o.ParFmin[J], 2.0))
+	tmp := utl.LinSpace(o.ParFmin[I], o.ParFmax[I], 3*o.ParNdiv)
+	pt := make([]float64, 2)
+	for i := 0; i < len(tmp); i++ {
+		f0, f1 := tmp[i], o.ParF1F0(tmp[i])
+		pt[0], pt[1] = f0, f1
+		select_bin(pt)
+		for j := 0; j < o.ParNray; j++ {
+			α := float64(j) * 2.0 * math.Pi / float64(o.ParNray)
+			for k := 0; k < len(o.ParRadM); k++ {
+				ρ := o.ParRadM[k] * diag
+				δf0 := ρ * math.Cos(α)
+				δf1 := ρ * math.Sin(α)
+				pt[0], pt[1] = f0+δf0, f1+δf1
+				select_bin(pt)
+			}
+		}
+	}
+}
+
+// pareto_front computes stat about Pareto front
+func (o *SimpleFltProb) pareto_front(idxf0, idxf1 int) (disterr, spread float64) {
+
+	// Pareto-front
+	feasible := o.Evo.GetFeasible()
+	ovas, _ := o.Evo.GetResults(feasible)
+	ovafront, _ := o.Evo.GetParetoFront(feasible, ovas, nil)
+	f0front, f1front := o.Evo.GetFrontOvas(idxf0, idxf1, ovafront)
+	f0fin := utl.DblsGetColumn(idxf0, ovas)
+	f1fin := utl.DblsGetColumn(idxf1, ovas)
+
+	// solution-quality: distance
+	for i, f0 := range f0front {
+		dist := math.Abs(f1front[i] - o.ParF1F0(f0))
+		disterr = utl.Max(disterr, dist)
+	}
+
+	// solution-quality: spread
+	pt := make([]float64, 2)
+	for i := 0; i < len(f0fin); i++ {
+		pt[0], pt[1] = f0fin[i], f1fin[i]
+		if pt[0] < o.ParFmax[0]*1.1 && pt[1] < o.ParFmax[1]*1.1 {
+			err := o.ParBins.Append(pt, i)
+			if err != nil {
+				chk.Panic("cannot append item:\n%v", err)
+			}
+		}
+	}
+	for idx, _ := range o.ParSelB {
+		bin := o.ParBins.All[idx]
+		if bin != nil {
+			if len(bin.Entries) > 0 {
+				spread += 1
+			}
+		}
+	}
+	spread = spread / float64(len(o.ParSelB))
 	return
 }
 

@@ -299,7 +299,9 @@ func (o *Island) update_crowding(time int) {
 	rnd.IntGetGroups(o.crowds, o.indices)
 
 	// compute float gene limits
-	o.calc_float_lims()
+	if !o.C.DistOvs {
+		o.calc_float_lims()
+	}
 
 	// auxiliary variables
 	n := o.C.CrowdSize
@@ -336,7 +338,7 @@ func (o *Island) update_crowding(time int) {
 			A := o.Pop[I]
 			for j := 0; j < m; j++ {
 				B := o.offspring[j]
-				o.distR1[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
+				o.distR1[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax, o.C.DistOvs)
 			}
 		}
 
@@ -371,7 +373,7 @@ func (o *Island) update_crowding(time int) {
 				for j := 0; j < m-n; j++ {
 					J := o.round2[j]
 					B := o.offspring[J]
-					o.distR2[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax)
+					o.distR2[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax, o.C.DistOvs)
 				}
 			}
 

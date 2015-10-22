@@ -236,6 +236,7 @@ func Test_flt04(tst *testing.T) {
 	C.ParetoPhi = 0.05
 	C.Tf = 100
 	C.Dtmig = 10
+	C.Ntrials = 1
 	C.RangeFlt = [][]float64{{0.1, 2.25}, {0.5, 2.5}}
 	C.PopFltGen = PopFltGen
 	C.CalcDerived()
@@ -270,15 +271,36 @@ func Test_flt04(tst *testing.T) {
 		ind.Oors[1] = utl.GtePenalty(g[1], 0, 1)
 	}
 
+	// reference data
+	_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
+
 	// simple problem
 	sim := NewSimpleFltProb(fcn, 2, 2, 0, C)
+	sim.ParFmin = []float64{35, 0.015}
+	sim.ParFmax = []float64{190, 0.1}
+	sim.ParF1F0 = func(f0 float64) float64 {
+		F0, F1 := dat["f1"], dat["f2"]
+		n := len(F0)
+		if f0 < F0[0] {
+			return F1[0]
+		}
+		if f0 > F0[n-1] {
+			return F1[n-1]
+		}
+		for i := 1; i < n; i++ {
+			if f0 <= F0[i] {
+				return F1[i-1] + (f0-F0[i-i])*(F1[i]-F1[i-1])/(F0[i]-F0[i-i])
+			}
+		}
+		return 0
+	}
+
+	// run
 	sim.Run(chk.Verbose)
+	sim.StatPareto()
 
 	// results
 	if chk.Verbose {
-
-		// reference data
-		_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
 
 		// Pareto-front
 		feasible := sim.Evo.GetFeasible()
@@ -288,11 +310,21 @@ func Test_flt04(tst *testing.T) {
 
 		// plot
 		plt.SetForEps(0.75, 355)
-		plt.Plot(dat["f1"], dat["f2"], "'b-',ms=3")
+		sim.ParBins.Draw2d(false, false, false, false, sim.ParSelB)
+		np := 201
+		plt.Plot(dat["f1"], dat["f2"], "'k+',ms=3")
+		F0 := utl.LinSpace(35, 190, np)
+		F1 := make([]float64, np)
+		for i := 0; i < np; i++ {
+			F1[i] = sim.ParF1F0(F0[i])
+		}
+		plt.Plot(F0, F1, "'b-'")
 		x := utl.DblsGetColumn(0, ovas)
 		y := utl.DblsGetColumn(1, ovas)
-		plt.Plot(x, y, "'r.'")
-		plt.Plot(xova, yova, "'ko',markerfacecolor='none',ms=6")
+		if true {
+			plt.Plot(x, y, "'r.', ms=3")
+			plt.Plot(xova, yova, "'ko',markerfacecolor='none',ms=4")
+		}
 		plt.Gll("$f_1$", "$f_2$", "")
 		plt.SaveD("/tmp/goga", "test_flt04.eps")
 	}
