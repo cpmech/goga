@@ -230,10 +230,12 @@ func Test_flt04(tst *testing.T) {
 	C.Ninds = 24
 	C.GAtype = "crowd"
 	C.Ops.FltCxName = "de"
+	C.Ops.DEpc = 0.1
+	C.Ops.DEmult = 0.5
 	C.CrowdSize = 3
 	C.ParetoPhi = 0.05
 	C.Tf = 100
-	C.Dtmig = 25
+	C.Dtmig = 10
 	C.RangeFlt = [][]float64{{0.1, 2.25}, {0.5, 2.5}}
 	C.PopFltGen = PopFltGen
 	C.CalcDerived()

@@ -269,7 +269,7 @@ func FltCrossoverDE(a, b, A, B, C, D []float64, time int, ops *OpsData) (ends []
 
 		// b
 		if rnd.FlipCoin(ops.DEpc) || s == sb {
-			x = A[s] + ops.DEmult*(C[s]-D[s])
+			x = A[s] + ops.DEmult*(D[s]-C[s])
 		} else {
 			x = B[s]
 		}
