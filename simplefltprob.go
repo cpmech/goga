@@ -134,7 +134,7 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 
 	// Pareto front
 	o.ParNdiv = 20
-	o.ParRadM = []float64{0.02, 0.04, 0.08}
+	o.ParRadM = []float64{0.02, 0.04}
 	o.ParNray = 8
 
 	// plotting
