@@ -107,6 +107,9 @@ func (o *OpsData) CalcDerived(Tf int, xrange [][]float64) {
 	case "de":
 		o.CxFlt = FltCrossoverDE
 		o.Use4inds = true
+	case "mix":
+		o.CxFlt = FltCrossoverMix
+		o.Use4inds = true
 	case "cl":
 		o.CxFlt = FltCrossover
 	}

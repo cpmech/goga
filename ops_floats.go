@@ -277,3 +277,12 @@ func FltCrossoverDE(a, b, A, B, C, D []float64, time int, ops *OpsData) (ends []
 	}
 	return
 }
+
+// Mixed //////////////////////////////////////////////////////////////////////////////////////////
+
+func FltCrossoverMix(a, b, A, B, C, D []float64, time int, ops *OpsData) (ends []int) {
+	if rnd.FlipCoin(0.5) {
+		return FltCrossoverDB(a, b, A, B, C, D, time, ops)
+	}
+	return FltCrossoverDE(a, b, A, B, C, D, time, ops)
+}
