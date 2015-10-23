@@ -32,8 +32,21 @@ func NewEvolver(C *ConfParams) (o *Evolver) {
 	o = new(Evolver)
 	o.C = C
 	o.Islands = make([]*Island, o.C.Nisl)
-	for i := 0; i < o.C.Nisl; i++ {
-		o.Islands[i] = NewIsland(i, o.C)
+	if o.C.Pll {
+		done := make(chan int, o.C.Nisl)
+		for i := 0; i < o.C.Nisl; i++ {
+			go func(idx int) {
+				o.Islands[idx] = NewIsland(idx, o.C)
+				done <- 1
+			}(i)
+		}
+		for i := 0; i < o.C.Nisl; i++ {
+			<-done
+		}
+	} else {
+		for i := 0; i < o.C.Nisl; i++ {
+			o.Islands[i] = NewIsland(i, o.C)
+		}
 	}
 	o.Best = o.Islands[0].Pop[0]
 

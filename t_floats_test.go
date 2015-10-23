@@ -226,6 +226,7 @@ func Test_flt04(tst *testing.T) {
 
 	// configuration
 	C := NewConfParams()
+	C.Pll = true
 	C.Nisl = 4
 	C.Ninds = 24
 	C.GAtype = "crowd"

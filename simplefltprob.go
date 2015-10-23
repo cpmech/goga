@@ -57,6 +57,7 @@ type SimpleFltProb struct {
 	Xbest     [][]float64     // [nfeasible][nx] (max=ntrials) the best feasible floats
 	Nfeasible int             // counter for feasible results
 	Nfeval    int             // number of function evaluations for one trial
+	CPUini    time.Duration   // time during initialisation
 	CPUtime   []time.Duration // CPU time during each trial
 
 	// stat about Pareto front
@@ -125,7 +126,9 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 	}
 
 	// evolver
+	t0 := time.Now()
 	o.Evo = NewEvolver(o.C)
+	o.CPUini = time.Now().Sub(t0)
 
 	// auxiliary
 	o.NumfmtX = "%8.5f"
