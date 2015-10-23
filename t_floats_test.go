@@ -221,7 +221,7 @@ func Test_flt03(tst *testing.T) {
 
 func Test_flt04(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt04. two-bar truss. Pareto-optimal")
 
 	// configuration
@@ -298,10 +298,10 @@ func Test_flt04(tst *testing.T) {
 	// run
 	sim.Run(chk.Verbose)
 	sim.StatPareto()
-	sim.TexReport("/tmp/goga", "tables_flt04", "Truss", 1)
 
 	// results
 	if chk.Verbose {
+		sim.TexReport("/tmp/goga", "tables_flt04", "Truss", 1)
 
 		// Pareto-front
 		feasible := sim.Evo.GetFeasible()
