@@ -56,8 +56,10 @@ type SimpleFltProb struct {
 	// results and stat
 	Xbest     [][]float64 // [nfeasible][nx] (max=ntrials) the best feasible floats
 	Nfeasible int         // counter for feasible results
+	Nfeval    int         // number of function evaluations for one trial
 
 	// stat about Pareto front
+	ParStat   bool         // has pareto stat
 	ParNdiv   int          // number of divisions of bins
 	ParF1F0   ParetoF1F0_t // known solution
 	ParFmin   []float64    // known solution: ova min
@@ -151,7 +153,7 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 }
 
 // Run runs optimisations
-func (o *SimpleFltProb) Run(verbose bool) (nfeval int) {
+func (o *SimpleFltProb) Run(verbose bool) {
 
 	// benchmark
 	if verbose {
@@ -162,9 +164,9 @@ func (o *SimpleFltProb) Run(verbose bool) (nfeval int) {
 	}
 
 	// Pareto front stat
-	pareto_stat := false
+	o.ParStat = false
 	if o.C.Nova > 1 && o.ParF1F0 != nil && len(o.ParFmin) > 1 && len(o.ParFmax) > 1 {
-		pareto_stat = true
+		o.ParStat = true
 		o.pareto_bins(0, 1)
 		o.ParDisErr = make([]float64, o.C.Ntrials)
 		o.ParSpread = make([]float64, o.C.Ntrials)
@@ -187,7 +189,7 @@ func (o *SimpleFltProb) Run(verbose bool) (nfeval int) {
 
 		// number of function evaluations
 		if itrial == 0 {
-			nfeval = o.Evo.GetNfeval()
+			o.Nfeval = o.Evo.GetNfeval()
 		}
 
 		// results
@@ -251,11 +253,10 @@ func (o *SimpleFltProb) Run(verbose bool) (nfeval int) {
 		}
 
 		// Pareto front
-		if pareto_stat {
+		if o.ParStat {
 			o.ParDisErr[itrial], o.ParSpread[itrial] = o.pareto_front(0, 1)
 		}
 	}
-	return
 }
 
 // Stat prints statistical analysis
@@ -309,6 +310,63 @@ func (o *SimpleFltProb) StatPareto() {
 	io.PfGreen("spread_ave = %g\n", save)
 	io.Pfgreen("spread_max = %g\n", smax)
 	io.Pfgreen("spread_dev = %g\n", sdev)
+}
+
+// TexReport generates LaTeX report
+func (o *SimpleFltProb) TexReport(dirout, fnkey, problem string, prob int) {
+
+	// input parameters
+	var buf bytes.Buffer
+	io.Ff(&buf, `\documentclass[a4paper]{article}
+\usepackage{mydefaults}
+\usepackage[margin=1.5cm,footskip=0.5cm]{geometry}
+\setspacesfigures
+\title{GOGA -- %s}
+\author{Dorival Pedroso}
+\begin{document}
+\maketitle
+\begin{table} \centering
+\caption{Input parameters.}
+\begin{tabular}[c]{cccccccccccc} \toprule
+test & $N_{isl}$ & $N_{ind}$ & $T_f$ & $\Delta T_{mig}$ & $N_{crowd}$ & $p_c$ & $p_m$ & DE:$p_c$ & DE:$m$ & SBX:$\eta_c$ & Mut:$\eta_m$ \\
+%v   & %v        & %v        & %v    & %v               & %v          & %v    &  %v   & %v       & %v     & %v           & %v           \\
+\bottomrule
+\end{tabular}
+\end{table}
+`, problem, prob, o.C.Nisl, o.C.Ninds, o.C.Tf, o.C.Dtmig, o.C.CrowdSize, o.C.Ops.Pc, o.C.Ops.Pm, o.C.Ops.DEpc, o.C.Ops.DEmult, o.C.Ops.DebEtac, o.C.Ops.DebEtam)
+
+	// results: Pareto front
+	if o.ParStat {
+
+		// distance error
+		var emin, eave, emax, edev float64
+		if len(o.ParDisErr) > 1 {
+			emin, eave, emax, edev = rnd.StatBasic(o.ParDisErr, true)
+		} else {
+			emin, eave, emax = o.ParDisErr[0], o.ParDisErr[0], o.ParDisErr[0]
+		}
+
+		// spread
+		var smin, save, smax, sdev float64
+		if len(o.ParSpread) > 1 {
+			smin, save, smax, sdev = rnd.StatBasic(o.ParSpread, true)
+		} else {
+			smin, save, smax = o.ParSpread[0], o.ParSpread[0], o.ParSpread[0]
+		}
+
+		io.Ff(&buf, `\begin{table} \centering
+\caption{Results.}
+\begin{tabular}[c]{cccccccccc} \toprule
+test & $N_{eval}$ & $E_{min}$ & $E_{ave}$ & $E_{max}$ & $E_{dev}$ & $S_{min}$ & $S_{ave}$ & $S_{max}$ & $S_{dev}$ \\
+%v   & %v         & %v        & %v        & %v        & %v        & %v        & %v        & %v        & %v        \\
+\bottomrule
+\end{tabular}
+\end{table}`, prob, o.Nfeval, fmtnum(emin), fmtnum(eave), fmtnum(emax), fmtnum(edev), fmtnum(smin), fmtnum(save), fmtnum(smax), fmtnum(sdev))
+	}
+
+	// save file
+	io.Ff(&buf, `\end{document}`)
+	io.WriteFileVD(dirout, fnkey+".tex", &buf)
 }
 
 // Plot plots contour
@@ -532,4 +590,13 @@ func (o *SimpleFltProb) pareto_front(idxf0, idxf1 int) (disterr, spread float64)
 func nice_num(x float64) float64 {
 	s := io.Sf("%.2f", x)
 	return io.Atof(s)
+}
+
+// fmtnum formats number for tables
+func fmtnum(x float64) string {
+	s := io.Sf("%g", x)
+	if len(s) > 8 {
+		s = io.Sf("%.4g", x)
+	}
+	return s
 }
