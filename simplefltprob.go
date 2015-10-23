@@ -54,9 +54,10 @@ type SimpleFltProb struct {
 	ShowCts bool   // show g(x) and/or h(x) values if verbose
 
 	// results and stat
-	Xbest     [][]float64 // [nfeasible][nx] (max=ntrials) the best feasible floats
-	Nfeasible int         // counter for feasible results
-	Nfeval    int         // number of function evaluations for one trial
+	Xbest     [][]float64     // [nfeasible][nx] (max=ntrials) the best feasible floats
+	Nfeasible int             // counter for feasible results
+	Nfeval    int             // number of function evaluations for one trial
+	CPUtime   []time.Duration // CPU time during each trial
 
 	// stat about Pareto front
 	ParStat   bool         // has pareto stat
@@ -133,6 +134,7 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 	// results and stat
 	nx := len(o.C.RangeFlt)
 	o.Xbest = utl.DblsAlloc(o.C.Ntrials, nx)
+	o.CPUtime = make([]time.Duration, o.C.Ntrials)
 
 	// Pareto front
 	o.ParNdiv = 20
@@ -185,7 +187,9 @@ func (o *SimpleFltProb) Run(verbose bool) {
 		}
 
 		// run evolution
+		trial_time0 := time.Now()
 		o.Evo.Run()
+		o.CPUtime[itrial] = time.Now().Sub(trial_time0)
 
 		// number of function evaluations
 		if itrial == 0 {
@@ -328,7 +332,7 @@ func (o *SimpleFltProb) TexReport(dirout, fnkey, problem string, prob int) {
 \begin{table} \centering
 \caption{Input parameters.}
 \begin{tabular}[c]{cccccccccccc} \toprule
-test & $N_{isl}$ & $N_{ind}$ & $T_f$ & $\Delta T_{mig}$ & $N_{crowd}$ & $p_c$ & $p_m$ & DE:$p_c$ & DE:$m$ & SBX:$\eta_c$ & Mut:$\eta_m$ \\
+test & $N_{isl}$ & $N_{ind}$ & $T_f$ & $\Delta T_{mig}$ & $N_{crowd}$ & $p_c$ & $p_m$ & DE:$p_c$ & DE:$m$ & SBX:$\eta_c$ & Mut:$\eta_m$ \\ \midrule
 %v   & %v        & %v        & %v    & %v               & %v          & %v    &  %v   & %v       & %v     & %v           & %v           \\
 \bottomrule
 \end{tabular}
@@ -356,13 +360,25 @@ test & $N_{isl}$ & $N_{ind}$ & $T_f$ & $\Delta T_{mig}$ & $N_{crowd}$ & $p_c$ & 
 
 		io.Ff(&buf, `\begin{table} \centering
 \caption{Results.}
-\begin{tabular}[c]{cccccccccc} \toprule
-test & $N_{eval}$ & $E_{min}$ & $E_{ave}$ & $E_{max}$ & $E_{dev}$ & $S_{min}$ & $S_{ave}$ & $S_{max}$ & $S_{dev}$ \\
-%v   & %v         & %v        & %v        & %v        & %v        & %v        & %v        & %v        & %v        \\
+\begin{tabular}[c]{c|cccc|cccc} \toprule
+     & \multicolumn{4}{c|}{distance error}           & \multicolumn{4}{c}{spread}                    \\
+test & $E_{min}$ & $E_{ave}$ & $E_{max}$ & $E_{dev}$ & $S_{min}$ & $S_{ave}$ & $S_{max}$ & $S_{dev}$ \\ \midrule
+%v   & %v        & %v        & %v        & %v        & %v        & %v        & %v        & %v        \\
 \bottomrule
 \end{tabular}
-\end{table}`, prob, o.Nfeval, fmtnum(emin), fmtnum(eave), fmtnum(emax), fmtnum(edev), fmtnum(smin), fmtnum(save), fmtnum(smax), fmtnum(sdev))
+\end{table}`, prob, fmtnum(emin), fmtnum(eave), fmtnum(emax), fmtnum(edev), fmtnum(smin), fmtnum(save), fmtnum(smax), fmtnum(sdev))
 	}
+
+	// CPU time
+	tmin, tave, tmax, tsum := rnd.StatDur(o.CPUtime)
+	io.Ff(&buf, `\begin{table} \centering
+\caption{CPU time.}
+\begin{tabular}[c]{cccccc} \toprule
+test & $N_{eval}$ & $t_{min}$ & $t_{ave}$ & $t_{max}$ & $t_{sum}$ \\ \midrule
+%v   & %v         & %v        & %v        & %v        & %v        \\
+\bottomrule
+\end{tabular}
+\end{table}`, prob, o.Nfeval, tmin, tave, tmax, tsum)
 
 	// save file
 	io.Ff(&buf, `\end{document}`)
