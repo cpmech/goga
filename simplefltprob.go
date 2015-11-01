@@ -70,6 +70,8 @@ type SimpleFltProb struct {
 	ParNray   int          // number of rays to find near bins
 	ParBins   gm.Bins      // bins close to Pareto front
 	ParSelB   map[int]bool // selected bins
+	ParExclF0 [][]float64  // excluded f0
+	ParExclF1 [][]float64  // excluded f1
 	ParDisErr []float64    // dist errors
 	ParSpread []float64    // spreads
 
@@ -540,13 +542,23 @@ func (o *SimpleFltProb) pareto_bins(I, J int) {
 	o.ParBins.Init(o.ParFmin, []float64{o.ParFmax[I] * 1.1, o.ParFmax[J] * 1.1}, o.ParNdiv)
 	o.ParSelB = make(map[int]bool)
 	select_bin := func(pt []float64) {
+		for _, f0range := range o.ParExclF0 {
+			if pt[0] > f0range[0] && pt[0] < f0range[1] {
+				return
+			}
+		}
+		for _, f1range := range o.ParExclF1 {
+			if pt[1] > f1range[0] && pt[1] < f1range[1] {
+				return
+			}
+		}
 		idx := o.ParBins.CalcIdx(pt)
 		if idx >= 0 {
 			o.ParSelB[idx] = true
 		}
 	}
 	diag := math.Sqrt(math.Pow(o.ParFmax[I]-o.ParFmin[I], 2.0) + math.Pow(o.ParFmax[J]-o.ParFmin[J], 2.0))
-	tmp := utl.LinSpace(o.ParFmin[I], o.ParFmax[I], 3*o.ParNdiv)
+	tmp := utl.LinSpace(o.ParFmin[I], o.ParFmax[I], 10*o.ParNdiv)
 	pt := make([]float64, 2)
 	for i := 0; i < len(tmp); i++ {
 		f0, f1 := tmp[i], o.ParF1F0(tmp[i])
