@@ -7,6 +7,7 @@ package goga
 import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/utl"
 )
 
@@ -271,9 +272,19 @@ func (o *Evolver) GetPopulations() (pops []Population) {
 	return
 }
 
-//func (o *Evolver) GetCompromise(feasible []*Individual) (xova, yova, xoor, yoor []float64) {
-//}
+// PlotPareto plots pareto front for i and j objectives
+func (o *Evolver) PlotPareto(i, j int) {
+	feasible := o.GetFeasible()
+	ovas, _ := o.GetResults(feasible)
+	ovafront, _ := o.GetParetoFront(feasible, ovas, nil)
+	f0front, f1front := o.GetFrontOvas(i, j, ovafront)
+	f0fin := utl.DblsGetColumn(i, ovas)
+	f1fin := utl.DblsGetColumn(j, ovas)
+	plt.Plot(f0fin, f1fin, "'r.', clip_on=0, ms=3")
+	plt.Plot(f0front, f1front, "'ko',markerfacecolor='none',ms=4, clip_on=0")
+}
 
+// GetNfeval returns the number of evaluations
 func (o *Evolver) GetNfeval() (nfeval int) {
 	for _, isl := range o.Islands {
 		nfeval += isl.Nfeval
