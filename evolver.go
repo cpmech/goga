@@ -19,6 +19,9 @@ type Evolver struct {
 	Islands []*Island   // islands
 	Best    *Individual // best individual among all in all islands
 
+	// callbacks
+	OutFcn func(t int, evo *Evolver) // output function callback
+
 	// auxiliary
 	receiveFrom [][]int // [nisl][nisl-1] indices for migration
 }
@@ -128,6 +131,11 @@ func (o *Evolver) Run() {
 		if tmig > o.C.Tf {
 			tmig = o.C.Tf
 			nomig = true
+		}
+
+		// output
+		if o.OutFcn != nil {
+			o.OutFcn(t, o)
 		}
 
 		// skip migration
