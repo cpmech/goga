@@ -7,7 +7,6 @@ package goga
 import (
 	"bytes"
 	"math"
-	"math/rand"
 	"sort"
 	"testing"
 
@@ -42,34 +41,10 @@ func Test_int01(tst *testing.T) {
 	C.CalcDerived()
 
 	// mutation function
-	C.Ops.MtInt = func(A []int, time int, ops *OpsData) {
-		size := len(A)
-		if !rnd.FlipCoin(ops.Pm) || size < 1 {
-			return
-		}
-		pos := rnd.IntGetUniqueN(0, size, ops.Nchanges)
-		for _, i := range pos {
-			if A[i] == 1 {
-				A[i] = 0
-			}
-			if A[i] == 0 {
-				A[i] = 1
-			}
-		}
-	}
+	C.Ops.MtInt = IntBinMutation
 
 	// generation function
-	C.PopIntGen = func(id int, cc *ConfParams) Population {
-		o := make([]*Individual, cc.Ninds)
-		genes := make([]int, cc.NumInts)
-		for i := 0; i < cc.Ninds; i++ {
-			for j := 0; j < cc.NumInts; j++ {
-				genes[j] = rand.Intn(2)
-			}
-			o[i] = NewIndividual(cc.Nova, cc.Noor, cc.Nbases, genes)
-		}
-		return o
-	}
+	C.PopIntGen = PopBinGen
 
 	// objective function
 	C.OvaOor = func(ind *Individual, idIsland, time int, report *bytes.Buffer) {

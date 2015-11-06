@@ -221,7 +221,7 @@ func Test_flt03(tst *testing.T) {
 
 func Test_flt04(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt04. two-bar truss. Pareto-optimal")
 
 	// configuration
