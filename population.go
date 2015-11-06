@@ -20,15 +20,15 @@ type Population []*Individual
 
 // PopBinGen generates a population of binary numbers [0,1]
 func PopBinGen(id int, C *ConfParams) Population {
-	pop := make([]*Individual, C.Ninds)
+	o := make([]*Individual, C.Ninds)
 	genes := make([]int, C.NumInts)
 	for i := 0; i < C.Ninds; i++ {
 		for j := 0; j < C.NumInts; j++ {
 			genes[j] = rand.Intn(2)
 		}
-		pop[i] = NewIndividual(C.Nova, C.Noor, C.Nbases, genes)
+		o[i] = NewIndividual(C.Nova, C.Noor, C.Nbases, genes)
 	}
-	return pop
+	return o
 }
 
 // PopOrdGen generates a population of individuals with ordered integers
@@ -42,6 +42,18 @@ func PopOrdGen(id int, C *ConfParams) Population {
 			o[i].Ints[j] = j
 		}
 		rnd.IntShuffle(o[i].Ints)
+	}
+	return o
+}
+
+// PopFltAndBinGen generates population with floats and integers
+func PopFltAndBinGen(id int, C *ConfParams) Population {
+	o := PopFltGen(id, C)
+	for i := 0; i < C.Ninds; i++ {
+		o[i].Ints = make([]int, C.NumInts)
+		for j := 0; j < C.NumInts; j++ {
+			o[i].Ints[j] = rand.Intn(2)
+		}
 	}
 	return o
 }

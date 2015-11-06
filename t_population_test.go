@@ -161,7 +161,24 @@ func Test_pop03(tst *testing.T) {
 
 	C := NewConfParams()
 	C.NumInts = 7
-
 	pop := PopBinGen(0, C)
+	io.Pforan("%v\n", pop.Output(C))
+}
+
+func Test_pop04(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("pop04")
+
+	rnd.Init(0)
+
+	C := NewConfParams()
+	C.NumInts = 4
+	C.RangeFlt = [][]float64{
+		{-1, 1},
+		{10, 20},
+		{1000, 10000},
+	}
+	pop := PopFltAndBinGen(0, C)
 	io.Pforan("%v\n", pop.Output(C))
 }
