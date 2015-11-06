@@ -166,6 +166,16 @@ func (o Individual) CopyInto(x *Individual) {
 	return
 }
 
+// Feasible returns whether this individual is feasible or not
+func (o Individual) Feasible() bool {
+	for _, oor := range o.Oors {
+		if oor > 0 {
+			return false
+		}
+	}
+	return true
+}
+
 // IndCompareDet compares individual 'A' with another one 'B'. Deterministic method
 func IndCompareDet(A, B *Individual) (A_dominates, B_dominates bool) {
 	var A_nviolations, B_nviolations int
@@ -499,6 +509,5 @@ func (o *Individual) Output(fmts map[string][]string, showBases bool) (l string)
 			l += io.Sf("%11.3e", x)
 		}
 	}
-
 	return
 }

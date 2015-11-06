@@ -49,6 +49,7 @@ type ConfParams struct {
 	ParetoPhi float64 // φ coefficient for probabilistic Pareto comparison
 	CompProb  bool    // use probabilistic comparison in crowding
 	DistOvs   bool    // distance between individuals is computed in ov space
+	ArchMult  int     // multiplier to compute archive size = mult * ndinds
 
 	// output
 	Verbose   bool       // show messages during optimisation
@@ -141,6 +142,7 @@ func (o *ConfParams) SetDefault() {
 	o.ParetoPhi = 0.01
 	o.CompProb = false
 	o.DistOvs = false
+	o.ArchMult = 3
 
 	// output
 	o.Verbose = false
@@ -244,6 +246,7 @@ CrowdSize = %v # crowd size
 ParetoPhi = %v # φ coefficient for probabilistic Pareto comparison
 CompProb  = %v # use probabilistic comparision in crowding
 DistOvs   = %v # distance between individuals is computed in ov space
+ArchMult  = %v # multiplier to compute archive size = mult * ndinds
 
 # output
 Verbose   = %v # show messages during optimisation
@@ -293,7 +296,7 @@ PopStrGen = %v # generate population of strings
 PopKeyGen = %v # generate population of keys (bytes)
 PopBytGen = %v # generate population of bytes
 PopFunGen = %v # generate population of functions
-`, o.Elite, o.Rws, o.Rnk, o.RnkSp, o.GAtype, o.CrowdSize, o.ParetoPhi, o.CompProb, o.DistOvs,
+`, o.Elite, o.Rws, o.Rnk, o.RnkSp, o.GAtype, o.CrowdSize, o.ParetoPhi, o.CompProb, o.DistOvs, o.ArchMult,
 		o.Verbose, o.DoReport, o.Json, o.DirOut, o.FnKey, o.DoPlot, o.PltTi, o.PltTf, o.ShowOor,
 		o.ShowDem, o.ShowBases, o.ShowNinds, o.PostProc, o.NumFmts, o.NumFmtOva, o.Problem,
 		o.Strategy, o.Ntrials, o.Eps1, o.Check, o.OvaOor, o.Latin, o.LatinDf, o.Noise, o.NumInts,
