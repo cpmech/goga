@@ -62,12 +62,6 @@ type Island struct {
 	offspring []*Individual // offspring
 	round2    []int         // ids for round 2
 
-	// archive
-	archive []*Individual // archive
-	numarch int           // archive size
-	toparch int           // top pointer in archive
-	selpair []int         // selected 2 individuals
-
 	// limits
 	intXmin, intXmax []int     // int genes range
 	fltXmin, fltXmax []float64 // flt genes range
@@ -173,10 +167,6 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	for i := 0; i < m; i++ {
 		o.offspring[i] = o.Pop[0].GetCopy()
 	}
-
-	// archive
-	o.archive = make([]*Individual, o.C.ArchMult*o.C.Ninds)
-	o.selpair = make([]int, 2)
 
 	// limits
 	nints := len(o.Pop[0].Ints)
@@ -318,25 +308,6 @@ func (o *Island) update_crowding(time int) {
 	m := (o.C.CrowdSize - 1) * 2
 	ncrowd := len(o.crowds)
 
-	// archive
-	for _, ind := range o.Pop {
-		if ind.Feasible() {
-			if o.numarch == len(o.archive) { // archive is full
-				if o.toparch == o.numarch {
-					o.toparch = 0
-				}
-				_, newDom := IndCompareDet(o.archive[o.toparch], ind)
-				if newDom {
-					o.archive[o.toparch] = ind.GetCopy()
-					o.toparch++
-				}
-			} else {
-				o.archive[o.numarch] = ind.GetCopy()
-				o.numarch++
-			}
-		}
-	}
-
 	// run tournaments
 	for icrowd, crowd := range o.crowds {
 
@@ -349,14 +320,7 @@ func (o *Island) update_crowding(time int) {
 			a, b := o.offspring[k], o.offspring[l]
 			if o.C.Ops.Use4inds {
 				jcrowd := (icrowd + 1) % ncrowd
-				var C, D *Individual
-				if o.numarch < 2 {
-					C, D = o.Pop[o.crowds[jcrowd][0]], o.Pop[o.crowds[jcrowd][1]]
-				} else {
-					rnd.Ints(o.selpair, 0, o.numarch-1)
-					//io.Pforan("selpair = %v\n", o.selpair)
-					C, D = o.archive[o.selpair[0]], o.archive[o.selpair[1]]
-				}
+				C, D := o.Pop[o.crowds[jcrowd][0]], o.Pop[o.crowds[jcrowd][1]]
 				o.four_nondom(A, B, C, D)
 				IndCrossover(a, b, A, B, C, D, time, &o.C.Ops)
 			} else {
