@@ -32,6 +32,10 @@ type Island struct {
 	OutTimes []float64    // [ntimes] times corresponding to OutOvas and OutOors
 
 	// auxiliary internal data
+	intmin  []int       // min int x-values
+	intmax  []int       // max int x-values
+	fltmin  []float64   // min flt x-values
+	fltmax  []float64   // max flt x-values
 	ovamin  []float64   // min ovas
 	ovamax  []float64   // max ovas
 	oormin  []float64   // min oors
@@ -46,13 +50,13 @@ type Island struct {
 	selinds []int       // indices of selected individuals
 	A, B    []int       // indices of selected parents
 
-	// for statistics
+	// statistics
 	allbases [][]float64 // [ngenes*nbases][ninds] all bases
 	devbases []float64   // [ngenes*nbases] deviations of bases
 	larbases []float64   // [ngenes*nbases] largest bases; max(abs(bases))
 	Nfeval   int         // number of objective function evaluations
 
-	// for crowding
+	// crowding
 	indices   []int         // [ninds]
 	crowds    [][]int       // [ninds/crowd_size][crowd_size]
 	distR1    [][]float64   // [crowd_size][cowd_size] dist for round 1
@@ -61,10 +65,7 @@ type Island struct {
 	matchR2   graph.Munkres // matches for round 2
 	offspring []*Individual // offspring
 	round2    []int         // ids for round 2
-
-	// limits
-	intXmin, intXmax []int     // int genes range
-	fltXmin, fltXmax []float64 // flt genes range
+	cdist     [][]float64   // all distances [ninds][ndinds] (upper diagonal)
 }
 
 // NewIsland creates a new island
@@ -110,6 +111,16 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	o.Bkp = o.Pop.GetCopy()
 
 	// auxiliary data
+	nints := len(o.Pop[0].Ints)
+	nflts := o.Pop[0].Nfltgenes * o.Pop[0].Nbases
+	if nints > 0 {
+		o.intmin = make([]int, nints)
+		o.intmax = make([]int, nints)
+	}
+	if nflts > 0 {
+		o.fltmin = make([]float64, nflts)
+		o.fltmax = make([]float64, nflts)
+	}
 	o.ovamin = make([]float64, o.C.Nova)
 	o.ovamax = make([]float64, o.C.Nova)
 	o.oormin = make([]float64, o.C.Noor)
@@ -141,14 +152,13 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	}
 
 	// stat
-	nflts := o.Pop[0].Nfltgenes * o.Pop[0].Nbases
 	if o.Pop[0].Nfltgenes > 0 {
 		o.allbases = la.MatAlloc(nflts, o.C.Ninds)
 		o.devbases = make([]float64, nflts)
 		o.larbases = make([]float64, nflts)
 	}
 
-	// for crowding
+	// crowding
 	n := o.C.CrowdSize
 	m := (o.C.CrowdSize - 1) * 2
 	if o.C.Ninds%n > 0 {
@@ -168,16 +178,8 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 		o.offspring[i] = o.Pop[0].GetCopy()
 	}
 
-	// limits
-	nints := len(o.Pop[0].Ints)
-	if nints > 0 {
-		o.intXmin = make([]int, nints)
-		o.intXmax = make([]int, nints)
-	}
-	if nflts > 0 {
-		o.fltXmin = make([]float64, nflts)
-		o.fltXmax = make([]float64, nflts)
-	}
+	// crowd distances
+	o.cdist = utl.DblsAlloc(o.C.Ninds, o.C.Ninds)
 	return
 }
 
@@ -196,20 +198,55 @@ func (o *Island) CalcOvs(pop Population, time int) {
 
 // CalcDemeritsAndSort computes demerits and sort population
 func (o *Island) CalcDemeritsAndSort(pop Population) {
+
+	// fill auxiliary arrays
 	for i, ind := range pop {
+
+		// set auxiliary arrays
 		for j := 0; j < o.C.Nova; j++ {
 			o.ovas[j][i] = ind.Ovas[j]
 		}
 		for j := 0; j < o.C.Noor; j++ {
 			o.oors[j][i] = ind.Oors[j]
 		}
+
+		// calc int limits
+		for j, x := range ind.Ints {
+			if i == 0 {
+				o.intmin[j], o.intmax[j] = x, x
+			} else {
+				o.intmin[j] = utl.Imin(o.intmin[j], x)
+				o.intmax[j] = utl.Imax(o.intmax[j], x)
+			}
+		}
+
+		// calc flt limits
+		for j, x := range ind.Floats {
+			if i == 0 {
+				o.fltmin[j], o.fltmax[j] = x, x
+			} else {
+				o.fltmin[j] = utl.Min(o.fltmin[j], x)
+				o.fltmax[j] = utl.Max(o.fltmax[j], x)
+			}
+		}
 	}
+
+	// compute scaled values and min/max ovas/oors
 	for i := 0; i < o.C.Nova; i++ {
 		o.ovamin[i], o.ovamax[i] = utl.Scaling(o.sovas[i], o.ovas[i], 0, 1e-16, false, true)
 	}
 	for i := 0; i < o.C.Noor; i++ {
 		o.oormin[i], o.oormax[i] = utl.Scaling(o.soors[i], o.oors[i], 0, 1e-16, false, true)
 	}
+
+	// compute crowd distance
+	for i := 0; i < o.C.Ninds; i++ {
+		for j := i + 1; j < o.C.Ninds; j++ {
+			//io.Pforan("i, j = %v, %v\n", i, j)
+		}
+	}
+
+	// compute demerit values
 	for i, ind := range pop {
 		ind.Demerit = 0
 		for j := 0; j < o.C.Nova; j++ {
@@ -229,6 +266,8 @@ func (o *Island) CalcDemeritsAndSort(pop Population) {
 			}
 		}
 	}
+
+	// sort population with respect to demerit values
 	pop.Sort()
 }
 
@@ -298,11 +337,6 @@ func (o *Island) update_crowding(time int) {
 	// select groups (crowds)
 	rnd.IntGetGroups(o.crowds, o.indices)
 
-	// compute float gene limits
-	if !o.C.DistOvs {
-		o.calc_float_lims()
-	}
-
 	// auxiliary variables
 	n := o.C.CrowdSize
 	m := (o.C.CrowdSize - 1) * 2
@@ -339,7 +373,7 @@ func (o *Island) update_crowding(time int) {
 			A := o.Pop[I]
 			for j := 0; j < m; j++ {
 				B := o.offspring[j]
-				o.distR1[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax, o.C.DistOvs)
+				o.distR1[i][j] = IndDistance(A, B, o.intmin, o.intmax, o.fltmin, o.fltmax, o.ovamin, o.ovamax, o.C.DistOvs)
 			}
 		}
 
@@ -374,7 +408,7 @@ func (o *Island) update_crowding(time int) {
 				for j := 0; j < m-n; j++ {
 					J := o.round2[j]
 					B := o.offspring[J]
-					o.distR2[i][j] = IndDistance(A, B, o.intXmin, o.intXmax, o.fltXmin, o.fltXmax, o.C.DistOvs)
+					o.distR2[i][j] = IndDistance(A, B, o.intmin, o.intmax, o.fltmin, o.fltmax, o.ovamin, o.ovamax, o.C.DistOvs)
 				}
 			}
 
@@ -544,28 +578,6 @@ func (o Island) SaveReport(verbose bool) {
 			return
 		}
 		io.WriteFileD(o.C.DirOut, io.Sf("%s-%d.rpt", o.C.FnKey, o.Id), &o.Report)
-	}
-}
-
-// calc_float_lims find float genes limits
-func (o *Island) calc_float_lims() {
-	for i, ind := range o.Pop {
-		for j, x := range ind.Ints {
-			if i == 0 {
-				o.intXmin[j], o.intXmax[j] = x, x
-			} else {
-				o.intXmin[j] = utl.Imin(o.intXmin[j], x)
-				o.intXmax[j] = utl.Imax(o.intXmax[j], x)
-			}
-		}
-		for j, x := range ind.Floats {
-			if i == 0 {
-				o.fltXmin[j], o.fltXmax[j] = x, x
-			} else {
-				o.fltXmin[j] = utl.Min(o.fltXmin[j], x)
-				o.fltXmax[j] = utl.Max(o.fltXmax[j], x)
-			}
-		}
 	}
 }
 
