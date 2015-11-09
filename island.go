@@ -64,7 +64,7 @@ type Island struct {
 
 	// crowding
 	indices   []int         // [ninds]
-	crowds    [][]int       // [ninds/crowd_size][crowd_size]
+	groups    [][]int       // [ninds/crowd_size][crowd_size]
 	distR1    [][]float64   // [crowd_size][cowd_size] dist for round 1
 	distR2    [][]float64   // [crowd_size][(crowd_size-1)*2] dist for round 2
 	matchR1   graph.Munkres // matches for round 1
@@ -171,7 +171,7 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 		chk.Panic("number of individuals must be multiple of crowd size")
 	}
 	o.indices = utl.IntRange(o.C.Ninds)
-	o.crowds = utl.IntsAlloc(o.C.Ninds/n, n)
+	o.groups = utl.IntsAlloc(o.C.Ninds/n, n)
 	o.distR1 = la.MatAlloc(n, m)
 	o.matchR1.Init(n, m)
 	if m-n > 0 {
@@ -253,9 +253,9 @@ func (o *Island) CalcDemeritsCdistAndSort(pop Population) {
 			o.cdist[j][i] = o.cdist[i][j]
 		}
 	}
-	//for i, ind := range pop {
-	//ind.Cdist = la.VecMin(o.cdist[i])
-	//}
+	for i, ind := range pop {
+		ind.Cdist = la.VecMin(o.cdist[i])
+	}
 
 	// compute demerit values
 	for i, ind := range pop {
@@ -289,6 +289,8 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 	switch o.C.GAtype {
 	case "crowd":
 		o.update_crowding(time)
+	case "cdist":
+		o.update_cdist(time)
 	default:
 		o.update_standard(time)
 	}
@@ -342,30 +344,36 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 	o.OutTimes[time] = float64(time)
 }
 
+// update_cdist runs the evolutionary process with niching via crowding and tournament selection
+// in addition to monitor the crowd distance in order to improve diversity
+func (o *Island) update_cdist(time int) {
+	o.update_crowding(time)
+}
+
 // update_crowding runs the evolutionary process with niching via crowding and tournament selection
 func (o *Island) update_crowding(time int) {
 
-	// select groups (crowds)
-	rnd.IntGetGroups(o.crowds, o.indices)
+	// select groups
+	rnd.IntGetGroups(o.groups, o.indices)
 
 	// auxiliary variables
 	n := o.C.CrowdSize
 	m := (o.C.CrowdSize - 1) * 2
-	ncrowd := len(o.crowds)
+	ncrowd := len(o.groups)
 
 	// run tournaments
-	for icrowd, crowd := range o.crowds {
+	for igroup, group := range o.groups {
 
 		// crossover, mutation and new objective values
 		for r := 0; r < n-1; r++ {
 			i, j := r, r+1
 			k, l := r*2, r*2+1
-			I, J := crowd[i], crowd[j]
+			I, J := group[i], group[j]
 			A, B := o.Pop[I], o.Pop[J]
 			a, b := o.offspring[k], o.offspring[l]
 			if o.C.Ops.Use4inds {
-				jcrowd := (icrowd + 1) % ncrowd
-				C, D := o.Pop[o.crowds[jcrowd][0]], o.Pop[o.crowds[jcrowd][1]]
+				jgroup := (igroup + 1) % ncrowd
+				C, D := o.Pop[o.groups[jgroup][0]], o.Pop[o.groups[jgroup][1]]
 				o.four_nondom(A, B, C, D)
 				IndCrossover(a, b, A, B, C, D, time, &o.C.Ops)
 			} else {
@@ -380,7 +388,7 @@ func (o *Island) update_crowding(time int) {
 
 		// round 1: compute distances
 		for i := 0; i < n; i++ {
-			I := crowd[i]
+			I := group[i]
 			A := o.Pop[I]
 			for j := 0; j < m; j++ {
 				B := o.offspring[j]
@@ -403,7 +411,7 @@ func (o *Island) update_crowding(time int) {
 
 		// round 1: tournament
 		for i := 0; i < n; i++ {
-			I := crowd[i]
+			I := group[i]
 			j := o.matchR1.Links[i]
 			A, B := o.Pop[I], o.offspring[j]
 			o.tournament(A, B, I)
@@ -414,7 +422,7 @@ func (o *Island) update_crowding(time int) {
 
 			// round 2: compute distances
 			for i := 0; i < n; i++ {
-				I := crowd[i]
+				I := group[i]
 				A := o.Bkp[I]
 				for j := 0; j < m-n; j++ {
 					J := o.round2[j]
@@ -429,7 +437,7 @@ func (o *Island) update_crowding(time int) {
 
 			// round 2: tournament
 			for i := 0; i < n; i++ {
-				I := crowd[i]
+				I := group[i]
 				k := o.matchR2.Links[i]
 				if k >= 0 {
 					j := o.round2[k]

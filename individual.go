@@ -22,6 +22,7 @@ type Individual struct {
 	Demerit   float64   // quantity for comparing individuals. 0=good 1=bad 2=worse(oor) 3=worst(oor)
 	Nfltgenes int       // number of floats == number of float64 genes
 	Nbases    int       // number of bases to split Floats
+	Cdist     float64   // crowd distance
 
 	// chromosome
 	Ints    []int     // integers

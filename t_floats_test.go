@@ -221,7 +221,7 @@ func Test_flt03(tst *testing.T) {
 
 func Test_flt04(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("flt04. two-bar truss. Pareto-optimal")
 
 	// configuration
@@ -229,7 +229,7 @@ func Test_flt04(tst *testing.T) {
 	C.Pll = false
 	C.Nisl = 1
 	C.Ninds = 30
-	C.GAtype = "crowd"
+	C.GAtype = "cdist"
 	C.Ops.FltCxName = "de"
 	C.Ops.DEpc = 0.1
 	C.Ops.DEmult = 0.5
