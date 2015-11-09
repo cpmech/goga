@@ -134,7 +134,7 @@ func Test_int02(tst *testing.T) {
 			pop[0].Ints[i] = x
 		}
 		evo.Islands[0].CalcOvs(pop, 0)
-		evo.Islands[0].CalcDemeritsAndSort(pop)
+		evo.Islands[0].CalcDemeritsCdistAndSort(pop)
 	}
 
 	// check initial population

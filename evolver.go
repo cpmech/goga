@@ -177,15 +177,6 @@ func (o *Evolver) Run() {
 	return
 }
 
-// ResetAllPop resets/re-generates all populations in all islands
-func (o *Evolver) ResetAllPop() {
-	for id, isl := range o.Islands {
-		isl.Pop = o.C.PopFltGen(id, o.C)
-		isl.CalcOvs(isl.Pop, 0)
-		isl.CalcDemeritsAndSort(isl.Pop)
-	}
-}
-
 // FindBestFromAll finds best individual from all islands
 //  Output: o.Best will point to the best individual
 func (o *Evolver) FindBestFromAll() {
@@ -338,7 +329,7 @@ func (o *Evolver) std_migration(t int) {
 				k++
 			}
 		}
-		o.Islands[i].CalcDemeritsAndSort(o.Islands[i].Pop)
+		o.Islands[i].CalcDemeritsCdistAndSort(o.Islands[i].Pop)
 	}
 }
 

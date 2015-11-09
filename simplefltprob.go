@@ -187,7 +187,7 @@ func (o *SimpleFltProb) Run(verbose bool) {
 			for id, isl := range o.Evo.Islands {
 				isl.Pop = o.C.PopFltGen(id, o.C)
 				isl.CalcOvs(isl.Pop, 0)
-				isl.CalcDemeritsAndSort(isl.Pop)
+				isl.CalcDemeritsCdistAndSort(isl.Pop)
 			}
 		}
 

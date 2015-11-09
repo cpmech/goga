@@ -138,7 +138,7 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 
 	// compute objective values, demerits, and sort population
 	o.CalcOvs(o.Pop, 0)
-	o.CalcDemeritsAndSort(o.Pop)
+	o.CalcDemeritsCdistAndSort(o.Pop)
 
 	// results
 	o.OutOvas = la.MatAlloc(o.C.Nova, o.C.Tf)
@@ -196,8 +196,8 @@ func (o *Island) CalcOvs(pop Population, time int) {
 	}
 }
 
-// CalcDemeritsAndSort computes demerits and sort population
-func (o *Island) CalcDemeritsAndSort(pop Population) {
+// CalcDemeritsCdistAndSort computes demerits and sort population
+func (o *Island) CalcDemeritsCdistAndSort(pop Population) {
 
 	// fill auxiliary arrays
 	for i, ind := range pop {
@@ -284,7 +284,7 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 
 	// swap populations (Pop will always point to current one)
 	o.Pop, o.Bkp = o.Bkp, o.Pop
-	o.CalcDemeritsAndSort(o.Pop)
+	o.CalcDemeritsCdistAndSort(o.Pop)
 
 	// elitism
 	if o.C.Elite {
@@ -529,7 +529,7 @@ func (o *Island) Regenerate(time int) {
 		}
 	}
 	o.CalcOvs(o.Pop, time)
-	o.CalcDemeritsAndSort(o.Pop)
+	o.CalcDemeritsCdistAndSort(o.Pop)
 	return
 }
 
