@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FILES="evolver.go island.go operators.go simplefltprob.go ops_floats.go t_floats_test.go"
+FILES="individual.go evolver.go island.go operators.go simplefltprob.go ops_floats.go t_floats_test.go"
 TEST="flt04"
 
 refresh(){

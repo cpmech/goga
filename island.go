@@ -16,6 +16,11 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
+// constants
+const (
+	INF = 1e+30 // infinite distance
+)
+
 // Island holds one population and performs the reproduction operation
 type Island struct {
 
@@ -44,6 +49,7 @@ type Island struct {
 	oors    [][]float64 // all oor values
 	sovas   [][]float64 // scaled ova values
 	soors   [][]float64 // scaled oor values
+	cdist   [][]float64 // all distances [ninds][ninds]
 	fitness []float64   // all fitness values
 	prob    []float64   // probabilities
 	cumprob []float64   // cumulated probabilities
@@ -65,7 +71,6 @@ type Island struct {
 	matchR2   graph.Munkres // matches for round 2
 	offspring []*Individual // offspring
 	round2    []int         // ids for round 2
-	cdist     [][]float64   // all distances [ninds][ndinds] (upper diagonal)
 }
 
 // NewIsland creates a new island
@@ -129,6 +134,7 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	o.oors = la.MatAlloc(o.C.Noor, o.C.Ninds)
 	o.sovas = la.MatAlloc(o.C.Nova, o.C.Ninds)
 	o.soors = la.MatAlloc(o.C.Noor, o.C.Ninds)
+	o.cdist = la.MatAlloc(o.C.Ninds, o.C.Ninds)
 	o.fitness = make([]float64, o.C.Ninds)
 	o.prob = make([]float64, o.C.Ninds)
 	o.cumprob = make([]float64, o.C.Ninds)
@@ -239,12 +245,17 @@ func (o *Island) CalcDemeritsCdistAndSort(pop Population) {
 		o.oormin[i], o.oormax[i] = utl.Scaling(o.soors[i], o.oors[i], 0, 1e-16, false, true)
 	}
 
-	// compute crowd distance
+	// compute and set crowd distance
 	for i := 0; i < o.C.Ninds; i++ {
+		o.cdist[i][i] = INF
 		for j := i + 1; j < o.C.Ninds; j++ {
-			//io.Pforan("i, j = %v, %v\n", i, j)
+			o.cdist[i][j] = IndDistance(pop[i], pop[j], o.intmin, o.intmax, o.fltmin, o.fltmax, o.ovamin, o.ovamax, o.C.DistOvs)
+			o.cdist[j][i] = o.cdist[i][j]
 		}
 	}
+	//for i, ind := range pop {
+	//ind.Cdist = la.VecMin(o.cdist[i])
+	//}
 
 	// compute demerit values
 	for i, ind := range pop {

@@ -141,7 +141,7 @@ func (o *ConfParams) SetDefault() {
 	o.CrowdSize = 2
 	o.ParetoPhi = 0.01
 	o.CompProb = false
-	o.DistOvs = false
+	o.DistOvs = true
 	o.ArchMult = 3
 
 	// output
