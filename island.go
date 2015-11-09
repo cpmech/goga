@@ -183,9 +183,6 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	for i := 0; i < m; i++ {
 		o.offspring[i] = o.Pop[0].GetCopy()
 	}
-
-	// crowd distances
-	o.cdist = utl.DblsAlloc(o.C.Ninds, o.C.Ninds)
 	return
 }
 
@@ -289,8 +286,6 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 	switch o.C.GAtype {
 	case "crowd":
 		o.update_crowding(time)
-	case "cdist":
-		o.update_cdist(time)
 	default:
 		o.update_standard(time)
 	}
@@ -342,12 +337,6 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 		o.OutOors[i][time] = o.Pop[0].Oors[i]
 	}
 	o.OutTimes[time] = float64(time)
-}
-
-// update_cdist runs the evolutionary process with niching via crowding and tournament selection
-// in addition to monitor the crowd distance in order to improve diversity
-func (o *Island) update_cdist(time int) {
-	o.update_crowding(time)
 }
 
 // update_crowding runs the evolutionary process with niching via crowding and tournament selection
