@@ -24,6 +24,9 @@ type Individual struct {
 	Nbases    int       // number of bases to split Floats
 	Cdist     float64   // crowd distance
 
+	// auxiliary
+	Id int // identifier; e.g. for debugging
+
 	// chromosome
 	Ints    []int     // integers
 	Floats  []float64 // floats [nFLTgenes * nbases]
@@ -94,6 +97,7 @@ func (o Individual) GetCopy() (x *Individual) {
 	x.Demerit = o.Demerit
 	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
+	x.Id = o.Id
 
 	if o.Ints != nil {
 		x.Ints = make([]int, len(o.Ints))
@@ -138,6 +142,7 @@ func (o Individual) CopyInto(x *Individual) {
 	x.Demerit = o.Demerit
 	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
+	x.Id = o.Id
 
 	if o.Ints != nil {
 		copy(x.Ints, o.Ints)
