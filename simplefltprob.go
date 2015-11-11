@@ -342,7 +342,7 @@ test & $N_{isl}$ & $N_{ind}$ & $T_f$ & $\Delta T_{mig}$ & $N_{crowd}$ & $p_c$ & 
 \bottomrule
 \end{tabular}
 \end{table}
-`, problem, prob, o.C.Nisl, o.C.Ninds, o.C.Tf, o.C.Dtmig, o.C.CrowdSize, o.C.Ops.Pc, o.C.Ops.Pm, o.C.Ops.DEpc, o.C.Ops.DEmult, o.C.Ops.DebEtac, o.C.Ops.DebEtam)
+`, problem, prob, o.C.Nisl, o.C.Ninds, o.C.Tf, o.C.Dtmig, o.C.NparGrp, o.C.Ops.Pc, o.C.Ops.Pm, o.C.Ops.DEpc, o.C.Ops.DEmult, o.C.Ops.DebEtac, o.C.Ops.DebEtam)
 
 	// results: Pareto front
 	if o.ParStat {

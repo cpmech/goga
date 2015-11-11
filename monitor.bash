@@ -1,7 +1,8 @@
 #!/bin/bash
 
-FILES="individual.go evolver.go island.go operators.go simplefltprob.go ops_floats.go t_floats_test.go"
+FILES="sorting.go individual.go evolver.go island.go operators.go simplefltprob.go ops_floats.go t_floats_test.go t_sorting_test.go"
 TEST="flt04"
+#TEST="sort01"
 
 refresh(){
     go test -test.run="$TEST"

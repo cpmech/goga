@@ -28,7 +28,7 @@ func Test_flt01(tst *testing.T) {
 	C.Ninds = 12
 	C.GAtype = "crowd"
 	C.Ops.FltCxName = "de"
-	C.CrowdSize = 3
+	C.NparGrp = 3
 	C.RangeFlt = [][]float64{
 		{-2, 2}, // gene # 0: min and max
 		{-2, 2}, // gene # 1: min and max
@@ -76,7 +76,7 @@ func Test_flt02(tst *testing.T) {
 	}
 	C.Verbose = false
 	C.Dtmig = 50
-	C.CrowdSize = 2
+	C.NparGrp = 2
 	C.CompProb = false
 	C.GAtype = "crowd"
 	C.Ops.FltCxName = "de"
@@ -145,7 +145,7 @@ func Test_flt03(tst *testing.T) {
 	C.Ninds = 24
 	C.GAtype = "crowd"
 	C.Ops.FltCxName = "de"
-	C.CrowdSize = 3
+	C.NparGrp = 3
 	C.ParetoPhi = 0.01
 	C.CompProb = true
 	C.Tf = 100
@@ -229,12 +229,15 @@ func Test_flt04(tst *testing.T) {
 	C.Pll = false
 	C.Nisl = 1
 	C.Ninds = 30
-	C.GAtype = "crowd"
+	//C.GAtype = "crowd"
+	C.GAtype = "cold"
 	C.Ops.FltCxName = "de"
 	C.Ops.DEpc = 0.1
 	C.Ops.DEmult = 0.5
-	C.CrowdSize = 3
+	C.NparGrp = 2
+	C.CompProb = false
 	C.ParetoPhi = 0.05
+	C.CdistOff = false
 	C.Tf = 100
 	C.Dtmig = 10
 	C.Ntrials = 1

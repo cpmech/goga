@@ -35,7 +35,7 @@ func Test_int01(tst *testing.T) {
 	C.RegTol = 0
 	C.NumInts = 20
 	//C.GAtype = "crowd"
-	C.CrowdSize = 2
+	C.NparGrp = 2
 	C.Tf = 50
 	C.Verbose = chk.Verbose
 	C.CalcDerived()

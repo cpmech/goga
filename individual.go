@@ -23,6 +23,7 @@ type Individual struct {
 	Nfltgenes int       // number of floats == number of float64 genes
 	Nbases    int       // number of bases to split Floats
 	Cdist     float64   // crowd distance
+	FrontId   int       // Pareto front id
 
 	// auxiliary
 	Id int // identifier; e.g. for debugging

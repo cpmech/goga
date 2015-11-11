@@ -45,11 +45,12 @@ type ConfParams struct {
 	Rnk       bool    // ranking
 	RnkSp     float64 // selective pressure for ranking
 	GAtype    string  // type of GA; e.g. "std", "crowd"
-	CrowdSize int     // crowd size
+	NparGrp   int     // number of parents in group
 	ParetoPhi float64 // φ coefficient for probabilistic Pareto comparison
 	CompProb  bool    // use probabilistic comparison in crowding
 	DistOvs   bool    // distance between individuals is computed in ov space
-	ArchMult  int     // multiplier to compute archive size = mult * ndinds
+	AllVsAll  bool    // tournaments: all versus all
+	CdistOff  bool    // disable use of crowd-dist
 
 	// output
 	Verbose   bool       // show messages during optimisation
@@ -138,11 +139,12 @@ func (o *ConfParams) SetDefault() {
 	o.Rnk = true
 	o.RnkSp = 1.2
 	o.GAtype = "crowd"
-	o.CrowdSize = 2
+	o.NparGrp = 2
 	o.ParetoPhi = 0.01
 	o.CompProb = false
 	o.DistOvs = true
-	o.ArchMult = 3
+	o.AllVsAll = false
+	o.CdistOff = false
 
 	// output
 	o.Verbose = false
@@ -242,11 +244,12 @@ Rws       = %v # use Roulette-Wheel selection method
 Rnk       = %v # ranking
 RnkSp     = %v # selective pressure for ranking
 GAtype    = %q # type of GA; e.g. "std", "crowd"
-CrowdSize = %v # crowd size
+NparGrp   = %v # number of parents in group
 ParetoPhi = %v # φ coefficient for probabilistic Pareto comparison
 CompProb  = %v # use probabilistic comparision in crowding
 DistOvs   = %v # distance between individuals is computed in ov space
-ArchMult  = %v # multiplier to compute archive size = mult * ndinds
+AllVsAll  = %v # tournaments: all versus all
+CdistOff  = %v # disable use of crowd-dist
 
 # output
 Verbose   = %v # show messages during optimisation
@@ -296,7 +299,7 @@ PopStrGen = %v # generate population of strings
 PopKeyGen = %v # generate population of keys (bytes)
 PopBytGen = %v # generate population of bytes
 PopFunGen = %v # generate population of functions
-`, o.Elite, o.Rws, o.Rnk, o.RnkSp, o.GAtype, o.CrowdSize, o.ParetoPhi, o.CompProb, o.DistOvs, o.ArchMult,
+`, o.Elite, o.Rws, o.Rnk, o.RnkSp, o.GAtype, o.NparGrp, o.ParetoPhi, o.CompProb, o.DistOvs, o.AllVsAll, o.CdistOff,
 		o.Verbose, o.DoReport, o.Json, o.DirOut, o.FnKey, o.DoPlot, o.PltTi, o.PltTf, o.ShowOor,
 		o.ShowDem, o.ShowBases, o.ShowNinds, o.PostProc, o.NumFmts, o.NumFmtOva, o.Problem,
 		o.Strategy, o.Ntrials, o.Eps1, o.Check, o.OvaOor, o.Latin, o.LatinDf, o.Noise, o.NumInts,

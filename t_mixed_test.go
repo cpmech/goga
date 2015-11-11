@@ -25,7 +25,7 @@ func Test_mix01(tst *testing.T) {
 	C.Pll = false
 	C.Nisl = 1
 	C.Ninds = 24
-	C.CrowdSize = 3
+	C.NparGrp = 3
 	C.NumInts = 2
 	C.RangeFlt = [][]float64{
 		{-2, 2}, // gene # 0: min and max

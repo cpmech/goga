@@ -8,6 +8,7 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
+	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
 
@@ -147,7 +148,8 @@ func (o *Evolver) Run() {
 		if o.C.Verbose {
 			io.Pfyel(" %d", t)
 		}
-		o.std_migration(t)
+		o.new_migration(t)
+		//o.std_migration(t)
 	}
 
 	// best individual
@@ -292,6 +294,18 @@ func (o *Evolver) GetNfeval() (nfeval int) {
 }
 
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////
+
+// new_migration performs standard migration
+func (o *Evolver) new_migration(t int) {
+	for i := 0; i < o.C.Nisl; i++ {
+		for j := i + 1; j < o.C.Nisl; j++ {
+			r := rnd.Int(0, o.C.Ninds/2-1)
+			s := rnd.Int(o.C.Ninds/2, o.C.Ninds-1)
+			o.Islands[i].Pop[r].CopyInto(o.Islands[j].Pop[s])
+			o.Islands[j].Pop[r].CopyInto(o.Islands[i].Pop[s])
+		}
+	}
+}
 
 // std_migration performs standard migration
 func (o *Evolver) std_migration(t int) {
