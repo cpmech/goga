@@ -318,8 +318,12 @@ func (o *Island) CalcDemeritsCdistAndSort(pop Population) {
 	// compute demerit values
 	for i, ind := range pop {
 		ind.Demerit = 0
-		for j := 0; j < o.C.Nova; j++ {
-			ind.Demerit += o.sovas[j][i]
+		if o.C.Nova > 1 {
+			ind.Demerit = float64(ind.FrontId)
+		} else {
+			for j := 0; j < o.C.Nova; j++ {
+				ind.Demerit += o.sovas[j][i]
+			}
 		}
 	}
 	shift := 2.0

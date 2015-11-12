@@ -227,13 +227,15 @@ func Test_flt04(tst *testing.T) {
 	// configuration
 	C := NewConfParams()
 	C.Pll = false
-	C.Nisl = 1
-	C.Ninds = 30
-	//C.GAtype = "crowd"
-	C.GAtype = "cold"
+	C.Nisl = 2
+	C.Ninds = 20
+	C.GAtype = "crowd"
+	//C.GAtype = "cold"
 	C.Ops.FltCxName = "de"
-	C.Ops.DEpc = 0.1
-	C.Ops.DEmult = 0.5
+	C.Ops.Pc = 1.0
+	C.Ops.Pm = 0.0
+	C.Ops.DEpc = 0.5
+	C.Ops.DEmult = 0.1
 	C.NparGrp = 2
 	C.CompProb = false
 	C.ParetoPhi = 0.05
@@ -302,6 +304,10 @@ func Test_flt04(tst *testing.T) {
 	// run
 	sim.Run(chk.Verbose)
 	sim.StatPareto()
+
+	// output
+	//C.ShowDem = true
+	//io.Pf("%v\n", sim.Evo.Islands[0].Pop.Output(C))
 
 	// results
 	if chk.Verbose {

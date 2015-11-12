@@ -25,6 +25,7 @@ type ConfParams struct {
 	Pll   bool // allow running islands in parallel (go-routines)
 	Nisl  int  // number of islands
 	Ninds int  // number of individuals: population size
+	Nimig int  // number of individuals that migrate
 
 	// time control
 	Tf    int // number of generations
@@ -119,6 +120,7 @@ func (o *ConfParams) SetDefault() {
 	o.Pll = true
 	o.Nisl = 4
 	o.Ninds = 24
+	o.Nimig = 2
 
 	// time control
 	o.Tf = 100
@@ -222,6 +224,7 @@ Seed  = %v # seed to initialise random numbers generator. Seed ≤ 0 means use c
 Pll   = %v # allow running islands in parallel (go-routines)
 Nisl  = %v # number of islands
 Ninds = %v # number of individuals: population size
+Nimig = %v # number of individuals that migrate
 
 # time control
 Tf    = %v # number of generations
@@ -232,7 +235,7 @@ Dtmig = %v # increment of time for migration
 RegTol    = %v # tolerance for ρ to activate regeneration
 RegPct    = %v # percentage of individuals to be regenerated; e.g. 0.3
 UseStdDev = %v # use standard deviation (σ) instead of average deviation in Stat
-`, o.Nova, o.Noor, o.Nbases, o.Seed, o.Pll, o.Nisl, o.Ninds, o.Tf, o.Dtout, o.Dtmig,
+`, o.Nova, o.Noor, o.Nbases, o.Seed, o.Pll, o.Nisl, o.Ninds, o.Nimig, o.Tf, o.Dtout, o.Dtmig,
 		o.RegTol, o.RegPct, o.UseStdDev)
 
 	o.Ops.Report(&buf)

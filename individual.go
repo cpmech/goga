@@ -98,6 +98,8 @@ func (o Individual) GetCopy() (x *Individual) {
 	x.Demerit = o.Demerit
 	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
+	x.Cdist = o.Cdist
+	x.FrontId = o.FrontId
 	x.Id = o.Id
 
 	if o.Ints != nil {
@@ -143,6 +145,8 @@ func (o Individual) CopyInto(x *Individual) {
 	x.Demerit = o.Demerit
 	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
+	x.Cdist = o.Cdist
+	x.FrontId = o.FrontId
 	x.Id = o.Id
 
 	if o.Ints != nil {

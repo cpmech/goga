@@ -5,6 +5,7 @@
 package goga
 
 import (
+	"math"
 	"sort"
 
 	"github.com/cpmech/gosl/utl"
@@ -135,11 +136,11 @@ func (o *Island) CalcCrowdDist(pop Population) {
 			}
 			δ := o.ovamax[j] - o.ovamin[j] + 1e-15
 			F.Sort()
-			//F[0].Ind.Cdist += math.Pow((F[1].Ind.Ovas[j]-F[0].Ind.Ovas[j])/δ, 2.0)
-			//F[m].Ind.Cdist += math.Pow((F[m].Ind.Ovas[j]-F[n].Ind.Ovas[j])/δ, 2.0)
-			_ = n
-			F[0].Ind.Cdist = INF
-			F[m].Ind.Cdist = INF
+			F[0].Ind.Cdist += math.Pow((F[1].Ind.Ovas[j]-F[0].Ind.Ovas[j])/δ, 2.0)
+			F[m].Ind.Cdist += math.Pow((F[m].Ind.Ovas[j]-F[n].Ind.Ovas[j])/δ, 2.0)
+			//_ = n
+			//F[0].Ind.Cdist = INF
+			//F[m].Ind.Cdist = INF
 			for i := 1; i < m; i++ {
 				F[i].Ind.Cdist += ((F[i].Ind.Ovas[j] - F[i-1].Ind.Ovas[j]) / δ) * ((F[i+1].Ind.Ovas[j] - F[i].Ind.Ovas[j]) / δ)
 			}
