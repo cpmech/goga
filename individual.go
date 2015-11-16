@@ -22,11 +22,18 @@ type Individual struct {
 	Demerit   float64   // quantity for comparing individuals. 0=good 1=bad 2=worse(oor) 3=worst(oor)
 	Nfltgenes int       // number of floats == number of float64 genes
 	Nbases    int       // number of bases to split Floats
-	Cdist     float64   // crowd distance
-	FrontId   int       // Pareto front id
 
 	// auxiliary
 	Id int // identifier; e.g. for debugging
+
+	// diversity and non-dominance sorting
+	WinOver   []*Individual // [ninds] individuals dominated by this individual
+	Repeated  bool          // repeated individual
+	Nwins     int           // number of wins => current len(WinOver)
+	Nlosses   int           // number of individuals dominating this individual
+	FrontId   int           // Pareto front id
+	DistCrowd float64       // crowd distance
+	DistNeigh float64       // minimum distance to any neighbouring individual
 
 	// chromosome
 	Ints    []int     // integers
@@ -48,6 +55,8 @@ func NewIndividual(nova, noor, nbases int, slices ...interface{}) (o *Individual
 	o = new(Individual)
 	o.Ovas = make([]float64, nova)
 	o.Oors = make([]float64, noor)
+	o.DistNeigh = INF
+	o.DistCrowd = INF
 	for _, slice := range slices {
 		switch s := slice.(type) {
 		case []int:
@@ -98,8 +107,6 @@ func (o Individual) GetCopy() (x *Individual) {
 	x.Demerit = o.Demerit
 	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
-	x.Cdist = o.Cdist
-	x.FrontId = o.FrontId
 	x.Id = o.Id
 
 	if o.Ints != nil {
@@ -145,8 +152,6 @@ func (o Individual) CopyInto(x *Individual) {
 	x.Demerit = o.Demerit
 	x.Nfltgenes = o.Nfltgenes
 	x.Nbases = o.Nbases
-	x.Cdist = o.Cdist
-	x.FrontId = o.FrontId
 	x.Id = o.Id
 
 	if o.Ints != nil {
@@ -279,7 +284,7 @@ func IndDistance(A, B *Individual, imin, imax []int, fmin, fmax, omin, omax []fl
 		dints += math.Pow(float64(A.Ints[i]-B.Ints[i])/(1e-15+float64(imax[i]-imin[i])), 2.0)
 	}
 	if nints > 0 {
-		dints = math.Sqrt(dints / float64(nints))
+		dints = math.Sqrt(dints)
 	}
 	nflts := len(A.Floats)
 	dflts := 0.0
@@ -287,7 +292,7 @@ func IndDistance(A, B *Individual, imin, imax []int, fmin, fmax, omin, omax []fl
 		dflts += math.Pow((A.Floats[i]-B.Floats[i])/(1e-15+fmax[i]-fmin[i]), 2.0)
 	}
 	if nflts > 0 {
-		dflts = math.Sqrt(dflts / float64(nflts))
+		dflts = math.Sqrt(dflts)
 	}
 	return dints + dflts
 }

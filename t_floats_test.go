@@ -227,8 +227,12 @@ func Test_flt04(tst *testing.T) {
 	// configuration
 	C := NewConfParams()
 	C.Pll = false
-	C.Nisl = 2
-	C.Ninds = 20
+	C.Nisl = 1
+	C.Ninds = 30
+	C.Nimig = 1
+	C.Tf = 100
+	C.Dtmig = 10
+	C.StdMig = false
 	C.GAtype = "crowd"
 	//C.GAtype = "cold"
 	C.Ops.FltCxName = "de"
@@ -240,8 +244,6 @@ func Test_flt04(tst *testing.T) {
 	C.CompProb = false
 	C.ParetoPhi = 0.05
 	C.CdistOff = false
-	C.Tf = 100
-	C.Dtmig = 10
 	C.Ntrials = 1
 	C.RangeFlt = [][]float64{{0.1, 2.25}, {0.5, 2.5}}
 	C.PopFltGen = PopFltGen
@@ -338,5 +340,259 @@ func Test_flt04(tst *testing.T) {
 		}
 		plt.Gll("$f_1$", "$f_2$", "")
 		plt.SaveD("/tmp/goga", "test_flt04.eps")
+	}
+}
+
+func Test_flt05(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("flt05. ZDT problems")
+
+	// configuration
+	C := NewConfParams()
+	C.Problem = 4
+	C.PopFltGen = PopFltGen
+	C.Pll = true
+	C.Nisl = 1
+	C.Ninds = 100
+	C.Nimig = 1
+	C.Tf = 100
+	C.Dtmig = 10
+	C.StdMig = false
+	C.GAtype = "crowd"
+	C.Ops.FltCxName = "de"
+	C.Ops.Pc = 1.0
+	C.Ops.Pm = 0.0
+	C.Ops.DEpc = 0.5
+	C.Ops.DEmult = 0.1
+	C.NparGrp = 2
+	showinipop := true
+
+	// problem variables
+	var pname string
+	var fmin, fmax []float64
+	var f1f0 func(f0 float64) float64
+	var nf int // number of objective functions
+	var ng int // number of inequalities
+	var nh int // number of equalities
+	var fcn SimpleFltFcn_t
+	numfmtx := "%9.5f"
+
+	// problems
+	switch C.Problem {
+
+	// ZDT1, Deb 2001, p356
+	case 1:
+		pname = "ZDT1"
+		n := 30
+		C.RangeFlt = utl.DblsAlloc(n, 2)
+		for i := 0; i < len(C.RangeFlt); i++ {
+			C.RangeFlt[i][0], C.RangeFlt[i][1] = 0, 1
+		}
+		nf, ng, nh = 2, 0, 0
+		fcn = func(f, g, h, x []float64, isl int) {
+			f[0] = x[0]
+			sum := 0.0
+			for i := 1; i < n; i++ {
+				sum += x[i]
+			}
+			c0 := 1.0 + 9.0*sum/float64(n-1)
+			c1 := 1.0 - math.Sqrt(f[0]/c0)
+			f[1] = c0 * c1
+		}
+		fmin = []float64{0, 0}
+		fmax = []float64{1, 1}
+		f1f0 = func(f0 float64) float64 {
+			return 1.0 - math.Sqrt(f0)
+		}
+
+	// ZDT2, Deb 2001, p356
+	case 2:
+		pname = "ZDT2"
+		n := 30
+		C.RangeFlt = utl.DblsAlloc(n, 2)
+		for i := 0; i < len(C.RangeFlt); i++ {
+			C.RangeFlt[i][0], C.RangeFlt[i][1] = 0, 1
+		}
+		nf, ng, nh = 2, 0, 0
+		fcn = func(f, g, h, x []float64, isl int) {
+			f[0] = x[0]
+			sum := 0.0
+			for i := 1; i < n; i++ {
+				sum += x[i]
+			}
+			c0 := 1.0 + 9.0*sum/float64(n-1)
+			c1 := 1.0 - math.Pow(f[0]/c0, 2.0)
+			f[1] = c0 * c1
+		}
+		fmin = []float64{0, 0}
+		fmax = []float64{1, 1}
+		f1f0 = func(f0 float64) float64 {
+			return 1.0 - math.Pow(f0, 2.0)
+		}
+
+	// ZDT3, Deb 2001, p356
+	case 3:
+		pname = "ZDT3"
+		n := 30
+		C.RangeFlt = utl.DblsAlloc(n, 2)
+		for i := 0; i < len(C.RangeFlt); i++ {
+			C.RangeFlt[i][0], C.RangeFlt[i][1] = 0, 1
+		}
+		nf, ng, nh = 2, 0, 0
+		fcn = func(f, g, h, x []float64, isl int) {
+			f[0] = x[0]
+			sum := 0.0
+			for i := 1; i < n; i++ {
+				sum += x[i]
+			}
+			c0 := 1.0 + 9.0*sum/float64(n-1)
+			c1 := 1.0 - math.Sqrt(f[0]/c0) - math.Sin(10.0*math.Pi*f[0])*f[0]/c0
+			f[1] = c0 * c1
+		}
+		fmin = []float64{0, -1}
+		fmax = []float64{1, 1}
+		f1f0 = func(f0 float64) float64 {
+			return 1.0 - math.Sqrt(f0) - math.Sin(10.0*math.Pi*f0)*f0
+		}
+
+	// ZDT4, Deb 2001, p358
+	case 4:
+		pname = "ZDT4"
+		//C.Tf = 500
+		//C.Dtmig = 50
+		n := 10
+		C.RangeFlt = utl.DblsAlloc(n, 2)
+		C.RangeFlt[0][0], C.RangeFlt[0][1] = 0, 1
+		for i := 1; i < len(C.RangeFlt); i++ {
+			C.RangeFlt[i][0], C.RangeFlt[i][1] = -5, 5
+		}
+		nf, ng, nh = 2, 0, 0
+		fcn = func(f, g, h, x []float64, isl int) {
+			f[0] = x[0]
+			sum := 0.0
+			w := 4.0 * math.Pi
+			for i := 1; i < n; i++ {
+				sum += x[i]*x[i] - 10.0*math.Cos(w*x[i])
+			}
+			c0 := 1.0 + 10.0*float64(n-1) + sum
+			c1 := 1.0 - math.Sqrt(f[0]/c0)
+			f[1] = c0 * c1
+		}
+		fmin = []float64{0, 0}
+		fmax = []float64{1, 1}
+		f1f0 = func(f0 float64) float64 {
+			return 1.0 - math.Sqrt(f0)
+		}
+
+	// FON (Fonseca and Fleming 1995), Deb 2001, p339
+	case 5:
+		pname = "FON"
+		n := 10
+		C.RangeFlt = utl.DblsAlloc(n, 2)
+		for i := 0; i < len(C.RangeFlt); i++ {
+			C.RangeFlt[i][0], C.RangeFlt[i][1] = -4.0, 4.0
+		}
+		nf, ng, nh = 2, 0, 0
+		coef := 1.0 / math.Sqrt(float64(n))
+		fcn = func(f, g, h, x []float64, isl int) {
+			sum0, sum1 := 0.0, 0.0
+			for i := 0; i < n; i++ {
+				sum0 += math.Pow(x[i]-coef, 2.0)
+				sum1 += math.Pow(x[i]+coef, 2.0)
+			}
+			f[0] = 1.0 - math.Exp(-sum0)
+			f[1] = 1.0 - math.Exp(-sum1)
+		}
+		fmin = []float64{0, 0}
+		fmax = []float64{0.98, 1}
+		f1f0 = func(f0 float64) float64 {
+			return 1.0 - math.Exp(-math.Pow(2.0-math.Sqrt(-math.Log(1.0-f0)), 2.0))
+		}
+
+	// ZDT6, Deb 2001, p360
+	case 6:
+		pname = "ZDT6"
+		C.Tf = 500
+		C.Dtmig = 50
+		n := 10
+		C.RangeFlt = utl.DblsAlloc(n, 2)
+		for i := 0; i < len(C.RangeFlt); i++ {
+			C.RangeFlt[i][0], C.RangeFlt[i][1] = 0, 1
+		}
+		nf, ng, nh = 2, 0, 0
+		fcn = func(f, g, h, x []float64, isl int) {
+			w := 6.0 * math.Pi
+			f[0] = 1.0 - math.Exp(-4.0*x[0])*math.Pow(math.Sin(w*x[0]), 6.0)
+			sum := 0.0
+			for i := 1; i < n; i++ {
+				sum += x[i]
+			}
+			w = float64(n - 1)
+			c0 := 1.0 + w*math.Pow(sum/w, 0.25)
+			c1 := 1.0 - math.Pow(f[0]/c0, 2.0)
+			f[1] = c0 * c1
+		}
+		fmin = []float64{0, 0}
+		fmax = []float64{1, 1}
+		f1f0 = func(f0 float64) float64 {
+			return 1.0 - math.Pow(f0, 2.0)
+		}
+
+	default:
+		chk.Panic("problem %d is not available", C.Problem)
+	}
+
+	// simple problem
+	C.CalcDerived()
+	rnd.Init(C.Seed)
+	sim := NewSimpleFltProb(fcn, nf, ng, nh, C)
+	sim.ParFmin = fmin
+	sim.ParFmax = fmax
+	sim.ParF1F0 = f1f0
+	sim.ParNdiv = 25
+	sim.ParRadM = []float64{0.0005, 0.001}
+	sim.NumfmtX = numfmtx
+
+	// initial populations
+	feas0 := sim.Evo.GetFeasible()
+	ovas0, _ := sim.Evo.GetResults(feas0)
+
+	// run
+	sim.Run(false)
+
+	// Pareto-front
+	if false {
+		feasible := sim.Evo.GetFeasible()
+		ovas, _ := sim.Evo.GetResults(feasible)
+		ovafront, _ := sim.Evo.GetParetoFront(feasible, ovas, nil)
+		f0front, f1front := sim.Evo.GetFrontOvas(0, 1, ovafront)
+		f0fin := utl.DblsGetColumn(0, ovas)
+		f1fin := utl.DblsGetColumn(1, ovas)
+
+		// set plot
+		plt.SetForEps(0.75, 350)
+
+		// plot solution front
+		np := 101
+		F0 := utl.LinSpace(fmin[0], fmax[0], np)
+		F1 := make([]float64, np)
+		for i := 0; i < np; i++ {
+			F1[i] = f1f0(F0[i])
+		}
+		plt.Plot(F0, F1, "'b-'")
+
+		// plot initial ovs
+		if showinipop {
+			f0ini := utl.DblsGetColumn(0, ovas0)
+			f1ini := utl.DblsGetColumn(1, ovas0)
+			plt.Plot(f0ini, f1ini, "'ko', ms=2, clip_on=0")
+		}
+
+		// plot final ovs
+		plt.Plot(f0fin, f1fin, "'r.', clip_on=0, ms=3")
+		plt.Plot(f0front, f1front, "'ko',markerfacecolor='none',ms=4, clip_on=0")
+		plt.Gll("$f_0$", "$f_1$", "")
+		plt.SaveD("/tmp/goga", io.Sf("fig_flt05_%s.eps", pname))
 	}
 }

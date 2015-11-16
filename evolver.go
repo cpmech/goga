@@ -6,11 +6,8 @@ package goga
 
 import (
 	"github.com/cpmech/gosl/chk"
-	"github.com/cpmech/gosl/graph"
 	"github.com/cpmech/gosl/io"
-	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/plt"
-	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
 
@@ -25,16 +22,9 @@ type Evolver struct {
 	// callbacks
 	OutFcn func(t int, evo *Evolver) // output function callback
 
-	// auxiliary
-	receiveFrom [][]int // [nisl][nisl-1] indices for migration
-
 	// migration
-	competitors []*Individual
-	selected    []int
-	ovamin      []float64
-	ovamax      []float64
-	mdist       [][]float64
-	match       graph.Munkres
+	receiveFrom [][]int   // [nisl][nisl-1] indices for migration
+	migdata     ValIndDes // [nisl*nimig] migration data: scores and pointers
 }
 
 // NewEvolverPop creates a new evolver based on given populations
@@ -70,15 +60,7 @@ func NewEvolver(C *ConfParams) (o *Evolver) {
 
 	// migration
 	nc := o.C.Nimig * o.C.Nisl
-	o.competitors = make([]*Individual, nc)
-	for i := 0; i < nc; i++ {
-		o.competitors[i] = o.Islands[0].Pop[0].GetCopy()
-	}
-	o.selected = make([]int, o.C.Nimig)
-	o.ovamin = make([]float64, o.C.Nova)
-	o.ovamax = make([]float64, o.C.Nova)
-	o.mdist = la.MatAlloc(nc, nc)
-	o.match.Init(nc, nc)
+	o.migdata = make([]ValIndPair, nc)
 	return
 }
 
@@ -170,8 +152,11 @@ func (o *Evolver) Run() {
 		if o.C.Verbose {
 			io.Pfyel(" %d", t)
 		}
-		//o.new_migration(t)
-		o.std_migration(t)
+		if o.C.StdMig {
+			o.std_migration(t)
+		} else {
+			o.new_migration(t)
+		}
 	}
 
 	// best individual
@@ -185,7 +170,7 @@ func (o *Evolver) Run() {
 	// write reports
 	if o.C.DoReport {
 		for _, isl := range o.Islands {
-			isl.SaveReport(o.C.Verbose)
+			isl.SaveReport(true)
 		}
 	}
 
@@ -322,39 +307,35 @@ func (o *Evolver) new_migration(t int) {
 
 	// select competitors
 	k := 0
-	for i, isl := range o.Islands {
-		rnd.Ints(o.selected, 0, o.C.Ninds-1)
-		for _, sel := range o.selected {
-			isl.Pop[sel].CopyInto(o.competitors[k])
+	for _, isl := range o.Islands {
+		for j := 0; j < o.C.Nimig; j++ {
+			o.migdata[k].Val = 0
+			o.migdata[k].Ind = isl.Pop[j]
 			k++
 		}
-		for j := 0; j < o.C.Nova; j++ {
-			if i == 0 {
-				o.ovamin[j] = isl.ovamin[j]
-				o.ovamax[j] = isl.ovamax[j]
+	}
+
+	// tournaments
+	nc := o.C.Nimig * o.C.Nisl
+	for i := 0; i < nc; i++ {
+		for j := i + 1; j < nc; j++ {
+			if o.Islands[0].tournament(o.migdata[i].Ind, o.migdata[j].Ind) {
+				o.migdata[i].Val += 1 // i wins
 			} else {
-				o.ovamin[j] = utl.Min(o.ovamin[j], isl.ovamin[j])
-				o.ovamax[j] = utl.Max(o.ovamax[j], isl.ovamax[j])
+				o.migdata[j].Val += 1 // j wins
 			}
 		}
 	}
 
-	// compute distances
-	nc := len(o.competitors)
-	for i := 0; i < nc; i++ {
-		o.mdist[i][i] = INF
-		for j := i + 1; j < nc; j++ {
-			o.mdist[i][j] = IndDistance(o.competitors[i], o.competitors[j], nil, nil, nil, nil, o.ovamin, o.ovamax, true)
-			o.mdist[j][i] = o.mdist[i][j]
+	// winners
+	o.migdata.Sort()
+	n := o.C.Ninds - 1
+	k = 0
+	for _, isl := range o.Islands {
+		for j := 0; j < o.C.Nimig; j++ {
+			o.migdata[k].Ind.CopyInto(isl.Pop[n-j])
 		}
 	}
-	la.PrintMat("D", o.mdist, "%20g", false)
-
-	// match competitors
-	o.match.SetCostMatrix(o.mdist)
-	o.match.Run()
-
-	io.Pforan("links = %v\n", o.match.Links)
 }
 
 // std_migration performs standard migration

@@ -30,12 +30,6 @@ type Island struct {
 	Pop Population  // pointer to current population
 	Bkp Population  // backup population
 
-	// results
-	Report   bytes.Buffer // buffer to report results
-	OutOvas  [][]float64  // [nova][ntimes] best objective values collected from multiple calls to SelectReprodAndRegen
-	OutOors  [][]float64  // [noor][ntimes] best out-of-range values collected from multiple calls to SelectReprodAndRegen
-	OutTimes []float64    // [ntimes] times corresponding to OutOvas and OutOors
-
 	// auxiliary internal data
 	intmin  []int       // min int x-values
 	intmax  []int       // max int x-values
@@ -49,22 +43,16 @@ type Island struct {
 	oors    [][]float64 // all oor values
 	sovas   [][]float64 // scaled ova values
 	soors   [][]float64 // scaled oor values
-	cdist   [][]float64 // all distances [ninds][ninds]
 	fitness []float64   // all fitness values
 	prob    []float64   // probabilities
 	cumprob []float64   // cumulated probabilities
 	selinds []int       // indices of selected individuals
 	A, B    []int       // indices of selected parents
 
-	// statistics
-	allbases [][]float64 // [ngenes*nbases][ninds] all bases
-	devbases []float64   // [ngenes*nbases] deviations of bases
-	larbases []float64   // [ngenes*nbases] largest bases; max(abs(bases))
-	Nfeval   int         // number of objective function evaluations
-
 	// crowding
 	indices     []int           // [ninds] all indices of individuals
 	groups      [][]int         // [ngroups][nparents] indices defining groups of individuals
+	ndist       [][]float64     // neighgours distances [ninds][ninds]
 	mdist       [][]float64     // [nparents][noffspring] matching distances
 	match       graph.Munkres   // matches
 	scores      ValIndDes       // scores
@@ -87,6 +75,18 @@ type Island struct {
 	idom    [][]int // [ninds][ninds] i dominate: index of individuals dominated by individual i
 	sdom    []int   // [ninds] i dominate: size of individual i domination sublist
 	ndby    []int   // [ninds] number of times individual i is dominated
+
+	// results
+	Report   bytes.Buffer // buffer to report results
+	OutOvas  [][]float64  // [nova][ntimes] best objective values collected from multiple calls to SelectReprodAndRegen
+	OutOors  [][]float64  // [noor][ntimes] best out-of-range values collected from multiple calls to SelectReprodAndRegen
+	OutTimes []float64    // [ntimes] times corresponding to OutOvas and OutOors
+
+	// statistics
+	allbases [][]float64 // [ngenes*nbases][ninds] all bases
+	devbases []float64   // [ngenes*nbases] deviations of bases
+	larbases []float64   // [ngenes*nbases] largest bases; max(abs(bases))
+	Nfeval   int         // number of objective function evaluations
 }
 
 // NewIsland creates a new island
@@ -150,35 +150,12 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	o.oors = la.MatAlloc(o.C.Noor, o.C.Ninds)
 	o.sovas = la.MatAlloc(o.C.Nova, o.C.Ninds)
 	o.soors = la.MatAlloc(o.C.Noor, o.C.Ninds)
-	o.cdist = la.MatAlloc(o.C.Ninds, o.C.Ninds)
 	o.fitness = make([]float64, o.C.Ninds)
 	o.prob = make([]float64, o.C.Ninds)
 	o.cumprob = make([]float64, o.C.Ninds)
 	o.selinds = make([]int, o.C.Ninds)
 	o.A = make([]int, o.C.Ninds/2)
 	o.B = make([]int, o.C.Ninds/2)
-
-	// compute objective values, demerits, and sort population
-	o.CalcOvs(o.Pop, 0)
-	o.CalcDemeritsCdistAndSort(o.Pop)
-
-	// results
-	o.OutOvas = la.MatAlloc(o.C.Nova, o.C.Tf)
-	o.OutOors = la.MatAlloc(o.C.Noor, o.C.Tf)
-	o.OutTimes = make([]float64, o.C.Tf)
-	for i := 0; i < o.C.Nova; i++ {
-		o.OutOvas[i][0] = o.Pop[0].Ovas[i]
-	}
-	for i := 0; i < o.C.Noor; i++ {
-		o.OutOors[i][0] = o.Pop[0].Oors[i]
-	}
-
-	// stat
-	if o.Pop[0].Nfltgenes > 0 {
-		o.allbases = la.MatAlloc(nflts, o.C.Ninds)
-		o.devbases = make([]float64, nflts)
-		o.larbases = make([]float64, nflts)
-	}
 
 	// crowding
 	if o.C.Ninds%o.C.NparGrp > 0 {
@@ -189,8 +166,10 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	ng := o.C.Ninds / np // number of groups
 	nr := np * np        // number of individuals in round (parents + offspring)
 	nc := ng * nr        // total number of competitors
+	nmax := utl.Imax(o.C.Ninds, nc)
 	o.indices = utl.IntRange(o.C.Ninds)
 	o.groups = utl.IntsAlloc(ng, np)
+	o.ndist = la.MatAlloc(nmax, nmax)
 	o.mdist = la.MatAlloc(np, no)
 	o.match.Init(np, no)
 	o.scores = make([]ValIndPair, nr)
@@ -234,7 +213,6 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	}
 
 	// non-dominated front
-	nmax := utl.Imax(o.C.Ninds, nc)
 	o.fronts = make([][]int, nmax)
 	o.fsizes = make([]int, nmax)
 	o.idom = make([][]int, nmax)
@@ -243,6 +221,28 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	for i := 0; i < nmax; i++ {
 		o.fronts[i] = make([]int, nmax)
 		o.idom[i] = make([]int, nmax)
+	}
+
+	// compute objective values, demerits, and sort population
+	o.CalcOvs(o.Pop, 0)
+	o.CalcDemeritsCdistAndSort(o.Pop)
+
+	// results
+	o.OutOvas = la.MatAlloc(o.C.Nova, o.C.Tf)
+	o.OutOors = la.MatAlloc(o.C.Noor, o.C.Tf)
+	o.OutTimes = make([]float64, o.C.Tf)
+	for i := 0; i < o.C.Nova; i++ {
+		o.OutOvas[i][0] = o.Pop[0].Ovas[i]
+	}
+	for i := 0; i < o.C.Noor; i++ {
+		o.OutOors[i][0] = o.Pop[0].Oors[i]
+	}
+
+	// stat
+	if o.Pop[0].Nfltgenes > 0 {
+		o.allbases = la.MatAlloc(nflts, o.C.Ninds)
+		o.devbases = make([]float64, nflts)
+		o.larbases = make([]float64, nflts)
 	}
 	return
 }
@@ -303,17 +303,8 @@ func (o *Island) CalcDemeritsCdistAndSort(pop Population) {
 		o.oormin[i], o.oormax[i] = utl.Scaling(o.soors[i], o.oors[i], 0, 1e-16, false, true)
 	}
 
-	// compute and set crowd distance
-	for i := 0; i < o.C.Ninds; i++ {
-		o.cdist[i][i] = INF
-		for j := i + 1; j < o.C.Ninds; j++ {
-			o.cdist[i][j] = IndDistance(pop[i], pop[j], o.intmin, o.intmax, o.fltmin, o.fltmax, o.ovamin, o.ovamax, o.C.DistOvs)
-			o.cdist[j][i] = o.cdist[i][j]
-		}
-	}
-	for i, ind := range pop {
-		ind.Cdist = la.VecMin(o.cdist[i])
-	}
+	// sort and compute distances
+	o.NomDomSortAndCalcDistances(pop)
 
 	// compute demerit values
 	for i, ind := range pop {
@@ -341,7 +332,7 @@ func (o *Island) CalcDemeritsCdistAndSort(pop Population) {
 	}
 
 	// sort population with respect to demerit values
-	pop.Sort()
+	pop.SortByDemerit()
 }
 
 // Run runs evolutionary process
@@ -436,9 +427,14 @@ func (o *Island) update_crowding(time int) {
 				B = o.cpparent[k][j]
 				if o.C.Ops.Use4inds {
 					knext := (k + 1) % ng
-					next := rnd.IntGetUniqueN(0, np, 2)
-					C = o.Pop[o.groups[knext][next[0]]]
-					D = o.Pop[o.groups[knext][next[1]]]
+					if false {
+						next := rnd.IntGetUniqueN(0, np, 2)
+						C = o.Pop[o.groups[knext][next[0]]]
+						D = o.Pop[o.groups[knext][next[1]]]
+					} else {
+						C = o.Pop[o.groups[knext][0]]
+						D = o.Pop[o.groups[knext][1]]
+					}
 					//o.four_nondom(A, B, C, D)
 				}
 				a, s = o.cpoffspr[k][s], s+1
@@ -453,10 +449,8 @@ func (o *Island) update_crowding(time int) {
 		}
 	}
 
-	// calc non-dominated front and crowd distances
-	o.NonDomSort(o.competitors)
-	o.CalcMinMaxOva(o.competitors)
-	o.CalcCrowdDist(o.competitors)
+	// calc non-dominated front, sort and compute distances
+	o.NomDomSortAndCalcDistances(o.competitors)
 
 	// tournaments: all versus all
 	idxnew := 0
@@ -506,7 +500,7 @@ func (o *Island) update_crowding(time int) {
 					o.mdist[i][j] = IndDistance(A, a, nil, nil, nil, nil, o.ovamin, o.ovamax, true)
 				}
 			}
-			//la.PrintMat("mdist", o.mdist, "%6.3f", false)
+			//la.PrintMat("mdist", o.mdist, "%8.5f", false)
 
 			// match competitors
 			o.match.SetCostMatrix(o.mdist)
@@ -642,18 +636,44 @@ func (o *Island) tournament(A, B *Individual) (A_wins bool) {
 		return false
 	}
 	if (A.FrontId != B.FrontId) || o.C.CdistOff {
-		if rnd.FlipCoin(0.5) {
+		prob := 0.5
+		if A.DistNeigh > B.DistNeigh {
+			prob = 0.6
+			//io.Pforan("A(win):ndist=%25g B     :ndist=%25g\n", A.Ndist, B.Ndist)
+			//return true
+		}
+		if B.DistNeigh > A.DistNeigh {
+			//io.Pfyel("A     :ndist=%25g B(win):ndist=%25g\n", A.Ndist, B.Ndist)
+			//return false
+			prob = 0.4
+		}
+		if rnd.FlipCoin(prob) {
 			return true
 		}
 		return false
 	}
-	if A.Cdist > B.Cdist {
+	if A.DistCrowd > B.DistCrowd {
 		//io.Pforan("A.Front=%d B.Frond=%d A.Cdist=%8.3f B.Cdist=%8.3f\n", A.FrontId, B.FrontId, A.Cdist, B.Cdist)
 		return true
 	}
-	if A.Cdist == B.Cdist {
+	//if A.Cdist > 1e+29 || B.Cdist > 1e+29 {
+	//io.Pfblue2("%v %v => Cdist=%v %v\n", A.FrontId, B.FrontId, A.Cdist, B.Cdist)
+	//chk.Panic("stop")
+	//}
+	if A.DistCrowd == B.DistCrowd {
 		//io.Pforan("A.Cdist=%v B.Cdist=%v\n", A.Cdist, B.Cdist)
-		if rnd.FlipCoin(0.5) {
+		prob := 0.5
+		if A.DistNeigh > B.DistNeigh {
+			prob = 0.6
+			//io.Pforan("A(win):ndist=%25g B     :ndist=%25g\n", A.Ndist, B.Ndist)
+			//return true
+		}
+		if B.DistNeigh > A.DistNeigh {
+			//io.Pfyel("A     :ndist=%25g B(win):ndist=%25g\n", A.Ndist, B.Ndist)
+			//return false
+			prob = 0.4
+		}
+		if rnd.FlipCoin(prob) {
 			return true
 		}
 	}

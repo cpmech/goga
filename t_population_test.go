@@ -130,7 +130,7 @@ func Test_pop02(tst *testing.T) {
 		pop[i].Demerit = dem[i]
 	}
 
-	pop.Sort()
+	pop.SortByDemerit()
 
 	genes_sorted := [][]float64{
 		{5, 7}, // 2

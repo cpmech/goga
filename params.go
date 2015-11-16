@@ -52,6 +52,7 @@ type ConfParams struct {
 	DistOvs   bool    // distance between individuals is computed in ov space
 	AllVsAll  bool    // tournaments: all versus all
 	CdistOff  bool    // disable use of crowd-dist
+	StdMig    bool    // use standard migration scheme
 
 	// output
 	Verbose   bool       // show messages during optimisation
@@ -147,6 +148,7 @@ func (o *ConfParams) SetDefault() {
 	o.DistOvs = true
 	o.AllVsAll = false
 	o.CdistOff = false
+	o.StdMig = false
 
 	// output
 	o.Verbose = false
@@ -253,6 +255,7 @@ CompProb  = %v # use probabilistic comparision in crowding
 DistOvs   = %v # distance between individuals is computed in ov space
 AllVsAll  = %v # tournaments: all versus all
 CdistOff  = %v # disable use of crowd-dist
+StdMig    = %v # use standard migration scheme
 
 # output
 Verbose   = %v # show messages during optimisation
@@ -302,7 +305,7 @@ PopStrGen = %v # generate population of strings
 PopKeyGen = %v # generate population of keys (bytes)
 PopBytGen = %v # generate population of bytes
 PopFunGen = %v # generate population of functions
-`, o.Elite, o.Rws, o.Rnk, o.RnkSp, o.GAtype, o.NparGrp, o.ParetoPhi, o.CompProb, o.DistOvs, o.AllVsAll, o.CdistOff,
+`, o.Elite, o.Rws, o.Rnk, o.RnkSp, o.GAtype, o.NparGrp, o.ParetoPhi, o.CompProb, o.DistOvs, o.AllVsAll, o.CdistOff, o.StdMig,
 		o.Verbose, o.DoReport, o.Json, o.DirOut, o.FnKey, o.DoPlot, o.PltTi, o.PltTf, o.ShowOor,
 		o.ShowDem, o.ShowBases, o.ShowNinds, o.PostProc, o.NumFmts, o.NumFmtOva, o.Problem,
 		o.Strategy, o.Ntrials, o.Eps1, o.Check, o.OvaOor, o.Latin, o.LatinDf, o.Noise, o.NumInts,
