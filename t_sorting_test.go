@@ -77,13 +77,12 @@ func Test_sort01(tst *testing.T) {
 	}
 	ninds := len(pop)
 	ovamin, ovamax := make([]float64, 2), make([]float64, 2)
-	fltmin, fltmax := make([]float64, 2), make([]float64, 2)
 	fsizes := make([]int, ninds)
 	fronts := make([][]*Individual, ninds)
 	for i := 0; i < ninds; i++ {
 		fronts[i] = make([]*Individual, ninds)
 	}
-	nfronts := Metrics(ovamin, ovamax, fltmin, fltmax, nil, nil, fsizes, fronts, pop)
+	nfronts := Metrics(ovamin, ovamax, fsizes, fronts, pop)
 
 	// check number of wins/losses
 	io.Pf("\n")
@@ -151,8 +150,6 @@ func Test_sort01(tst *testing.T) {
 	io.Pf("\n")
 	chk.Vector(tst, "ovamin", 1e-15, ovamin, []float64{0, 0})
 	chk.Vector(tst, "ovamax", 1e-15, ovamax, []float64{1, 1})
-	chk.Vector(tst, "fltmin", 1e-15, fltmin, []float64{0, 0})
-	chk.Vector(tst, "fltmax", 1e-15, fltmax, []float64{1, 1})
 
 	// check neighbour distances
 	io.Pf("\n")

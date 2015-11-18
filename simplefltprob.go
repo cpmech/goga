@@ -184,10 +184,8 @@ func (o *SimpleFltProb) Run(verbose bool) {
 
 		// reset populations
 		if itrial > 0 {
-			for id, isl := range o.Evo.Islands {
-				isl.Pop = o.C.PopFltGen(id, o.C)
-				isl.CalcOvs(isl.Pop, 0)
-				isl.CalcDemeritsCdistAndSort(isl.Pop)
+			for _, isl := range o.Evo.Islands {
+				isl.Reset()
 			}
 		}
 

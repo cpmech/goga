@@ -6,7 +6,9 @@ package goga
 
 import (
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/graph"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/utl"
 )
@@ -23,8 +25,15 @@ type Evolver struct {
 	OutFcn func(t int, evo *Evolver) // output function callback
 
 	// migration
-	receiveFrom [][]int   // [nisl][nisl-1] indices for migration
-	migdata     ValIndDes // [nisl*nimig] migration data: scores and pointers
+	OvaMin []float64     // min ova
+	OvaMax []float64     // max ova
+	Mdist  [][]float64   // match distances
+	Match  graph.Munkres // matches
+
+	// migration v2: TODO: remove this
+	Fsizes      []int           // front sizes
+	Fronts      [][]*Individual // non-dominated fronts
+	Competitors []*Individual   // competitors
 }
 
 // NewEvolverPop creates a new evolver based on given populations
@@ -55,12 +64,27 @@ func NewEvolver(C *ConfParams) (o *Evolver) {
 	}
 	o.Best = o.Islands[0].Pop[0]
 
-	// auxiliary
-	o.receiveFrom = utl.IntsAlloc(o.C.Nisl, o.C.Nisl-1)
-
 	// migration
-	nc := o.C.Nimig * o.C.Nisl
-	o.migdata = make([]ValIndPair, nc)
+	o.OvaMin = make([]float64, o.C.Nova)
+	o.OvaMax = make([]float64, o.C.Nova)
+	o.Mdist = la.MatAlloc(o.C.Nimig, o.C.Nimig)
+	o.Match.Init(o.C.Nimig, o.C.Nimig)
+
+	// migration v2: TODO: remove this
+	nc := o.C.Nisl * o.C.Ninds // number of competitors
+	o.Fsizes = make([]int, nc)
+	o.Fronts = make([][]*Individual, nc)
+	for i := 0; i < nc; i++ {
+		o.Fronts[i] = make([]*Individual, nc)
+	}
+	o.Competitors = make([]*Individual, nc)
+	k := 0
+	for _, isl := range o.Islands {
+		for _, ind := range isl.Pop {
+			o.Competitors[k] = ind
+			k++
+		}
+	}
 	return
 }
 
@@ -152,11 +176,7 @@ func (o *Evolver) Run() {
 		if o.C.Verbose {
 			io.Pfyel(" %d", t)
 		}
-		if o.C.StdMig {
-			o.std_migration(t)
-		} else {
-			o.new_migration(t)
-		}
+		o.migration(t)
 	}
 
 	// best individual
@@ -171,16 +191,6 @@ func (o *Evolver) Run() {
 	if o.C.DoReport {
 		for _, isl := range o.Islands {
 			isl.SaveReport(true)
-		}
-	}
-
-	// plot evolution
-	if o.C.DoPlot {
-		for i, isl := range o.Islands {
-			PlotOvs(isl, ".eps", "", o.C.PltTi, o.C.PltTf, i == 0, i == o.C.Nisl-1)
-		}
-		for i, isl := range o.Islands {
-			PlotOor(isl, ".eps", "", o.C.PltTi, o.C.PltTf, i == 0, i == o.C.Nisl-1)
 		}
 	}
 	return
@@ -302,79 +312,83 @@ func (o *Evolver) GetNfeval() (nfeval int) {
 
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////
 
-// new_migration performs standard migration
-func (o *Evolver) new_migration(t int) {
+func (o *Evolver) migration(t int) {
 
-	// select competitors
-	k := 0
-	for _, isl := range o.Islands {
-		for j := 0; j < o.C.Nimig; j++ {
-			o.migdata[k].Val = 0
-			o.migdata[k].Ind = isl.Pop[j]
-			k++
-		}
-	}
-
-	// tournaments
-	nc := o.C.Nimig * o.C.Nisl
-	for i := 0; i < nc; i++ {
-		for j := i + 1; j < nc; j++ {
-			if o.Islands[0].tournament(o.migdata[i].Ind, o.migdata[j].Ind) {
-				o.migdata[i].Val += 1 // i wins
-			} else {
-				o.migdata[j].Val += 1 // j wins
+	// compute metrics in each island and compute global ova range
+	for i, isl := range o.Islands {
+		Metrics(isl.OvaMin, isl.OvaMax, isl.Fsizes, isl.Fronts, isl.Pop)
+		isl.Pop.SortByRank()
+		if i == 0 {
+			for j := 0; j < o.C.Nova; j++ {
+				o.OvaMin[j] = isl.OvaMin[j]
+				o.OvaMax[j] = isl.OvaMax[j]
+			}
+		} else {
+			for j := 0; j < o.C.Nova; j++ {
+				o.OvaMin[j] = utl.Min(o.OvaMin[j], isl.OvaMin[j])
+				o.OvaMax[j] = utl.Max(o.OvaMax[j], isl.OvaMax[j])
 			}
 		}
 	}
 
-	// winners
-	o.migdata.Sort()
-	n := o.C.Ninds - 1
-	k = 0
-	for _, isl := range o.Islands {
-		for j := 0; j < o.C.Nimig; j++ {
-			o.migdata[k].Ind.CopyInto(isl.Pop[n-j])
-		}
-	}
-}
+	// loop over pair of islands
+	l := o.C.Ninds - o.C.Nimig
+	for I := 0; I < o.C.Nisl; I++ {
+		Pbest := o.Islands[I].Pop[:o.C.Nimig]
+		Pwors := o.Islands[I].Pop[l:]
+		for J := I + 1; J < o.C.Nisl; J++ {
+			Qbest := o.Islands[J].Pop[:o.C.Nimig]
+			Qwors := o.Islands[J].Pop[l:]
 
-// std_migration performs standard migration
-func (o *Evolver) std_migration(t int) {
+			// compute match distances
+			for i := 0; i < o.C.Nimig; i++ {
+				A := Pbest[i]
+				for j := 0; j < o.C.Nimig; j++ {
+					B := Qbest[j]
+					o.Mdist[i][j] = IndDistance(A, B, o.OvaMin, o.OvaMax)
+				}
+			}
 
-	// reset receiveFrom matrix
-	for i := 0; i < o.C.Nisl; i++ {
-		for j := 0; j < o.C.Nisl-1; j++ {
-			o.receiveFrom[i][j] = -1
-		}
-	}
+			// match competitors
+			o.Match.SetCostMatrix(o.Mdist)
+			o.Match.Run()
 
-	// compute destinations
-	iworst := o.C.Ninds - 1
-	for i := 0; i < o.C.Nisl; i++ {
-		Aworst := o.Islands[i].Pop[iworst]
-		k := 0
-		for j := 0; j < o.C.Nisl; j++ {
-			if i != j {
-				Bbest := o.Islands[j].Pop[0]
-				send, _ := IndCompareDet(Bbest, Aworst)
-				if send {
-					o.receiveFrom[i][k] = j // i gets individual from j
-					k++
+			// matches
+			for i := 0; i < o.C.Nimig; i++ {
+				A := Pbest[i]
+				B := Qbest[o.Match.Links[i]]
+				if A.Fight(B) {
+					A.CopyInto(Qwors[i])
+				} else {
+					B.CopyInto(Pwors[i])
 				}
 			}
 		}
 	}
+}
 
-	// migration
-	for i, from := range o.receiveFrom {
-		k := 0
-		for _, j := range from {
-			if j >= 0 {
-				o.Islands[j].Pop[0].CopyInto(o.Islands[i].Pop[iworst-k])
-				k++
+func (o *Evolver) migration_v2(t int) { // TODO: remove this
+	Metrics(o.OvaMin, o.OvaMax, o.Fsizes, o.Fronts, o.Competitors)
+	nc := o.C.Nisl * o.C.Ninds
+	for i := 0; i < nc; i++ {
+		A := o.Competitors[i]
+		//io.Pforan("cdist = %v\n", A.DistCrowd)
+		for j := i + 1; j < nc; j++ {
+			B := o.Competitors[j]
+			if A.Fight(B) {
+				A.Score++
+			} else {
+				B.Score++
 			}
 		}
-		o.Islands[i].CalcDemeritsCdistAndSort(o.Islands[i].Pop)
+	}
+	Population(o.Competitors).SortByScore()
+	k := 0
+	for i := 0; i < o.C.Nisl; i++ {
+		for j := 0; j < o.C.Ninds; j++ {
+			o.Competitors[k].CopyInto(o.Islands[i].Pop[j])
+			k++
+		}
 	}
 }
 
@@ -386,9 +400,7 @@ func (o Evolver) print_legend() {
 	io.Pf("\nLEGEND\n")
 	io.Pfgrey(" 00 -- generation number (time)\n")
 	io.Pfblue(" 00 -- reporting time\n")
-	io.Pf(" 00 -- prescribed regeneration time\n")
 	io.Pfyel(" 00 -- migration time\n")
-	io.Pfmag("  . -- automatic regeneration time to improve diversity\n")
 }
 
 func (o Evolver) print_time(time int, report bool) {

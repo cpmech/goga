@@ -350,23 +350,25 @@ func Test_flt05(tst *testing.T) {
 
 	// configuration
 	C := NewConfParams()
-	C.Problem = 4
+	C.Problem = 6
 	C.PopFltGen = PopFltGen
 	C.Pll = true
-	C.Nisl = 1
-	C.Ninds = 100
-	C.Nimig = 1
-	C.Tf = 100
-	C.Dtmig = 10
+	C.Nisl = 10
+	C.Ninds = 30
+	C.Nimig = 5
+	C.NparGrp = 3
+	C.Tf = 200
+	C.Dtmig = C.Tf / 10
 	C.StdMig = false
 	C.GAtype = "crowd"
 	C.Ops.FltCxName = "de"
 	C.Ops.Pc = 1.0
 	C.Ops.Pm = 0.0
-	C.Ops.DEpc = 0.5
-	C.Ops.DEmult = 0.1
-	C.NparGrp = 2
-	showinipop := true
+	C.Ops.DebEtam = float64(C.Nisl * C.Ninds)
+	C.Ops.DEpc = 0.1
+	C.Ops.DEmult = 0.5
+	C.Verbose = false
+	showinipop := false
 
 	// problem variables
 	var pname string
@@ -562,13 +564,7 @@ func Test_flt05(tst *testing.T) {
 	sim.Run(false)
 
 	// Pareto-front
-	if false {
-		feasible := sim.Evo.GetFeasible()
-		ovas, _ := sim.Evo.GetResults(feasible)
-		ovafront, _ := sim.Evo.GetParetoFront(feasible, ovas, nil)
-		f0front, f1front := sim.Evo.GetFrontOvas(0, 1, ovafront)
-		f0fin := utl.DblsGetColumn(0, ovas)
-		f1fin := utl.DblsGetColumn(1, ovas)
+	if true {
 
 		// set plot
 		plt.SetForEps(0.75, 350)
@@ -589,9 +585,18 @@ func Test_flt05(tst *testing.T) {
 			plt.Plot(f0ini, f1ini, "'ko', ms=2, clip_on=0")
 		}
 
-		// plot final ovs
-		plt.Plot(f0fin, f1fin, "'r.', clip_on=0, ms=3")
-		plt.Plot(f0front, f1front, "'ko',markerfacecolor='none',ms=4, clip_on=0")
+		// Pareto front
+		sim.Evo.PlotPareto(0, 1)
+
+		// plot individuals again
+		//for _, isl := range sim.Evo.Islands {
+		//for _, ind := range isl.Pop {
+		//io.Pforan("ovas = %v\n", ind.Ovas)
+		//plt.PlotOne(ind.Ovas[0], ind.Ovas[1], "'k+'")
+		//}
+		//}
+
+		// save
 		plt.Gll("$f_0$", "$f_1$", "")
 		plt.SaveD("/tmp/goga", io.Sf("fig_flt05_%s.eps", pname))
 	}

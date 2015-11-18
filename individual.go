@@ -24,7 +24,8 @@ type Individual struct {
 	Nbases    int       // number of bases to split Floats
 
 	// auxiliary
-	Id int // identifier; e.g. for debugging
+	Id    int     // identifier; e.g. for debugging
+	Score float64 // any score measure (higher is better); e.g. for tournaments
 
 	// diversity and non-dominance sorting
 	WinOver   []*Individual // [ninds] individuals dominated by this individual
@@ -192,6 +193,39 @@ func (o Individual) Feasible() bool {
 	return true
 }
 
+// Fight implements the competition between A and B
+func (A *Individual) Fight(B *Individual) (A_wins bool) {
+	A_dom, B_dom := IndCompareDet(A, B)
+	if A_dom {
+		return true
+	}
+	if B_dom {
+		return false
+	}
+	if A.FrontId == B.FrontId {
+		if A.DistCrowd > B.DistCrowd {
+			return true
+		}
+		if B.DistCrowd > A.DistCrowd {
+			return false
+		}
+	}
+	//if false {
+	if true {
+		//io.Pforan("A.dist=%v  B.dist=%v\n", A.DistNeigh, B.DistNeigh)
+		if A.DistNeigh > B.DistNeigh {
+			return true
+		}
+		if B.DistNeigh > A.DistNeigh {
+			return true
+		}
+	}
+	if rnd.FlipCoin(0.5) {
+		return true
+	}
+	return false
+}
+
 // IndCompareDet compares individual 'A' with another one 'B'. Deterministic method
 func IndCompareDet(A, B *Individual) (A_dominates, B_dominates bool) {
 	var A_nviolations, B_nviolations int
@@ -270,31 +304,12 @@ func IndCompareProb(A, B *Individual, φ float64) (A_dominates bool) {
 }
 
 // IndDistance computes a distance measure from individual 'A' to another individual 'B'
-func IndDistance(A, B *Individual, imin, imax []int, fmin, fmax, omin, omax []float64, ovspace bool) (dist float64) {
-	if ovspace {
-		for i := 0; i < len(A.Ovas); i++ {
-			dist += math.Pow((A.Ovas[i]-B.Ovas[i])/(1e-15+omax[i]-omin[i]), 2.0)
-		}
-		dist = math.Sqrt(dist)
-		return
+func IndDistance(A, B *Individual, omin, omax []float64) (dist float64) {
+	for i := 0; i < len(A.Ovas); i++ {
+		δ := omax[i] - omin[i] + 1e-15
+		dist += math.Pow((A.Ovas[i]-B.Ovas[i])/δ, 2.0)
 	}
-	nints := len(A.Ints)
-	dints := 0.0
-	for i := 0; i < nints; i++ {
-		dints += math.Pow(float64(A.Ints[i]-B.Ints[i])/(1e-15+float64(imax[i]-imin[i])), 2.0)
-	}
-	if nints > 0 {
-		dints = math.Sqrt(dints)
-	}
-	nflts := len(A.Floats)
-	dflts := 0.0
-	for i := 0; i < nflts; i++ {
-		dflts += math.Pow((A.Floats[i]-B.Floats[i])/(1e-15+fmax[i]-fmin[i]), 2.0)
-	}
-	if nflts > 0 {
-		dflts = math.Sqrt(dflts)
-	}
-	return dints + dflts
+	return math.Sqrt(dist)
 }
 
 // genetic algorithm routines //////////////////////////////////////////////////////////////////////
