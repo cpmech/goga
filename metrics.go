@@ -7,6 +7,7 @@ package goga
 import (
 	"math"
 
+	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/utl"
 )
 
@@ -35,6 +36,9 @@ func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop
 		// ovas range
 		for j := 0; j < nv; j++ {
 			x := ind.Ovas[j]
+			if math.IsNaN(x) {
+				chk.Panic("NaN found in objective value array\n\tx = %v\n\tovas = %v", ind.GetFloats(), ind.Ovas)
+			}
 			if i == 0 {
 				ovamin[j] = x
 				ovamax[j] = x
