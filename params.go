@@ -5,7 +5,6 @@
 package goga
 
 import (
-	"bytes"
 	"encoding/json"
 
 	"github.com/cpmech/gosl/chk"
@@ -16,63 +15,27 @@ import (
 type ConfParams struct {
 
 	// essential
-	Nova   int // number of objective values
-	Noor   int // number of out-of-range variables
-	Nbases int // number of bases in chromosome
+	Nova int // number of objective values
+	Noor int // number of out-of-range variables
 
 	// initialisation
-	Seed  int  // seed to initialise random numbers generator. Seed ≤ 0 means use current time
-	Pll   bool // allow running islands in parallel (go-routines)
-	Nisl  int  // number of islands
-	Ninds int  // number of individuals: population size
-	Nimig int  // number of individuals that migrate
+	Seed    int  // seed to initialise random numbers generator. Seed ≤ 0 means use current time
+	Pll     bool // allow running islands in parallel (go-routines)
+	Nisl    int  // number of islands
+	Ninds   int  // number of individuals: population size
+	Nimig   int  // number of individuals that migrate
+	NparGrp int  // number of parents in group
 
 	// time control
 	Tf    int // number of generations
 	Dtout int // increment of time for output
 	Dtmig int // increment of time for migration
 
-	// migration and regeneration
-	RegTol    float64 // tolerance for ρ to activate regeneration
-	RegPct    float64 // percentage of individuals to be regenerated; e.g. 0.3
-	UseStdDev bool    // use standard deviation (σ) instead of average deviation in Stat
-
-	// operators' data
-	Ops OpsData // operators' data
-
-	// selection and reproduction
-	Elite     bool    // use elitism
-	Rws       bool    // use Roulette-Wheel selection method
-	Rnk       bool    // ranking
-	RnkSp     float64 // selective pressure for ranking
-	GAtype    string  // type of GA; e.g. "std", "crowd"
-	NparGrp   int     // number of parents in group
-	ParetoPhi float64 // φ coefficient for probabilistic Pareto comparison
-	CompProb  bool    // use probabilistic comparison in crowding
-	DistOvs   bool    // distance between individuals is computed in ov space
-	AllVsAll  bool    // tournaments: all versus all
-	CdistOff  bool    // disable use of crowd-dist
-	StdMig    bool    // use standard migration scheme
-
 	// output
-	Verbose   bool       // show messages during optimisation
-	DoReport  bool       // generate report
-	Json      bool       // output results as .json files; not tables
-	DirOut    string     // directory to save output files. "" means "/tmp/goga"
-	FnKey     string     // filename key for output files. "" means no output files
-	DoPlot    bool       // plot results
-	PltTi     int        // initial time for plot
-	PltTf     int        // final time for plot
-	ShowOor   bool       // show oor values when printing results (if any)
-	ShowDem   bool       // show demerits when printing individuals
-	ShowBases bool       // show also bases when printing results (if any)
-	ShowNinds int        // number of individuals to show. use -1 to show all individuals
-	PostProc  PostProc_t // function to post-process results
-
-	// number formats. use nil for default values
-	// fmts=["int","flt","str","key","byt","fun"][ngenes] print formats for each gene
-	NumFmts   map[string][]string // number formats used during printing of individuals.
-	NumFmtOva string              // number format for ova. use "" for default value
+	Verbose bool   // show messages during optimisation
+	DoPlot  bool   // plot results
+	FnKey   string // filename key for output files. "" means no output files
+	DirOut  string // directory to save output files. "" means "/tmp/goga"
 
 	// auxiliary
 	Problem  int     // problem ID
@@ -81,28 +44,21 @@ type ConfParams struct {
 	Eps1     float64 // tolerance # 1; e.g. for strategy # 2 in reliability analyses
 	Check    bool    // run checking code before GA
 
-	// objective function
-	OvaOor Objectives_t // compute objective value (ova) and out-of-range value (oor)
-
 	// generation of individuals
 	Latin    bool        // use latin hypercube during generation
 	LatinDf  int         // duplication factor when using latin hypercube
 	Noise    float64     // apply noise when generating based on grid (if Noise > 0)
 	NumInts  int         // number of integers for "ordered" and "binary" populations
-	RangeInt [][]int     // [ngene][2] min and max integers
 	RangeFlt [][]float64 // [ngene][2] min and max float point numbers
-	PoolStr  [][]string  // [ngene][nsamples] pool of words to be used in Gene.String
-	PoolKey  [][]byte    // [ngene][nsamples] pool of bytes to be used in Gene.Byte
-	PoolByt  [][]string  // [ngene][nsamples] pool of byte-words to be used in Gene.Bytes
-	PoolFun  [][]Func_t  // [ngene][nsamples] pool of functions
+	RangeInt [][]int     // [ngene][2] min and max integers
 
-	// generation of populations
-	PopIntGen PopIntGen_t // generate population of integers
-	PopFltGen PopFltGen_t // generate population of float point numbers
-	PopStrGen PopStrGen_t // generate population of strings
-	PopKeyGen PopKeyGen_t // generate population of keys (bytes)
-	PopBytGen PopBytGen_t // generate population of bytes
-	PopFunGen PopFunGen_t // generate population of functions
+	// operators' data
+	Ops OpsData // operators' data
+
+	// callback functions
+	OvaOor    Objectives_t // compute objective value (ova) and out-of-range value (oor)
+	PopFltGen PopFltGen_t  // generate population of float point numbers
+	PopIntGen PopIntGen_t  // generate population of integers
 
 	// auxiliary
 	derived_called bool // flags whether CalcDerived was called or not
@@ -114,55 +70,25 @@ func (o *ConfParams) SetDefault() {
 	// essential
 	o.Nova = 1
 	o.Noor = 0
-	o.Nbases = 1
 
 	// initialisation
 	o.Seed = 0
 	o.Pll = true
 	o.Nisl = 4
 	o.Ninds = 24
-	o.Nimig = 2
+	o.Nimig = 4
+	o.NparGrp = 2
 
 	// time control
-	o.Tf = 100
-	o.Dtout = 10
-	o.Dtmig = 25
-
-	// migration and regeneration
-	o.RegTol = 0
-	o.RegPct = 0.2
-	o.UseStdDev = false
-
-	// operators' data
-	o.Ops.SetDefault()
-
-	// selection and reproduction
-	o.Elite = false
-	o.Rws = false
-	o.Rnk = true
-	o.RnkSp = 1.2
-	o.GAtype = "crowd"
-	o.NparGrp = 2
-	o.ParetoPhi = 0.01
-	o.CompProb = false
-	o.DistOvs = true
-	o.AllVsAll = false
-	o.CdistOff = false
-	o.StdMig = false
+	o.Tf = 200
+	o.Dtout = 20
+	o.Dtmig = 20
 
 	// output
-	o.Verbose = false
-	o.DoReport = false
-	o.Json = false
-	o.DirOut = "/tmp/goga"
-	o.FnKey = ""
+	o.Verbose = true
 	o.DoPlot = false
-	o.PltTi = 0
-	o.PltTf = -1
-	o.ShowOor = true
-	o.ShowDem = false
-	o.ShowBases = false
-	o.ShowNinds = -1
+	o.FnKey = ""
+	o.DirOut = "/tmp/goga"
 
 	// auxiliary
 	o.Problem = 1
@@ -175,13 +101,9 @@ func (o *ConfParams) SetDefault() {
 	o.Latin = true
 	o.LatinDf = 5
 	o.Noise = 0.1
-}
 
-// SetNbases sets number of bases and fixes corresponding operators
-func (o *ConfParams) SetNbasesFixOp(nbases int) {
-	o.Nbases = nbases
-	o.Ops.CxFlt = FltCrossover
-	o.Ops.MtFlt = FltMutation
+	// operators' data
+	o.Ops.SetDefault()
 }
 
 // SetBlxMwicz sets BLX-α (crossover) and Michaelewicz (mutation) operators
@@ -212,108 +134,6 @@ func (o *ConfParams) CalcDerived() {
 	o.derived_called = true
 }
 
-// Report generates report with input data
-func (o *ConfParams) Report(dirout, fnkey string) {
-	var buf bytes.Buffer
-	io.Ff(&buf, `
-# essential
-Nova   = %v # number of objective values
-Noor   = %v # number of out-of-range variables
-Nbases = %v # number of bases in chromosome
-
-# initialisation
-Seed  = %v # seed to initialise random numbers generator. Seed ≤ 0 means use current time
-Pll   = %v # allow running islands in parallel (go-routines)
-Nisl  = %v # number of islands
-Ninds = %v # number of individuals: population size
-Nimig = %v # number of individuals that migrate
-
-# time control
-Tf    = %v # number of generations
-Dtout = %v # increment of time for output
-Dtmig = %v # increment of time for migration
-
-# migration and regeneration
-RegTol    = %v # tolerance for ρ to activate regeneration
-RegPct    = %v # percentage of individuals to be regenerated; e.g. 0.3
-UseStdDev = %v # use standard deviation (σ) instead of average deviation in Stat
-`, o.Nova, o.Noor, o.Nbases, o.Seed, o.Pll, o.Nisl, o.Ninds, o.Nimig, o.Tf, o.Dtout, o.Dtmig,
-		o.RegTol, o.RegPct, o.UseStdDev)
-
-	o.Ops.Report(&buf)
-
-	io.Ff(&buf, `
-# selection and reproduction
-Elite     = %v # use elitism
-Rws       = %v # use Roulette-Wheel selection method
-Rnk       = %v # ranking
-RnkSp     = %v # selective pressure for ranking
-GAtype    = %q # type of GA; e.g. "std", "crowd"
-NparGrp   = %v # number of parents in group
-ParetoPhi = %v # φ coefficient for probabilistic Pareto comparison
-CompProb  = %v # use probabilistic comparision in crowding
-DistOvs   = %v # distance between individuals is computed in ov space
-AllVsAll  = %v # tournaments: all versus all
-CdistOff  = %v # disable use of crowd-dist
-StdMig    = %v # use standard migration scheme
-
-# output
-Verbose   = %v # show messages during optimisation
-DoReport  = %v # generate report
-Json      = %v # output results as .json files; not tables
-DirOut    = %q # directory to save output files. "" means "/tmp/goga"
-FnKey     = %q # filename key for output files. "" means no output files
-DoPlot    = %v # plot results
-PltTi     = %v # initial time for plot
-PltTf     = %v # final time for plot
-ShowOor   = %v # show oor values when printing results (if any)
-ShowDem   = %v # show demerits when printing individuals
-ShowBases = %v # show also bases when printing results (if any)
-ShowNinds = %v # number of individuals to show. use -1 to show all individuals
-PostProc  = %v # function to post-process results
-
-# number formats. use nil for default values
-NumFmts   = %v # number formats used during printing of individuals.
-NumFmtOva = %q # number format for ova. use "" for default value
-
-# auxiliary
-Problem  = %v # problem ID
-Strategy = %v # strategy for implementing constraints
-Ntrials  = %v # number of trials
-Eps1     = %v # tolerance # 1; e.g. for strategy # 2 in reliability analyses
-Check    = %v # run checking code before GA
-
-# objective function
-OvaOor = %v # compute objective value (ova) and out-of-range value (oor)
-
-# generation of individuals
-Latin    = %v # use latin hypercube during generation
-LatinDf  = %v # duplication factor when using latin hypercube
-Noise    = %v # apply noise when generating based on grid (if Noise > 0)
-NumInts  = %v # number of integers for "ordered" and "binary" populations
-RangeInt = %v # [ngene][2] min and max integers
-RangeFlt = %v # [ngene][2] min and max float point numbers
-PoolStr  = %v # [ngene][nsamples] pool of words to be used in Gene.String
-PoolKey  = %v # [ngene][nsamples] pool of bytes to be used in Gene.Byte
-PoolByt  = %v # [ngene][nsamples] pool of byte-words to be used in Gene.Bytes
-PoolFun  = %v # [ngene][nsamples] pool of functions
-
-# generation of populations
-PopIntGen = %v # generate population of integers
-PopFltGen = %v # generate population of float point numbers
-PopStrGen = %v # generate population of strings
-PopKeyGen = %v # generate population of keys (bytes)
-PopBytGen = %v # generate population of bytes
-PopFunGen = %v # generate population of functions
-`, o.Elite, o.Rws, o.Rnk, o.RnkSp, o.GAtype, o.NparGrp, o.ParetoPhi, o.CompProb, o.DistOvs, o.AllVsAll, o.CdistOff, o.StdMig,
-		o.Verbose, o.DoReport, o.Json, o.DirOut, o.FnKey, o.DoPlot, o.PltTi, o.PltTf, o.ShowOor,
-		o.ShowDem, o.ShowBases, o.ShowNinds, o.PostProc, o.NumFmts, o.NumFmtOva, o.Problem,
-		o.Strategy, o.Ntrials, o.Eps1, o.Check, o.OvaOor, o.Latin, o.LatinDf, o.Noise, o.NumInts,
-		o.RangeInt, o.RangeFlt, o.PoolStr, o.PoolKey, o.PoolByt, o.PoolFun, o.PopIntGen,
-		o.PopFltGen, o.PopStrGen, o.PopKeyGen, o.PopBytGen, o.PopFunGen)
-	io.WriteFileVD(dirout, fnkey+".rpt", &buf)
-}
-
 // check_input checks whether paramters are consistent or not
 func (o *ConfParams) check_input() {
 	if !o.derived_called {
@@ -324,11 +144,6 @@ func (o *ConfParams) check_input() {
 	}
 	if len(o.RangeFlt) != len(o.Ops.Xrange) {
 		chk.Panic("number of genes in RangeFlt must be equal to number of genes in Ops.Xrange => ConfParams.CalcDerived must be called. %d != %d", len(o.RangeFlt), len(o.Ops.Xrange))
-	}
-	if o.Nbases != 1 {
-		if o.Ops.FltCxName == "blx" || o.Ops.FltCxName == "deb" || o.Ops.FltCxName == "de" {
-			chk.Panic("number of bases must be 1 when using %q operator", o.Ops.FltCxName)
-		}
 	}
 }
 

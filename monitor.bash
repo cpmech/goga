@@ -1,10 +1,12 @@
 #!/bin/bash
 
 FILES="*.go"
-TEST="flt05"
+TEST="flt01"
 #TEST="sort01"
 
 refresh(){
+    echo
+    echo
     go test -test.run="$TEST"
 }
 

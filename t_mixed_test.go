@@ -5,7 +5,6 @@
 package goga
 
 import (
-	"bytes"
 	"math"
 	"testing"
 
@@ -36,16 +35,12 @@ func Test_mix01(tst *testing.T) {
 	C.Ops.FltCxName = "de"
 	C.Nova = 1
 	C.Noor = 0
-	if io.Verbose {
-		C.DoReport = true
-		C.FnKey = "test_mix01"
-	}
 	C.CalcDerived()
 	rnd.Init(C.Seed)
 
 	// objective function
-	C.OvaOor = func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
-		x := ind.GetFloats()
+	C.OvaOor = func(isl int, ind *Individual) {
+		x := ind.Floats
 		ind.Ovas[0] = math.Abs(math.Sqrt(x[0]*x[0]+x[1]*x[1]) - 1.0)
 		if ind.Ints[0]+ind.Ints[1] != 1 {
 			ind.Ovas[0] = 1
@@ -56,15 +51,13 @@ func Test_mix01(tst *testing.T) {
 	// run optimisation
 	evo := NewEvolver(C)
 	evo.Run()
-	//evo.Islands[0].Pop.Output(C)
-	evo.Islands[0].SaveReport(true)
 
 	// plot
 	if io.Verbose {
 		inds := evo.GetFeasible()
 		plt.SetForEps(1, 400)
 		for _, ind := range inds {
-			x := ind.GetFloats()
+			x := ind.Floats
 			args := "'ro'"
 			if ind.Ints[0] == 0 && ind.Ints[1] == 1 {
 				args = "'go'"

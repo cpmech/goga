@@ -5,7 +5,6 @@
 package goga
 
 import (
-	"bytes"
 	"math"
 	"math/rand"
 	"reflect"
@@ -13,8 +12,6 @@ import (
 	"sort"
 
 	"github.com/cpmech/gosl/chk"
-	"github.com/cpmech/gosl/io"
-	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 )
 
@@ -47,18 +44,10 @@ type OpsData struct {
 	// crossover functions
 	CxInt CxIntFunc_t // int crossover function
 	CxFlt CxFltFunc_t // flt crossover function
-	CxStr CxStrFunc_t // str crossover function
-	CxKey CxKeyFunc_t // key crossover function
-	CxByt CxBytFunc_t // byt crossover function
-	CxFun CxFunFunc_t // fun crossover function
 
 	// mutation functions
 	MtInt MtIntFunc_t // int mutation function
 	MtFlt MtFltFunc_t // flt mutation function
-	MtStr MtStrFunc_t // str mutation function
-	MtKey MtKeyFunc_t // key mutation function
-	MtByt MtBytFunc_t // byt mutation function
-	MtFun MtFunFunc_t // fun mutation function
 }
 
 // SetDefault sets default values
@@ -81,18 +70,10 @@ func (o *OpsData) SetDefault() {
 	// crossover functions
 	o.CxInt = IntCrossover
 	o.CxFlt = FltCrossoverDB
-	o.CxStr = StrCrossover
-	o.CxKey = KeyCrossover
-	o.CxByt = BytCrossover
-	o.CxFun = FunCrossover
 
 	// mutation functions
 	o.MtInt = IntMutation
 	o.MtFlt = FltMutationDB
-	o.MtStr = StrMutation
-	o.MtKey = KeyMutation
-	o.MtByt = BytMutation
-	o.MtFun = FunMutation
 }
 
 // CalcDerived sets derived quantities
@@ -110,16 +91,12 @@ func (o *OpsData) CalcDerived(Tf int, xrange [][]float64) {
 	case "mix":
 		o.CxFlt = FltCrossoverMix
 		o.Use4inds = true
-	case "cl":
-		o.CxFlt = FltCrossover
 	}
 	switch o.FltMtName {
 	case "mw":
 		o.MtFlt = FltMutationMW
 	case "db":
 		o.MtFlt = FltMutationDB
-	case "cl":
-		o.MtFlt = FltMutation
 	}
 }
 
@@ -147,85 +124,7 @@ func GetFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
-// Report generates report
-func (o *OpsData) Report(buf *bytes.Buffer) {
-	io.Ff(buf, `
-# input
-Pc        = %v # probability of crossover
-Pm        = %v # probability of mutation
-Ncuts     = %v # number of cuts during crossover
-Nchanges  = %v # number of changes during mutation
-MwiczB    = %v # Michalewicz' power coefficient
-BlxAlp    = %v # BLX-α coefficient
-Mmax      = %v # multiplier for mutation
-Cuts      = %v # specified cuts for crossover. can be <nil>
-OrdSti    = %v # {start, end, insertPoint}. can be <nil>
-EnfRange  = %v # do enforce range
-DebEtac   = %v # Deb's SBX crossover parameter
-DebEtam   = %v # Deb's parameter-based mutation parameter
-DEpc      = %v # differential-evolution crossover probability
-DEmult    = %v # differential-evolution multiplier
-FltCxName = %q # crossover function name. ""=default; "mw"=BLX-α evolution; "db"=Deb's SBX; "de"=differential; "cl"=classic
-FltMtName = %q # mutation function name. ""=default; "mw"=Michaelewicz; "db"=Deb's parameter-based
-
-# derived
-Use4inds = %v # crossover needs 4 individuals (A,B,C,D); e.g. with differential evolution (de)
-Tmax     = %v # max number of generations
-Xrange   = %v # [ngenes][2] genes minimum and maximum values
-
-# crossover functions
-CxInt = %v # int crossover function
-CxFlt = %v # flt crossover function
-CxStr = %v # str crossover function
-CxKey = %v # key crossover function
-CxByt = %v # byt crossover function
-CxFun = %v # fun crossover function
-
-# mutation functions
-MtInt = %v # int mutation function
-MtFlt = %v # flt mutation function
-MtStr = %v # str mutation function
-MtKey = %v # key mutation function
-MtByt = %v # byt mutation function
-MtFun = %v # fun mutation function
-`, o.Pc, o.Pm, o.Ncuts, o.Nchanges, o.MwiczB, o.BlxAlp, o.Mmax, o.Cuts, o.OrdSti, o.EnfRange,
-		o.DebEtac, o.DebEtam, o.DEpc, o.DEmult, o.FltCxName, o.FltMtName,
-		o.Use4inds, o.Tmax, o.Xrange,
-		chk.GetFunctionName(o.CxInt), chk.GetFunctionName(o.CxFlt), chk.GetFunctionName(o.CxStr),
-		chk.GetFunctionName(o.CxKey), chk.GetFunctionName(o.CxByt), chk.GetFunctionName(o.CxFun),
-		chk.GetFunctionName(o.MtInt), chk.GetFunctionName(o.MtFlt), chk.GetFunctionName(o.MtStr),
-		chk.GetFunctionName(o.MtKey), chk.GetFunctionName(o.MtByt), chk.GetFunctionName(o.MtFun))
-}
-
 // auxiliary ///////////////////////////////////////////////////////////////////////////////////////
-
-// SimpleChromo splits 'genes' into 'nbases' unequal parts
-//  Input:
-//    genes  -- a slice whose size equals to the number of genes
-//    nbases -- number of bases used to split 'genes'
-//  Output:
-//    chromo -- the chromosome
-//
-//  Example:
-//
-//    genes = [0, 1, 2, ... nbases-1,  0, 1, 2, ... nbases-1]
-//             \___________________/   \___________________/
-//                    gene # 0               gene # 1
-//
-func SimpleChromo(genes []float64, nbases int) (chromo []float64) {
-	ngenes := len(genes)
-	chromo = make([]float64, ngenes*nbases)
-	values := make([]float64, nbases)
-	var sumv float64
-	for i, g := range genes {
-		rnd.Float64s(values, 0, 1)
-		sumv = la.VecAccum(values)
-		for j := 0; j < nbases; j++ {
-			chromo[i*nbases+j] = g * values[j] / sumv
-		}
-	}
-	return
-}
 
 // GenerateCxEnds randomly computes the end positions of cuts in chromosomes
 //  Input:

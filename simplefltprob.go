@@ -111,9 +111,8 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 	o.hh = utl.DblsAlloc(o.C.Nisl, o.nh)
 
 	// objective function
-	o.C.OvaOor = func(ind *Individual, isl, time int, report *bytes.Buffer) {
-		x := ind.GetFloats()
-		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], x, isl)
+	o.C.OvaOor = func(isl int, ind *Individual) {
+		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], ind.Floats, isl)
 		for i, f := range o.ff[isl] {
 			ind.Ovas[i] = f
 		}
@@ -201,7 +200,8 @@ func (o *SimpleFltProb) Run(verbose bool) {
 
 		// results
 		isl := 0
-		xbest := o.Evo.Best.GetFloats()
+		//xbest := o.Evo.Best.GetFloats() // TODO
+		xbest := o.Evo.Islands[0].Pop[0].Floats // TODO
 		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], xbest, isl)
 
 		// check if best is unfeasible
@@ -249,7 +249,7 @@ func (o *SimpleFltProb) Run(verbose bool) {
 		if o.C.DoPlot {
 			if o.Nfeasible == 1 {
 				o.PopsBest = o.Evo.GetPopulations()
-			} else {
+			} else if o.Nfeasible > 1 {
 				fcur := utl.DblCopy(o.ff[0])
 				o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[o.Nfeasible-1], isl)
 				cur_dom, _ := utl.DblsParetoMin(fcur, o.ff[0])
@@ -472,7 +472,7 @@ func (o *SimpleFltProb) Plot(fnkey string) {
 	if o.PltShowIniPop {
 		for _, pop := range o.PopsIni {
 			for _, ind := range pop {
-				x := ind.GetFloats()
+				x := ind.Floats
 				plt.PlotOne(x[0], x[1], io.Sf("'k.', zorder=20, clip_on=0, label='%s'", l))
 				l = ""
 			}
@@ -484,7 +484,7 @@ func (o *SimpleFltProb) Plot(fnkey string) {
 	if o.PltShowFinalPop {
 		for _, pop := range o.PopsBest {
 			for _, ind := range pop {
-				x := ind.GetFloats()
+				x := ind.Floats
 				plt.PlotOne(x[0], x[1], io.Sf("'ko', ms=6, zorder=30, clip_on=0, label='%s', markerfacecolor='none'", l))
 				l = ""
 			}

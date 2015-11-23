@@ -10,35 +10,9 @@ import (
 	"github.com/cpmech/gosl/chk"
 )
 
-// ValIndPair holds a value and a pointer to an individual
-type ValIndPair struct {
-	Val float64
-	Ind *Individual
-}
-
-// collections
-type ValIndAsc []ValIndPair // ascending
-type ValIndDes []ValIndPair // descending
-
-// for sorting
-func (o ValIndAsc) Len() int           { return len(o) }
-func (o ValIndAsc) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
-func (o ValIndAsc) Less(i, j int) bool { return o[i].Val < o[j].Val }
-func (o ValIndDes) Len() int           { return len(o) }
-func (o ValIndDes) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
-func (o ValIndDes) Less(i, j int) bool { return o[i].Val > o[j].Val }
-func (o *ValIndAsc) Sort()             { sort.Sort(o) }
-func (o *ValIndDes) Sort()             { sort.Sort(o) }
-
-// sorting functions of Population /////////////////////////////////////////////////////////////////
-
 // popByDemerit implements sort.Interface for Population based on Demerit
 // Note: sorting population in increasing order of demerits: from best to worst
 type popByDemerit []*Individual
-
-// popByScore implements sort.Interface for Population based on Score
-// Note: sorting population in decreasing order of score: from best to worst
-type popByScore []*Individual
 
 // popById implements sort.Interface for Population based on Id. Note: ascending order
 type popById []*Individual
@@ -67,11 +41,6 @@ type popByOva2 []*Individual
 func (o popByDemerit) Len() int           { return len(o) }
 func (o popByDemerit) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
 func (o popByDemerit) Less(i, j int) bool { return o[i].Demerit < o[j].Demerit }
-
-// sorting functions: ByScore
-func (o popByScore) Len() int           { return len(o) }
-func (o popByScore) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
-func (o popByScore) Less(i, j int) bool { return o[i].Score > o[j].Score }
 
 // sorting functions: ById
 func (o popById) Len() int           { return len(o) }
@@ -116,11 +85,6 @@ func (o popByOva2) Less(i, j int) bool { return o[i].Ovas[2] < o[j].Ovas[2] }
 // SortByDemerit sorts population in incresing order of demerits: from best to worst
 func (o Population) SortByDemerit() {
 	sort.Sort(popByDemerit(o))
-}
-
-// SortByScore sorts population in decreasing order of scores: from best to worst
-func (o Population) SortByScore() {
-	sort.Sort(popByScore(o))
 }
 
 // SortById sorts population in incresing order of Id

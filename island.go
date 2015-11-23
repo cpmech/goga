@@ -5,11 +5,8 @@
 package goga
 
 import (
-	"bytes"
-
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/graph"
-	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
@@ -45,8 +42,7 @@ type Island struct {
 	Fronts [][]*Individual // non-dominated fronts
 
 	// results
-	Nfeval int          // number of objective function evaluations
-	Report bytes.Buffer // buffer to report results
+	Nfeval int // number of objective function evaluations
 }
 
 // NewIsland creates a new island
@@ -135,7 +131,7 @@ func (o *Island) GenPop() {
 func (o *Island) CalcOvs() {
 	o.Nfeval = 0
 	for _, ind := range o.Pop {
-		o.C.OvaOor(ind, o.Id, 0, &o.Report)
+		o.C.OvaOor(o.Id, ind)
 		o.Nfeval += 1
 		for _, oor := range ind.Oors {
 			if oor < 0 {
@@ -195,8 +191,8 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 				IndCrossover(a, b, A, B, C, D, time, &o.C.Ops)
 				IndMutation(a, time, &o.C.Ops)
 				IndMutation(b, time, &o.C.Ops)
-				o.C.OvaOor(a, o.Id, time+1, &o.Report)
-				o.C.OvaOor(b, o.Id, time+1, &o.Report)
+				o.C.OvaOor(o.Id, a)
+				o.C.OvaOor(o.Id, b)
 				o.Nfeval += 2
 			}
 		}
@@ -240,51 +236,30 @@ func (o *Island) Run(time int, doreport, verbose bool) {
 
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////
 
-// WritePopToReport writes population to report
-func (o *Island) WritePopToReport(time int, averho float64) {
-	io.Ff(&o.Report, "time=%d averho=%g\n", time, averho)
-	o.Report.Write(o.Pop.Output(o.C).Bytes())
-}
-
-// SaveReport saves report to file
-func (o Island) SaveReport(verbose bool) {
-	dosave := o.C.FnKey != ""
-	if dosave {
-		if o.C.DirOut == "" {
-			o.C.DirOut = "/tmp/goga"
-		}
-		if verbose {
-			io.WriteFileVD(o.C.DirOut, io.Sf("%s-%d.rpt", o.C.FnKey, o.Id), &o.Report)
-			return
-		}
-		io.WriteFileD(o.C.DirOut, io.Sf("%s-%d.rpt", o.C.FnKey, o.Id), &o.Report)
-	}
-}
-
 // four_nondom finds 2 nondominated individuals among 4 individuals
 func (o *Island) four_nondom(A, B, C, D *Individual) {
 	var Bdom, Cdom, Ddom bool
-	Bdom, _ = IndCompareDet(B, A)
+	Bdom, _ = IndCompare(B, A)
 	if Bdom {
 		B, A = A, B
 	}
-	Cdom, Bdom = IndCompareDet(C, B)
+	Cdom, Bdom = IndCompare(C, B)
 	if Cdom {
 		C, B = B, C
 	}
-	Ddom, Cdom = IndCompareDet(D, C)
+	Ddom, Cdom = IndCompare(D, C)
 	if Ddom {
 		D, C = C, D
 	}
-	Bdom, _ = IndCompareDet(B, A)
+	Bdom, _ = IndCompare(B, A)
 	if Bdom {
 		B, A = A, B
 	}
-	Cdom, Bdom = IndCompareDet(C, B)
+	Cdom, Bdom = IndCompare(C, B)
 	if Cdom {
 		C, B = B, C
 	}
-	Bdom, _ = IndCompareDet(B, A)
+	Bdom, _ = IndCompare(B, A)
 	if Bdom {
 		B, A = A, B
 	}

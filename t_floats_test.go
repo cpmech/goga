@@ -5,7 +5,6 @@
 package goga
 
 import (
-	"bytes"
 	"math"
 	"testing"
 
@@ -26,7 +25,6 @@ func Test_flt01(tst *testing.T) {
 	C.Pll = false
 	C.Nisl = 1
 	C.Ninds = 12
-	C.GAtype = "crowd"
 	C.Ops.FltCxName = "de"
 	C.NparGrp = 3
 	C.RangeFlt = [][]float64{
@@ -55,8 +53,7 @@ func Test_flt01(tst *testing.T) {
 	sim.Run(chk.Verbose)
 
 	// plot
-	sim.Plot("test_flt01")
-	C.Report("/tmp/goga", "tst_flt01")
+	sim.Plot("fig_flt01")
 }
 
 func Test_flt02(tst *testing.T) {
@@ -77,8 +74,6 @@ func Test_flt02(tst *testing.T) {
 	C.Verbose = false
 	C.Dtmig = 50
 	C.NparGrp = 2
-	C.CompProb = false
-	C.GAtype = "crowd"
 	C.Ops.FltCxName = "de"
 	C.RangeFlt = [][]float64{
 		{-1, 3}, // gene # 0: min and max
@@ -93,9 +88,6 @@ func Test_flt02(tst *testing.T) {
 		}
 	}
 	C.Ops.EnfRange = true
-	C.NumFmts = map[string][]string{"flt": {"%8.4f", "%8.4f"}}
-	C.ShowDem = true
-	C.RegTol = 0.01
 	C.CalcDerived()
 	rnd.Init(C.Seed)
 
@@ -129,7 +121,7 @@ func Test_flt02(tst *testing.T) {
 	sim.PltExtra = func() {
 		plt.PlotOne(ys, ys, "'o', markeredgecolor='yellow', markerfacecolor='none', markersize=10")
 	}
-	sim.Plot("test_flt02")
+	sim.Plot("fig_flt02")
 }
 
 func Test_flt03(tst *testing.T) {
@@ -143,28 +135,14 @@ func Test_flt03(tst *testing.T) {
 	C.Noor = 2
 	C.Nisl = 4
 	C.Ninds = 24
-	C.GAtype = "crowd"
 	C.Ops.FltCxName = "de"
 	C.NparGrp = 3
-	C.ParetoPhi = 0.01
-	C.CompProb = true
 	C.Tf = 100
 	C.Dtmig = 60
 	C.RangeFlt = [][]float64{{0, 0.9999999999999}}
 	C.PopFltGen = PopFltGen
 	C.CalcDerived()
 	rnd.Init(C.Seed)
-
-	// post-processing function
-	values := utl.Deep3alloc(C.Tf/10, C.Nisl, C.Ninds)
-	C.PostProc = func(idIsland, time int, pop Population) {
-		if time%10 == 0 {
-			k := time / 10
-			for i, ind := range pop {
-				values[k][idIsland][i] = ind.GetFloat(0)
-			}
-		}
-	}
 
 	// functions
 	yfcn := func(x float64) float64 { return math.Pow(math.Sin(5.0*math.Pi*x), 6.0) }
@@ -176,31 +154,14 @@ func Test_flt03(tst *testing.T) {
 	sim := NewSimpleFltProb(fcn, 1, 0, 0, C)
 	sim.Run(chk.Verbose)
 
-	// write histograms and plot
+	// plot
 	if chk.Verbose {
-
-		// write histograms
-		var buf bytes.Buffer
-		hist := rnd.Histogram{Stations: utl.LinSpace(0, 1, 13)}
-		for k := 0; k < C.Tf/10; k++ {
-			for i := 0; i < C.Nisl; i++ {
-				clear := false
-				if i == 0 {
-					clear = true
-				}
-				hist.Count(values[k][i], clear)
-			}
-			io.Ff(&buf, "\ntime=%d\n%v", k*10, rnd.TextHist(hist.GenLabels("%4.2f"), hist.Counts, 60))
-		}
-		io.WriteFileVD("/tmp/goga", "test_flt03_hist.txt", &buf)
-
-		// plot
 		plt.SetForEps(0.8, 300)
-		xmin := sim.Evo.Islands[0].Pop[0].GetFloat(0)
+		xmin := sim.Evo.Islands[0].Pop[0].Floats[0]
 		xmax := xmin
 		for k := 0; k < C.Nisl; k++ {
 			for _, ind := range sim.Evo.Islands[k].Pop {
-				x := ind.GetFloat(0)
+				x := ind.Floats[0]
 				y := yfcn(x)
 				xmin = utl.Min(xmin, x)
 				xmax = utl.Max(xmax, x)
@@ -215,7 +176,7 @@ func Test_flt03(tst *testing.T) {
 		}
 		plt.Plot(X, Y, "'b-',clip_on=0,zorder=10")
 		plt.Gll("$x$", "$y$", "")
-		plt.SaveD("/tmp/goga", "test_flt03_func.eps")
+		plt.SaveD("/tmp/goga", "fig_flt03.eps")
 	}
 }
 
@@ -232,18 +193,12 @@ func Test_flt04(tst *testing.T) {
 	C.Nimig = 1
 	C.Tf = 100
 	C.Dtmig = 10
-	C.StdMig = false
-	C.GAtype = "crowd"
-	//C.GAtype = "cold"
 	C.Ops.FltCxName = "de"
 	C.Ops.Pc = 1.0
 	C.Ops.Pm = 0.0
 	C.Ops.DEpc = 0.5
 	C.Ops.DEmult = 0.1
 	C.NparGrp = 2
-	C.CompProb = false
-	C.ParetoPhi = 0.05
-	C.CdistOff = false
 	C.Ntrials = 1
 	C.RangeFlt = [][]float64{{0.1, 2.25}, {0.5, 2.5}}
 	C.PopFltGen = PopFltGen
@@ -268,11 +223,10 @@ func Test_flt04(tst *testing.T) {
 	}
 
 	// objective value function
-	C.OvaOor = func(ind *Individual, isl, t int, report *bytes.Buffer) {
-		x := ind.GetFloats()
+	C.OvaOor = func(isl int, ind *Individual) {
 		f := make([]float64, 2)
 		g := make([]float64, 2)
-		fcn(f, g, nil, x, isl)
+		fcn(f, g, nil, ind.Floats, isl)
 		ind.Ovas[0] = f[0]
 		ind.Ovas[1] = f[1]
 		ind.Oors[0] = utl.GtePenalty(g[0], 0, 1)
@@ -339,7 +293,7 @@ func Test_flt04(tst *testing.T) {
 			plt.Plot(xova, yova, "'ko',markerfacecolor='none',ms=4")
 		}
 		plt.Gll("$f_1$", "$f_2$", "")
-		plt.SaveD("/tmp/goga", "test_flt04.eps")
+		plt.SaveD("/tmp/goga", "fig_flt04.eps")
 	}
 }
 
@@ -356,11 +310,9 @@ func Test_flt05(tst *testing.T) {
 	C.Nisl = 4
 	C.Ninds = 24
 	C.Nimig = 4
-	C.NparGrp = 3
+	C.NparGrp = 2
 	C.Tf = 200
 	C.Dtmig = C.Tf / 10
-	C.StdMig = false
-	C.GAtype = "crowd"
 	C.Ops.FltCxName = "de"
 	C.Ops.Pc = 1.0
 	C.Ops.Pm = 1.0
@@ -368,7 +320,6 @@ func Test_flt05(tst *testing.T) {
 	C.Ops.DEpc = 0.1
 	C.Ops.DEmult = 0.5
 	C.Verbose = false
-	//C.Latin = false
 	showinipop := false
 
 	// problem variables
@@ -565,7 +516,7 @@ func Test_flt05(tst *testing.T) {
 	sim.Run(false)
 
 	// Pareto-front
-	if true {
+	if chk.Verbose {
 
 		// set plot
 		plt.SetForEps(0.75, 350)
@@ -588,14 +539,6 @@ func Test_flt05(tst *testing.T) {
 
 		// Pareto front
 		sim.Evo.PlotPareto(0, 1)
-
-		// plot individuals again
-		//for _, isl := range sim.Evo.Islands {
-		//for _, ind := range isl.Pop {
-		//io.Pforan("ovas = %v\n", ind.Ovas)
-		//plt.PlotOne(ind.Ovas[0], ind.Ovas[1], "'k+'")
-		//}
-		//}
 
 		// save
 		plt.Gll("$f_0$", "$f_1$", "")

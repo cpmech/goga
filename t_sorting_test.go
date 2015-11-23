@@ -5,7 +5,6 @@
 package goga
 
 import (
-	"bytes"
 	"math"
 	"sort"
 	"testing"
@@ -45,6 +44,7 @@ func Test_sort01(tst *testing.T) {
 	C.Pll = false
 	C.Nisl = 1
 	C.Ninds = len(genes)
+	C.NparGrp = 2
 	C.Nova = 2
 	C.RangeFlt = [][]float64{
 		{0, 1},
@@ -56,16 +56,16 @@ func Test_sort01(tst *testing.T) {
 	C.PopFltGen = func(isl int, cc *ConfParams) Population {
 		o := make([]*Individual, cc.Ninds)
 		for i := 0; i < cc.Ninds; i++ {
-			o[i] = NewIndividual(cc.Nova, cc.Noor, cc.Nbases, genes[i])
+			o[i] = NewIndividual(cc.Nova, cc.Noor, genes[i], nil)
 			o[i].Id = i
 		}
 		return o
 	}
 
 	// objective function
-	C.OvaOor = func(ind *Individual, isl, time int, report *bytes.Buffer) {
-		ind.Ovas[0] = ind.GetFloat(0)
-		ind.Ovas[1] = ind.GetFloat(1)
+	C.OvaOor = func(isl int, ind *Individual) {
+		ind.Ovas[0] = ind.Floats[0]
+		ind.Ovas[1] = ind.Floats[1]
 	}
 
 	// run
@@ -73,7 +73,7 @@ func Test_sort01(tst *testing.T) {
 	pop := isl.Pop
 	pop.SortById()
 	for i, ind := range pop {
-		io.Pf("%2d => %2d %v\n", i, ind.Id, ind.GetFloats())
+		io.Pf("%2d => %2d %v\n", i, ind.Id, ind.Floats)
 	}
 	ninds := len(pop)
 	ovamin, ovamax := make([]float64, 2), make([]float64, 2)

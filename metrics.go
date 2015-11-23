@@ -24,7 +24,6 @@ func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop
 		}
 
 		// reset values
-		ind.Score = 0
 		ind.Nwins = 0
 		ind.Nlosses = 0
 		ind.FrontId = 0
@@ -36,7 +35,7 @@ func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop
 		for j := 0; j < nv; j++ {
 			x := ind.Ovas[j]
 			if math.IsNaN(x) {
-				chk.Panic("NaN found in objective value array\n\tx = %v\n\tovas = %v", ind.GetFloats(), ind.Ovas)
+				chk.Panic("NaN found in objective value array\n\tx = %v\n\tovas = %v", ind.Floats, ind.Ovas)
 			}
 			if i == 0 {
 				ovamin[j] = x
@@ -56,7 +55,7 @@ func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop
 			dist := IndDistance(A, B, ovamin, ovamax)
 			A.DistNeigh = utl.Min(A.DistNeigh, dist)
 			B.DistNeigh = utl.Min(B.DistNeigh, dist)
-			Adom, Bdom := IndCompareDet(A, B)
+			Adom, Bdom := IndCompare(A, B)
 			if Adom {
 				A.WinOver[A.Nwins] = B // i dominates j
 				A.Nwins++              // i has another dominated item

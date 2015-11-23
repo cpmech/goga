@@ -20,10 +20,6 @@ type Evolver struct {
 	// data
 	C       *ConfParams // configuration parameters
 	Islands []*Island   // islands
-	Best    *Individual // best individual among all in all islands
-
-	// callbacks
-	OutFcn func(t int, evo *Evolver) // output function callback
 
 	// migration
 	OvaMin []float64     // min ova
@@ -58,7 +54,6 @@ func NewEvolver(C *ConfParams) (o *Evolver) {
 			o.Islands[i] = NewIsland(i, o.C)
 		}
 	}
-	o.Best = o.Islands[0].Pop[0]
 
 	// migration
 	o.OvaMin = make([]float64, o.C.Nova)
@@ -73,7 +68,7 @@ func (o *Evolver) Run() {
 
 	// check
 	if o.C.Nisl < 1 {
-		return
+		chk.Panic("at least one island must be defined. Nisl=%d is incorrect", o.C.Nisl)
 	}
 	if o.C.Ninds < o.C.Nisl {
 		chk.Panic("number of individuals must be greater than the number of islands")
@@ -81,17 +76,9 @@ func (o *Evolver) Run() {
 
 	// first output
 	t := 0
-	for _, isl := range o.Islands {
-		isl.WritePopToReport(t, 0)
-	}
 	if o.C.Verbose {
 		o.print_legend()
 		io.Pf("\nrunning ...\n")
-	}
-	if o.C.PostProc != nil {
-		for _, isl := range o.Islands {
-			o.C.PostProc(isl.Id, 0, isl.Pop)
-		}
 	}
 
 	// time loop
@@ -143,66 +130,28 @@ func (o *Evolver) Run() {
 			nomig = true
 		}
 
-		// output
-		if o.OutFcn != nil {
-			o.OutFcn(t, o)
-		}
-
-		// skip migration
+		// migration
 		if nomig {
 			continue
 		}
-
-		// migration
 		if o.C.Verbose {
 			io.Pfyel(" %d", t)
 		}
 		o.migration(t)
 	}
 
-	// best individual
-	o.FindBestFromAll()
-
 	// message
 	if o.C.Verbose {
 		io.Pf("\n... end\n\n")
 	}
-
-	// write reports
-	if o.C.DoReport {
-		for _, isl := range o.Islands {
-			isl.SaveReport(true)
-		}
-	}
 	return
-}
-
-// FindBestFromAll finds best individual from all islands
-//  Output: o.Best will point to the best individual
-func (o *Evolver) FindBestFromAll() {
-	if len(o.Islands) < 1 {
-		return
-	}
-	o.Best = o.Islands[0].Pop[0]
-	for i := 1; i < o.C.Nisl; i++ {
-		_, other_is_better := IndCompareDet(o.Best, o.Islands[i].Pop[0])
-		if other_is_better {
-			o.Best = o.Islands[i].Pop[0]
-		}
-	}
 }
 
 // GetFeasible returns all feasible individuals from all islands
 func (o *Evolver) GetFeasible() (feasible []*Individual) {
 	for _, isl := range o.Islands {
 		for _, ind := range isl.Pop {
-			unfeasible := false
-			for _, oor := range ind.Oors {
-				if oor > 0 {
-					unfeasible = true
-				}
-			}
-			if !unfeasible {
+			if ind.Feasible() {
 				feasible = append(feasible, ind)
 			}
 		}
