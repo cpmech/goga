@@ -304,13 +304,13 @@ func Test_flt05(tst *testing.T) {
 
 	// configuration
 	C := NewConfParams()
-	C.Problem = 1
+	C.Problem = 5
 	C.PopFltGen = PopFltGen
 	C.Pll = true
 	C.Nisl = 4
 	C.Ninds = 24
 	C.Nimig = 4
-	C.NparGrp = 3
+	C.NparGrp = 2
 	C.Tf = 200
 	C.Dtmig = C.Tf / 10
 	C.Ops.FltCxName = "de"

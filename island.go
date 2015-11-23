@@ -14,8 +14,7 @@ import (
 
 // constants
 const (
-	INF  = 1e+30 // infinite distance
-	DMIN = 1e-8  // min genotype distance
+	INF = 1e+30 // infinite distance
 )
 
 // Island holds one population and performs the reproduction operation
