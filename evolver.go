@@ -313,6 +313,33 @@ func (o *Evolver) migration_(t int) {
 	}
 }
 
+func (o *Evolver) migration__(t int) {
+	B_cpy := o.Islands[0].Pop[0].GetCopy()
+	count := make([]int, o.C.Nisl)
+	l := o.C.Ninds - o.C.Nimig
+	for m := 0; m < o.C.Nimig; m++ {
+		for i := 0; i < o.C.Nisl; i++ {
+			I := count[i]
+			if I >= l {
+				continue
+			}
+			A := o.Islands[i].Pop[I]
+			for j := i + 1; j < o.C.Nisl; j++ {
+				J := count[j]
+				if J >= l {
+					continue
+				}
+				B := o.Islands[j].Pop[J]
+				B.CopyInto(B_cpy)
+				A.CopyInto(B)
+				B_cpy.CopyInto(A)
+				count[i]++
+				count[j]++
+			}
+		}
+	}
+}
+
 func (o *Evolver) migration(t int) {
 
 	// compute metrics in each island and compute global ova range
