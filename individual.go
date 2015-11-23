@@ -108,15 +108,11 @@ func (A *Individual) Fight(B *Individual) (A_wins bool) {
 			return false
 		}
 	}
-	//if false {
-	if true {
-		//io.Pforan("A.dist=%v  B.dist=%v\n", A.DistNeigh, B.DistNeigh)
-		if A.DistNeigh > B.DistNeigh {
-			return true
-		}
-		if B.DistNeigh > A.DistNeigh {
-			return true
-		}
+	if A.DistNeigh > B.DistNeigh {
+		return true
+	}
+	if B.DistNeigh > A.DistNeigh {
+		return true
 	}
 	if rnd.FlipCoin(0.5) {
 		return true
