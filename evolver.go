@@ -243,12 +243,7 @@ func (o *Evolver) migration(t int) {
 				A := Pbest[i]
 				for j := 0; j < o.C.Nimig; j++ {
 					B := Qbest[j]
-					//if true {
-					if false {
-						o.Mdist[i][j] = IndDistance(A, B, o.Islands[0].OvaMin, o.Islands[0].OvaMax)
-					} else {
-						o.Mdist[i][j] = IndDistGen(A, B, o.Islands[0].FltMin, o.Islands[0].FltMax, o.Islands[0].IntMin, o.Islands[0].IntMax)
-					}
+					o.Mdist[i][j] = IndDistGen(A, B, o.Islands[0].FltMin, o.Islands[0].FltMax, o.Islands[0].IntMin, o.Islands[0].IntMax)
 				}
 			}
 

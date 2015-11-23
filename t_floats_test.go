@@ -290,7 +290,7 @@ func Test_flt04(tst *testing.T) {
 
 func Test_flt05(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt05. ZDT problems")
 
 	// configuration
@@ -298,8 +298,8 @@ func Test_flt05(tst *testing.T) {
 	C.Problem = 1
 	C.PopFltGen = PopFltGen
 	C.Pll = true
-	C.Nisl = 1
-	C.Ninds = 96
+	C.Nisl = 4
+	C.Ninds = 24
 	C.Nimig = 4
 	C.Tf = 200
 	C.Dtmig = C.Tf / 10
