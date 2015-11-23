@@ -48,20 +48,6 @@ type Island struct {
 // NewIsland creates a new island
 func NewIsland(id int, C *ConfParams) (o *Island) {
 
-	// check
-	if C.Ninds < 2 || (C.Ninds%2 != 0) {
-		chk.Panic("size of population must be even and greater than 2. C.Ninds = %d is invalid", C.Ninds)
-	}
-	if C.OvaOor == nil {
-		chk.Panic("objective function (OvaOor) must be non nil")
-	}
-	if C.Ninds%C.NparGrp > 0 {
-		chk.Panic("number of individuals must be multiple of NparGrp (number of parents in group)")
-	}
-	if C.PopIntGen == nil && C.PopFltGen == nil {
-		chk.Panic("at least one generator function in Params must be non nil")
-	}
-
 	// allocate island
 	o = new(Island)
 	o.Id = id
@@ -148,7 +134,7 @@ func (o *Island) Reset() {
 }
 
 // Run runs evolutionary process with niching via crowding and tournament selection
-func (o *Island) Run(time int, doreport, verbose bool) {
+func (o *Island) Run(time int) {
 
 	// select groups
 	rnd.IntGetGroups(o.Groups, o.Indices)

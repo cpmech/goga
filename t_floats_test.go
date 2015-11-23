@@ -299,18 +299,18 @@ func Test_flt04(tst *testing.T) {
 
 func Test_flt05(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("flt05. ZDT problems")
 
 	// configuration
 	C := NewConfParams()
-	C.Problem = 5
+	C.Problem = 1
 	C.PopFltGen = PopFltGen
 	C.Pll = true
 	C.Nisl = 4
 	C.Ninds = 24
 	C.Nimig = 4
-	C.NparGrp = 2
+	C.NparGrp = 3
 	C.Tf = 200
 	C.Dtmig = C.Tf / 10
 	C.Ops.FltCxName = "de"
@@ -319,7 +319,7 @@ func Test_flt05(tst *testing.T) {
 	C.Ops.DebEtam = float64(C.Ninds)
 	C.Ops.DEpc = 0.1
 	C.Ops.DEmult = 0.5
-	C.Verbose = false
+	C.Verbose = chk.Verbose
 	showinipop := false
 
 	// problem variables
@@ -443,8 +443,6 @@ func Test_flt05(tst *testing.T) {
 	case 5:
 		pname = "FON"
 		n := 10
-		C.Tf = 500
-		C.Dtmig = C.Tf / 10
 		C.RangeFlt = utl.DblsAlloc(n, 2)
 		for i := 0; i < len(C.RangeFlt); i++ {
 			C.RangeFlt[i][0], C.RangeFlt[i][1] = -4.0, 4.0

@@ -66,14 +66,6 @@ func NewEvolver(C *ConfParams) (o *Evolver) {
 // Run runs the evolution process
 func (o *Evolver) Run() {
 
-	// check
-	if o.C.Nisl < 1 {
-		chk.Panic("at least one island must be defined. Nisl=%d is incorrect", o.C.Nisl)
-	}
-	if o.C.Ninds < o.C.Nisl {
-		chk.Panic("number of individuals must be greater than the number of islands")
-	}
-
 	// first output
 	t := 0
 	if o.C.Verbose {
@@ -97,11 +89,8 @@ func (o *Evolver) Run() {
 			for i := 0; i < o.C.Nisl; i++ {
 				go func(isl *Island) {
 					for time := t; time < tmig; time++ {
-						report := o.calc_report(time)
-						isl.Run(time, report, (o.C.Verbose && isl.Id == 0))
-						if o.C.Verbose && isl.Id == 0 {
-							o.print_time(time, report)
-						}
+						isl.Run(time)
+						o.print_time(time, isl.Id)
 					}
 					Metrics(isl.OvaMin, isl.OvaMax, isl.Fsizes, isl.Fronts, isl.Pop)
 					done <- 1
@@ -113,12 +102,10 @@ func (o *Evolver) Run() {
 		} else {
 			for _, isl := range o.Islands {
 				for time := t; time < tmig; time++ {
-					report := o.calc_report(time)
-					isl.Run(time, report, (o.C.Verbose && isl.Id == 0))
-					if o.C.Verbose && isl.Id == 0 {
-						o.print_time(time, report)
-					}
+					isl.Run(time)
+					o.print_time(time, isl.Id)
 				}
+				Metrics(isl.OvaMin, isl.OvaMax, isl.Fsizes, isl.Fronts, isl.Pop)
 			}
 		}
 
@@ -142,10 +129,13 @@ func (o *Evolver) Run() {
 
 	// message
 	if o.C.Verbose {
+		io.Pfgrey(" %d", t)
 		io.Pf("\n... end\n\n")
 	}
 	return
 }
+
+// post-processing methods /////////////////////////////////////////////////////////////////////////
 
 // GetFeasible returns all feasible individuals from all islands
 func (o *Evolver) GetFeasible() (feasible []*Individual) {
@@ -343,10 +333,6 @@ func (o *Evolver) migration(t int) {
 	}
 }
 
-func (o Evolver) calc_report(t int) bool {
-	return t%o.C.Dtout == 0
-}
-
 func (o Evolver) print_legend() {
 	io.Pf("\nLEGEND\n")
 	io.Pfgrey(" 00 -- generation number (time)\n")
@@ -354,11 +340,13 @@ func (o Evolver) print_legend() {
 	io.Pfyel(" 00 -- migration time\n")
 }
 
-func (o Evolver) print_time(time int, report bool) {
-	io.Pf(" ")
-	if report {
-		io.Pfblue("%v", time)
-		return
+func (o Evolver) print_time(time, isl int) {
+	if o.C.Verbose && isl == 0 {
+		io.Pf(" ")
+		if time%o.C.Dtout == 0 {
+			io.Pfblue("%v", time)
+			return
+		}
+		io.Pfgrey("%v", time)
 	}
-	io.Pfgrey("%v", time)
 }

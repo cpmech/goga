@@ -134,16 +134,31 @@ func (o *ConfParams) CalcDerived() {
 	o.derived_called = true
 }
 
-// check_input checks whether paramters are consistent or not
+// check_input checks whether parameters are consistent or not
 func (o *ConfParams) check_input() {
 	if !o.derived_called {
-		chk.Panic("ConfParams.CalcDerived must be called before Run")
+		chk.Panic("CalcDerived must be called before simulation")
 	}
 	if o.Nova < 1 {
 		chk.Panic("number of objective values (nova) must be greater than 0")
 	}
 	if len(o.RangeFlt) != len(o.Ops.Xrange) {
 		chk.Panic("number of genes in RangeFlt must be equal to number of genes in Ops.Xrange => ConfParams.CalcDerived must be called. %d != %d", len(o.RangeFlt), len(o.Ops.Xrange))
+	}
+	if o.Nisl < 1 {
+		chk.Panic("at least one island must be defined. Nisl=%d is incorrect", o.Nisl)
+	}
+	if o.Ninds < 2 || (o.Ninds%2 != 0) {
+		chk.Panic("size of population must be even and greater than 2. Ninds = %d is invalid", o.Ninds)
+	}
+	if o.OvaOor == nil {
+		chk.Panic("objective function (OvaOor) must be non nil")
+	}
+	if o.Ninds%o.NparGrp > 0 {
+		chk.Panic("number of individuals must be multiple of NparGrp (number of parents in group)")
+	}
+	if o.PopIntGen == nil && o.PopFltGen == nil {
+		chk.Panic("at least one generator function in Params must be non nil")
 	}
 }
 

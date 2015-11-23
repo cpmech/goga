@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FILES="*.go"
-TEST="flt01"
+TEST="flt05"
 #TEST="sort01"
 
 refresh(){
