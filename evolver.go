@@ -10,6 +10,7 @@ import (
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/plt"
+	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
 
@@ -115,6 +116,7 @@ func (o *Evolver) Run() {
 							o.print_time(time, report)
 						}
 					}
+					Metrics(isl.OvaMin, isl.OvaMax, isl.Fsizes, isl.Fronts, isl.Pop)
 					done <- 1
 				}(o.Islands[i])
 			}
@@ -291,11 +293,30 @@ func (o *Evolver) GetNfeval() (nfeval int) {
 
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////
 
+func (o *Evolver) migration_(t int) {
+	for i := 0; i < o.C.Nisl; i++ {
+		for j := i + 1; j < o.C.Nisl; j++ {
+			selA := rnd.IntGetUniqueN(0, o.C.Ninds, o.C.Nimig)
+			selB := rnd.IntGetUniqueN(0, o.C.Ninds, o.C.Nimig)
+			for _, m := range selA {
+				A := o.Islands[i].Pop[m]
+				for _, n := range selB {
+					B := o.Islands[j].Pop[n]
+					if A.Fight(B) {
+						A.CopyInto(B)
+					} else {
+						B.CopyInto(A)
+					}
+				}
+			}
+		}
+	}
+}
+
 func (o *Evolver) migration(t int) {
 
 	// compute metrics in each island and compute global ova range
 	for i, isl := range o.Islands {
-		Metrics(isl.OvaMin, isl.OvaMax, isl.Fsizes, isl.Fronts, isl.Pop)
 		isl.Pop.SortByRank()
 		if i == 0 {
 			for j := 0; j < o.C.Nova; j++ {

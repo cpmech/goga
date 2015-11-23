@@ -48,7 +48,7 @@ func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop
 		}
 	}
 
-	// compute dominance data
+	// compute neighbour distances and dominance data
 	for i := 0; i < ninds; i++ {
 		A := pop[i]
 		for j := i + 1; j < ninds; j++ {

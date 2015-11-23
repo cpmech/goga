@@ -355,7 +355,7 @@ func Test_flt05(tst *testing.T) {
 	C.Pll = true
 	C.Nisl = 4
 	C.Ninds = 24
-	C.Nimig = 5
+	C.Nimig = 4
 	C.NparGrp = 3
 	C.Tf = 200
 	C.Dtmig = C.Tf / 10
@@ -369,7 +369,7 @@ func Test_flt05(tst *testing.T) {
 	C.Ops.DEmult = 0.5
 	C.Verbose = false
 	//C.Latin = false
-	showinipop := true
+	showinipop := false
 
 	// problem variables
 	var pname string
