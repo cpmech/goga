@@ -29,11 +29,6 @@ type Evolver struct {
 	OvaMax []float64     // max ova
 	Mdist  [][]float64   // match distances
 	Match  graph.Munkres // matches
-
-	// migration v2: TODO: remove this
-	Fsizes      []int           // front sizes
-	Fronts      [][]*Individual // non-dominated fronts
-	Competitors []*Individual   // competitors
 }
 
 // NewEvolverPop creates a new evolver based on given populations
@@ -69,22 +64,6 @@ func NewEvolver(C *ConfParams) (o *Evolver) {
 	o.OvaMax = make([]float64, o.C.Nova)
 	o.Mdist = la.MatAlloc(o.C.Nimig, o.C.Nimig)
 	o.Match.Init(o.C.Nimig, o.C.Nimig)
-
-	// migration v2: TODO: remove this
-	nc := o.C.Nisl * o.C.Ninds // number of competitors
-	o.Fsizes = make([]int, nc)
-	o.Fronts = make([][]*Individual, nc)
-	for i := 0; i < nc; i++ {
-		o.Fronts[i] = make([]*Individual, nc)
-	}
-	o.Competitors = make([]*Individual, nc)
-	k := 0
-	for _, isl := range o.Islands {
-		for _, ind := range isl.Pop {
-			o.Competitors[k] = ind
-			k++
-		}
-	}
 	return
 }
 
@@ -363,31 +342,6 @@ func (o *Evolver) migration(t int) {
 					B.CopyInto(Pwors[i])
 				}
 			}
-		}
-	}
-}
-
-func (o *Evolver) migration_v2(t int) { // TODO: remove this
-	Metrics(o.OvaMin, o.OvaMax, o.Fsizes, o.Fronts, o.Competitors)
-	nc := o.C.Nisl * o.C.Ninds
-	for i := 0; i < nc; i++ {
-		A := o.Competitors[i]
-		//io.Pforan("cdist = %v\n", A.DistCrowd)
-		for j := i + 1; j < nc; j++ {
-			B := o.Competitors[j]
-			if A.Fight(B) {
-				A.Score++
-			} else {
-				B.Score++
-			}
-		}
-	}
-	Population(o.Competitors).SortByScore()
-	k := 0
-	for i := 0; i < o.C.Nisl; i++ {
-		for j := 0; j < o.C.Ninds; j++ {
-			o.Competitors[k].CopyInto(o.Islands[i].Pop[j])
-			k++
 		}
 	}
 }
