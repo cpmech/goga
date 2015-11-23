@@ -56,7 +56,7 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 
 	// constants
 	ni := o.C.Ninds        // number of individuals
-	np := o.C.NparGrp      // number of parents in group
+	np := 2                // number of parents in group
 	no := np * (np - 1)    // number of offspring in group
 	ng := ni / np          // number of groups
 	nr := np * np          // number of individuals in round (parents + offspring)
@@ -140,7 +140,7 @@ func (o *Island) Run(time int) {
 
 	// constants
 	ni := o.C.Ninds     // number of individuals
-	np := o.C.NparGrp   // number of parents in group
+	np := 2             // number of parents in group
 	no := np * (np - 1) // number of offspring in group
 	ng := ni / np       // number of groups
 
@@ -161,15 +161,8 @@ func (o *Island) Run(time int) {
 				B = o.Parents[k][j]
 				if o.C.Ops.Use4inds {
 					knext := (k + 1) % ng
-					if true {
-						next := rnd.IntGetUniqueN(0, np, 2)
-						C = o.Pop[o.Groups[knext][next[0]]]
-						D = o.Pop[o.Groups[knext][next[1]]]
-					} else {
-						C = o.Pop[o.Groups[knext][0]]
-						D = o.Pop[o.Groups[knext][1]]
-					}
-					o.four_nondom(A, B, C, D)
+					C = o.Pop[o.Groups[knext][0]]
+					D = o.Pop[o.Groups[knext][1]]
 				}
 				a, s = o.Offspring[k][s], s+1
 				b, s = o.Offspring[k][s], s+1
@@ -216,36 +209,5 @@ func (o *Island) Run(time int) {
 			}
 			idxnew++
 		}
-	}
-}
-
-// auxiliary //////////////////////////////////////////////////////////////////////////////////////
-
-// four_nondom finds 2 nondominated individuals among 4 individuals
-func (o *Island) four_nondom(A, B, C, D *Individual) {
-	var Bdom, Cdom, Ddom bool
-	Bdom, _ = IndCompare(B, A)
-	if Bdom {
-		B, A = A, B
-	}
-	Cdom, Bdom = IndCompare(C, B)
-	if Cdom {
-		C, B = B, C
-	}
-	Ddom, Cdom = IndCompare(D, C)
-	if Ddom {
-		D, C = C, D
-	}
-	Bdom, _ = IndCompare(B, A)
-	if Bdom {
-		B, A = A, B
-	}
-	Cdom, Bdom = IndCompare(C, B)
-	if Cdom {
-		C, B = B, C
-	}
-	Bdom, _ = IndCompare(B, A)
-	if Bdom {
-		B, A = A, B
 	}
 }

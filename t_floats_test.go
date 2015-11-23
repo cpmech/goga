@@ -26,7 +26,6 @@ func Test_flt01(tst *testing.T) {
 	C.Nisl = 1
 	C.Ninds = 12
 	C.Ops.FltCxName = "de"
-	C.NparGrp = 3
 	C.RangeFlt = [][]float64{
 		{-2, 2}, // gene # 0: min and max
 		{-2, 2}, // gene # 1: min and max
@@ -73,7 +72,6 @@ func Test_flt02(tst *testing.T) {
 	}
 	C.Verbose = false
 	C.Dtmig = 50
-	C.NparGrp = 2
 	C.Ops.FltCxName = "de"
 	C.RangeFlt = [][]float64{
 		{-1, 3}, // gene # 0: min and max
@@ -136,7 +134,6 @@ func Test_flt03(tst *testing.T) {
 	C.Nisl = 4
 	C.Ninds = 24
 	C.Ops.FltCxName = "de"
-	C.NparGrp = 3
 	C.Tf = 100
 	C.Dtmig = 60
 	C.RangeFlt = [][]float64{{0, 0.9999999999999}}
@@ -198,7 +195,6 @@ func Test_flt04(tst *testing.T) {
 	C.Ops.Pm = 0.0
 	C.Ops.DEpc = 0.5
 	C.Ops.DEmult = 0.1
-	C.NparGrp = 2
 	C.Ntrials = 1
 	C.RangeFlt = [][]float64{{0.1, 2.25}, {0.5, 2.5}}
 	C.PopFltGen = PopFltGen
@@ -310,7 +306,6 @@ func Test_flt05(tst *testing.T) {
 	C.Nisl = 4
 	C.Ninds = 24
 	C.Nimig = 4
-	C.NparGrp = 2
 	C.Tf = 200
 	C.Dtmig = C.Tf / 10
 	C.Ops.FltCxName = "de"

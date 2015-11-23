@@ -44,7 +44,6 @@ func Test_sort01(tst *testing.T) {
 	C.Pll = false
 	C.Nisl = 1
 	C.Ninds = len(genes)
-	C.NparGrp = 2
 	C.Nova = 2
 	C.RangeFlt = [][]float64{
 		{0, 1},

@@ -335,12 +335,12 @@ func (o *SimpleFltProb) TexReport(dirout, fnkey, problem string, prob int) {
 \begin{table} \centering
 \caption{Input parameters.}
 \begin{tabular}[c]{cccccccccccc} \toprule
-test & $N_{isl}$ & $N_{ind}$ & $T_f$ & $\Delta T_{mig}$ & $N_{crowd}$ & $p_c$ & $p_m$ & DE:$p_c$ & DE:$m$ & SBX:$\eta_c$ & Mut:$\eta_m$ \\ \midrule
-%v   & %v        & %v        & %v    & %v               & %v          & %v    &  %v   & %v       & %v     & %v           & %v           \\
+test & $N_{isl}$ & $N_{ind}$ & $T_f$ & $\Delta T_{mig}$ & $p_c$ & $p_m$ & DE:$p_c$ & DE:$m$ & SBX:$\eta_c$ & Mut:$\eta_m$ \\ \midrule
+%v   & %v        & %v        & %v    & %v               & %v    &  %v   & %v       & %v     & %v           & %v           \\
 \bottomrule
 \end{tabular}
 \end{table}
-`, problem, prob, o.C.Nisl, o.C.Ninds, o.C.Tf, o.C.Dtmig, o.C.NparGrp, o.C.Ops.Pc, o.C.Ops.Pm, o.C.Ops.DEpc, o.C.Ops.DEmult, o.C.Ops.DebEtac, o.C.Ops.DebEtam)
+`, problem, prob, o.C.Nisl, o.C.Ninds, o.C.Tf, o.C.Dtmig, o.C.Ops.Pc, o.C.Ops.Pm, o.C.Ops.DEpc, o.C.Ops.DEmult, o.C.Ops.DebEtac, o.C.Ops.DebEtam)
 
 	// results: Pareto front
 	if o.ParStat {

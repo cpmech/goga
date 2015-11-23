@@ -19,12 +19,11 @@ type ConfParams struct {
 	Noor int // number of out-of-range variables
 
 	// initialisation
-	Seed    int  // seed to initialise random numbers generator. Seed ≤ 0 means use current time
-	Pll     bool // allow running islands in parallel (go-routines)
-	Nisl    int  // number of islands
-	Ninds   int  // number of individuals: population size
-	Nimig   int  // number of individuals that migrate
-	NparGrp int  // number of parents in group
+	Seed  int  // seed to initialise random numbers generator. Seed ≤ 0 means use current time
+	Pll   bool // allow running islands in parallel (go-routines)
+	Nisl  int  // number of islands
+	Ninds int  // number of individuals: population size
+	Nimig int  // number of individuals that migrate
 
 	// time control
 	Tf    int // number of generations
@@ -77,7 +76,6 @@ func (o *ConfParams) SetDefault() {
 	o.Nisl = 4
 	o.Ninds = 24
 	o.Nimig = 4
-	o.NparGrp = 2
 
 	// time control
 	o.Tf = 200
@@ -153,9 +151,6 @@ func (o *ConfParams) check_input() {
 	}
 	if o.OvaOor == nil {
 		chk.Panic("objective function (OvaOor) must be non nil")
-	}
-	if o.Ninds%o.NparGrp > 0 {
-		chk.Panic("number of individuals must be multiple of NparGrp (number of parents in group)")
 	}
 	if o.PopIntGen == nil && o.PopFltGen == nil {
 		chk.Panic("at least one generator function in Params must be non nil")
