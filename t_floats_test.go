@@ -221,7 +221,7 @@ func Test_flt03(tst *testing.T) {
 
 func Test_flt04(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt04. two-bar truss. Pareto-optimal")
 
 	// configuration
@@ -350,11 +350,11 @@ func Test_flt05(tst *testing.T) {
 
 	// configuration
 	C := NewConfParams()
-	C.Problem = 6
+	C.Problem = 5
 	C.PopFltGen = PopFltGen
 	C.Pll = true
-	C.Nisl = 10
-	C.Ninds = 30
+	C.Nisl = 4
+	C.Ninds = 24
 	C.Nimig = 5
 	C.NparGrp = 3
 	C.Tf = 200
@@ -363,12 +363,13 @@ func Test_flt05(tst *testing.T) {
 	C.GAtype = "crowd"
 	C.Ops.FltCxName = "de"
 	C.Ops.Pc = 1.0
-	C.Ops.Pm = 0.0
-	C.Ops.DebEtam = float64(C.Nisl * C.Ninds)
+	C.Ops.Pm = 1.0
+	C.Ops.DebEtam = float64(C.Ninds)
 	C.Ops.DEpc = 0.1
 	C.Ops.DEmult = 0.5
 	C.Verbose = false
-	showinipop := false
+	//C.Latin = false
+	showinipop := true
 
 	// problem variables
 	var pname string
@@ -461,9 +462,9 @@ func Test_flt05(tst *testing.T) {
 	// ZDT4, Deb 2001, p358
 	case 4:
 		pname = "ZDT4"
-		//C.Tf = 500
-		//C.Dtmig = 50
 		n := 10
+		C.Tf = 500
+		C.Dtmig = C.Tf / 10
 		C.RangeFlt = utl.DblsAlloc(n, 2)
 		C.RangeFlt[0][0], C.RangeFlt[0][1] = 0, 1
 		for i := 1; i < len(C.RangeFlt); i++ {
@@ -491,6 +492,8 @@ func Test_flt05(tst *testing.T) {
 	case 5:
 		pname = "FON"
 		n := 10
+		C.Tf = 500
+		C.Dtmig = C.Tf / 10
 		C.RangeFlt = utl.DblsAlloc(n, 2)
 		for i := 0; i < len(C.RangeFlt); i++ {
 			C.RangeFlt[i][0], C.RangeFlt[i][1] = -4.0, 4.0
@@ -515,8 +518,6 @@ func Test_flt05(tst *testing.T) {
 	// ZDT6, Deb 2001, p360
 	case 6:
 		pname = "ZDT6"
-		C.Tf = 500
-		C.Dtmig = 50
 		n := 10
 		C.RangeFlt = utl.DblsAlloc(n, 2)
 		for i := 0; i < len(C.RangeFlt); i++ {

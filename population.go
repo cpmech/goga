@@ -115,6 +115,12 @@ func PopFltGen(id int, C *ConfParams) Population {
 				if x > xmax {
 					x = xmax - (x - xmax)
 				}
+				if x < xmin {
+					x = xmin
+				}
+				if x > xmax {
+					x = xmax
+				}
 				o[i].SetFloat(j, x)
 			}
 		} else { // additional individuals

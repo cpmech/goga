@@ -84,6 +84,22 @@ func Test_sort01(tst *testing.T) {
 	}
 	nfronts := Metrics(ovamin, ovamax, fsizes, fronts, pop)
 
+	// plot
+	if io.Verbose {
+		plt.SetForEps(1, 455)
+		for _, ind := range isl.Pop {
+			x, y := ind.Ovas[0], ind.Ovas[1]
+			plt.PlotOne(x, y, "'r.', clip_on=0")
+			plt.Text(x, y, io.Sf("%d", ind.Id), "size=7, clip_on=0")
+		}
+		plt.Equal()
+		plt.SetXnticks(13)
+		plt.SetYnticks(13)
+		plt.AxisRange(-0.1, 1.1, -0.1, 1.1)
+		plt.Gll("$f_0$", "$f_1$", "")
+		plt.SaveD("/tmp/goga", "fig_sort01.eps")
+	}
+
 	// check number of wins/losses
 	io.Pf("\n")
 	NW := []int{0, 2, 0, 9, 2, 5, 5, 1, 0, 7, 6, 4, 1, 1, 0, 0}
@@ -197,21 +213,5 @@ func Test_sort01(tst *testing.T) {
 	}
 	for i, ind := range pop {
 		chk.Scalar(tst, io.Sf("%2d : dCrowd = %g", ind.Id, ind.DistCrowd), 1e-15, ind.DistCrowd, DC[i][0]*DC[i][1]+DC[i][2]*DC[i][3])
-	}
-
-	// plot
-	if io.Verbose {
-		plt.SetForEps(1, 455)
-		for _, ind := range isl.Pop {
-			x, y := ind.Ovas[0], ind.Ovas[1]
-			plt.PlotOne(x, y, "'r.', clip_on=0")
-			plt.Text(x, y, io.Sf("%d", ind.Id), "size=7, clip_on=0")
-		}
-		plt.Equal()
-		plt.SetXnticks(13)
-		plt.SetYnticks(13)
-		plt.AxisRange(-0.1, 1.1, -0.1, 1.1)
-		plt.Gll("$f_0$", "$f_1$", "")
-		plt.SaveD("/tmp/goga", "fig_sort01.eps")
 	}
 }

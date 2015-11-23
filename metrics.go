@@ -49,6 +49,20 @@ func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop
 		}
 	}
 
+	// mark repeated
+	if false {
+		for i := 0; i < ninds; i++ {
+			A := pop[i]
+			for j := i + 1; j < ninds; j++ {
+				B := pop[j]
+				dist := IndDistance(A, B, ovamin, ovamax)
+				if dist < DMIN {
+					B.Repeated = true
+				}
+			}
+		}
+	}
+
 	// compute dominance data
 	for i := 0; i < ninds; i++ {
 		A := pop[i]
