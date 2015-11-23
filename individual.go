@@ -92,15 +92,6 @@ func (o Individual) Feasible() bool {
 	return true
 }
 
-// CopyFloats returns a copy of Floats
-func (o Individual) CopyFloats() (x []float64) {
-	if len(o.Floats) > 0 {
-		x = make([]float64, len(o.Floats))
-		copy(x, o.Floats)
-	}
-	return
-}
-
 // Fight implements the competition between A and B
 func (A *Individual) Fight(B *Individual) (A_wins bool) {
 	A_dom, B_dom := IndCompare(A, B)
