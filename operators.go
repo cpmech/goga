@@ -5,10 +5,6 @@
 package goga
 
 import (
-	"math"
-	"math/rand"
-	"reflect"
-	"runtime"
 	"sort"
 
 	"github.com/cpmech/gosl/chk"
@@ -19,16 +15,13 @@ import (
 type OpsData struct {
 
 	// input
-	Pc        float64 // probability of crossover
-	Pm        float64 // probability of mutation
+	IntPc     float64 // probability of crossover for ints
+	IntPm     float64 // probability of mutation for ints
 	Ncuts     int     // number of cuts during crossover
 	Nchanges  int     // number of changes during mutation
-	MwiczB    float64 // Michalewicz' power coefficient
-	BlxAlp    float64 // BLX-α coefficient
 	Mmax      float64 // multiplier for mutation
 	Cuts      []int   // specified cuts for crossover. can be <nil>
 	OrdSti    []int   // {start, end, insertPoint}. can be <nil>
-	EnfRange  bool    // do enforce range
 	DebEtac   float64 // Deb's SBX crossover parameter
 	DebEtam   float64 // Deb's parameter-based mutation parameter
 	DEpc      float64 // differential-evolution crossover probability
@@ -54,14 +47,11 @@ type OpsData struct {
 func (o *OpsData) SetDefault() {
 
 	// input
-	o.Pc = 0.8
-	o.Pm = 0.01
+	o.IntPc = 0.8
+	o.IntPm = 0.01
 	o.Ncuts = 2
 	o.Nchanges = 1
-	o.MwiczB = 2.0
-	o.BlxAlp = 0.5
 	o.Mmax = 2
-	o.EnfRange = true
 	o.DebEtac = 1
 	o.DebEtam = 1
 	o.DEpc = 0.1
@@ -81,36 +71,20 @@ func (o *OpsData) CalcDerived(Tf int, xrange [][]float64) {
 	o.Tmax = float64(Tf)
 	o.Xrange = xrange
 	switch o.FltCxName {
-	case "mw":
-		o.CxFlt = FltCrossoverMW
 	case "db":
 		o.CxFlt = FltCrossoverDB
 	case "de":
 		o.CxFlt = FltCrossoverDE
 		o.Use4inds = true
-	case "mix":
-		o.CxFlt = FltCrossoverMix
-		o.Use4inds = true
 	}
 	switch o.FltMtName {
-	case "mw":
-		o.MtFlt = FltMutationMW
 	case "db":
 		o.MtFlt = FltMutationDB
 	}
 }
 
-// MwiczDelta computes Michalewicz' Δ function
-func (o *OpsData) MwiczDelta(t, x float64) float64 {
-	r := rand.Float64()
-	return (1.0 - math.Pow(r, math.Pow(1.0-t/o.Tmax, o.MwiczB))) * x
-}
-
 // EnforceRange makes sure x is within given range
 func (o *OpsData) EnforceRange(igene int, x float64) float64 {
-	if !o.EnfRange {
-		return x
-	}
 	if x < o.Xrange[igene][0] {
 		return o.Xrange[igene][0]
 	}
@@ -118,10 +92,6 @@ func (o *OpsData) EnforceRange(igene int, x float64) float64 {
 		return o.Xrange[igene][1]
 	}
 	return x
-}
-
-func GetFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
 // auxiliary ///////////////////////////////////////////////////////////////////////////////////////

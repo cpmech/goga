@@ -21,7 +21,7 @@ func Test_cxint01(tst *testing.T) {
 
 	var ops OpsData
 	ops.SetDefault()
-	ops.Pc = 1
+	ops.IntPc = 1
 	ops.Ncuts = 1
 
 	A := []int{1, 2}
@@ -67,7 +67,7 @@ func Test_intordcx01(tst *testing.T) {
 
 	var ops OpsData
 	ops.SetDefault()
-	ops.Pc = 1
+	ops.IntPc = 1
 
 	rnd.Init(0)
 
@@ -145,7 +145,7 @@ func Test_intordmut01(tst *testing.T) {
 
 	var ops OpsData
 	ops.SetDefault()
-	ops.Pm = 1
+	ops.IntPm = 1
 
 	rnd.Init(0)
 
@@ -175,7 +175,7 @@ func Test_binmut01(tst *testing.T) {
 
 	var ops OpsData
 	ops.SetDefault()
-	ops.Pm = 1.0
+	ops.IntPm = 1.0
 	ops.Tmax = 10
 	ops.Nchanges = 3
 

@@ -85,7 +85,6 @@ func Test_flt02(tst *testing.T) {
 			C.DoPlot = true
 		}
 	}
-	C.Ops.EnfRange = true
 	C.CalcDerived()
 	rnd.Init(C.Seed)
 
@@ -191,10 +190,6 @@ func Test_flt04(tst *testing.T) {
 	C.Tf = 100
 	C.Dtmig = 10
 	C.Ops.FltCxName = "de"
-	C.Ops.Pc = 1.0
-	C.Ops.Pm = 0.0
-	C.Ops.DEpc = 0.5
-	C.Ops.DEmult = 0.1
 	C.Ntrials = 1
 	C.RangeFlt = [][]float64{{0.1, 2.25}, {0.5, 2.5}}
 	C.PopFltGen = PopFltGen
@@ -295,12 +290,12 @@ func Test_flt04(tst *testing.T) {
 
 func Test_flt05(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt05. ZDT problems")
 
 	// configuration
 	C := NewConfParams()
-	C.Problem = 5
+	C.Problem = 4
 	C.PopFltGen = PopFltGen
 	C.Pll = true
 	C.Nisl = 4
@@ -309,11 +304,7 @@ func Test_flt05(tst *testing.T) {
 	C.Tf = 200
 	C.Dtmig = C.Tf / 10
 	C.Ops.FltCxName = "de"
-	C.Ops.Pc = 1.0
-	C.Ops.Pm = 1.0
 	C.Ops.DebEtam = float64(C.Ninds)
-	C.Ops.DEpc = 0.1
-	C.Ops.DEmult = 0.5
 	C.Verbose = chk.Verbose
 	showinipop := false
 

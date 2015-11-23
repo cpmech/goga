@@ -5,82 +5,13 @@
 package goga
 
 import (
-	"math"
 	"testing"
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
-	"github.com/cpmech/gosl/la"
-	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
-
-func Test_blx01(tst *testing.T) {
-
-	//verbose()
-	chk.PrintTitle("blx01. blended crossover")
-
-	var ops OpsData
-	ops.SetDefault()
-	ops.Pc = 1.0
-	ops.Xrange = [][]float64{{-1, 2}, {0, 3}, {1, 4}, {3, 6}, {4, 7}}
-
-	rnd.Init(0)
-
-	A := []float64{0, 1, 2, 4, 5}
-	B := []float64{1, 2, 3, 5, 6}
-	a := make([]float64, len(A))
-	b := make([]float64, len(A))
-	FltCrossoverMW(a, b, A, B, nil, nil, 0, &ops)
-	io.Pforan("A = %v\n", A)
-	io.Pforan("B = %v\n", B)
-	io.Pfcyan("a = %v\n", a)
-	io.Pfcyan("b = %v\n", b)
-}
-
-func Test_mwicz01(tst *testing.T) {
-
-	//verbose()
-	chk.PrintTitle("mwicz01. Michalewicz mutation")
-
-	var ops OpsData
-	ops.SetDefault()
-	ops.Pm = 1.0
-	ops.Tmax = 10
-
-	rnd.Init(0)
-
-	ops.Xrange = [][]float64{{0, 2}, {1, 3}, {2, 4}, {3, 5}, {4, 6}}
-	T := utl.IntRange(int(ops.Tmax))
-	for _, t := range T {
-		io.Pf("t=%v Δ=%v\n", t, ops.MwiczDelta(float64(t), 1))
-	}
-	for _, t := range T {
-		A := []float64{0, 1, 2, 3, 4}
-		FltMutationMW(A, t, &ops)
-		io.Pforan("A = %.8f\n", A)
-	}
-
-	if chk.Verbose {
-		b := 2.0
-		f := func(r, tb float64) float64 {
-			return math.Pow(r, math.Pow(1.0-tb, b))
-		}
-		np := 21
-		r, tb := utl.MeshGrid2D(0, 1, 0, 1, np, np) // tb = t/tmax
-		z := la.MatAlloc(np, np)
-		for i := 0; i < np; i++ {
-			for j := 0; j < np; j++ {
-				z[i][j] = f(r[i][j], tb[i][j])
-			}
-		}
-		plt.Surface(tb, r, z, "linewidth=0.8")
-		plt.Gll("tb", "r", "")
-		plt.SaveD("/tmp/goga", "test_mwicz01.eps")
-		//plt.Show()
-	}
-}
 
 func Test_cxdeb01(tst *testing.T) {
 
@@ -89,9 +20,7 @@ func Test_cxdeb01(tst *testing.T) {
 
 	var ops OpsData
 	ops.SetDefault()
-	ops.Pc = 1.0
 	ops.Xrange = [][]float64{{-3, 3}, {-4, 4}}
-	ops.EnfRange = true
 
 	rnd.Init(0)
 
@@ -140,9 +69,7 @@ func Test_mtdeb01(tst *testing.T) {
 
 	var ops OpsData
 	ops.SetDefault()
-	ops.Pm = 1.0
 	ops.Xrange = [][]float64{{-3, 3}, {-4, 4}}
-	ops.EnfRange = true
 
 	rnd.Init(0)
 

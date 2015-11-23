@@ -62,7 +62,7 @@ func Test_ind02(tst *testing.T) {
 
 	var ops OpsData
 	ops.SetDefault()
-	ops.Pc = 1.0
+	ops.IntPc = 1.0
 	ops.Cuts = []int{1, 2}
 	ops.Xrange = [][]float64{{0, 1}, {-20, 20}, {-300, 300}}
 

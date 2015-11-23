@@ -9,57 +9,7 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/rnd"
-	"github.com/cpmech/gosl/utl"
 )
-
-// BLX-α and Michaelicz ///////////////////////////////////////////////////////////////////////////
-
-// FltCrossoverMW implements the BLS-α crossover by Eshelman et al. (1993); see also Herrera (1998)
-//  Output:
-//   a and b -- offspring
-func FltCrossoverMW(a, b, A, B, unusedC, unusedD []float64, time int, ops *OpsData) (ends []int) {
-	chk.IntAssert(len(ops.Xrange), len(A))
-	size := len(A)
-	if !rnd.FlipCoin(ops.Pc) {
-		for i := 0; i < size; i++ {
-			a[i], b[i] = A[i], B[i]
-		}
-		return
-	}
-	α := ops.BlxAlp
-	var cmin, cmax, δ float64
-	for i := 0; i < size; i++ {
-		cmin = utl.Min(A[i], B[i])
-		cmax = utl.Max(A[i], B[i])
-		δ = cmax - cmin
-		a[i] = rnd.Float64(cmin-α*δ, cmax+α*δ)
-		b[i] = rnd.Float64(cmin-α*δ, cmax+α*δ)
-		a[i] = ops.EnforceRange(i, a[i])
-		b[i] = ops.EnforceRange(i, b[i])
-	}
-	return
-}
-
-// FltMutationMW implements the non-uniform mutation (Michaelewicz, 1992; Herrera, 1998)
-// See also Michalewicz (1996) page 103
-func FltMutationMW(A []float64, time int, ops *OpsData) {
-	chk.IntAssert(len(ops.Xrange), len(A))
-	size := len(A)
-	if !rnd.FlipCoin(ops.Pm) || size < 1 {
-		return
-	}
-	t := float64(time)
-	for i := 0; i < size; i++ {
-		xmin := ops.Xrange[i][0]
-		xmax := ops.Xrange[i][1]
-		if rnd.FlipCoin(0.5) {
-			A[i] += ops.MwiczDelta(t, xmax-A[i])
-		} else {
-			A[i] -= ops.MwiczDelta(t, A[i]-xmin)
-		}
-		A[i] = ops.EnforceRange(i, A[i])
-	}
-}
 
 // Deb and Tiwari /////////////////////////////////////////////////////////////////////////////////
 
@@ -69,18 +19,10 @@ func FltCrossoverDB(a, b, A, B, unusedC, unusedD []float64, time int, ops *OpsDa
 	// check
 	chk.IntAssert(len(ops.Xrange), len(A))
 
-	// copy only
-	size := len(A)
-	if !rnd.FlipCoin(ops.Pc) {
-		for i := 0; i < size; i++ {
-			a[i], b[i] = A[i], B[i]
-		}
-		return
-	}
-
 	// for each gene
 	ϵ := 1e-10
 	cc := 1.0 / (ops.DebEtac + 1.0)
+	size := len(A)
 	var u, α, β, βb, x1, x2, δx, xl, xu float64
 	for i := 0; i < size; i++ {
 
@@ -97,42 +39,31 @@ func FltCrossoverDB(a, b, A, B, unusedC, unusedD []float64, time int, ops *OpsDa
 			continue
 		}
 
-		// crossover
+		// random number
 		u = rnd.Float64(0, 1)
-		if ops.EnfRange {
 
-			// range
-			xl, xu = ops.Xrange[i][0], ops.Xrange[i][1]
+		// range
+		xl, xu = ops.Xrange[i][0], ops.Xrange[i][1]
 
-			// first offspring
-			β = 1.0 + 2.0*(x1-xl)/δx
-			α = 2.0 - math.Pow(β, -(ops.DebEtac+1.0))
-			if u <= 1.0/α {
-				βb = math.Pow(α*u, cc)
-			} else {
-				βb = math.Pow(1.0/(2.0-α*u), cc)
-			}
-			a[i] = ops.EnforceRange(i, 0.5*(x1+x2-βb*δx))
-
-			// second offspring
-			β = 1.0 + 2.0*(xu-x2)/δx
-			α = 2.0 - math.Pow(β, -(ops.DebEtac+1.0))
-			if u <= (1.0 / α) {
-				βb = math.Pow(α*u, cc)
-			} else {
-				βb = math.Pow(1.0/(2.0-α*u), cc)
-			}
-			b[i] = ops.EnforceRange(i, 0.5*(x1+x2+βb*δx))
-
+		// first offspring
+		β = 1.0 + 2.0*(x1-xl)/δx
+		α = 2.0 - math.Pow(β, -(ops.DebEtac+1.0))
+		if u <= 1.0/α {
+			βb = math.Pow(α*u, cc)
 		} else {
-			if u <= 0.5 {
-				βb = math.Pow(2.0*u, cc)
-			} else {
-				βb = math.Pow(0.5/(1.0-u), cc)
-			}
-			a[i] = 0.5 * (x1 + x2 - βb*δx)
-			b[i] = 0.5 * (x1 + x2 + βb*δx)
+			βb = math.Pow(1.0/(2.0-α*u), cc)
 		}
+		a[i] = ops.EnforceRange(i, 0.5*(x1+x2-βb*δx))
+
+		// second offspring
+		β = 1.0 + 2.0*(xu-x2)/δx
+		α = 2.0 - math.Pow(β, -(ops.DebEtac+1.0))
+		if u <= (1.0 / α) {
+			βb = math.Pow(α*u, cc)
+		} else {
+			βb = math.Pow(1.0/(2.0-α*u), cc)
+		}
+		b[i] = ops.EnforceRange(i, 0.5*(x1+x2+βb*δx))
 	}
 	return
 }
@@ -146,11 +77,6 @@ func FltMutationDB(A []float64, time int, ops *OpsData) {
 	// check
 	size := len(A)
 	chk.IntAssert(len(ops.Xrange), size)
-
-	// no mutation
-	if !rnd.FlipCoin(ops.Pm) || size < 1 {
-		return
-	}
 
 	// for each gene
 	pm := 1.0 / float64(size)
@@ -170,22 +96,14 @@ func FltMutationDB(A []float64, time int, ops *OpsData) {
 
 		// mutation
 		u = rnd.Float64(0, 1)
-		if ops.EnfRange {
-			δ1 = (A[i] - xl) / Δx
-			δ2 = (xu - A[i]) / Δx
-			if u <= 0.5 {
-				φ1 = math.Pow(1.0-δ1, ηm+1.0)
-				δb = math.Pow(2.0*u+(1.0-2.0*u)*φ1, cm) - 1.0
-			} else {
-				φ2 = math.Pow(1.0-δ2, ηm+1.0)
-				δb = 1.0 - math.Pow(2.0-2.0*u+(2.0*u-1.0)*φ2, cm)
-			}
+		δ1 = (A[i] - xl) / Δx
+		δ2 = (xu - A[i]) / Δx
+		if u <= 0.5 {
+			φ1 = math.Pow(1.0-δ1, ηm+1.0)
+			δb = math.Pow(2.0*u+(1.0-2.0*u)*φ1, cm) - 1.0
 		} else {
-			if u <= 0.5 {
-				δb = math.Pow(2.0*u, cm) - 1.0
-			} else {
-				δb = 1.0 - math.Pow(2.0-2.0*u, cm)
-			}
+			φ2 = math.Pow(1.0-δ2, ηm+1.0)
+			δb = 1.0 - math.Pow(2.0-2.0*u+(2.0*u-1.0)*φ2, cm)
 		}
 		A[i] = ops.EnforceRange(i, A[i]+δb*Δx)
 	}
@@ -218,13 +136,4 @@ func FltCrossoverDE(a, b, A, B, C, D []float64, time int, ops *OpsData) (ends []
 		b[s] = ops.EnforceRange(s, x)
 	}
 	return
-}
-
-// Mixed //////////////////////////////////////////////////////////////////////////////////////////
-
-func FltCrossoverMix(a, b, A, B, C, D []float64, time int, ops *OpsData) (ends []int) {
-	if rnd.FlipCoin(0.5) {
-		return FltCrossoverDB(a, b, A, B, C, D, time, ops)
-	}
-	return FltCrossoverDE(a, b, A, B, C, D, time, ops)
 }

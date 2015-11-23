@@ -24,7 +24,7 @@ import (
 //     b = * b c d e * * *
 func IntCrossover(a, b, A, B, unusedC, unusedD []int, time int, ops *OpsData) (ends []int) {
 	size := len(A)
-	if !rnd.FlipCoin(ops.Pc) || size < 2 {
+	if !rnd.FlipCoin(ops.IntPc) || size < 2 {
 		for i := 0; i < len(A); i++ {
 			a[i], b[i] = A[i], B[i]
 		}
@@ -77,7 +77,7 @@ func IntCrossover(a, b, A, B, unusedC, unusedD []int, time int, ops *OpsData) (e
 //     b = h g | c d e | a b f         get from B: | e̶ c̶ a | b d̶ | f h g
 func IntOrdCrossover(a, b, A, B, unusedC, unusedD []int, time int, ops *OpsData) (notused []int) {
 	size := len(A)
-	if !rnd.FlipCoin(ops.Pc) || size < 3 {
+	if !rnd.FlipCoin(ops.IntPc) || size < 3 {
 		for i := 0; i < len(A); i++ {
 			a[i], b[i] = A[i], B[i]
 		}
@@ -129,7 +129,7 @@ func IntOrdCrossover(a, b, A, B, unusedC, unusedD []int, time int, ops *OpsData)
 //  Output: modified individual 'A'
 func IntMutation(A []int, time int, ops *OpsData) {
 	size := len(A)
-	if !rnd.FlipCoin(ops.Pm) || size < 1 {
+	if !rnd.FlipCoin(ops.IntPm) || size < 1 {
 		return
 	}
 	pos := rnd.IntGetUniqueN(0, size, ops.Nchanges)
@@ -147,7 +147,7 @@ func IntMutation(A []int, time int, ops *OpsData) {
 //  Output: modified individual 'A'
 func IntBinMutation(A []int, time int, ops *OpsData) {
 	size := len(A)
-	if !rnd.FlipCoin(ops.Pm) || size < 1 {
+	if !rnd.FlipCoin(ops.IntPm) || size < 1 {
 		return
 	}
 	pos := rnd.IntGetUniqueN(0, size, ops.Nchanges)
@@ -186,7 +186,7 @@ func IntBinMutation(A []int, time int, ops *OpsData) {
 //                       4 = ins
 func IntOrdMutation(A []int, time int, ops *OpsData) {
 	size := len(A)
-	if !rnd.FlipCoin(ops.Pm) || size < 3 {
+	if !rnd.FlipCoin(ops.IntPm) || size < 3 {
 		if size == 2 {
 			A[0], A[1] = A[1], A[0]
 		}
