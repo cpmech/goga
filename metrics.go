@@ -25,7 +25,6 @@ func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop
 
 		// reset values
 		ind.Score = 0
-		ind.Repeated = false
 		ind.Nwins = 0
 		ind.Nlosses = 0
 		ind.FrontId = 0
@@ -49,34 +48,14 @@ func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop
 		}
 	}
 
-	// mark repeated
-	if false {
-		for i := 0; i < ninds; i++ {
-			A := pop[i]
-			for j := i + 1; j < ninds; j++ {
-				B := pop[j]
-				dist := IndDistance(A, B, ovamin, ovamax)
-				if dist < DMIN {
-					B.Repeated = true
-				}
-			}
-		}
-	}
-
 	// compute dominance data
 	for i := 0; i < ninds; i++ {
 		A := pop[i]
-		if A.Repeated {
-			continue
-		}
 		for j := i + 1; j < ninds; j++ {
 			B := pop[j]
 			dist := IndDistance(A, B, ovamin, ovamax)
 			A.DistNeigh = utl.Min(A.DistNeigh, dist)
 			B.DistNeigh = utl.Min(B.DistNeigh, dist)
-			if B.Repeated {
-				continue
-			}
 			Adom, Bdom := IndCompareDet(A, B)
 			if Adom {
 				A.WinOver[A.Nwins] = B // i dominates j
@@ -93,9 +72,6 @@ func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop
 
 	// first front
 	for _, ind := range pop {
-		if ind.Repeated {
-			continue
-		}
 		if ind.Nlosses == 0 {
 			fronts[0][fsizes[0]] = ind
 			fsizes[0]++

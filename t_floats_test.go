@@ -345,7 +345,7 @@ func Test_flt04(tst *testing.T) {
 
 func Test_flt05(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt05. ZDT problems")
 
 	// configuration

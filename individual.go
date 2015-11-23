@@ -29,7 +29,6 @@ type Individual struct {
 
 	// diversity and non-dominance sorting
 	WinOver   []*Individual // [ninds] individuals dominated by this individual
-	Repeated  bool          // repeated individual
 	Nwins     int           // number of wins => current len(WinOver)
 	Nlosses   int           // number of individuals dominating this individual
 	FrontId   int           // Pareto front id
