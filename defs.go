@@ -21,3 +21,9 @@ type CxIntFunc_t func(a, b, A, B, C, D []int, time int, dat *OpsData) (ends []in
 // mutation functions
 type MtFltFunc_t func(a []float64, time int, dat *OpsData)
 type MtIntFunc_t func(a []int, time int, dat *OpsData)
+
+// ParetoF1F0_t Pareto front solution
+type ParetoF1F0_t func(f0 float64) float64
+
+// SimpleFltFcn_t simple float problem function type
+type SimpleFltFcn_t func(f, g, h, x []float64, isl int)

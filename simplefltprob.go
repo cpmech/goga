@@ -17,12 +17,6 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-// ParetoF1F0_t Pareto front solution
-type ParetoF1F0_t func(f0 float64) float64
-
-// SimpleFltFcn_t simple float problem function type
-type SimpleFltFcn_t func(f, g, h, x []float64, isl int)
-
 // SimpleFltProb implements optimisation problems defined by:
 //  min  {f0(x), f1(x), f2(x), ...}  nf functions
 //       g0(x) ≥ 0
