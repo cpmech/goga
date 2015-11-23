@@ -10,10 +10,6 @@ import (
 	"github.com/cpmech/gosl/chk"
 )
 
-// popByDemerit implements sort.Interface for Population based on Demerit
-// Note: sorting population in increasing order of demerits: from best to worst
-type popByDemerit []*Individual
-
 // popById implements sort.Interface for Population based on Id. Note: ascending order
 type popById []*Individual
 
@@ -36,11 +32,6 @@ type popByOva1 []*Individual
 
 // popByOva2 implements sort.Interface for Population based on Ovas[2]. Note: ascending order
 type popByOva2 []*Individual
-
-// sorting functions: ByDemerit
-func (o popByDemerit) Len() int           { return len(o) }
-func (o popByDemerit) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
-func (o popByDemerit) Less(i, j int) bool { return o[i].Demerit < o[j].Demerit }
 
 // sorting functions: ById
 func (o popById) Len() int           { return len(o) }
@@ -81,11 +72,6 @@ func (o popByOva1) Less(i, j int) bool { return o[i].Ovas[1] < o[j].Ovas[1] }
 func (o popByOva2) Len() int           { return len(o) }
 func (o popByOva2) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
 func (o popByOva2) Less(i, j int) bool { return o[i].Ovas[2] < o[j].Ovas[2] }
-
-// SortByDemerit sorts population in incresing order of demerits: from best to worst
-func (o Population) SortByDemerit() {
-	sort.Sort(popByDemerit(o))
-}
 
 // SortById sorts population in incresing order of Id
 func (o Population) SortById() {

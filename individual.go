@@ -30,7 +30,6 @@ type Individual struct {
 	FrontId   int           // Pareto front id
 	DistCrowd float64       // crowd distance
 	DistNeigh float64       // minimum distance to any neighbouring individual
-	Demerit   float64       // quantity for comparing individuals. 0=good 1=bad 2=worse(oor) 3=worst(oor)
 }
 
 // NewIndividual allocates a new individual
