@@ -17,6 +17,7 @@ type OpsData struct {
 	// input
 	IntPc     float64 // probability of crossover for ints
 	IntPm     float64 // probability of mutation for ints
+	FltPm     float64 // probability of mutation for floats
 	Ncuts     int     // number of cuts during crossover
 	Nchanges  int     // number of changes during mutation
 	Mmax      float64 // multiplier for mutation
@@ -49,6 +50,7 @@ func (o *OpsData) SetDefault() {
 	// input
 	o.IntPc = 0.8
 	o.IntPm = 0.01
+	o.FltPm = 0.0
 	o.Ncuts = 2
 	o.Nchanges = 1
 	o.Mmax = 2

@@ -37,6 +37,10 @@ type Island struct {
 	// metrics
 	OvaMin []float64       // min ova
 	OvaMax []float64       // max ova
+	FltMin []float64       // min float
+	FltMax []float64       // max float
+	IntMin []int           // min int
+	IntMax []int           // max int
 	Fsizes []int           // front sizes
 	Fronts [][]*Individual // non-dominated fronts
 
@@ -90,7 +94,14 @@ func NewIsland(id int, C *ConfParams) (o *Island) {
 	o.Match.Init(np, no)
 
 	// metrics
-	o.OvaMin, o.OvaMax = make([]float64, nv), make([]float64, nv)
+	nflt := len(o.Pop[0].Floats)
+	nint := len(o.Pop[0].Ints)
+	o.OvaMin = make([]float64, nv)
+	o.OvaMax = make([]float64, nv)
+	o.FltMin = make([]float64, nflt)
+	o.FltMax = make([]float64, nflt)
+	o.IntMin = make([]int, nint)
+	o.IntMax = make([]int, nint)
 	o.Fsizes = make([]int, nn)
 	o.Fronts = make([][]*Individual, nn)
 	for i := 0; i < nn; i++ {
@@ -177,7 +188,7 @@ func (o *Island) Run(time int) {
 	}
 
 	// metrics: competitors
-	Metrics(o.OvaMin, o.OvaMax, o.Fsizes, o.Fronts, o.Competitors)
+	Metrics(o.OvaMin, o.OvaMax, o.FltMin, o.FltMax, o.IntMin, o.IntMax, o.Fsizes, o.Fronts, o.Competitors)
 
 	// tournaments
 	idxnew := 0
@@ -188,15 +199,13 @@ func (o *Island) Run(time int) {
 			A = o.Parents[k][i]
 			for j := 0; j < no; j++ {
 				a = o.Offspring[k][j]
-				o.Mdist[i][j] = IndDistance(A, a, o.OvaMin, o.OvaMax)
+				o.Mdist[i][j] = IndDistGen(A, a, o.FltMin, o.FltMax, o.IntMin, o.IntMax)
 			}
 		}
-		//la.PrintMat("mdist", o.Mdist, "%8.5f", false)
 
 		// match competitors
 		o.Match.SetCostMatrix(o.Mdist)
 		o.Match.Run()
-		//io.Pforan("links = %v\n", o.Match.Links)
 
 		// matches
 		for i := 0; i < np; i++ {

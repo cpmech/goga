@@ -164,9 +164,23 @@ func IndCompare(A, B *Individual) (A_dominates, B_dominates bool) {
 func IndDistance(A, B *Individual, omin, omax []float64) (dist float64) {
 	for i := 0; i < len(A.Ovas); i++ {
 		δ := omax[i] - omin[i] + 1e-15
-		dist += math.Pow((A.Ovas[i]-B.Ovas[i])/δ, 2.0)
+		dist += math.Abs((A.Ovas[i] - B.Ovas[i]) / δ)
 	}
-	return math.Sqrt(dist)
+	return
+}
+
+// IndDistGen computes a distance measure from individual 'A' to another individual 'B'
+// using genotype information
+func IndDistGen(A, B *Individual, fmin, fmax []float64, imin, imax []int) (dist float64) {
+	for i := 0; i < len(A.Floats); i++ {
+		δ := fmax[i] - fmin[i] + 1e-15
+		dist += math.Abs((A.Floats[i] - B.Floats[i]) / δ)
+	}
+	for i := 0; i < len(A.Ints); i++ {
+		δ := float64(imax[i]) - float64(imin[i]) + 1e-15
+		dist += math.Abs((float64(A.Ints[i]) - float64(B.Ints[i])) / δ)
+	}
+	return
 }
 
 // IndCrossover performs the crossover between chromosomes of two individuals A and B

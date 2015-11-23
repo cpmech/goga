@@ -290,20 +290,21 @@ func Test_flt04(tst *testing.T) {
 
 func Test_flt05(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("flt05. ZDT problems")
 
 	// configuration
 	C := NewConfParams()
-	C.Problem = 4
+	C.Problem = 1
 	C.PopFltGen = PopFltGen
 	C.Pll = true
-	C.Nisl = 4
-	C.Ninds = 24
+	C.Nisl = 1
+	C.Ninds = 96
 	C.Nimig = 4
 	C.Tf = 200
 	C.Dtmig = C.Tf / 10
 	C.Ops.FltCxName = "de"
+	C.Ops.FltPm = 0
 	C.Ops.DebEtam = float64(C.Ninds)
 	C.Verbose = chk.Verbose
 	showinipop := false

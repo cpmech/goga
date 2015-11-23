@@ -21,10 +21,8 @@ type Evolver struct {
 	Islands []*Island   // islands
 
 	// migration
-	OvaMin []float64     // min ova
-	OvaMax []float64     // max ova
-	Mdist  [][]float64   // match distances
-	Match  graph.Munkres // matches
+	Mdist [][]float64   // match distances
+	Match graph.Munkres // matches
 }
 
 // NewEvolverPop creates a new evolver based on given populations
@@ -55,8 +53,6 @@ func NewEvolver(C *ConfParams) (o *Evolver) {
 	}
 
 	// migration
-	o.OvaMin = make([]float64, o.C.Nova)
-	o.OvaMax = make([]float64, o.C.Nova)
 	o.Mdist = la.MatAlloc(o.C.Nimig, o.C.Nimig)
 	o.Match.Init(o.C.Nimig, o.C.Nimig)
 	return
@@ -91,7 +87,8 @@ func (o *Evolver) Run() {
 						isl.Run(time)
 						o.print_time(time, isl.Id)
 					}
-					Metrics(isl.OvaMin, isl.OvaMax, isl.Fsizes, isl.Fronts, isl.Pop)
+					Metrics(isl.OvaMin, isl.OvaMax, isl.FltMin, isl.FltMax, isl.IntMin, isl.IntMax, isl.Fsizes, isl.Fronts, isl.Pop)
+					isl.Pop.SortByRank()
 					done <- 1
 				}(o.Islands[i])
 			}
@@ -104,7 +101,8 @@ func (o *Evolver) Run() {
 					isl.Run(time)
 					o.print_time(time, isl.Id)
 				}
-				Metrics(isl.OvaMin, isl.OvaMax, isl.Fsizes, isl.Fronts, isl.Pop)
+				Metrics(isl.OvaMin, isl.OvaMax, isl.FltMin, isl.FltMax, isl.IntMin, isl.IntMax, isl.Fsizes, isl.Fronts, isl.Pop)
+				isl.Pop.SortByRank()
 			}
 		}
 
@@ -232,24 +230,6 @@ func (o *Evolver) GetNfeval() (nfeval int) {
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////
 
 func (o *Evolver) migration(t int) {
-
-	// compute metrics in each island and compute global ova range
-	for i, isl := range o.Islands {
-		isl.Pop.SortByRank()
-		if i == 0 {
-			for j := 0; j < o.C.Nova; j++ {
-				o.OvaMin[j] = isl.OvaMin[j]
-				o.OvaMax[j] = isl.OvaMax[j]
-			}
-		} else {
-			for j := 0; j < o.C.Nova; j++ {
-				o.OvaMin[j] = utl.Min(o.OvaMin[j], isl.OvaMin[j])
-				o.OvaMax[j] = utl.Max(o.OvaMax[j], isl.OvaMax[j])
-			}
-		}
-	}
-
-	// loop over pair of islands
 	l := o.C.Ninds - o.C.Nimig
 	for I := 0; I < o.C.Nisl; I++ {
 		Pbest := o.Islands[I].Pop[:o.C.Nimig]
@@ -263,7 +243,12 @@ func (o *Evolver) migration(t int) {
 				A := Pbest[i]
 				for j := 0; j < o.C.Nimig; j++ {
 					B := Qbest[j]
-					o.Mdist[i][j] = IndDistance(A, B, o.OvaMin, o.OvaMax)
+					//if true {
+					if false {
+						o.Mdist[i][j] = IndDistance(A, B, o.Islands[0].OvaMin, o.Islands[0].OvaMax)
+					} else {
+						o.Mdist[i][j] = IndDistGen(A, B, o.Islands[0].FltMin, o.Islands[0].FltMax, o.Islands[0].IntMin, o.Islands[0].IntMax)
+					}
 				}
 			}
 

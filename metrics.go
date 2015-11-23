@@ -11,10 +11,12 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop Population) (nfronts int) {
+func Metrics(ovamin, ovamax, fltmin, fltmax []float64, intmin, intmax, fsizes []int, fronts [][]*Individual, pop Population) (nfronts int) {
 
 	// reset counters and find limits
 	nv := len(ovamin)
+	nflt := len(fltmin)
+	nint := len(intmin)
 	ninds := len(pop)
 	for i, ind := range pop {
 
@@ -45,6 +47,30 @@ func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop
 				ovamax[j] = utl.Max(ovamax[j], x)
 			}
 		}
+
+		// floats range
+		for j := 0; j < nflt; j++ {
+			x := ind.Floats[j]
+			if i == 0 {
+				fltmin[j] = x
+				fltmax[j] = x
+			} else {
+				fltmin[j] = utl.Min(fltmin[j], x)
+				fltmax[j] = utl.Max(fltmax[j], x)
+			}
+		}
+
+		// ints range
+		for j := 0; j < nint; j++ {
+			x := ind.Ints[j]
+			if i == 0 {
+				intmin[j] = x
+				intmax[j] = x
+			} else {
+				intmin[j] = utl.Imin(intmin[j], x)
+				intmax[j] = utl.Imax(intmax[j], x)
+			}
+		}
 	}
 
 	// compute neighbour distances and dominance data
@@ -52,7 +78,7 @@ func Metrics(ovamin, ovamax []float64, fsizes []int, fronts [][]*Individual, pop
 		A := pop[i]
 		for j := i + 1; j < ninds; j++ {
 			B := pop[j]
-			dist := IndDistance(A, B, ovamin, ovamax)
+			dist := IndDistGen(A, B, fltmin, fltmax, intmin, intmax)
 			A.DistNeigh = utl.Min(A.DistNeigh, dist)
 			B.DistNeigh = utl.Min(B.DistNeigh, dist)
 			Adom, Bdom := IndCompare(A, B)

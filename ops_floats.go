@@ -78,6 +78,11 @@ func FltMutationDB(A []float64, time int, ops *OpsData) {
 	size := len(A)
 	chk.IntAssert(len(ops.Xrange), size)
 
+	// skip mutation
+	if !rnd.FlipCoin(ops.FltPm) {
+		return
+	}
+
 	// for each gene
 	pm := 1.0 / float64(size)
 	ηm := ops.DebEtam
