@@ -17,19 +17,22 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-// SimpleFltProb implements optimisation problems defined by:
-//  min  {f0(x), f1(x), f2(x), ...}  nf functions
-//       g0(x) ≥ 0
-//       g1(x) ≥ 0
-//  s.t. ....  ≥ 0  ng inequalities
-//       h0(x) = 0
-//       h1(x) = 0
-//       ....  = 0  nh equalities
-type SimpleFltProb struct {
+// Optimiser solves optimisation problems defined by:
+//
+//    min  {f0(x), f1(x), f2(x), ...}  nf functions
+//     x   g0(x) ≥ 0
+//         g1(x) ≥ 0
+//    s.t. ....  ≥ 0  ng inequalities
+//         h0(x) = 0
+//         h1(x) = 0
+//         ....  = 0  nh equalities
+//
+type Optimiser struct {
 
 	// data
-	Fcn SimpleFltFcn_t // function evaluator
-	C   *ConfParams    // configuration parameters
+	P MinProblem_t // minimisation problem
+	C *ConfParams  // configuration parameters
+	E *Evolver     // evolver
 
 	// sandbox
 	nf int         // number of functions
@@ -38,9 +41,6 @@ type SimpleFltProb struct {
 	ff [][]float64 // [nisl][nf] functions
 	gg [][]float64 // [nisl][ng] inequalities
 	hh [][]float64 // [nisl][nh] equalities
-
-	// evolver
-	Evo *Evolver // evolver
 
 	// auxiliary
 	NumfmtX string // number format for x
@@ -89,11 +89,11 @@ type SimpleFltProb struct {
 }
 
 // Init initialises simple flot problem structure
-func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *SimpleFltProb) {
+func NewSimpleFltProb(fcn MinProblem_t, nf, ng, nh int, C *ConfParams) (o *Optimiser) {
 
 	// data
-	o = new(SimpleFltProb)
-	o.Fcn = fcn
+	o = new(Optimiser)
+	o.P = fcn
 	o.C = C
 	o.C.Nova = nf
 	o.C.Noor = ng + nh
@@ -106,7 +106,7 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 
 	// objective function
 	o.C.OvaOor = func(isl int, ind *Individual) {
-		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], ind.Floats, isl)
+		o.P(o.ff[isl], o.gg[isl], o.hh[isl], ind.Floats, isl)
 		for i, f := range o.ff[isl] {
 			ind.Ovas[i] = f
 		}
@@ -122,7 +122,7 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 
 	// evolver
 	t0 := time.Now()
-	o.Evo = NewEvolver(o.C)
+	o.E = NewEvolver(o.C)
 	o.CPUini = time.Now().Sub(t0)
 
 	// auxiliary
@@ -141,7 +141,7 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 
 	// plotting
 	if o.C.DoPlot {
-		o.PopsIni = o.Evo.GetPopulations()
+		o.PopsIni = o.E.GetPopulations()
 		o.PltDirout = "/tmp/goga"
 		o.PltNpts = 41
 		o.PltLwg = 1.5
@@ -153,7 +153,7 @@ func NewSimpleFltProb(fcn SimpleFltFcn_t, nf, ng, nh int, C *ConfParams) (o *Sim
 }
 
 // Run runs optimisations
-func (o *SimpleFltProb) Run(verbose bool) {
+func (o *Optimiser) Run(verbose bool) {
 
 	// benchmark
 	if verbose {
@@ -177,26 +177,26 @@ func (o *SimpleFltProb) Run(verbose bool) {
 
 		// reset populations
 		if itrial > 0 {
-			for _, isl := range o.Evo.Islands {
+			for _, isl := range o.E.Islands {
 				isl.Reset()
 			}
 		}
 
 		// run evolution
 		trial_time0 := time.Now()
-		o.Evo.Run()
+		o.E.Run()
 		o.CPUtime[itrial] = time.Now().Sub(trial_time0)
 
 		// number of function evaluations
 		if itrial == 0 {
-			o.Nfeval = o.Evo.GetNfeval()
+			o.Nfeval = o.E.GetNfeval()
 		}
 
 		// results
 		isl := 0
 		//xbest := o.Evo.Best.GetFloats() // TODO
-		xbest := o.Evo.Islands[0].Pop[0].Floats // TODO
-		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], xbest, isl)
+		xbest := o.E.Islands[0].Pop[0].Floats // TODO
+		o.P(o.ff[isl], o.gg[isl], o.hh[isl], xbest, isl)
 
 		// check if best is unfeasible
 		unfeasible := false
@@ -242,13 +242,13 @@ func (o *SimpleFltProb) Run(verbose bool) {
 		// best populations
 		if o.C.DoPlot {
 			if o.Nfeasible == 1 {
-				o.PopsBest = o.Evo.GetPopulations()
+				o.PopsBest = o.E.GetPopulations()
 			} else if o.Nfeasible > 1 {
 				fcur := utl.DblCopy(o.ff[0])
-				o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[o.Nfeasible-1], isl)
+				o.P(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[o.Nfeasible-1], isl)
 				cur_dom, _ := utl.DblsParetoMin(fcur, o.ff[0])
 				if cur_dom {
-					o.PopsBest = o.Evo.GetPopulations()
+					o.PopsBest = o.E.GetPopulations()
 				}
 			}
 		}
@@ -261,7 +261,7 @@ func (o *SimpleFltProb) Run(verbose bool) {
 }
 
 // Stat prints statistical analysis
-func (o *SimpleFltProb) Stat(idxF, hlen int, Fref float64) (fmin, fave, fmax, fdev float64) {
+func (o *Optimiser) Stat(idxF, hlen int, Fref float64) (fmin, fave, fmax, fdev float64) {
 	fmin, fave, fmax, fdev = 1e30, 1e30, 1e30, 1e30
 	if o.Nfeasible < 1 {
 		return
@@ -269,7 +269,7 @@ func (o *SimpleFltProb) Stat(idxF, hlen int, Fref float64) (fmin, fave, fmax, fd
 	F := make([]float64, o.Nfeasible)
 	isl := 0
 	for i := 0; i < o.Nfeasible; i++ {
-		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[i], isl)
+		o.P(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[i], isl)
 		F[i] = o.ff[isl][idxF]
 	}
 	if o.Nfeasible < 2 {
@@ -286,7 +286,7 @@ func (o *SimpleFltProb) Stat(idxF, hlen int, Fref float64) (fmin, fave, fmax, fd
 }
 
 // StatPareto print stat about Pareto front
-func (o *SimpleFltProb) StatPareto() {
+func (o *Optimiser) StatPareto() {
 
 	// distance error
 	var emin, eave, emax, edev float64
@@ -314,7 +314,7 @@ func (o *SimpleFltProb) StatPareto() {
 }
 
 // TexReport generates LaTeX report
-func (o *SimpleFltProb) TexReport(dirout, fnkey, problem string, prob int) {
+func (o *Optimiser) TexReport(dirout, fnkey, problem string, prob int) {
 
 	// input parameters
 	var buf bytes.Buffer
@@ -383,7 +383,7 @@ test & $N_{eval}$ & $t_{min}$ & $t_{ave}$ & $t_{max}$ & $t_{sum}$ \\ \midrule
 }
 
 // Plot plots contour
-func (o *SimpleFltProb) Plot(fnkey string) {
+func (o *Optimiser) Plot(fnkey string) {
 
 	// check
 	if !o.C.DoPlot {
@@ -418,7 +418,7 @@ func (o *SimpleFltProb) Plot(fnkey string) {
 	for i := 0; i < o.PltNpts; i++ {
 		for j := 0; j < o.PltNpts; j++ {
 			x[0], x[1] = X[i][j], Y[i][j]
-			o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], x, isl)
+			o.P(o.ff[isl], o.gg[isl], o.hh[isl], x, isl)
 			Zf[i][j] = o.ff[0][o.PltIdxF]
 			for k, g := range o.gg[0] {
 				Zg[k][i][j] = g
@@ -506,7 +506,7 @@ func (o *SimpleFltProb) Plot(fnkey string) {
 	plt.SaveD(o.PltDirout, fnkey+".eps")
 }
 
-func (o *SimpleFltProb) find_best() (x, f, g, h []float64) {
+func (o *Optimiser) find_best() (x, f, g, h []float64) {
 	chk.IntAssertLessThan(0, o.Nfeasible) // 0 < nfeasible
 	nx := len(o.C.RangeFlt)
 	x = make([]float64, nx)
@@ -515,9 +515,9 @@ func (o *SimpleFltProb) find_best() (x, f, g, h []float64) {
 	h = make([]float64, o.nh)
 	copy(x, o.Xbest[0])
 	isl := 0
-	o.Fcn(f, g, h, x, isl)
+	o.P(f, g, h, x, isl)
 	for i := 1; i < o.Nfeasible; i++ {
-		o.Fcn(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[i], isl)
+		o.P(o.ff[isl], o.gg[isl], o.hh[isl], o.Xbest[i], isl)
 		_, other_dom := utl.DblsParetoMin(f, o.ff[0])
 		if other_dom {
 			copy(x, o.Xbest[i])
@@ -530,7 +530,7 @@ func (o *SimpleFltProb) find_best() (x, f, g, h []float64) {
 }
 
 // pareto_bins sets bins touching solution front
-func (o *SimpleFltProb) pareto_bins(I, J int) {
+func (o *Optimiser) pareto_bins(I, J int) {
 	o.ParBins.Init(o.ParFmin, []float64{o.ParFmax[I] * 1.1, o.ParFmax[J] * 1.1}, o.ParNdiv)
 	o.ParSelB = make(map[int]bool)
 	select_bin := func(pt []float64) {
@@ -570,13 +570,13 @@ func (o *SimpleFltProb) pareto_bins(I, J int) {
 }
 
 // pareto_front computes stat about Pareto front
-func (o *SimpleFltProb) pareto_front(idxf0, idxf1 int) (disterr, spread float64) {
+func (o *Optimiser) pareto_front(idxf0, idxf1 int) (disterr, spread float64) {
 
 	// Pareto-front
-	feasible := o.Evo.GetFeasible()
-	ovas, _ := o.Evo.GetResults(feasible)
-	ovafront, _ := o.Evo.GetParetoFront(feasible, ovas, nil)
-	f0front, f1front := o.Evo.GetFrontOvas(idxf0, idxf1, ovafront)
+	feasible := o.E.GetFeasible()
+	ovas, _ := o.E.GetResults(feasible)
+	ovafront, _ := o.E.GetParetoFront(feasible, ovas, nil)
+	f0front, f1front := o.E.GetFrontOvas(idxf0, idxf1, ovafront)
 	f0fin := utl.DblsGetColumn(idxf0, ovas)
 	f1fin := utl.DblsGetColumn(idxf1, ovas)
 

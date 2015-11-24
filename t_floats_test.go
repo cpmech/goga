@@ -153,10 +153,10 @@ func Test_flt03(tst *testing.T) {
 	// plot
 	if chk.Verbose {
 		plt.SetForEps(0.8, 300)
-		xmin := sim.Evo.Islands[0].Pop[0].Floats[0]
+		xmin := sim.E.Islands[0].Pop[0].Floats[0]
 		xmax := xmin
 		for k := 0; k < C.Nisl; k++ {
-			for _, ind := range sim.Evo.Islands[k].Pop {
+			for _, ind := range sim.E.Islands[k].Pop {
 				x := ind.Floats[0]
 				y := yfcn(x)
 				xmin = utl.Min(xmin, x)
@@ -261,10 +261,10 @@ func Test_flt04(tst *testing.T) {
 		sim.TexReport("/tmp/goga", "tables_flt04", "Truss", 1)
 
 		// Pareto-front
-		feasible := sim.Evo.GetFeasible()
-		ovas, _ := sim.Evo.GetResults(feasible)
-		ovafront, _ := sim.Evo.GetParetoFront(feasible, ovas, nil)
-		xova, yova := sim.Evo.GetFrontOvas(0, 1, ovafront)
+		feasible := sim.E.GetFeasible()
+		ovas, _ := sim.E.GetResults(feasible)
+		ovafront, _ := sim.E.GetParetoFront(feasible, ovas, nil)
+		xova, yova := sim.E.GetFrontOvas(0, 1, ovafront)
 
 		// plot
 		plt.SetForEps(0.75, 355)
@@ -316,7 +316,7 @@ func Test_flt05(tst *testing.T) {
 	var nf int // number of objective functions
 	var ng int // number of inequalities
 	var nh int // number of equalities
-	var fcn SimpleFltFcn_t
+	var fcn MinProblem_t
 	numfmtx := "%9.5f"
 
 	// problems
@@ -494,8 +494,8 @@ func Test_flt05(tst *testing.T) {
 	sim.NumfmtX = numfmtx
 
 	// initial populations
-	feas0 := sim.Evo.GetFeasible()
-	ovas0, _ := sim.Evo.GetResults(feas0)
+	feas0 := sim.E.GetFeasible()
+	ovas0, _ := sim.E.GetResults(feas0)
 
 	// run
 	sim.Run(false)
@@ -523,7 +523,7 @@ func Test_flt05(tst *testing.T) {
 		}
 
 		// Pareto front
-		sim.Evo.PlotPareto(0, 1)
+		sim.E.PlotPareto(0, 1)
 
 		// save
 		plt.Gll("$f_0$", "$f_1$", "")

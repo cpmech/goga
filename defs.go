@@ -25,5 +25,5 @@ type MtIntFunc_t func(a []int, time int, dat *OpsData)
 // ParetoF1F0_t Pareto front solution
 type ParetoF1F0_t func(f0 float64) float64
 
-// SimpleFltFcn_t simple float problem function type
-type SimpleFltFcn_t func(f, g, h, x []float64, isl int)
+// MinProblem_t defines the minimisation problem. See Optimiser
+type MinProblem_t func(f, g, h, x []float64, isl int)
