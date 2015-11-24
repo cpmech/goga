@@ -2,7 +2,6 @@
 
 FILES="*.go"
 TEST="flt05"
-#TEST="sort01"
 
 refresh(){
     echo

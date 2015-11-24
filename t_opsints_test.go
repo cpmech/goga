@@ -14,7 +14,7 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-func Test_cxint01(tst *testing.T) {
+func Test_cxints01(tst *testing.T) {
 
 	//verbose()
 	chk.PrintTitle("cxint01")

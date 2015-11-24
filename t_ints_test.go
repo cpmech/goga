@@ -5,7 +5,6 @@
 package goga
 
 import (
-	"bytes"
 	"math"
 	"sort"
 	"testing"
@@ -32,10 +31,7 @@ func Test_int01(tst *testing.T) {
 	C.Noor = 0
 	C.Nisl = 1
 	C.Ninds = 20
-	C.RegTol = 0
 	C.NumInts = 20
-	//C.GAtype = "crowd"
-	C.NparGrp = 2
 	C.Tf = 50
 	C.Verbose = chk.Verbose
 	C.CalcDerived()
@@ -47,7 +43,7 @@ func Test_int01(tst *testing.T) {
 	C.PopIntGen = PopBinGen
 
 	// objective function
-	C.OvaOor = func(ind *Individual, idIsland, time int, report *bytes.Buffer) {
+	C.OvaOor = func(isl int, ind *Individual) {
 		score := 0.0
 		count := 0
 		for _, val := range ind.Ints {
@@ -68,8 +64,8 @@ func Test_int01(tst *testing.T) {
 	evo.Run()
 
 	// results
-	ideal := 1.0 / (1.0 + float64(C.NumInts))
-	io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.Ovas[0], ideal)
+	//ideal := 1.0 / (1.0 + float64(C.NumInts))
+	//io.PfGreen("\nBest = %v\nBestOV = %v  (ideal=%v)\n", evo.Best.Ints, evo.Best.Ovas[0], ideal)
 }
 
 func Test_int02(tst *testing.T) {
@@ -91,14 +87,7 @@ func Test_int02(tst *testing.T) {
 	C.Noor = 0
 	C.Nisl = 4
 	C.Ninds = 24
-	C.RegTol = 0.3
-	C.RegPct = 0.2
-	//C.Dtmig = 30
-	C.GAtype = "crowd"
-	C.ParetoPhi = 0.1
-	C.Elite = false
-	C.DoPlot = false //chk.Verbose
-	//C.Rws = true
+	C.DoPlot = chk.Verbose
 	C.SetIntOrd(nstations)
 	C.CalcDerived()
 
@@ -106,7 +95,7 @@ func Test_int02(tst *testing.T) {
 	rnd.Init(0)
 
 	// objective value function
-	C.OvaOor = func(ind *Individual, idIsland, t int, report *bytes.Buffer) {
+	C.OvaOor = func(isl int, ind *Individual) {
 		L := locations
 		ids := ind.Ints
 		//io.Pforan("ids = %v\n", ids)
@@ -133,8 +122,7 @@ func Test_int02(tst *testing.T) {
 		for i, x := range []int{0, 4, 8, 11, 14, 17, 18, 15, 12, 19, 13, 16, 10, 6, 1, 3, 7, 9, 5, 2} {
 			pop[0].Ints[i] = x
 		}
-		evo.Islands[0].CalcOvs(pop, 0)
-		evo.Islands[0].CalcDemeritsCdistAndSort(pop)
+		evo.Islands[0].CalcOvs()
 	}
 
 	// check initial population
@@ -152,8 +140,8 @@ func Test_int02(tst *testing.T) {
 	// run
 	evo.Run()
 	//io.Pf("%v\n", pop.Output(nil, false))
-	io.Pfgreen("best = %v\n", evo.Best.Ints)
-	io.Pfgreen("best OVA = %v  (871.117353844847)\n\n", evo.Best.Ovas[0])
+	//io.Pfgreen("best = %v\n", evo.Best.Ints)
+	//io.Pfgreen("best OVA = %v  (871.117353844847)\n\n", evo.Best.Ovas[0])
 
 	// best = [18 17 14 11 8 4 0 2 5 9 12 7 6 1 3 10 16 13 19 15]
 	// best OVA = 953.4643474956656
@@ -182,11 +170,13 @@ func Test_int02(tst *testing.T) {
 	if C.DoPlot {
 		plt.SetForEps(1, 300)
 		X, Y := make([]float64, nstations), make([]float64, nstations)
-		for k, id := range evo.Best.Ints {
-			X[k], Y[k] = locations[id][0], locations[id][1]
-			plt.PlotOne(X[k], Y[k], "'r.', ms=5, clip_on=0, zorder=20")
-			plt.Text(X[k], Y[k], io.Sf("%d", id), "fontsize=7, clip_on=0, zorder=30")
-		}
+		/*
+			for k, id := range evo.Best.Ints {
+				X[k], Y[k] = locations[id][0], locations[id][1]
+				plt.PlotOne(X[k], Y[k], "'r.', ms=5, clip_on=0, zorder=20")
+				plt.Text(X[k], Y[k], io.Sf("%d", id), "fontsize=7, clip_on=0, zorder=30")
+			}
+		*/
 		plt.Plot(X, Y, "'b-', clip_on=0, zorder=10")
 		plt.Plot([]float64{X[0], X[nstations-1]}, []float64{Y[0], Y[nstations-1]}, "'b-', clip_on=0, zorder=10")
 		plt.Equal()
