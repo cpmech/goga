@@ -4,6 +4,11 @@
 
 package goga
 
+// constants
+const (
+	INF = 1e+30 // infinite distance
+)
+
 // Objectives_t defines the template for the objective functions and constraints.
 // ind is set with ovas and oors
 type Objectives_t func(isl int, ind *Individual)

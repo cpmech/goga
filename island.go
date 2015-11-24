@@ -12,11 +12,6 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-// constants
-const (
-	INF = 1e+30 // infinite distance
-)
-
 // Island holds one population and performs the reproduction operation
 type Island struct {
 
