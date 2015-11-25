@@ -102,14 +102,41 @@ func (o *Optimiser) PlotContour(idxF, iFlt, jFlt int, prms ContourParams) {
 	}
 }
 
-func (o *Optimiser) PlotSolutions(iFlt, jFlt int, fmt plt.Fmt, empty bool) {
+func (o *Optimiser) PlotSolutions(iFlt, jFlt int, fmt plt.Fmt, emptyMarker bool) {
 	x, y := make([]float64, o.NsolTot), make([]float64, o.NsolTot)
 	for i, sol := range o.Solutions {
 		x[i], y[i] = sol.Flt[iFlt], sol.Flt[jFlt]
 	}
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
-	if empty {
-		args += ",markerfacecolor='none'"
+	if emptyMarker {
+		args += io.Sf(",markeredgecolor='%s',markerfacecolor='none'", fmt.C)
 	}
 	plt.Plot(x, y, args)
+}
+
+func (o *Optimiser) PlotSolOvas(iFlt, jOva int, ovaMult float64, fmt plt.Fmt, emptyMarker bool) {
+	x, y := make([]float64, o.NsolTot), make([]float64, o.NsolTot)
+	for i, sol := range o.Solutions {
+		x[i], y[i] = sol.Flt[iFlt], sol.Ova[jOva]*ovaMult
+	}
+	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
+	if emptyMarker {
+		args += io.Sf(",markeredgecolor='%s',markerfacecolor='none'", fmt.C)
+	}
+	plt.Plot(x, y, args)
+}
+
+func (o *Optimiser) PlotOvas(iOva, jOva int, fmt plt.Fmt, emptyMarker bool) {
+	x, y := make([]float64, o.NsolTot), make([]float64, o.NsolTot)
+	for i, sol := range o.Solutions {
+		x[i], y[i] = sol.Ova[iOva], sol.Ova[jOva]
+	}
+	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
+	if emptyMarker {
+		args += io.Sf(",markeredgecolor='%s',markerfacecolor='none'", fmt.C)
+	}
+	plt.Plot(x, y, args)
+}
+
+func (o *Optimiser) PlotParetoFront(iOva, jOva int, fmt plt.Fmt, emptyMarker bool) {
 }

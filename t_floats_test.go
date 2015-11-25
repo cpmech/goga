@@ -20,8 +20,7 @@ func Test_flt01(tst *testing.T) {
 	var opt Optimiser
 	opt.Default()
 	opt.Ngrp = 1
-	opt.Nsol = 12
-	opt.DEpc = 1
+	opt.Nsol = 20
 	opt.FltMin = []float64{-2, -2}
 	opt.FltMax = []float64{2, 2}
 	nf, ng, nh := 1, 5, 0
@@ -36,13 +35,13 @@ func Test_flt01(tst *testing.T) {
 		g[4] = x[1]                  // ≥ 0
 	}, nf, ng, nh)
 
-	// plot
+	// run and plot
 	test_contour_plot_run_plot("fig_flt01", &opt)
 }
 
 func Test_flt02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt02. circle with equality constraint")
 
 	// geometry
@@ -71,6 +70,64 @@ func Test_flt02(tst *testing.T) {
 		h[0] = x[0] + x[1] + xe - y0
 	}, nf, ng, nh)
 
-	// plot
+	// run and plot
 	test_contour_plot_run_plot("fig_flt02", &opt)
+}
+
+func Test_flt03(tst *testing.T) {
+
+	//verbose()
+	chk.PrintTitle("flt03. sin⁶(5 π x) multimodal")
+
+	// parameters
+	var opt Optimiser
+	opt.Default()
+	opt.Ngrp = 1
+	opt.Nsol = 20
+	opt.FltMin = []float64{0}
+	opt.FltMax = []float64{1}
+	nf, ng, nh := 1, 0, 0
+
+	// initialise optimiser
+	yfcn := func(x float64) float64 { return math.Pow(math.Sin(5.0*math.Pi*x), 6.0) }
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, grp int) {
+		f[0] = -yfcn(x[0])
+	}, nf, ng, nh)
+
+	// run and plot
+	test_ova_plot_run_plot("fig_flt03", &opt, 201, -1, yfcn)
+}
+
+func Test_flt04(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("flt04. two-bar truss. Pareto-optimal")
+
+	// data. from Coelho (2007) page 19
+	ρ := 0.283 // lb/in³
+	H := 100.0 // in
+	P := 1e4   // lb
+	E := 3e7   // lb/in²
+	σ0 := 2e4  // lb/in²
+
+	// parameters
+	var opt Optimiser
+	opt.Default()
+	opt.Ngrp = 1
+	opt.Nsol = 30
+	opt.FltMin = []float64{0.1, 0.5}
+	opt.FltMax = []float64{2.25, 2.5}
+	nf, ng, nh := 2, 2, 0
+
+	// initialise optimiser
+	TSQ2 := 2.0 * math.Sqrt2
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, grp int) {
+		f[0] = 2.0 * ρ * H * x[1] * math.Sqrt(1.0+x[0]*x[0])
+		f[1] = P * H * math.Pow(1.0+x[0]*x[0], 1.5) * math.Sqrt(1.0+math.Pow(x[0], 4.0)) / (TSQ2 * E * x[0] * x[0] * x[1])
+		g[0] = σ0 - P*(1.0+x[0])*math.Sqrt(1.0+x[0]*x[0])/(TSQ2*x[0]*x[1])
+		g[1] = σ0 - P*(1.0-x[0])*math.Sqrt(1.0+x[0]*x[0])/(TSQ2*x[0]*x[1])
+	}, nf, ng, nh)
+
+	// run and plot
+	test_pareto_plot_run_plot("fig_flt04", &opt, false)
 }

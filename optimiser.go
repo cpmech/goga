@@ -145,7 +145,7 @@ func (o *Optimiser) Solve() {
 	for time := 1; time <= o.Tf; time++ {
 		o.evolve()
 		if o.Verbose {
-			io.PfWhite("%30.15f\r", time)
+			io.PfWhite("time = %10d\r", time)
 		}
 	}
 	if o.Verbose {
