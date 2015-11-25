@@ -33,21 +33,22 @@ type Solution struct {
 }
 
 // NewSolution allocates new Solution
-func NewSolution(id int, prms *Parameters) (o *Solution) {
+func NewSolution(id, nsol int, prms *Parameters) (o *Solution) {
 	o = new(Solution)
 	o.Id = id
 	o.Ova = make([]float64, prms.Nova)
 	o.Oor = make([]float64, prms.Noor)
 	o.Flt = make([]float64, prms.Nflt)
 	o.Int = make([]int, prms.Nint)
+	o.WinOver = make([]*Solution, nsol)
 	return o
 }
 
 // NewSolutions allocates a number of Solutions
-func NewSolutions(prms *Parameters, n int) (res []*Solution) {
-	res = make([]*Solution, n)
-	for i := 0; i < n; i++ {
-		res[i] = NewSolution(i, prms)
+func NewSolutions(nsol int, prms *Parameters) (res []*Solution) {
+	res = make([]*Solution, nsol)
+	for i := 0; i < nsol; i++ {
+		res[i] = NewSolution(i, nsol, prms)
 	}
 	return
 }

@@ -19,6 +19,9 @@ func Test_flt01(tst *testing.T) {
 	// parameters
 	var opt Optimiser
 	opt.Default()
+	opt.Ngrp = 1
+	opt.Nsol = 12
+	opt.DEpc = 1
 	opt.FltMin = []float64{-2, -2}
 	opt.FltMax = []float64{2, 2}
 	nf, ng, nh := 1, 5, 0
