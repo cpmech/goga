@@ -9,12 +9,44 @@ import (
 	"testing"
 
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/plt"
 )
 
 func Test_flt01(tst *testing.T) {
 
-	//verbose()
-	chk.PrintTitle("flt01. quadratic function with inequalities")
+	verbose()
+	chk.PrintTitle("flt01. sin⁶(5 π x) multimodal")
+
+	// parameters
+	var opt Optimiser
+	opt.Default()
+	opt.Ngrp = 1
+	opt.Nsol = 20
+	opt.FltMin = []float64{0}
+	opt.FltMax = []float64{1}
+	nf, ng, nh := 1, 0, 0
+
+	// initialise optimiser
+	yfcn := func(x float64) float64 { return math.Pow(math.Sin(5.0*math.Pi*x), 6.0) }
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, grp int) {
+		f[0] = -yfcn(x[0])
+	}, nf, ng, nh)
+
+	// initial solutions
+	sols0 := opt.GetSolutionsCopy()
+
+	// solve
+	opt.Solve()
+
+	// plot
+	PlotFltOva("fig_flt03", &opt, sols0, 0, 0, 201, -1, yfcn, nil, false)
+}
+
+func Test_flt02(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("flt02. quadratic function with inequalities")
 
 	// parameters
 	var opt Optimiser
@@ -35,14 +67,20 @@ func Test_flt01(tst *testing.T) {
 		g[4] = x[1]                  // ≥ 0
 	}, nf, ng, nh)
 
-	// run and plot
-	test_contour_plot_run_plot("fig_flt01", &opt)
+	// initial solutions
+	sols0 := opt.GetSolutionsCopy()
+
+	// solve
+	opt.Solve()
+
+	// plot
+	PlotFltFltContour("fig_flt01", &opt, sols0, 0, 1, 0, nil, false)
 }
 
-func Test_flt02(tst *testing.T) {
+func Test_flt03(tst *testing.T) {
 
-	//verbose()
-	chk.PrintTitle("flt02. circle with equality constraint")
+	verbose()
+	chk.PrintTitle("flt03. circle with equality constraint")
 
 	// geometry
 	xe := 1.0                      // centre of circle
@@ -70,32 +108,14 @@ func Test_flt02(tst *testing.T) {
 		h[0] = x[0] + x[1] + xe - y0
 	}, nf, ng, nh)
 
-	// run and plot
-	test_contour_plot_run_plot("fig_flt02", &opt)
-}
+	// initial solutions
+	sols0 := opt.GetSolutionsCopy()
 
-func Test_flt03(tst *testing.T) {
+	// solve
+	opt.Solve()
 
-	//verbose()
-	chk.PrintTitle("flt03. sin⁶(5 π x) multimodal")
-
-	// parameters
-	var opt Optimiser
-	opt.Default()
-	opt.Ngrp = 1
-	opt.Nsol = 20
-	opt.FltMin = []float64{0}
-	opt.FltMax = []float64{1}
-	nf, ng, nh := 1, 0, 0
-
-	// initialise optimiser
-	yfcn := func(x float64) float64 { return math.Pow(math.Sin(5.0*math.Pi*x), 6.0) }
-	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, grp int) {
-		f[0] = -yfcn(x[0])
-	}, nf, ng, nh)
-
-	// run and plot
-	test_ova_plot_run_plot("fig_flt03", &opt, 201, -1, yfcn)
+	// plot
+	PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, nil, false)
 }
 
 func Test_flt04(tst *testing.T) {
@@ -128,6 +148,14 @@ func Test_flt04(tst *testing.T) {
 		g[1] = σ0 - P*(1.0-x[0])*math.Sqrt(1.0+x[0]*x[0])/(TSQ2*x[0]*x[1])
 	}, nf, ng, nh)
 
-	// run and plot
-	test_pareto_plot_run_plot("fig_flt04", &opt, false)
+	// solve
+	opt.Solve()
+
+	// reference data
+	_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
+
+	// plot
+	PlotOvaOvaPareto("fig_flt04", &opt, nil, 0, 1, func() {
+		plt.Plot(dat["f1"], dat["f2"], "'b*',ms=3,markeredgecolor='b'")
+	}, nil, false)
 }

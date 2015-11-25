@@ -140,6 +140,15 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	}
 }
 
+// GetSolutionsCopy returns a copy of Solutions
+func (o *Optimiser) GetSolutionsCopy() (res []*Solution) {
+	res = NewSolutions(len(o.Solutions), &o.Parameters)
+	for i, sol := range o.Solutions {
+		sol.CopyInto(res[i])
+	}
+	return
+}
+
 // Solve solves optimisation problem
 func (o *Optimiser) Solve() {
 	for time := 1; time <= o.Tf; time++ {

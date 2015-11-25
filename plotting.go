@@ -5,6 +5,7 @@
 package goga
 
 import (
+	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/utl"
@@ -24,7 +25,7 @@ type ContourParams struct {
 }
 
 // Plot plots contour
-func (o *Optimiser) PlotContour(idxF, iFlt, jFlt int, prms ContourParams) {
+func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 
 	// fix parameters
 	if prms.Npts < 3 {
@@ -66,7 +67,7 @@ func (o *Optimiser) PlotContour(idxF, iFlt, jFlt int, prms ContourParams) {
 		for j := 0; j < prms.Npts; j++ {
 			x[0], x[1] = X[i][j], Y[i][j]
 			o.MinProb(o.F[grp], o.G[grp], o.H[grp], x, nil, grp)
-			Zf[i][j] = o.F[grp][idxF]
+			Zf[i][j] = o.F[grp][iOva]
 			for k, g := range o.G[grp] {
 				Zg[k][i][j] = g
 			}
@@ -102,9 +103,9 @@ func (o *Optimiser) PlotContour(idxF, iFlt, jFlt int, prms ContourParams) {
 	}
 }
 
-func (o *Optimiser) PlotSolutions(iFlt, jFlt int, fmt plt.Fmt, emptyMarker bool) {
+func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
 	x, y := make([]float64, o.NsolTot), make([]float64, o.NsolTot)
-	for i, sol := range o.Solutions {
+	for i, sol := range sols {
 		x[i], y[i] = sol.Flt[iFlt], sol.Flt[jFlt]
 	}
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
@@ -114,10 +115,10 @@ func (o *Optimiser) PlotSolutions(iFlt, jFlt int, fmt plt.Fmt, emptyMarker bool)
 	plt.Plot(x, y, args)
 }
 
-func (o *Optimiser) PlotSolOvas(iFlt, jOva int, ovaMult float64, fmt plt.Fmt, emptyMarker bool) {
+func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult float64, fmt plt.Fmt, emptyMarker bool) {
 	x, y := make([]float64, o.NsolTot), make([]float64, o.NsolTot)
-	for i, sol := range o.Solutions {
-		x[i], y[i] = sol.Flt[iFlt], sol.Ova[jOva]*ovaMult
+	for i, sol := range sols {
+		x[i], y[i] = sol.Flt[iFlt], sol.Ova[iOva]*ovaMult
 	}
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
 	if emptyMarker {
@@ -126,9 +127,9 @@ func (o *Optimiser) PlotSolOvas(iFlt, jOva int, ovaMult float64, fmt plt.Fmt, em
 	plt.Plot(x, y, args)
 }
 
-func (o *Optimiser) PlotOvas(iOva, jOva int, fmt plt.Fmt, emptyMarker bool) {
+func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
 	x, y := make([]float64, o.NsolTot), make([]float64, o.NsolTot)
-	for i, sol := range o.Solutions {
+	for i, sol := range sols {
 		x[i], y[i] = sol.Ova[iOva], sol.Ova[jOva]
 	}
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
@@ -138,5 +139,96 @@ func (o *Optimiser) PlotOvas(iOva, jOva int, fmt plt.Fmt, emptyMarker bool) {
 	plt.Plot(x, y, args)
 }
 
-func (o *Optimiser) PlotParetoFront(iOva, jOva int, fmt plt.Fmt, emptyMarker bool) {
+func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
+	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
+	if emptyMarker {
+		args += io.Sf(",markeredgecolor='%s',markerfacecolor='none'", fmt.C)
+	}
+	first := true
+	for _, sol := range sols {
+		if sol.FrontId == 0 {
+			if first {
+				plt.PlotOne(sol.Ova[iOva], sol.Ova[jOva], args+",label='final'")
+				first = false
+			} else {
+				plt.PlotOne(sol.Ova[iOva], sol.Ova[jOva], args)
+			}
+		}
+	}
+}
+
+func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np int, ovaMult float64, fcn func(x float64) float64, extra func(), equalAxes bool) {
+	if !chk.Verbose {
+		return
+	}
+	plt.SetForEps(0.8, 455)
+	if fcn != nil {
+		X := utl.LinSpace(opt.FltMin[0], opt.FltMax[0], np)
+		Y := make([]float64, np)
+		for i := 0; i < np; i++ {
+			Y[i] = fcn(X[i])
+		}
+		plt.Plot(X, Y, "'b-'")
+	}
+	if sols0 != nil {
+		opt.PlotAddFltOva(iFlt, iOva, sols0, ovaMult, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
+	}
+	SortByOva(opt.Solutions, iOva)
+	best := opt.Solutions[iOva]
+	opt.PlotAddFltOva(iFlt, iOva, opt.Solutions, ovaMult, plt.Fmt{L: "final", M: "o", C: "r", Ls: "none", Ms: 6}, true)
+	plt.PlotOne(best.Flt[iFlt], best.Ova[iOva]*ovaMult, "'g*', markeredgecolor='g', label='best', clip_on=0, zorder=20")
+	if extra != nil {
+		extra()
+	}
+	if equalAxes {
+		plt.Equal()
+	}
+	plt.Gll(io.Sf("$x_%d$", iFlt), io.Sf("$f_%d$", iOva), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
+	plt.SaveD("/tmp/goga", fnkey+".eps")
+}
+
+func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jFlt, iOva int, extra func(), equalAxes bool) {
+	if !chk.Verbose {
+		return
+	}
+	plt.SetForEps(0.8, 455)
+	opt.PlotContour(iFlt, jFlt, iOva, ContourParams{})
+	if sols0 != nil {
+		opt.PlotAddFltFlt(iFlt, jFlt, sols0, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
+	}
+	SortByOva(opt.Solutions, iOva)
+	best := opt.Solutions[iOva]
+	opt.PlotAddFltFlt(iFlt, jFlt, opt.Solutions, plt.Fmt{L: "final", M: "o", C: "k", Ls: "none", Ms: 6}, true)
+	plt.PlotOne(best.Flt[iFlt], best.Flt[jFlt], "'g*', markeredgecolor='g', label='best', clip_on=0, zorder=20")
+	if extra != nil {
+		extra()
+	}
+	if equalAxes {
+		plt.Equal()
+	}
+	plt.Gll(io.Sf("$x_%d$", iFlt), io.Sf("$x_%d$", jFlt), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
+	plt.SaveD("/tmp/goga", fnkey+".eps")
+}
+
+func PlotOvaOvaPareto(fnkey string, opt *Optimiser, sols0 []*Solution, iOva, jOva int, extra func(), lims []float64, equalAxes bool) {
+	if !chk.Verbose {
+		return
+	}
+	plt.SetForEps(0.8, 455)
+	if sols0 != nil {
+		opt.PlotAddOvaOva(iOva, jOva, sols0, plt.Fmt{L: "initial", M: "+", C: "g", Ls: "none", Ms: 4}, false)
+	}
+	opt.PlotAddOvaOva(iOva, jOva, opt.Solutions, plt.Fmt{L: "final", M: ".", C: "r", Ls: "none", Ms: 5}, false)
+	opt.PlotAddParetoFront(iOva, jOva, opt.Solutions, plt.Fmt{M: "o", C: "k", Ls: "none", Ms: 6}, true)
+	if extra != nil {
+		extra()
+	}
+	if lims != nil {
+		plt.AxisLims(lims)
+	}
+	if equalAxes {
+		plt.Equal()
+	}
+	plt.Gll(io.Sf("$f_%d$", iOva), io.Sf("$f_%d$", jOva), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
+	plt.SaveD("/tmp/goga", fnkey+".eps")
 }
