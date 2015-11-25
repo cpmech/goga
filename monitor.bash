@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FILES="*.go"
-TEST="flt02"
+TEST="flt01"
 
 refresh(){
     echo

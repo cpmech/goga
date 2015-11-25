@@ -74,9 +74,6 @@ type Optimiser struct {
 //  Optional: fcn XOR obj, nf, ng, nh
 func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, nh int) {
 
-	// calc derived parameters
-	o.CalcDerived()
-
 	// generic or minimisation problem
 	if obj != nil {
 		o.ObjFunc = obj
@@ -105,6 +102,9 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 		o.Nova = o.Nf
 		o.Noor = o.Ng + o.Nh
 	}
+
+	// calc derived parameters
+	o.CalcDerived()
 
 	// trial solutions
 	o.InitGroup(0, nil)

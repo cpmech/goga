@@ -9,9 +9,33 @@ import (
 	"testing"
 
 	"github.com/cpmech/gosl/chk"
-	"github.com/cpmech/gosl/io"
-	"github.com/cpmech/gosl/plt"
 )
+
+func Test_flt01(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("flt01. quadratic function with inequalities")
+
+	// parameters
+	var opt Optimiser
+	opt.Default()
+	opt.FltMin = []float64{-2, -2}
+	opt.FltMax = []float64{2, 2}
+	nf, ng, nh := 1, 5, 0
+
+	// initialise optimiser
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, grp int) {
+		f[0] = x[0]*x[0]/2.0 + x[1]*x[1] - x[0]*x[1] - 2.0*x[0] - 6.0*x[1]
+		g[0] = 2.0 - x[0] - x[1]     // ≥ 0
+		g[1] = 2.0 + x[0] - 2.0*x[1] // ≥ 0
+		g[2] = 3.0 - 2.0*x[0] - x[1] // ≥ 0
+		g[3] = x[0]                  // ≥ 0
+		g[4] = x[1]                  // ≥ 0
+	}, nf, ng, nh)
+
+	// plot
+	test_contour_plot_run_plot("fig_flt01", &opt)
+}
 
 func Test_flt02(tst *testing.T) {
 
@@ -27,15 +51,11 @@ func Test_flt02(tst *testing.T) {
 
 	// parameters
 	var opt Optimiser
+	//opt.Default()
 	opt.Read("ga-data.json")
-	//opt.Tf = 2
-	//opt.DtMig = 1
 	opt.Verbose = false
-	//opt.Seed = 1234
 	opt.FltMin = []float64{-1, -1}
 	opt.FltMax = []float64{3, 3}
-	//opt.IntMin = []int{1, 1}
-	//opt.IntMax = []int{10, 10}
 	nf, ng, nh := 1, 0, 1
 
 	// initialise optimiser
@@ -47,23 +67,7 @@ func Test_flt02(tst *testing.T) {
 		f[0] = math.Sqrt(res) - 1.0
 		h[0] = x[0] + x[1] + xe - y0
 	}, nf, ng, nh)
-	io.Pf("%+v\n", opt)
 
-	// plot initial solution
-	if chk.Verbose {
-		plt.SetForEps(0.8, 455)
-		opt.PlotContour(0, 0, 1, ContourParams{})
-		opt.PlotSolutions(0, 1, plt.Fmt{M: "o", C: "k", Ls: "none", Ms: 3}, false)
-	}
-
-	// solve
-	opt.Solve()
-
-	// plot final solution
-	if chk.Verbose {
-		opt.PlotSolutions(0, 1, plt.Fmt{M: "o", C: "k", Ls: "none", Ms: 6}, true)
-		plt.Equal()
-		plt.Gll("$x_0$", "$x_1$", "")
-		plt.SaveD("/tmp/goga", "fig_flt02.eps")
-	}
+	// plot
+	test_contour_plot_run_plot("fig_flt02", &opt)
 }
