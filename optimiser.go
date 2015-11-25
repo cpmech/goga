@@ -43,9 +43,10 @@ type Optimiser struct {
 	MtInt      MtInt_t   // mutation function for ints
 
 	// essential
-	Solutions []*Solution // current solutions
-	Indices   []int       // indices of individuals in Solutions
-	Pairs     [][]int     // randomly selected pairs from Indices
+	Competitors []*Solution // current and future solutions
+	Solutions   []*Solution // current solutions => view to Competitors
+	Indices     []int       // indices of individuals in Solutions
+	Pairs       [][]int     // randomly selected pairs from Indices
 
 	// metrics
 	Omin   []float64     // current min ova
@@ -112,13 +113,14 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	// essential
 	npairs := o.NsolTot / 2
 	ncomps := o.NsolTot * 2
-	o.Solutions = NewSolutions(ncomps, &o.Parameters)
+	o.Competitors = NewSolutions(ncomps, &o.Parameters)
+	o.Solutions = o.Competitors[:o.NsolTot]
 	o.Indices = utl.IntRange(o.NsolTot)
 	o.Pairs = utl.IntsAlloc(npairs, 2)
 
-	// create solutions
+	// generate trial solutions
 	grp := 0
-	gen(o.Solutions[:o.NsolTot], &o.Parameters)
+	gen(o.Solutions, &o.Parameters)
 	for i := 0; i < o.NsolTot; i++ {
 		o.ObjFunc(o.Solutions[i], grp)
 		o.Nfeval++
@@ -143,7 +145,7 @@ func (o *Optimiser) Solve() {
 	for time := 1; time <= o.Tf; time++ {
 		o.evolve()
 		if o.Verbose {
-			//io.Pfgrey(" %d", time)
+			io.PfWhite("%30.15f\r", time)
 		}
 	}
 	if o.Verbose {
@@ -162,12 +164,12 @@ func (o *Optimiser) evolve() {
 	var a, b, A, B, C, D *Solution
 	for k, pair := range o.Pairs {
 		l := (k + 1) % len(o.Pairs)
-		A = o.Solutions[pair[0]]
-		B = o.Solutions[pair[1]]
-		C = o.Solutions[o.Pairs[l][0]]
-		D = o.Solutions[o.Pairs[l][1]]
-		a = o.Solutions[idx]
-		b = o.Solutions[idx+1]
+		A = o.Competitors[pair[0]]
+		B = o.Competitors[pair[1]]
+		C = o.Competitors[o.Pairs[l][0]]
+		D = o.Competitors[o.Pairs[l][1]]
+		a = o.Competitors[idx]
+		b = o.Competitors[idx+1]
 		idx += 2
 		o.crossover(a, b, A, B, C, D)
 		o.mutation(a)
@@ -178,15 +180,15 @@ func (o *Optimiser) evolve() {
 	}
 
 	// metrics
-	o.metrics(o.Solutions)
+	o.metrics(o.Competitors)
 
 	// tournaments
 	idx = o.NsolTot
 	for _, pair := range o.Pairs {
-		A = o.Solutions[pair[0]]
-		B = o.Solutions[pair[1]]
-		a = o.Solutions[idx]
-		b = o.Solutions[idx+1]
+		A = o.Competitors[pair[0]]
+		B = o.Competitors[pair[1]]
+		a = o.Competitors[idx]
+		b = o.Competitors[idx+1]
 		idx += 2
 		dAa := A.Distance(a, o.Fmin, o.Fmax, o.Imin, o.Imax)
 		dAb := A.Distance(b, o.Fmin, o.Fmax, o.Imin, o.Imax)

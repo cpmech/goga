@@ -13,7 +13,7 @@ import (
 
 func Test_flt01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt01. quadratic function with inequalities")
 
 	// parameters
