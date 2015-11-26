@@ -148,7 +148,7 @@ func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt plt
 	for _, sol := range sols {
 		if sol.FrontId == 0 {
 			if first {
-				plt.PlotOne(sol.Ova[iOva], sol.Ova[jOva], args+",label='final'")
+				plt.PlotOne(sol.Ova[iOva], sol.Ova[jOva], args+",label='front'")
 				first = false
 			} else {
 				plt.PlotOne(sol.Ova[iOva], sol.Ova[jOva], args)

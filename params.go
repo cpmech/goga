@@ -32,6 +32,7 @@ type Parameters struct {
 	LatinDup   int     // Latin Hypercube duplicates number
 	EpsMinProb float64 // minimum value for 'h' constraints
 	Verbose    bool    // show messages
+	Problem    int     // problem index
 
 	// crossover and mutation
 	DEpc    float64 // differential evolution pc
@@ -75,6 +76,7 @@ func (o *Parameters) Default() {
 	o.LatinDup = 5
 	o.EpsMinProb = 0.1
 	o.Verbose = true
+	o.Problem = 1
 
 	// crossover and mutation
 	o.DEpc = 0.1
