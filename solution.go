@@ -128,11 +128,13 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 			return false
 		}
 	}
-	if A.DistNeigh > B.DistNeigh {
-		return true
-	}
-	if B.DistNeigh > A.DistNeigh {
-		return true
+	if false {
+		if A.DistNeigh > B.DistNeigh {
+			return true
+		}
+		if B.DistNeigh > A.DistNeigh {
+			return true
+		}
 	}
 	if rnd.FlipCoin(0.5) {
 		return true

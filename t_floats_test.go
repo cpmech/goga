@@ -41,7 +41,7 @@ func Test_flt01(tst *testing.T) {
 	opt.Solve()
 
 	// plot
-	PlotFltOva("fig_flt03", &opt, sols0, 0, 0, 201, -1, yfcn, nil, false)
+	PlotFltOva("fig_flt01", &opt, sols0, 0, 0, 201, -1, yfcn, nil, false)
 }
 
 func Test_flt02(tst *testing.T) {
@@ -75,7 +75,7 @@ func Test_flt02(tst *testing.T) {
 	opt.Solve()
 
 	// plot
-	PlotFltFltContour("fig_flt01", &opt, sols0, 0, 1, 0, nil, false)
+	PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, nil, false)
 }
 
 func Test_flt03(tst *testing.T) {
@@ -116,7 +116,7 @@ func Test_flt03(tst *testing.T) {
 	opt.Solve()
 
 	// plot
-	PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, nil, false)
+	PlotFltFltContour("fig_flt03", &opt, sols0, 0, 1, 0, nil, false)
 }
 
 func Test_flt04(tst *testing.T) {
@@ -136,6 +136,11 @@ func Test_flt04(tst *testing.T) {
 	opt.Default()
 	opt.Ngrp = 1
 	opt.Nsol = 30
+	opt.Tf = 100
+	//opt.DEpc = 0.5
+	//opt.DEmult = 0.1
+	opt.PmFlt = 0.0
+	opt.LatinDup = 5
 	opt.FltMin = []float64{0.1, 0.5}
 	opt.FltMax = []float64{2.25, 2.5}
 	nf, ng, nh := 2, 2, 0
@@ -149,6 +154,9 @@ func Test_flt04(tst *testing.T) {
 		g[1] = σ0 - P*(1.0-x[0])*math.Sqrt(1.0+x[0]*x[0])/(TSQ2*x[0]*x[1])
 	}, nf, ng, nh)
 
+	// initial solutions
+	sols0 := opt.GetSolutionsCopy()
+
 	// solve
 	opt.Solve()
 
@@ -156,9 +164,9 @@ func Test_flt04(tst *testing.T) {
 	_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
 
 	// plot
-	PlotOvaOvaPareto("fig_flt04", &opt, nil, 0, 1, func() {
+	PlotOvaOvaPareto("fig_flt04", &opt, sols0, 0, 1, func() {
 		plt.Plot(dat["f1"], dat["f2"], "'b*',ms=3,markeredgecolor='b'")
-	}, nil, false)
+	}, []float64{0, 250, 0, 0.15}, false)
 }
 
 func Test_flt05(tst *testing.T) {
@@ -169,8 +177,9 @@ func Test_flt05(tst *testing.T) {
 	// parameters
 	var opt Optimiser
 	opt.Default()
-	opt.Ngrp = 1
+	opt.Ngrp = 10
 	opt.Nsol = 30
+	opt.Tf = 200
 	opt.Problem = 1
 
 	// problem variables
@@ -354,6 +363,9 @@ func Test_flt05(tst *testing.T) {
 
 	// initialise optimiser
 	opt.Init(GenTrialSolutions, nil, fcn, nf, ng, nh)
+
+	// initial solutions
+	//sols0 := opt.GetSolutionsCopy()
 
 	// solve
 	opt.Solve()

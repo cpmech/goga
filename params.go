@@ -23,7 +23,6 @@ type Parameters struct {
 
 	// time
 	Tf    int // final time
-	DtMig int // delta time for migration
 	DtOut int // delta time for output
 
 	// options
@@ -67,20 +66,19 @@ func (o *Parameters) Default() {
 
 	// time
 	o.Tf = 100
-	o.DtMig = o.Tf / 10
 	o.DtOut = o.Tf / 5
 
 	// options
 	o.Pll = true
 	o.Seed = 0
-	o.LatinDup = 5
+	o.LatinDup = 2
 	o.EpsMinProb = 0.1
 	o.Verbose = true
 	o.Problem = 1
 
 	// crossover and mutation
-	o.DEpc = 0.1
-	o.DEmult = 0.5
+	o.DEpc = 0.5
+	o.DEmult = 0.1
 	o.DebEtac = 1
 	o.DebEtam = 1
 	o.PmFlt = 0.0

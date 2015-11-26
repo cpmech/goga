@@ -6,6 +6,7 @@ package goga
 
 import (
 	"math"
+	"time"
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
@@ -119,11 +120,33 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	o.Pairs = utl.IntsAlloc(npairs, 2)
 
 	// generate trial solutions
-	grp := 0
-	gen(o.Solutions, &o.Parameters)
-	for i := 0; i < o.NsolTot; i++ {
-		o.ObjFunc(o.Solutions[i], grp)
-		o.Nfeval++
+	t0 := time.Now()
+	if o.Pll {
+		done := make(chan int, o.Ngrp)
+		for grp := 0; grp < o.Ngrp; grp++ {
+			start, endp1 := grp*o.Nsol, (grp+1)*o.Nsol
+			go func(igrp int) {
+				gen(o.Solutions[start:endp1], &o.Parameters)
+				for i := start; i < endp1; i++ {
+					o.ObjFunc(o.Solutions[i], igrp)
+				}
+				done <- 1
+			}(grp)
+		}
+		for grp := 0; grp < o.Ngrp; grp++ {
+			<-done
+		}
+		o.Nfeval = o.NsolTot
+	} else {
+		gen(o.Solutions, &o.Parameters)
+		grp := 0
+		for i := 0; i < o.NsolTot; i++ {
+			o.ObjFunc(o.Solutions[i], grp)
+			o.Nfeval++
+		}
+	}
+	if o.Verbose {
+		io.Pf(". . . trial solutions generated in %v . . .\n", time.Now().Sub(t0))
 	}
 
 	// metrics
@@ -168,7 +191,6 @@ func (o *Optimiser) evolve() {
 	rnd.IntGetGroups(o.Pairs, o.Indices)
 
 	// create new solutions
-	grp := 0
 	idx := o.NsolTot
 	var a, b, A, B, C, D *Solution
 	for k, pair := range o.Pairs {
@@ -183,9 +205,29 @@ func (o *Optimiser) evolve() {
 		o.crossover(a, b, A, B, C, D)
 		o.mutation(a)
 		o.mutation(b)
-		o.ObjFunc(a, grp)
-		o.ObjFunc(b, grp)
-		o.Nfeval += 2
+		if !o.Pll {
+			o.ObjFunc(a, 0)
+			o.ObjFunc(b, 0)
+			o.Nfeval += 2
+		}
+	}
+
+	// compute objective values
+	if o.Pll {
+		done := make(chan int, o.Ngrp)
+		for grp := 0; grp < o.Ngrp; grp++ {
+			start, endp1 := grp*o.Nsol, (grp+1)*o.Nsol
+			go func(igrp int) {
+				for i := start; i < endp1; i++ {
+					o.ObjFunc(o.Competitors[o.NsolTot+i], igrp)
+				}
+				done <- 1
+			}(grp)
+		}
+		for grp := 0; grp < o.Ngrp; grp++ {
+			<-done
+		}
+		o.Nfeval += o.NsolTot
 	}
 
 	// metrics
