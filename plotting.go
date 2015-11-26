@@ -104,7 +104,7 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 }
 
 func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
-	x, y := make([]float64, o.NsolTot), make([]float64, o.NsolTot)
+	x, y := make([]float64, o.Nsol), make([]float64, o.Nsol)
 	for i, sol := range sols {
 		x[i], y[i] = sol.Flt[iFlt], sol.Flt[jFlt]
 	}
@@ -116,7 +116,7 @@ func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, fmt plt.Fmt,
 }
 
 func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult float64, fmt plt.Fmt, emptyMarker bool) {
-	x, y := make([]float64, o.NsolTot), make([]float64, o.NsolTot)
+	x, y := make([]float64, o.Nsol), make([]float64, o.Nsol)
 	for i, sol := range sols {
 		x[i], y[i] = sol.Flt[iFlt], sol.Ova[iOva]*ovaMult
 	}
@@ -128,7 +128,7 @@ func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult floa
 }
 
 func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
-	x, y := make([]float64, o.NsolTot), make([]float64, o.NsolTot)
+	x, y := make([]float64, o.Nsol), make([]float64, o.Nsol)
 	for i, sol := range sols {
 		x[i], y[i] = sol.Ova[iOva], sol.Ova[jOva]
 	}

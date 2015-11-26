@@ -18,8 +18,8 @@ type Parameters struct {
 	// sizes
 	Nova int // number of objective values
 	Noor int // number of out-of-range values
-	Nsol int // number of solutions in group
-	Ngrp int // number of groups of solutions
+	Nsol int // total number of solutions
+	Ncpu int // number of cpus
 
 	// time
 	Tf    int // final time
@@ -48,11 +48,10 @@ type Parameters struct {
 	IntMax []int     // maximum int allowed
 
 	// derived
-	NsolTot int       // total number of solutions = Nsol * Ngrp
-	Nflt    int       // number of floats
-	Nint    int       // number of integers
-	DelFlt  []float64 // max float range
-	DelInt  []int     // max int range
+	Nflt   int       // number of floats
+	Nint   int       // number of integers
+	DelFlt []float64 // max float range
+	DelInt []int     // max int range
 }
 
 // Default sets default parameters
@@ -61,8 +60,8 @@ func (o *Parameters) Default() {
 	// sizes
 	o.Nova = 1
 	o.Noor = 0
-	o.Nsol = 24
-	o.Ngrp = 4
+	o.Nsol = 40
+	o.Ncpu = 4
 
 	// time
 	o.Tf = 100
@@ -106,18 +105,18 @@ func (o *Parameters) CalcDerived() {
 	if o.Nova < 1 {
 		chk.Panic("number of objective values (nova) must be greater than 0")
 	}
-	if o.Ngrp < 1 {
-		chk.Panic("at least one group must be defined. Ngrp=%d is incorrect", o.Ngrp)
-	}
 	if o.Nsol < 2 || (o.Nsol%2 != 0) {
 		chk.Panic("number of solutions must be even and greater than 2. Nsol = %d is invalid", o.Nsol)
 	}
+	if o.Ncpu < 2 {
+		o.Ncpu = 1
+		o.Pll = false
+	}
+	if o.Ncpu > o.Nsol/2 {
+		chk.Panic("number of CPU must be smaller than or equal to half the number of solutions. Ncpu=%d > Nsol/2=%d", o.Ncpu, o.Nsol/2)
+	}
 
 	// derived
-	o.NsolTot = o.Nsol * o.Ngrp
-	if o.NsolTot%2 != 0 {
-		chk.Panic("total number of solutions must be even. NsolTot = Nsol * Ngrp = %d is invalid", o.NsolTot)
-	}
 	o.Nflt = len(o.FltMin)
 	o.Nint = len(o.IntMin)
 	if o.Nflt == 0 && o.Nint == 0 {

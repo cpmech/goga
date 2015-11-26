@@ -22,15 +22,15 @@ func Test_flt01(tst *testing.T) {
 	// parameters
 	var opt Optimiser
 	opt.Default()
-	opt.Ngrp = 1
 	opt.Nsol = 20
+	opt.Ncpu = 3
 	opt.FltMin = []float64{0}
 	opt.FltMax = []float64{1}
 	nf, ng, nh := 1, 0, 0
 
 	// initialise optimiser
 	yfcn := func(x float64) float64 { return math.Pow(math.Sin(5.0*math.Pi*x), 6.0) }
-	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, grp int) {
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, cpu int) {
 		f[0] = -yfcn(x[0])
 	}, nf, ng, nh)
 
@@ -52,14 +52,14 @@ func Test_flt02(tst *testing.T) {
 	// parameters
 	var opt Optimiser
 	opt.Default()
-	opt.Ngrp = 1
 	opt.Nsol = 20
+	opt.Ncpu = 2
 	opt.FltMin = []float64{-2, -2}
 	opt.FltMax = []float64{2, 2}
 	nf, ng, nh := 1, 5, 0
 
 	// initialise optimiser
-	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, grp int) {
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, cpu int) {
 		f[0] = x[0]*x[0]/2.0 + x[1]*x[1] - x[0]*x[1] - 2.0*x[0] - 6.0*x[1]
 		g[0] = 2.0 - x[0] - x[1]     // ≥ 0
 		g[1] = 2.0 + x[0] - 2.0*x[1] // ≥ 0
@@ -92,15 +92,16 @@ func Test_flt03(tst *testing.T) {
 
 	// parameters
 	var opt Optimiser
-	//opt.Default()
-	opt.Read("ga-data.json")
+	opt.Default()
+	opt.Nsol = 20
+	opt.Ncpu = 2
 	opt.Verbose = false
 	opt.FltMin = []float64{-1, -1}
 	opt.FltMax = []float64{3, 3}
 	nf, ng, nh := 1, 0, 1
 
 	// initialise optimiser
-	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, grp int) {
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, cpu int) {
 		res := 0.0
 		for i := 0; i < len(x); i++ {
 			res += (x[i] - xc[i]) * (x[i] - xc[i])
@@ -134,11 +135,9 @@ func Test_flt04(tst *testing.T) {
 	// parameters
 	var opt Optimiser
 	opt.Default()
-	opt.Ngrp = 1
 	opt.Nsol = 30
+	opt.Ncpu = 1
 	opt.Tf = 100
-	//opt.DEpc = 0.5
-	//opt.DEmult = 0.1
 	opt.PmFlt = 0.0
 	opt.LatinDup = 5
 	opt.FltMin = []float64{0.1, 0.5}
@@ -147,7 +146,7 @@ func Test_flt04(tst *testing.T) {
 
 	// initialise optimiser
 	TSQ2 := 2.0 * math.Sqrt2
-	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, grp int) {
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, cpu int) {
 		f[0] = 2.0 * ρ * H * x[1] * math.Sqrt(1.0+x[0]*x[0])
 		f[1] = P * H * math.Pow(1.0+x[0]*x[0], 1.5) * math.Sqrt(1.0+math.Pow(x[0], 4.0)) / (TSQ2 * E * x[0] * x[0] * x[1])
 		g[0] = σ0 - P*(1.0+x[0])*math.Sqrt(1.0+x[0]*x[0])/(TSQ2*x[0]*x[1])
@@ -177,10 +176,12 @@ func Test_flt05(tst *testing.T) {
 	// parameters
 	var opt Optimiser
 	opt.Default()
-	opt.Ngrp = 10
-	opt.Nsol = 30
-	opt.Tf = 200
-	opt.Problem = 1
+	opt.Nsol = 300
+	opt.Ncpu = 1 //opt.Nsol / 10
+	//opt.DEpc = 0.1
+	//opt.DEmult = 0.5
+	opt.Tf = 500
+	opt.Problem = 4
 
 	// problem variables
 	var pname string
@@ -203,7 +204,7 @@ func Test_flt05(tst *testing.T) {
 			opt.FltMax[i] = 1
 		}
 		nf, ng, nh = 2, 0, 0
-		fcn = func(f, g, h, x []float64, ξ []int, grp int) {
+		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			f[0] = x[0]
 			sum := 0.0
 			for i := 1; i < n; i++ {
@@ -221,6 +222,7 @@ func Test_flt05(tst *testing.T) {
 
 	// ZDT2, Deb 2001, p356
 	case 2:
+		opt.Tf = 500
 		pname = "ZDT2"
 		n := 30
 		opt.FltMin = make([]float64, n)
@@ -230,7 +232,7 @@ func Test_flt05(tst *testing.T) {
 			opt.FltMax[i] = 1
 		}
 		nf, ng, nh = 2, 0, 0
-		fcn = func(f, g, h, x []float64, ξ []int, grp int) {
+		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			f[0] = x[0]
 			sum := 0.0
 			for i := 1; i < n; i++ {
@@ -257,7 +259,7 @@ func Test_flt05(tst *testing.T) {
 			opt.FltMax[i] = 1
 		}
 		nf, ng, nh = 2, 0, 0
-		fcn = func(f, g, h, x []float64, ξ []int, grp int) {
+		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			f[0] = x[0]
 			sum := 0.0
 			for i := 1; i < n; i++ {
@@ -279,12 +281,14 @@ func Test_flt05(tst *testing.T) {
 		n := 10
 		opt.FltMin = make([]float64, n)
 		opt.FltMax = make([]float64, n)
-		for i := 0; i < n; i++ {
+		opt.FltMin[0] = 0
+		opt.FltMax[0] = 1
+		for i := 1; i < n; i++ {
 			opt.FltMin[i] = -5
 			opt.FltMax[i] = 5
 		}
 		nf, ng, nh = 2, 0, 0
-		fcn = func(f, g, h, x []float64, ξ []int, grp int) {
+		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			f[0] = x[0]
 			sum := 0.0
 			w := 4.0 * math.Pi
@@ -313,7 +317,7 @@ func Test_flt05(tst *testing.T) {
 		}
 		nf, ng, nh = 2, 0, 0
 		coef := 1.0 / math.Sqrt(float64(n))
-		fcn = func(f, g, h, x []float64, ξ []int, grp int) {
+		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			sum0, sum1 := 0.0, 0.0
 			for i := 0; i < n; i++ {
 				sum0 += math.Pow(x[i]-coef, 2.0)
@@ -339,7 +343,7 @@ func Test_flt05(tst *testing.T) {
 			opt.FltMax[i] = 1
 		}
 		nf, ng, nh = 2, 0, 0
-		fcn = func(f, g, h, x []float64, ξ []int, grp int) {
+		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			w := 6.0 * math.Pi
 			f[0] = 1.0 - math.Exp(-4.0*x[0])*math.Pow(math.Sin(w*x[0]), 6.0)
 			sum := 0.0

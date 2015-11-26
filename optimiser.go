@@ -93,9 +93,9 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 				sol.Oor[o.Ng+i] = utl.GtePenalty(o.EpsMinProb, h, 1) // ϵ ≥ |h[i]|
 			}
 		}
-		o.F = la.MatAlloc(o.Ngrp, o.Nf)
-		o.G = la.MatAlloc(o.Ngrp, o.Ng)
-		o.H = la.MatAlloc(o.Ngrp, o.Nh)
+		o.F = la.MatAlloc(o.Ncpu, o.Nf)
+		o.G = la.MatAlloc(o.Ncpu, o.Ng)
+		o.H = la.MatAlloc(o.Ncpu, o.Nh)
 		o.Nova = o.Nf
 		o.Noor = o.Ng + o.Nh
 	}
@@ -112,36 +112,35 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	}
 
 	// essential
-	npairs := o.NsolTot / 2
-	ncomps := o.NsolTot * 2
+	npairs := o.Nsol / 2
+	ncomps := o.Nsol * 2
 	o.Competitors = NewSolutions(ncomps, &o.Parameters)
-	o.Solutions = o.Competitors[:o.NsolTot]
-	o.Indices = utl.IntRange(o.NsolTot)
+	o.Solutions = o.Competitors[:o.Nsol]
+	o.Indices = utl.IntRange(o.Nsol)
 	o.Pairs = utl.IntsAlloc(npairs, 2)
 
 	// generate trial solutions
 	t0 := time.Now()
 	if o.Pll {
-		done := make(chan int, o.Ngrp)
-		for grp := 0; grp < o.Ngrp; grp++ {
-			start, endp1 := grp*o.Nsol, (grp+1)*o.Nsol
-			go func(igrp int) {
+		done := make(chan int, o.Ncpu)
+		for cpu := 0; cpu < o.Ncpu; cpu++ {
+			start, endp1 := (cpu*o.Nsol)/o.Ncpu, ((cpu+1)*o.Nsol)/o.Ncpu
+			go func(icpu int) {
 				gen(o.Solutions[start:endp1], &o.Parameters)
 				for i := start; i < endp1; i++ {
-					o.ObjFunc(o.Solutions[i], igrp)
+					o.ObjFunc(o.Solutions[i], icpu)
 				}
 				done <- 1
-			}(grp)
+			}(cpu)
 		}
-		for grp := 0; grp < o.Ngrp; grp++ {
+		for cpu := 0; cpu < o.Ncpu; cpu++ {
 			<-done
 		}
-		o.Nfeval = o.NsolTot
+		o.Nfeval = o.Nsol
 	} else {
 		gen(o.Solutions, &o.Parameters)
-		grp := 0
-		for i := 0; i < o.NsolTot; i++ {
-			o.ObjFunc(o.Solutions[i], grp)
+		for i := 0; i < o.Nsol; i++ {
+			o.ObjFunc(o.Solutions[i], 0)
 			o.Nfeval++
 		}
 	}
@@ -191,7 +190,7 @@ func (o *Optimiser) evolve() {
 	rnd.IntGetGroups(o.Pairs, o.Indices)
 
 	// create new solutions
-	idx := o.NsolTot
+	idx := o.Nsol
 	var a, b, A, B, C, D *Solution
 	for k, pair := range o.Pairs {
 		l := (k + 1) % len(o.Pairs)
@@ -214,27 +213,27 @@ func (o *Optimiser) evolve() {
 
 	// compute objective values
 	if o.Pll {
-		done := make(chan int, o.Ngrp)
-		for grp := 0; grp < o.Ngrp; grp++ {
-			start, endp1 := grp*o.Nsol, (grp+1)*o.Nsol
-			go func(igrp int) {
+		done := make(chan int, o.Ncpu)
+		for cpu := 0; cpu < o.Ncpu; cpu++ {
+			start, endp1 := (cpu*o.Nsol)/o.Ncpu, ((cpu+1)*o.Nsol)/o.Ncpu
+			go func(icpu int) {
 				for i := start; i < endp1; i++ {
-					o.ObjFunc(o.Competitors[o.NsolTot+i], igrp)
+					o.ObjFunc(o.Competitors[o.Nsol+i], icpu)
 				}
 				done <- 1
-			}(grp)
+			}(cpu)
 		}
-		for grp := 0; grp < o.Ngrp; grp++ {
+		for cpu := 0; cpu < o.Ncpu; cpu++ {
 			<-done
 		}
-		o.Nfeval += o.NsolTot
+		o.Nfeval += o.Nsol
 	}
 
 	// metrics
 	o.metrics(o.Competitors)
 
 	// tournaments
-	idx = o.NsolTot
+	idx = o.Nsol
 	for _, pair := range o.Pairs {
 		A = o.Competitors[pair[0]]
 		B = o.Competitors[pair[1]]

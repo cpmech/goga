@@ -13,10 +13,10 @@ const (
 type Generator_t func(sols []*Solution, prms *Parameters)
 
 // ObjFunc_t defines the objective fluction
-type ObjFunc_t func(sol *Solution, grp int)
+type ObjFunc_t func(sol *Solution, cpu int)
 
 // MinProb_t defines objective functon for specialised minimisation problem
-type MinProb_t func(f, g, h, x []float64, ξ []int, grp int)
+type MinProb_t func(f, g, h, x []float64, ξ []int, cpu int)
 
 // CxFlt_t defines crossover function for floats
 type CxFlt_t func(a, b, A, B, C, D []float64, prms *Parameters)
