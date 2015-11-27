@@ -40,7 +40,7 @@ func NewSolution(id, nsol int, prms *Parameters) (o *Solution) {
 	o.Oor = make([]float64, prms.Noor)
 	o.Flt = make([]float64, prms.Nflt)
 	o.Int = make([]int, prms.Nint)
-	o.WinOver = make([]*Solution, nsol)
+	o.WinOver = make([]*Solution, nsol*2)
 	return o
 }
 

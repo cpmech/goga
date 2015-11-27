@@ -23,6 +23,7 @@ type Parameters struct {
 
 	// time
 	Tf    int // final time
+	DtExc int // delta time for exchange
 	DtOut int // delta time for output
 
 	// options
@@ -65,6 +66,7 @@ func (o *Parameters) Default() {
 
 	// time
 	o.Tf = 100
+	o.DtExc = o.Tf / 10
 	o.DtOut = o.Tf / 5
 
 	// options
@@ -105,8 +107,8 @@ func (o *Parameters) CalcDerived() {
 	if o.Nova < 1 {
 		chk.Panic("number of objective values (nova) must be greater than 0")
 	}
-	if o.Nsol < 2 || (o.Nsol%2 != 0) {
-		chk.Panic("number of solutions must be even and greater than 2. Nsol = %d is invalid", o.Nsol)
+	if o.Nsol < 2 {
+		chk.Panic("number of solutions must greater than 2. Nsol = %d is invalid", o.Nsol)
 	}
 	if o.Ncpu < 2 {
 		o.Ncpu = 1
@@ -114,6 +116,12 @@ func (o *Parameters) CalcDerived() {
 	}
 	if o.Ncpu > o.Nsol/2 {
 		chk.Panic("number of CPU must be smaller than or equal to half the number of solutions. Ncpu=%d > Nsol/2=%d", o.Ncpu, o.Nsol/2)
+	}
+	if o.Tf < 1 {
+		o.Tf = 1
+	}
+	if o.DtExc < 1 {
+		o.DtExc = 1
 	}
 
 	// derived

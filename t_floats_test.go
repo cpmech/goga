@@ -176,12 +176,15 @@ func Test_flt05(tst *testing.T) {
 	// parameters
 	var opt Optimiser
 	opt.Default()
-	opt.Nsol = 300
-	opt.Ncpu = 1 //opt.Nsol / 10
+	opt.Nsol = 11
+	opt.Ncpu = 3
+	//opt.PmFlt = 1
 	//opt.DEpc = 0.1
 	//opt.DEmult = 0.5
-	opt.Tf = 500
+	opt.Tf = 10
+	opt.DtExc = 3
 	opt.Problem = 4
+	showinitsols := true
 
 	// problem variables
 	var pname string
@@ -369,13 +372,16 @@ func Test_flt05(tst *testing.T) {
 	opt.Init(GenTrialSolutions, nil, fcn, nf, ng, nh)
 
 	// initial solutions
-	//sols0 := opt.GetSolutionsCopy()
+	var sols0 []*Solution
+	if showinitsols {
+		sols0 = opt.GetSolutionsCopy()
+	}
 
 	// solve
 	opt.Solve()
 
 	// plot
-	PlotOvaOvaPareto(io.Sf("fig_flt05_%s", pname), &opt, nil, 0, 1, func() {
+	PlotOvaOvaPareto(io.Sf("fig_flt05_%s", pname), &opt, sols0, 0, 1, func() {
 		np := 101
 		F0 := utl.LinSpace(fmin[0], fmax[0], np)
 		F1 := make([]float64, np)
