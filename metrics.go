@@ -13,6 +13,7 @@ import (
 
 // Metrics holds metric data such as non-dominated Pareto fronts
 type Metrics struct {
+	prms   *Parameters   // parameters
 	Omin   []float64     // current min ova
 	Omax   []float64     // current max ova
 	Fmin   []float64     // current min float
@@ -24,13 +25,14 @@ type Metrics struct {
 }
 
 // Init initialises Metrics
-func (o *Metrics) Init(nova, nflt, nint, nsol int) {
-	o.Omin = make([]float64, nova)
-	o.Omax = make([]float64, nova)
-	o.Fmin = make([]float64, nflt)
-	o.Fmax = make([]float64, nflt)
-	o.Imin = make([]int, nint)
-	o.Imax = make([]int, nint)
+func (o *Metrics) Init(nsol int, prms *Parameters) {
+	o.prms = prms
+	o.Omin = make([]float64, prms.Nova)
+	o.Omax = make([]float64, prms.Nova)
+	o.Fmin = make([]float64, prms.Nflt)
+	o.Fmax = make([]float64, prms.Nflt)
+	o.Imin = make([]int, prms.Nint)
+	o.Imax = make([]int, prms.Nint)
 	o.Fsizes = make([]int, nsol)
 	o.Fronts = make([][]*Solution, nsol)
 	for i := 0; i < nsol; i++ {
@@ -43,9 +45,6 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 
 	// reset counters and find limits
 	fz := o.Fsizes
-	nova := len(sols[0].Ova)
-	nflt := len(sols[0].Flt)
-	nint := len(sols[0].Int)
 	nsol := len(sols)
 	for i, sol := range sols {
 
@@ -59,7 +58,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		fz[i] = 0
 
 		// ovas range
-		for j := 0; j < nova; j++ {
+		for j := 0; j < o.prms.Nova; j++ {
 			x := sol.Ova[j]
 			if math.IsNaN(x) {
 				chk.Panic("NaN found in objective value array\n\txFlt = %v\n\txInt = %v\n\tova = %v\n\toor = %v", sol.Flt, sol.Int, sol.Ova, sol.Oor)
@@ -74,7 +73,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		}
 
 		// floats range
-		for j := 0; j < nflt; j++ {
+		for j := 0; j < o.prms.Nflt; j++ {
 			x := sol.Flt[j]
 			if i == 0 {
 				o.Fmin[j] = x
@@ -86,7 +85,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		}
 
 		// ints range
-		for j := 0; j < nint; j++ {
+		for j := 0; j < o.prms.Nint; j++ {
 			x := sol.Int[j]
 			if i == 0 {
 				o.Imin[j] = x
@@ -104,11 +103,11 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 	inf_crowd_distance := true
 	dmax := 1e-15
 	if flt_distance {
-		for i := 0; i < nflt; i++ {
+		for i := 0; i < o.prms.Nflt; i++ {
 			dmax += math.Pow(o.Fmax[i]-o.Fmin[i], 2.0)
 		}
 	} else {
-		for i := 0; i < nova; i++ {
+		for i := 0; i < o.prms.Nova; i++ {
 			dmax += math.Pow(o.Omax[i]-o.Omin[i], 2.0)
 		}
 	}
@@ -203,7 +202,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 			continue
 		}
 		F := o.Fronts[r][:l]
-		for j := 0; j < nova; j++ {
+		for j := 0; j < o.prms.Nova; j++ {
 			SortByOva(F, j)
 			δ := o.Omax[j] - o.Omin[j] + 1e-15
 			if inf_crowd_distance {

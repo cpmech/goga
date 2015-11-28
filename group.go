@@ -16,7 +16,7 @@ type Group struct {
 }
 
 // Init initialises group
-func (o *Group) Init(cpu, ncpu int, solutions, futuresols []*Solution) {
+func (o *Group) Init(cpu, ncpu int, solutions, futuresols []*Solution, prms *Parameters) {
 	nsol := len(solutions)
 	start, endp1 := (cpu*nsol)/ncpu, ((cpu+1)*nsol)/ncpu
 	o.Ncur = endp1 - start
@@ -28,9 +28,6 @@ func (o *Group) Init(cpu, ncpu int, solutions, futuresols []*Solution) {
 		o.All[o.Ncur+i] = futuresols[start+i]
 		o.Indices[i] = i
 	}
-	nova := len(solutions[0].Ova)
-	nflt := len(solutions[0].Flt)
-	nint := len(solutions[0].Int)
 	o.Metrics = new(Metrics)
-	o.Metrics.Init(nova, nflt, nint, len(o.All))
+	o.Metrics.Init(len(o.All), prms)
 }

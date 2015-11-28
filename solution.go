@@ -17,11 +17,12 @@ import (
 type Solution struct {
 
 	// essential
-	Id  int       // identifier
-	Ova []float64 // objective values
-	Oor []float64 // out-of-range values
-	Flt []float64 // floats
-	Int []int     // ints
+	prms *Parameters // pointer to parameters
+	Id   int         // identifier
+	Ova  []float64   // objective values
+	Oor  []float64   // out-of-range values
+	Flt  []float64   // floats
+	Int  []int       // ints
 
 	// metrics
 	WinOver   []*Solution // solutions dominated by this solution
@@ -37,6 +38,7 @@ type Solution struct {
 // NewSolution allocates new Solution
 func NewSolution(id, nsol int, prms *Parameters) (o *Solution) {
 	o = new(Solution)
+	o.prms = prms
 	o.Id = id
 	o.Ova = make([]float64, prms.Nova)
 	o.Oor = make([]float64, prms.Noor)
@@ -66,7 +68,7 @@ func (A *Solution) CopyInto(B *Solution) {
 
 // Distance computes (genotype) distance between A and B
 func (A *Solution) Distance(B *Solution, fmin, fmax []float64, imin, imax []int) (dist float64) {
-	if false {
+	if A.prms.solution_use_absdistance {
 		for i := 0; i < len(A.Flt); i++ {
 			dist += math.Abs(A.Flt[i]-B.Flt[i]) / (fmax[i] - fmin[i] + 1e-15)
 		}
@@ -89,7 +91,7 @@ func (A *Solution) Distance(B *Solution, fmin, fmax []float64, imin, imax []int)
 
 // OvaDistance computes (phenotype) distance between A and B
 func (A *Solution) OvaDistance(B *Solution, omin, omax []float64) (dist float64) {
-	if false {
+	if A.prms.solution_use_absdistance {
 		for i := 0; i < len(A.Ova); i++ {
 			dist += math.Abs(A.Ova[i]-B.Ova[i]) / (omax[i] - omin[i] + 1e-15)
 		}
@@ -157,8 +159,7 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 			return false
 		}
 	}
-	if true {
-		//if false {
+	if A.prms.solution_use_dneighfight {
 		if A.DistNeigh > B.DistNeigh {
 			return true
 		}

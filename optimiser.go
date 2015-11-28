@@ -109,10 +109,10 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	o.Groups = make([]*Group, o.Ncpu)
 	for cpu := 0; cpu < o.Ncpu; cpu++ {
 		o.Groups[cpu] = new(Group)
-		o.Groups[cpu].Init(cpu, o.Ncpu, o.Solutions, o.FutureSols)
+		o.Groups[cpu].Init(cpu, o.Ncpu, o.Solutions, o.FutureSols, &o.Parameters)
 	}
 	o.Metrics = new(Metrics)
-	o.Metrics.Init(o.Nova, o.Nflt, o.Nint, o.Nsol)
+	o.Metrics.Init(o.Nsol, &o.Parameters)
 
 	// generate trial solutions
 	t0 := gotime.Now()
@@ -309,19 +309,18 @@ func (o *Optimiser) mutation(a *Solution) {
 // tournament performs the tournament among 4 individuals
 func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
 	var dAa, dAb, dBa, dBb float64
-	if true {
-		//if false {
-		dAa = A.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
-		dAb = A.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
-		dBa = B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
-		dBb = B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
-	} else {
+	if o.tournament_use_ovadistance {
 		dAa = A.OvaDistance(a, m.Omin, m.Omax)
 		dAb = A.OvaDistance(b, m.Omin, m.Omax)
 		dBa = B.OvaDistance(a, m.Omin, m.Omax)
 		dBb = B.OvaDistance(b, m.Omin, m.Omax)
+	} else {
+		dAa = A.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
+		dAb = A.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
+		dBa = B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
+		dBb = B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	}
-	if true {
+	if o.tournament_use_acopyfirst {
 		if dAa+dBb < dAb+dBa {
 			if a.Fight(A) {
 				a.CopyInto(A)

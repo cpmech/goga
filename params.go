@@ -54,6 +54,12 @@ type Parameters struct {
 	Nint   int       // number of integers
 	DelFlt []float64 // max float range
 	DelInt []int     // max int range
+
+	// internal flags
+	tournament_use_ovadistance bool // use ova distance in tournament
+	tournament_use_acopyfirst  bool // copy from a to A in tournament
+	solution_use_absdistance   bool // use abs distance in solution
+	solution_use_dneighfight   bool // use distNeigh in fight function
 }
 
 // Default sets default parameters
@@ -86,6 +92,12 @@ func (o *Parameters) Default() {
 	o.DebEtam = 1
 	o.PmFlt = 0.0
 	o.PmInt = 0.1
+
+	// internal flags
+	o.tournament_use_ovadistance = false
+	o.tournament_use_acopyfirst = true
+	o.solution_use_absdistance = false
+	o.solution_use_dneighfight = true
 }
 
 // Read reads configuration parameters from JSON file
