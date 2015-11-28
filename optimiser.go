@@ -103,7 +103,7 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 		o.MtFlt = MtFltDeb
 	}
 
-	// essential
+	// allocate solutions
 	o.Solutions = NewSolutions(o.Nsol, &o.Parameters)
 	o.FutureSols = NewSolutions(o.Nsol, &o.Parameters)
 	o.Groups = make([]*Group, o.Ncpu)
@@ -111,8 +111,6 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 		o.Groups[cpu] = new(Group)
 		o.Groups[cpu].Init(cpu, o.Ncpu, o.Solutions, o.FutureSols, &o.Parameters)
 	}
-	o.Metrics = new(Metrics)
-	o.Metrics.Init(o.Nsol, &o.Parameters)
 
 	// generate trial solutions
 	t0 := gotime.Now()
@@ -142,6 +140,11 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	if o.Verbose {
 		io.Pf(". . . trial solutions generated in %v . . .\n", gotime.Now().Sub(t0))
 	}
+
+	// metrics
+	o.Metrics = new(Metrics)
+	o.Metrics.Init(o.Nsol, &o.Parameters)
+	o.Metrics.Compute(o.Solutions)
 
 	// auxiliary
 	o.tmp = NewSolution(0, 0, &o.Parameters)
