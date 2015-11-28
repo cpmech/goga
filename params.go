@@ -33,6 +33,7 @@ type Parameters struct {
 	EpsMinProb float64 // minimum value for 'h' constraints
 	Verbose    bool    // show messages
 	Problem    int     // problem index
+	GenAll     bool    // generate all solutions together; i.e. not within each group/CPU
 
 	// crossover and mutation
 	DEpc    float64 // differential evolution pc
@@ -76,6 +77,7 @@ func (o *Parameters) Default() {
 	o.EpsMinProb = 0.1
 	o.Verbose = true
 	o.Problem = 1
+	o.GenAll = false
 
 	// crossover and mutation
 	o.DEpc = 0.5

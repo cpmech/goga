@@ -178,6 +178,7 @@ func Test_flt05(tst *testing.T) {
 	opt.Default()
 	opt.Nsol = 11
 	opt.Ncpu = 3
+	opt.GenAll = true
 	//opt.PmFlt = 1
 	//opt.DEpc = 0.1
 	//opt.DEmult = 0.5

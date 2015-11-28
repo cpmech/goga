@@ -44,9 +44,9 @@ type Optimiser struct {
 	MtInt      MtInt_t   // mutation function for ints
 
 	// essential
-	Solutions   []*Solution    // current solutions
-	FutureSols  []*Solution    // future solutions
-	Competitors []*Competitors // [cpu] competitors per CPU. pointers to current and future solutions
+	Solutions  []*Solution // current solutions
+	FutureSols []*Solution // future solutions
+	Groups     []*Group    // [cpu] competitors per CPU. pointers to current and future solutions
 
 	// auxiliary
 	Nf, Ng, Nh int         // number of f, g, h functions
@@ -103,41 +103,35 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	// essential
 	o.Solutions = NewSolutions(o.Nsol, &o.Parameters)
 	o.FutureSols = NewSolutions(o.Nsol, &o.Parameters)
-	o.Competitors = make([][]*Solution, o.Ncpu)
-	o.Indices = make([][]int, o.Ncpu)
-	o.Pairs = make([][][]int, o.Ncpu)
-	o.Metrics = make([]*Metrics, o.Ncpu)
+	o.Groups = make([]*Group, o.Ncpu)
 	for cpu := 0; cpu < o.Ncpu; cpu++ {
-		start, endp1 := (cpu*o.Nsol)/o.Ncpu, ((cpu+1)*o.Nsol)/o.Ncpu
-		nsol := endp1 - start
-		o.Competitors[cpu] = make([]*Solution, nsol*2)
-		o.Indices[cpu] = make([]int, nsol)
-		o.Pairs[cpu] = utl.IntsAlloc(nsol/2, 2)
-		for i := 0; i < nsol; i++ {
-			o.Competitors[cpu][i] = o.Solutions[start+i]
-			o.Competitors[cpu][nsol+i] = o.FutureSols[start+i]
-			o.Indices[cpu][i] = i
-		}
-		o.Metrics[cpu] = new(Metrics)
-		o.Metrics[cpu].Init(o.Competitors[cpu])
+		o.Groups[cpu] = new(Group)
+		o.Groups[cpu].Init(cpu, o.Ncpu, o.Solutions, o.FutureSols)
 	}
 
 	// generate trial solutions
 	t0 := gotime.Now()
-	done := make(chan int, o.Ncpu)
-	for icpu := 0; icpu < o.Ncpu; icpu++ {
-		go func(cpu int) {
-			nsol := len(o.Indices[cpu])
-			sols := o.Competitors[cpu][:nsol]
-			gen(sols, &o.Parameters)
-			for _, sol := range sols {
-				o.ObjFunc(sol, cpu)
-			}
-			done <- 1
-		}(icpu)
-	}
-	for cpu := 0; cpu < o.Ncpu; cpu++ {
-		<-done
+	if o.GenAll {
+		gen(o.Solutions, &o.Parameters)
+		for _, sol := range o.Solutions {
+			o.ObjFunc(sol, 0)
+		}
+	} else {
+		done := make(chan int, o.Ncpu)
+		for icpu := 0; icpu < o.Ncpu; icpu++ {
+			go func(cpu int) {
+				start, endp1 := (cpu*o.Nsol)/o.Ncpu, ((cpu+1)*o.Nsol)/o.Ncpu
+				sols := o.Solutions[start:endp1]
+				gen(sols, &o.Parameters)
+				for _, sol := range sols {
+					o.ObjFunc(sol, cpu)
+				}
+				done <- 1
+			}(icpu)
+		}
+		for cpu := 0; cpu < o.Ncpu; cpu++ {
+			<-done
+		}
 	}
 	o.Nfeval = o.Nsol
 	if o.Verbose {
@@ -165,17 +159,18 @@ func (o *Optimiser) Solve() {
 		}
 		for icpu := 0; icpu < o.Ncpu; icpu++ {
 			go func(cpu int) {
+				nfeval := 0
 				for t := time; t < texc; t++ {
 					if cpu == 0 && o.Verbose {
 						io.Pf("time = %10d\r", t)
 					}
-					o.evolve(cpu)
+					nfeval += o.evolve(cpu)
 				}
-				done <- 1
+				done <- nfeval
 			}(icpu)
 		}
 		for cpu := 0; cpu < o.Ncpu; cpu++ {
-			<-done
+			o.Nfeval += <-done
 		}
 		time += o.DtExc
 		texc += o.DtExc
@@ -187,15 +182,18 @@ func (o *Optimiser) Solve() {
 	}
 	if o.Verbose {
 		io.PfWhite("time = %10d\n", time)
+		io.Pf("nfeval = %d\n", o.Nfeval)
 	}
 }
 
-func (o *Optimiser) evolve(cpu int) {
+func (o *Optimiser) evolve(cpu int) (nfeval int) {
 
 	// auxiliary
-	competitors := o.Competitors[cpu]
-	indices := o.Indices[cpu]
-	pairs := o.Pairs[cpu]
+	fmin, fmax := o.Groups[cpu].Metrics.Fmin, o.Groups[cpu].Metrics.Fmax
+	imin, imax := o.Groups[cpu].Metrics.Imin, o.Groups[cpu].Metrics.Imax
+	competitors := o.Groups[cpu].All
+	indices := o.Groups[cpu].Indices
+	pairs := o.Groups[cpu].Pairs
 
 	// compute random pairs
 	rnd.IntGetGroups(pairs, indices)
@@ -216,13 +214,13 @@ func (o *Optimiser) evolve(cpu int) {
 		o.crossover(a, b, A, B, C, D)
 		o.mutation(a)
 		o.mutation(b)
-		o.ObjFunc(a, 0)
-		o.ObjFunc(b, 0)
-		o.Nfeval += 2
+		o.ObjFunc(a, cpu)
+		o.ObjFunc(b, cpu)
+		nfeval += 2
 	}
 
 	// metrics
-	o.metrics(competitors)
+	o.Groups[cpu].Metrics.Compute(competitors)
 
 	// tournaments
 	idx = nsol
@@ -232,10 +230,10 @@ func (o *Optimiser) evolve(cpu int) {
 		a = competitors[idx]
 		b = competitors[idx+1]
 		idx += 2
-		dAa := A.Distance(a, o.Fmin, o.Fmax, o.Imin, o.Imax)
-		dAb := A.Distance(b, o.Fmin, o.Fmax, o.Imin, o.Imax)
-		dBa := B.Distance(a, o.Fmin, o.Fmax, o.Imin, o.Imax)
-		dBb := B.Distance(b, o.Fmin, o.Fmax, o.Imin, o.Imax)
+		dAa := A.Distance(a, fmin, fmax, imin, imax)
+		dAb := A.Distance(b, fmin, fmax, imin, imax)
+		dBa := B.Distance(a, fmin, fmax, imin, imax)
+		dBb := B.Distance(b, fmin, fmax, imin, imax)
 		if dAa+dBb < dAb+dBa {
 			if a.Fight(A) {
 				a.CopyInto(A)
@@ -252,6 +250,7 @@ func (o *Optimiser) evolve(cpu int) {
 			}
 		}
 	}
+	return
 }
 
 func (o *Optimiser) crossover(a, b, A, B, C, D *Solution) {
