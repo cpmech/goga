@@ -9,7 +9,6 @@ import (
 	"sort"
 
 	"github.com/cpmech/gosl/chk"
-	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
 
@@ -135,12 +134,12 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 			return true
 		}
 		if B.DistNeigh > A.DistNeigh {
-			return true
+			return false
 		}
 	}
-	if rnd.FlipCoin(0.5) {
-		return true
-	}
+	//if rnd.FlipCoin(0.5) {
+	//return true
+	//}
 	return false
 }
 
