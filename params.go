@@ -80,8 +80,8 @@ func (o *Parameters) Default() {
 	o.GenAll = false
 
 	// crossover and mutation
-	o.DEpc = 0.5
-	o.DEmult = 0.1
+	o.DEpc = 0.1
+	o.DEmult = 0.5
 	o.DebEtac = 1
 	o.DebEtam = 1
 	o.PmFlt = 0.0
