@@ -6,8 +6,8 @@ package goga
 
 // constants
 const (
-	INF  = 1e+30 // infinite distance
-	DMIN = 1e-5  // minimum distance for flagging repeated solutions
+	INF   = 1e+30 // infinite distance
+	MDMIN = 0.001 // multiplier to compute minimum distance when flagging repeated solutions
 )
 
 // Generator_t defines callback function to generate trial solutions

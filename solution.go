@@ -9,6 +9,7 @@ import (
 	"sort"
 
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
 
@@ -24,6 +25,7 @@ type Solution struct {
 
 	// metrics
 	WinOver   []*Solution // solutions dominated by this solution
+	Repeated  bool        // repeated solution
 	Nwins     int         // number of wins => current len(WinOver)
 	Nlosses   int         // number of solutions dominating this solution
 	FrontId   int         // Pareto front rank
@@ -64,13 +66,32 @@ func (A *Solution) CopyInto(B *Solution) {
 
 // Distance computes (genotype) distance between A and B
 func (A *Solution) Distance(B *Solution, fmin, fmax []float64, imin, imax []int) (dist float64) {
+	//for i := 0; i < len(A.Flt); i++ {
+	//dist += math.Abs(A.Flt[i]-B.Flt[i]) / (fmax[i] - fmin[i] + 1e-15)
+	//}
+	//for i := 0; i < len(A.Int); i++ {
+	//dist += math.Abs(float64(A.Int[i]-B.Int[i])) / (float64(imax[i]-imin[i]) + 1e-15)
+	//}
+	dflt := 0.0
 	for i := 0; i < len(A.Flt); i++ {
-		dist += math.Abs(A.Flt[i]-B.Flt[i]) / (fmax[i] - fmin[i] + 1e-15)
+		dflt += math.Pow((A.Flt[i]-B.Flt[i])/(fmax[i]-fmin[i]+1e-15), 2.0)
 	}
+	dint := 0.0
 	for i := 0; i < len(A.Int); i++ {
-		dist += math.Abs(float64(A.Int[i]-B.Int[i])) / (float64(imax[i]-imin[i]) + 1e-15)
+		dint += math.Pow((float64(A.Int[i]-B.Int[i]))/(float64(imax[i]-imin[i])+1e-15), 2.0)
 	}
-	return
+	return math.Sqrt(dflt) + math.Sqrt(dint)
+}
+
+// OvaDistance computes (phenotype) distance between A and B
+func (A *Solution) OvaDistance(B *Solution, omin, omax []float64) (dist float64) {
+	//for i := 0; i < len(A.Ova); i++ {
+	//dist += math.Abs(A.Ova[i]-B.Ova[i]) / (omax[i] - omin[i] + 1e-15)
+	//}
+	for i := 0; i < len(A.Ova); i++ {
+		dist += math.Pow((A.Ova[i]-B.Ova[i])/(omax[i]-omin[i]+1e-15), 2.0)
+	}
+	return math.Sqrt(dist)
 }
 
 // Compare compares two solutions
@@ -137,9 +158,9 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 			return false
 		}
 	}
-	//if rnd.FlipCoin(0.5) {
-	//return true
-	//}
+	if rnd.FlipCoin(0.5) {
+		return true
+	}
 	return false
 }
 

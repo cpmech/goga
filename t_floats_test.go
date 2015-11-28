@@ -176,7 +176,7 @@ func Test_flt05(tst *testing.T) {
 	// parameters
 	var opt Optimiser
 	opt.Default()
-	opt.Seed = 1234
+	//opt.Seed = 1234
 	opt.Nsol = 100
 	opt.Ncpu = 1
 	opt.GenAll = false

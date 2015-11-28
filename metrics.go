@@ -50,6 +50,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 	for i, sol := range sols {
 
 		// reset values
+		sol.Repeated = false
 		sol.Nwins = 0
 		sol.Nlosses = 0
 		sol.FrontId = 0
@@ -97,13 +98,52 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		}
 	}
 
-	// compute neighbour distances and dominance data
+	// compute neighbour distances
+	flt_distance := false
+	repeated_enabled := false
+	inf_crowd_distance := true
+	dmax := 1e-15
+	if flt_distance {
+		for i := 0; i < nflt; i++ {
+			dmax += math.Pow(o.Fmax[i]-o.Fmin[i], 2.0)
+		}
+	} else {
+		for i := 0; i < nova; i++ {
+			dmax += math.Pow(o.Omax[i]-o.Omin[i], 2.0)
+		}
+	}
+	dmax = math.Sqrt(dmax)
 	for i := 0; i < nsol; i++ {
 		A := sols[i]
 		for j := i + 1; j < nsol; j++ {
 			B := sols[j]
-			dist := A.Distance(B, o.Fmin, o.Fmax, o.Imin, o.Imax)
+			var dist float64
+			if flt_distance {
+				dist = A.Distance(B, o.Fmin, o.Fmax, o.Imin, o.Imax)
+			} else {
+				dist = A.OvaDistance(B, o.Omin, o.Omax)
+			}
 			o.closest(A, B, dist)
+			if dist < MDMIN*dmax {
+				B.Repeated = repeated_enabled
+				if repeated_enabled {
+					B.FrontId = nsol
+				}
+			}
+		}
+	}
+
+	// compute neighbour distances and dominance data
+	for i := 0; i < nsol; i++ {
+		A := sols[i]
+		if A.Repeated {
+			continue
+		}
+		for j := i + 1; j < nsol; j++ {
+			B := sols[j]
+			if B.Repeated {
+				continue
+			}
 			A_dom, B_dom := A.Compare(B)
 			if A_dom {
 				A.WinOver[A.Nwins] = B // i dominates j
@@ -120,6 +160,9 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 
 	// first front
 	for _, sol := range sols {
+		if sol.Repeated {
+			continue
+		}
 		if sol.Nlosses == 0 {
 			o.Fronts[0][fz[0]] = sol
 			fz[0]++
@@ -134,8 +177,14 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		nfronts++
 		for s := 0; s < fz[r]; s++ {
 			A := front[s]
+			if A.Repeated {
+				chk.Panic("repeated is wrong 1")
+			}
 			for k := 0; k < A.Nwins; k++ {
 				B := A.WinOver[k]
+				if B.Repeated {
+					chk.Panic("repeatd is wrong 2")
+				}
 				B.Nlosses--
 				if B.Nlosses == 0 { // B belongs to next front
 					B.FrontId = r + 1
@@ -157,12 +206,12 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		for j := 0; j < nova; j++ {
 			SortByOva(F, j)
 			δ := o.Omax[j] - o.Omin[j] + 1e-15
-			if false {
-				F[0].DistCrowd += math.Pow((F[1].Ova[j]-F[0].Ova[j])/δ, 2.0)
-				F[m].DistCrowd += math.Pow((F[m].Ova[j]-F[n].Ova[j])/δ, 2.0)
-			} else {
+			if inf_crowd_distance {
 				F[0].DistCrowd = INF
 				F[m].DistCrowd = INF
+			} else {
+				F[0].DistCrowd += math.Pow((F[1].Ova[j]-F[0].Ova[j])/δ, 2.0)
+				F[m].DistCrowd += math.Pow((F[m].Ova[j]-F[n].Ova[j])/δ, 2.0)
 			}
 			for i := 1; i < m; i++ {
 				F[i].DistCrowd += ((F[i].Ova[j] - F[i-1].Ova[j]) / δ) * ((F[i+1].Ova[j] - F[i].Ova[j]) / δ)
