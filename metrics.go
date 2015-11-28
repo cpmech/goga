@@ -98,38 +98,16 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 	}
 
 	// compute neighbour distances
-	dmax := 1e-15
-	if o.prms.use_metrics_ovadistance {
-		for i := 0; i < o.prms.Nova; i++ {
-			dmax += math.Pow(o.Omax[i]-o.Omin[i], 2.0)
-		}
-	} else {
-		for i := 0; i < o.prms.Nflt; i++ {
-			dmax += math.Pow(o.Fmax[i]-o.Fmin[i], 2.0)
-		}
-	}
-	dmax = math.Sqrt(dmax)
+	dmax := o.calcdmax()
 	for i := 0; i < nsol; i++ {
 		A := sols[i]
 		for j := i + 1; j < nsol; j++ {
 			B := sols[j]
-			var dist float64
-			if o.prms.use_metrics_ovadistance {
-				dist = A.OvaDistance(B, o.Omin, o.Omax)
-			} else {
-				dist = A.Distance(B, o.Fmin, o.Fmax, o.Imin, o.Imax)
-			}
-			o.closest(A, B, dist)
-			if dist < o.prms.Mdmin*dmax {
-				B.Repeated = o.prms.use_metrics_repeated_enabled
-				if o.prms.use_metrics_repeated_enabled {
-					B.FrontId = nsol
-				}
-			}
+			o.closest(A, B, dmax, nsol)
 		}
 	}
 
-	// compute neighbour distances and dominance data
+	// compute dominance data
 	for i := 0; i < nsol; i++ {
 		A := sols[i]
 		if A.Repeated {
@@ -174,12 +152,12 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		for s := 0; s < fz[r]; s++ {
 			A := front[s]
 			if A.Repeated {
-				chk.Panic("repeated is wrong 1")
+				chk.Panic("_internal_error_ repeated is wrong 1")
 			}
 			for k := 0; k < A.Nwins; k++ {
 				B := A.WinOver[k]
 				if B.Repeated {
-					chk.Panic("repeatd is wrong 2")
+					chk.Panic("_internal_error_ repeatd is wrong 2")
 				}
 				B.Nlosses--
 				if B.Nlosses == 0 { // B belongs to next front
@@ -217,7 +195,13 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 	return
 }
 
-func (o *Metrics) closest(A, B *Solution, dist float64) {
+func (o *Metrics) closest(A, B *Solution, dmax float64, nsol int) {
+	var dist float64
+	if o.prms.use_metrics_ovadistance {
+		dist = A.OvaDistance(B, o.Omin, o.Omax)
+	} else {
+		dist = A.Distance(B, o.Fmin, o.Fmax, o.Imin, o.Imax)
+	}
 	if dist < A.DistNeigh {
 		A.DistNeigh = dist
 		A.Closest = B
@@ -226,4 +210,25 @@ func (o *Metrics) closest(A, B *Solution, dist float64) {
 		B.DistNeigh = dist
 		B.Closest = A
 	}
+	if dist < o.prms.Mdmin*dmax {
+		B.Repeated = o.prms.use_metrics_repeated_enabled
+		if o.prms.use_metrics_repeated_enabled {
+			B.FrontId = nsol
+		}
+	}
+}
+
+func (o *Metrics) calcdmax() (dmax float64) {
+	dmax = 1e-15
+	if o.prms.use_metrics_ovadistance {
+		for i := 0; i < o.prms.Nova; i++ {
+			dmax += math.Pow(o.Omax[i]-o.Omin[i], 2.0)
+		}
+	} else {
+		for i := 0; i < o.prms.Nflt; i++ {
+			dmax += math.Pow(o.Fmax[i]-o.Fmin[i], 2.0)
+		}
+	}
+	dmax = math.Sqrt(dmax)
+	return
 }
