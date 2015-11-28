@@ -23,7 +23,7 @@ func Test_flt01(tst *testing.T) {
 	var opt Optimiser
 	opt.Default()
 	opt.Nsol = 20
-	opt.Ncpu = 3
+	opt.Ncpu = 1
 	opt.FltMin = []float64{0}
 	opt.FltMax = []float64{1}
 	nf, ng, nh := 1, 0, 0
@@ -53,7 +53,7 @@ func Test_flt02(tst *testing.T) {
 	var opt Optimiser
 	opt.Default()
 	opt.Nsol = 20
-	opt.Ncpu = 2
+	opt.Ncpu = 1
 	opt.FltMin = []float64{-2, -2}
 	opt.FltMax = []float64{2, 2}
 	nf, ng, nh := 1, 5, 0
@@ -94,7 +94,7 @@ func Test_flt03(tst *testing.T) {
 	var opt Optimiser
 	opt.Default()
 	opt.Nsol = 20
-	opt.Ncpu = 2
+	opt.Ncpu = 1
 	opt.Verbose = false
 	opt.FltMin = []float64{-1, -1}
 	opt.FltMax = []float64{3, 3}

@@ -157,18 +157,13 @@ func (o *Optimiser) Solve() {
 	texc := time + o.DtExc
 	for time < o.Tf {
 
-		// message
-		if o.Verbose {
-			io.Pf("time = %10d\r", time)
-		}
-
-		// run groups in parallel
+		// run groups in parallel. up to exchange time
 		for icpu := 0; icpu < o.Ncpu; icpu++ {
 			go func(cpu int) {
 				nfeval := 0
 				for t := time; t < texc; t++ {
 					if cpu == 0 && o.Verbose {
-						io.Pf("time = %10d\r", t)
+						io.Pf("time = %10d\r", t+1)
 					}
 					nfeval += o.evolve(cpu)
 				}
@@ -191,7 +186,6 @@ func (o *Optimiser) Solve() {
 
 	// message
 	if o.Verbose {
-		io.PfWhite("time = %10d\n", time)
 		io.Pf("nfeval = %d\n", o.Nfeval)
 	}
 }
