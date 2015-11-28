@@ -11,6 +11,7 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
+// Metrics holds metric data such as non-dominated Pareto fronts
 type Metrics struct {
 	Omin   []float64     // current min ova
 	Omax   []float64     // current max ova
@@ -22,6 +23,7 @@ type Metrics struct {
 	Fronts [][]*Solution // non-dominated fronts
 }
 
+// Init initialises Metrics
 func (o *Metrics) Init(nova, nflt, nint, nsol int) {
 	o.Omin = make([]float64, nova)
 	o.Omax = make([]float64, nova)
@@ -36,6 +38,7 @@ func (o *Metrics) Init(nova, nflt, nint, nsol int) {
 	}
 }
 
+// Compute computes all metric variables
 func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 
 	// reset counters and find limits

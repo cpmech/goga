@@ -128,7 +128,7 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 			return false
 		}
 	}
-	if false {
+	if true {
 		if A.DistNeigh > B.DistNeigh {
 			return true
 		}

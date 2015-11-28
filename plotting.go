@@ -11,6 +11,7 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
+// ContourParams holds parameters to plot contours
 type ContourParams struct {
 	Npts    int       // number of points for contour
 	CmapIdx int       // colormap index
@@ -24,7 +25,7 @@ type ContourParams struct {
 	Yrange  []float64 // to override y-range
 }
 
-// Plot plots contour
+// PlotContour plots contour
 func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 
 	// fix parameters
@@ -103,6 +104,7 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 	}
 }
 
+// PlotAddFltFlt adds flt-flt points to existent plot
 func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
 	x, y := make([]float64, o.Nsol), make([]float64, o.Nsol)
 	for i, sol := range sols {
@@ -115,6 +117,7 @@ func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, fmt plt.Fmt,
 	plt.Plot(x, y, args)
 }
 
+// PlotAddFltOva adds flt-ova points to existent plot
 func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult float64, fmt plt.Fmt, emptyMarker bool) {
 	x, y := make([]float64, o.Nsol), make([]float64, o.Nsol)
 	for i, sol := range sols {
@@ -127,6 +130,7 @@ func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult floa
 	plt.Plot(x, y, args)
 }
 
+// PlotAddOvaOva adds ova-ova points to existent plot
 func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
 	x, y := make([]float64, o.Nsol), make([]float64, o.Nsol)
 	for i, sol := range sols {
@@ -139,6 +143,7 @@ func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, fmt plt.Fmt,
 	plt.Plot(x, y, args)
 }
 
+// PlotAddParetoFront highlights Pareto front
 func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
 	if emptyMarker {
@@ -157,6 +162,7 @@ func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt plt
 	}
 }
 
+// PlotFltOva plots flt-ova points
 func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np int, ovaMult float64, fcn func(x float64) float64, extra func(), equalAxes bool) {
 	if !chk.Verbose {
 		return
@@ -187,6 +193,7 @@ func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np 
 	plt.SaveD("/tmp/goga", fnkey+".eps")
 }
 
+// PlotFltFlt plots flt-flt contour
 func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jFlt, iOva int, extra func(), equalAxes bool) {
 	if !chk.Verbose {
 		return
@@ -210,6 +217,7 @@ func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jF
 	plt.SaveD("/tmp/goga", fnkey+".eps")
 }
 
+// PlotOvaOvaPareto plots ova-ova Pareto values
 func PlotOvaOvaPareto(fnkey string, opt *Optimiser, sols0 []*Solution, iOva, jOva int, extra func(), lims []float64, equalAxes bool) {
 	if !chk.Verbose {
 		return

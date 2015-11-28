@@ -150,13 +150,19 @@ func (o *Optimiser) GetSolutionsCopy() (res []*Solution) {
 
 // Solve solves optimisation problem
 func (o *Optimiser) Solve() {
+
+	// perform evolution
 	done := make(chan int, o.Ncpu)
 	time := 0
 	texc := time + o.DtExc
 	for time < o.Tf {
+
+		// message
 		if o.Verbose {
 			io.Pf("time = %10d\r", time)
 		}
+
+		// run groups in parallel
 		for icpu := 0; icpu < o.Ncpu; icpu++ {
 			go func(cpu int) {
 				nfeval := 0
@@ -172,6 +178,8 @@ func (o *Optimiser) Solve() {
 		for cpu := 0; cpu < o.Ncpu; cpu++ {
 			o.Nfeval += <-done
 		}
+
+		// update time variables
 		time += o.DtExc
 		texc += o.DtExc
 		time = utl.Imin(time, o.Tf)
@@ -180,12 +188,15 @@ func (o *Optimiser) Solve() {
 			io.Pf("\n")
 		}
 	}
+
+	// message
 	if o.Verbose {
 		io.PfWhite("time = %10d\n", time)
 		io.Pf("nfeval = %d\n", o.Nfeval)
 	}
 }
 
+// evolve evolves one group
 func (o *Optimiser) evolve(cpu int) (nfeval int) {
 
 	// auxiliary
@@ -253,6 +264,7 @@ func (o *Optimiser) evolve(cpu int) (nfeval int) {
 	return
 }
 
+// crossover performs crossover in A,B,C,D to obtain a and b
 func (o *Optimiser) crossover(a, b, A, B, C, D *Solution) {
 	if o.Nflt > 0 {
 		o.CxFlt(a.Flt, b.Flt, A.Flt, B.Flt, C.Flt, D.Flt, &o.Parameters)
@@ -262,6 +274,7 @@ func (o *Optimiser) crossover(a, b, A, B, C, D *Solution) {
 	}
 }
 
+// mutation performs mutation in a
 func (o *Optimiser) mutation(a *Solution) {
 	if o.Nflt > 0 && o.PmFlt > 0 {
 		o.MtFlt(a.Flt, &o.Parameters)

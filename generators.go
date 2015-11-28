@@ -6,6 +6,7 @@ package goga
 
 import "github.com/cpmech/gosl/rnd"
 
+// GenTrialSolutions generates (initial) trial solutions
 func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 	n := len(sols)
 	K := rnd.LatinIHS(prms.Nflt, n, prms.LatinDup)

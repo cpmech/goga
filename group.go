@@ -6,6 +6,7 @@ package goga
 
 import "github.com/cpmech/gosl/utl"
 
+// Group holds a group of solutions
 type Group struct {
 	Ncur    int         // number of current solutions == len(All) / 2
 	All     []*Solution // current and future solutions => view to Solutions and FutureSols
@@ -14,6 +15,7 @@ type Group struct {
 	Metrics *Metrics    // metrics
 }
 
+// Init initialises group
 func (o *Group) Init(cpu, ncpu int, solutions, futuresols []*Solution) {
 	nsol := len(solutions)
 	start, endp1 := (cpu*nsol)/ncpu, ((cpu+1)*nsol)/ncpu
