@@ -109,8 +109,8 @@ func (o *Parameters) CalcDerived() {
 	if o.Nova < 1 {
 		chk.Panic("number of objective values (nova) must be greater than 0")
 	}
-	if o.Nsol < 2 {
-		chk.Panic("number of solutions must greater than 2. Nsol = %d is invalid", o.Nsol)
+	if o.Nsol < 6 {
+		chk.Panic("number of solutions must greater than 6. Nsol = %d is invalid", o.Nsol)
 	}
 	if o.Ncpu < 2 {
 		o.Ncpu = 1

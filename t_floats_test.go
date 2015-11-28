@@ -179,7 +179,8 @@ func Test_flt05(tst *testing.T) {
 	opt.Nsol = 100
 	opt.Ncpu = 1
 	opt.GenAll = false
-	//opt.PmFlt = 0.1
+	//opt.PmFlt = 1.0
+	//opt.DebEtam = 10
 	//opt.DEpc = 0.1
 	//opt.DEmult = 0.5
 	opt.Tf = 300
@@ -315,8 +316,8 @@ func Test_flt05(tst *testing.T) {
 		opt.FltMin = make([]float64, n)
 		opt.FltMax = make([]float64, n)
 		for i := 0; i < n; i++ {
-			opt.FltMin[i] = 0
-			opt.FltMax[i] = 1
+			opt.FltMin[i] = -4
+			opt.FltMax[i] = 4
 		}
 		nf, ng, nh = 2, 0, 0
 		coef := 1.0 / math.Sqrt(float64(n))

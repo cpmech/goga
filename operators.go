@@ -11,7 +11,7 @@ import (
 )
 
 // CxFltDE implements the differential-evolution crossover
-func CxFltDE(a, b, A, B, C, D []float64, prms *Parameters) {
+func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
 	n := len(A)
 	sa := rnd.Int(0, n-1)
 	sb := rnd.Int(0, n-1)
@@ -20,17 +20,22 @@ func CxFltDE(a, b, A, B, C, D []float64, prms *Parameters) {
 
 		// a
 		if rnd.FlipCoin(prms.DEpc) || s == sa {
-			x = B[s] + prms.DEmult*(C[s]-D[s])
+			//x = B[s] + prms.DEmult*(C[s]-D[s])
+			x = B[s] + 0.1*(C[s]-D[s]) + 0.1*(E[s]-F[s])
 		} else {
-			x = A[s]
+			//x = A[s]
+			x = B[s]
 		}
 		a[s] = prms.EnforceRange(s, x)
 
 		// b
 		if rnd.FlipCoin(prms.DEpc) || s == sb {
-			x = A[s] + prms.DEmult*(D[s]-C[s])
+			//x = A[s] + prms.DEmult*(D[s]-C[s])
+			x = A[s] + 0.1*(D[s]-C[s]) + 0.1*(F[s]-E[s])
+			//x = A[s] + prms.DEmult*(E[s]-F[s])
 		} else {
-			x = B[s]
+			//x = B[s]
+			x = A[s]
 		}
 		b[s] = prms.EnforceRange(s, x)
 	}
@@ -38,7 +43,7 @@ func CxFltDE(a, b, A, B, C, D []float64, prms *Parameters) {
 }
 
 // CxFltDeb implements Deb's simulated binary crossover (SBX)
-func CxFltDeb(a, b, A, B, C, D []float64, prms *Parameters) {
+func CxFltDeb(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
 
 	// for each gene
 	ϵ := 1e-10

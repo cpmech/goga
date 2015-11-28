@@ -54,6 +54,7 @@ type Optimiser struct {
 	F, G, H    [][]float64 // [cpu] temporary
 	tmp        *Solution   // temporary solution
 	cpupairs   [][]int     // pairs of CPU ids. for exchange of solutions
+	selected   []*Solution // selected solutions for crossover
 
 	// stat
 	Nfeval int // number of function evaluations
@@ -146,6 +147,7 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	// auxiliary
 	o.tmp = NewSolution(0, 0, &o.Parameters)
 	o.cpupairs = utl.IntsAlloc(o.Ncpu/2, 2)
+	o.selected = NewSolutions(6, &o.Parameters)
 }
 
 // GetSolutionsCopy returns a copy of Solutions
@@ -227,7 +229,7 @@ func (o *Optimiser) exchange_via_tournament(i, j int) {
 	selJ := rnd.IntGetUnique(o.Groups[j].Indices, 2)
 	A, B := o.Groups[i].All[selI[0]], o.Groups[i].All[selI[1]]
 	a, b := o.Groups[j].All[selJ[0]], o.Groups[j].All[selJ[1]]
-	o.tournament(A, B, a, b, o.Metrics.Fmin, o.Metrics.Fmax, o.Metrics.Imin, o.Metrics.Imax)
+	o.tournament(A, B, a, b, o.Metrics)
 }
 
 func (o *Optimiser) exchange_one_randomly(i, j int) {
@@ -248,23 +250,27 @@ func (o *Optimiser) evolve(cpu int) (nfeval int) {
 	indices := o.Groups[cpu].Indices
 	pairs := o.Groups[cpu].Pairs
 
+	o.Groups[cpu].Metrics.Compute(o.Groups[cpu].All[:o.Groups[cpu].Ncur])
+
 	// compute random pairs
 	rnd.IntGetGroups(pairs, indices)
 
 	// create new solutions
 	nsol := len(indices)
 	idx := nsol
-	var a, b, A, B, C, D *Solution
-	for k, pair := range pairs {
+	for k := 0; k < len(pairs); k++ {
 		l := (k + 1) % len(pairs)
-		A = competitors[pair[0]]
-		B = competitors[pair[1]]
-		C = competitors[pairs[l][0]]
-		D = competitors[pairs[l][1]]
-		a = competitors[idx]
-		b = competitors[idx+1]
+		m := (k + 2) % len(pairs)
+		competitors[pairs[k][0]].CopyInto(o.selected[0])
+		competitors[pairs[k][1]].CopyInto(o.selected[1])
+		competitors[pairs[l][0]].CopyInto(o.selected[2])
+		competitors[pairs[l][1]].CopyInto(o.selected[3])
+		competitors[pairs[m][0]].CopyInto(o.selected[4])
+		competitors[pairs[m][1]].CopyInto(o.selected[5])
+		a := competitors[idx]
+		b := competitors[idx+1]
 		idx += 2
-		o.crossover(a, b, A, B, C, D)
+		o.crossover(a, b)
 		o.mutation(a)
 		o.mutation(b)
 		o.ObjFunc(a, cpu)
@@ -278,23 +284,38 @@ func (o *Optimiser) evolve(cpu int) (nfeval int) {
 	// tournaments
 	idx = nsol
 	for _, pair := range pairs {
-		A = competitors[pair[0]]
-		B = competitors[pair[1]]
-		a = competitors[idx]
-		b = competitors[idx+1]
+		A := competitors[pair[0]]
+		B := competitors[pair[1]]
+		a := competitors[idx]
+		b := competitors[idx+1]
 		idx += 2
-		o.tournament(A, B, a, b, o.Groups[cpu].Metrics.Fmin, o.Groups[cpu].Metrics.Fmax, o.Groups[cpu].Metrics.Imin, o.Groups[cpu].Metrics.Imax)
+		o.tournament(A, B, a, b, o.Groups[cpu].Metrics)
 	}
 	return
 }
 
-// crossover performs crossover in A,B,C,D to obtain a and b
-func (o *Optimiser) crossover(a, b, A, B, C, D *Solution) {
+// crossover performs crossover in A,B,C,D,E,F to obtain a and b
+func (o *Optimiser) crossover(a, b *Solution) {
+	SortByBest(o.selected)
 	if o.Nflt > 0 {
-		o.CxFlt(a.Flt, b.Flt, A.Flt, B.Flt, C.Flt, D.Flt, &o.Parameters)
+		o.CxFlt(a.Flt, b.Flt,
+			o.selected[0].Flt,
+			o.selected[1].Flt,
+			o.selected[2].Flt,
+			o.selected[3].Flt,
+			o.selected[4].Flt,
+			o.selected[5].Flt,
+			&o.Parameters)
 	}
 	if o.Nint > 0 {
-		o.CxInt(a.Int, b.Int, A.Int, B.Int, C.Int, D.Int, &o.Parameters)
+		o.CxInt(a.Int, b.Int,
+			o.selected[0].Int,
+			o.selected[1].Int,
+			o.selected[2].Int,
+			o.selected[3].Int,
+			o.selected[4].Int,
+			o.selected[5].Int,
+			&o.Parameters)
 	}
 }
 
@@ -309,11 +330,20 @@ func (o *Optimiser) mutation(a *Solution) {
 }
 
 // tournament performs the tournament among 4 individuals
-func (o *Optimiser) tournament(A, B, a, b *Solution, fmin, fmax []float64, imin, imax []int) {
-	dAa := A.Distance(a, fmin, fmax, imin, imax)
-	dAb := A.Distance(b, fmin, fmax, imin, imax)
-	dBa := B.Distance(a, fmin, fmax, imin, imax)
-	dBb := B.Distance(b, fmin, fmax, imin, imax)
+func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
+	var dAa, dAb, dBa, dBb float64
+	if true {
+		//if false {
+		dAa = A.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
+		dAb = A.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
+		dBa = B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
+		dBb = B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
+	} else {
+		dAa = A.OvaDistance(a, m.Omin, m.Omax)
+		dAb = A.OvaDistance(b, m.Omin, m.Omax)
+		dBa = B.OvaDistance(a, m.Omin, m.Omax)
+		dBb = B.OvaDistance(b, m.Omin, m.Omax)
+	}
 	if dAa+dBb < dAb+dBa {
 		if a.Fight(A) {
 			a.CopyInto(A)

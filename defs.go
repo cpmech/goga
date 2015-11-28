@@ -6,7 +6,8 @@ package goga
 
 // constants
 const (
-	INF = 1e+30 // infinite distance
+	INF  = 1e+30 // infinite distance
+	DMIN = 1e-5  // minimum distance for flagging repeated solutions
 )
 
 // Generator_t defines callback function to generate trial solutions
@@ -19,10 +20,10 @@ type ObjFunc_t func(sol *Solution, cpu int)
 type MinProb_t func(f, g, h, x []float64, ξ []int, cpu int)
 
 // CxFlt_t defines crossover function for floats
-type CxFlt_t func(a, b, A, B, C, D []float64, prms *Parameters)
+type CxFlt_t func(a, b, A, B, C, D, E, F []float64, prms *Parameters)
 
 // CxInt_t defines crossover function for ints
-type CxInt_t func(a, b, A, B, C, D []int, prms *Parameters)
+type CxInt_t func(a, b, A, B, C, D, E, F []int, prms *Parameters)
 
 // MtFlt_t defines mutation function for floats
 type MtFlt_t func(a []float64, prms *Parameters)

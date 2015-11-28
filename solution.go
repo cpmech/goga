@@ -25,12 +25,13 @@ type Solution struct {
 
 	// metrics
 	WinOver   []*Solution // solutions dominated by this solution
+	Closest   *Solution   // closest solution to this one; i.e. with min(DistNeigh)
+	Repeated  bool        // flags repeated solution
 	Nwins     int         // number of wins => current len(WinOver)
 	Nlosses   int         // number of solutions dominating this solution
-	FrontId   int         // Pareto front rank
-	DistCrowd float64     // crowd distance
-	DistNeigh float64     // minimum distance to any neighbouring solution
-	Closest   *Solution   // closest solution to this one; i.e. with min(DistNeigh)
+	FrontId   int         // [copied] Pareto front rank
+	DistCrowd float64     // [copied] crowd distance
+	DistNeigh float64     // [copied] minimum distance to any neighbouring solution
 }
 
 // NewSolution allocates new Solution
@@ -61,6 +62,9 @@ func (A *Solution) CopyInto(B *Solution) {
 	copy(B.Oor, A.Oor)
 	copy(B.Flt, A.Flt)
 	copy(B.Int, A.Int)
+	B.FrontId = A.FrontId
+	B.DistCrowd = A.DistCrowd
+	B.DistNeigh = A.DistNeigh
 }
 
 // Distance computes (genotype) distance between A and B
@@ -74,8 +78,28 @@ func (A *Solution) Distance(B *Solution, fmin, fmax []float64, imin, imax []int)
 	return
 }
 
+// OvaDistance computes (phenotype) distance between A and B
+func (A *Solution) OvaDistance(B *Solution, omin, omax []float64) (dist float64) {
+	for i := 0; i < len(A.Ova); i++ {
+		dist += math.Abs(A.Ova[i]-B.Ova[i]) / (omax[i] - omin[i] + 1e-15)
+	}
+	return
+}
+
 // Compare compares two solutions
 func (A *Solution) Compare(B *Solution) (A_dominates, B_dominates bool) {
+	/*
+		defer func() {
+			if !A_dominates && !B_dominates {
+				if A.DistNeigh > B.DistNeigh {
+					A_dominates = true
+				}
+				if B.DistNeigh > A.DistNeigh {
+					B_dominates = true
+				}
+			}
+		}()
+	*/
 	var A_nviolations, B_nviolations int
 	for i := 0; i < len(A.Oor); i++ {
 		if A.Oor[i] > 0 {
@@ -121,16 +145,19 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 	if B_dom {
 		return false
 	}
-	if A.FrontId == B.FrontId {
-		if A.DistCrowd > B.DistCrowd {
-			return true
-		}
-		if B.DistCrowd > A.DistCrowd {
-			return false
-		}
-	}
 	if true {
 		//if false {
+		if A.FrontId == B.FrontId {
+			if A.DistCrowd > B.DistCrowd {
+				return true
+			}
+			if B.DistCrowd > A.DistCrowd {
+				return false
+			}
+		}
+	}
+	//if true {
+	if false {
 		if A.DistNeigh > B.DistNeigh {
 			return true
 		}
