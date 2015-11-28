@@ -66,32 +66,40 @@ func (A *Solution) CopyInto(B *Solution) {
 
 // Distance computes (genotype) distance between A and B
 func (A *Solution) Distance(B *Solution, fmin, fmax []float64, imin, imax []int) (dist float64) {
-	//for i := 0; i < len(A.Flt); i++ {
-	//dist += math.Abs(A.Flt[i]-B.Flt[i]) / (fmax[i] - fmin[i] + 1e-15)
-	//}
-	//for i := 0; i < len(A.Int); i++ {
-	//dist += math.Abs(float64(A.Int[i]-B.Int[i])) / (float64(imax[i]-imin[i]) + 1e-15)
-	//}
-	dflt := 0.0
-	for i := 0; i < len(A.Flt); i++ {
-		dflt += math.Pow((A.Flt[i]-B.Flt[i])/(fmax[i]-fmin[i]+1e-15), 2.0)
+	if false {
+		for i := 0; i < len(A.Flt); i++ {
+			dist += math.Abs(A.Flt[i]-B.Flt[i]) / (fmax[i] - fmin[i] + 1e-15)
+		}
+		for i := 0; i < len(A.Int); i++ {
+			dist += math.Abs(float64(A.Int[i]-B.Int[i])) / (float64(imax[i]-imin[i]) + 1e-15)
+		}
+		return
+	} else {
+		dflt := 0.0
+		for i := 0; i < len(A.Flt); i++ {
+			dflt += math.Pow((A.Flt[i]-B.Flt[i])/(fmax[i]-fmin[i]+1e-15), 2.0)
+		}
+		dint := 0.0
+		for i := 0; i < len(A.Int); i++ {
+			dint += math.Pow((float64(A.Int[i]-B.Int[i]))/(float64(imax[i]-imin[i])+1e-15), 2.0)
+		}
+		return math.Sqrt(dflt) + math.Sqrt(dint)
 	}
-	dint := 0.0
-	for i := 0; i < len(A.Int); i++ {
-		dint += math.Pow((float64(A.Int[i]-B.Int[i]))/(float64(imax[i]-imin[i])+1e-15), 2.0)
-	}
-	return math.Sqrt(dflt) + math.Sqrt(dint)
 }
 
 // OvaDistance computes (phenotype) distance between A and B
 func (A *Solution) OvaDistance(B *Solution, omin, omax []float64) (dist float64) {
-	//for i := 0; i < len(A.Ova); i++ {
-	//dist += math.Abs(A.Ova[i]-B.Ova[i]) / (omax[i] - omin[i] + 1e-15)
-	//}
-	for i := 0; i < len(A.Ova); i++ {
-		dist += math.Pow((A.Ova[i]-B.Ova[i])/(omax[i]-omin[i]+1e-15), 2.0)
+	if false {
+		for i := 0; i < len(A.Ova); i++ {
+			dist += math.Abs(A.Ova[i]-B.Ova[i]) / (omax[i] - omin[i] + 1e-15)
+		}
+		return
+	} else {
+		for i := 0; i < len(A.Ova); i++ {
+			dist += math.Pow((A.Ova[i]-B.Ova[i])/(omax[i]-omin[i]+1e-15), 2.0)
+		}
+		return math.Sqrt(dist)
 	}
-	return math.Sqrt(dist)
 }
 
 // Compare compares two solutions
