@@ -54,7 +54,6 @@ type Optimiser struct {
 	F, G, H    [][]float64 // [cpu] temporary
 	tmp        *Solution   // temporary solution
 	cpupairs   [][]int     // pairs of CPU ids. for exchange of solutions
-	selected   []*Solution // selected solutions for crossover
 
 	// stat
 	Nfeval int // number of function evaluations
@@ -147,7 +146,6 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	// auxiliary
 	o.tmp = NewSolution(0, 0, &o.Parameters)
 	o.cpupairs = utl.IntsAlloc(o.Ncpu/2, 2)
-	o.selected = NewSolutions(6, &o.Parameters)
 }
 
 // GetSolutionsCopy returns a copy of Solutions
@@ -254,21 +252,19 @@ func (o *Optimiser) evolve(cpu int) (nfeval int) {
 	rnd.IntGetGroups(pairs, indices)
 
 	// create new solutions
-	nsol := len(indices)
-	idx := nsol
+	z := o.Groups[cpu].Ncur
 	for k := 0; k < len(pairs); k++ {
 		l := (k + 1) % len(pairs)
 		m := (k + 2) % len(pairs)
-		competitors[pairs[k][0]].CopyInto(o.selected[0])
-		competitors[pairs[k][1]].CopyInto(o.selected[1])
-		competitors[pairs[l][0]].CopyInto(o.selected[2])
-		competitors[pairs[l][1]].CopyInto(o.selected[3])
-		competitors[pairs[m][0]].CopyInto(o.selected[4])
-		competitors[pairs[m][1]].CopyInto(o.selected[5])
-		a := competitors[idx]
-		b := competitors[idx+1]
-		idx += 2
-		o.crossover(a, b)
+		A := competitors[pairs[k][0]]
+		B := competitors[pairs[k][1]]
+		C := competitors[pairs[l][0]]
+		D := competitors[pairs[l][1]]
+		E := competitors[pairs[m][0]]
+		F := competitors[pairs[m][1]]
+		a := competitors[z+pairs[k][0]]
+		b := competitors[z+pairs[k][1]]
+		o.crossover(a, b, A, B, C, D, E, F)
 		o.mutation(a)
 		o.mutation(b)
 		o.ObjFunc(a, cpu)
@@ -280,39 +276,23 @@ func (o *Optimiser) evolve(cpu int) (nfeval int) {
 	o.Groups[cpu].Metrics.Compute(competitors)
 
 	// tournaments
-	idx = nsol
-	for _, pair := range pairs {
-		A := competitors[pair[0]]
-		B := competitors[pair[1]]
-		a := competitors[idx]
-		b := competitors[idx+1]
-		idx += 2
+	for k := 0; k < len(pairs); k++ {
+		A := competitors[pairs[k][0]]
+		B := competitors[pairs[k][1]]
+		a := competitors[z+pairs[k][0]]
+		b := competitors[z+pairs[k][1]]
 		o.tournament(A, B, a, b, o.Groups[cpu].Metrics)
 	}
 	return
 }
 
 // crossover performs crossover in A,B,C,D,E,F to obtain a and b
-func (o *Optimiser) crossover(a, b *Solution) {
+func (o *Optimiser) crossover(a, b, A, B, C, D, E, F *Solution) {
 	if o.Nflt > 0 {
-		o.CxFlt(a.Flt, b.Flt,
-			o.selected[0].Flt,
-			o.selected[1].Flt,
-			o.selected[2].Flt,
-			o.selected[3].Flt,
-			o.selected[4].Flt,
-			o.selected[5].Flt,
-			&o.Parameters)
+		o.CxFlt(a.Flt, b.Flt, A.Flt, B.Flt, C.Flt, D.Flt, E.Flt, F.Flt, &o.Parameters)
 	}
 	if o.Nint > 0 {
-		o.CxInt(a.Int, b.Int,
-			o.selected[0].Int,
-			o.selected[1].Int,
-			o.selected[2].Int,
-			o.selected[3].Int,
-			o.selected[4].Int,
-			o.selected[5].Int,
-			&o.Parameters)
+		o.CxInt(a.Int, b.Int, A.Int, B.Int, C.Int, D.Int, E.Int, F.Int, &o.Parameters)
 	}
 }
 
@@ -333,17 +313,21 @@ func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
 	dBa := B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	dBb := B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	if dAa+dBb < dAb+dBa {
-		if a.Fight(A) {
+		if !A.Fight(a) {
+			//if a.Fight(A) {
 			a.CopyInto(A)
 		}
-		if b.Fight(B) {
+		if !B.Fight(b) {
+			//if b.Fight(B) {
 			b.CopyInto(B)
 		}
 	} else {
-		if b.Fight(A) {
+		if !A.Fight(b) {
+			//if b.Fight(A) {
 			b.CopyInto(A)
 		}
-		if a.Fight(B) {
+		if !B.Fight(a) {
+			//if a.Fight(B) {
 			a.CopyInto(B)
 		}
 	}
