@@ -187,20 +187,22 @@ func (o *Optimiser) Solve() {
 		o.Metrics.Compute(o.Solutions)
 
 		// exchange via tournament
-		if true {
-			//if false {
-			for i := 0; i < o.Ncpu; i++ {
-				j := (i + 1) % o.Ncpu
-				o.exchange_via_tournament(i, j)
+		if o.Ncpu > 1 {
+			if true {
+				//if false {
+				for i := 0; i < o.Ncpu; i++ {
+					j := (i + 1) % o.Ncpu
+					o.exchange_via_tournament(i, j)
+				}
 			}
-		}
 
-		// exchange one randomly
-		//if true {
-		if false {
-			rnd.IntGetGroups(o.cpupairs, utl.IntRange(o.Ncpu))
-			for _, pair := range o.cpupairs {
-				o.exchange_one_randomly(pair[0], pair[1])
+			// exchange one randomly
+			if true {
+				//if false {
+				rnd.IntGetGroups(o.cpupairs, utl.IntRange(o.Ncpu))
+				for _, pair := range o.cpupairs {
+					o.exchange_one_randomly(pair[0], pair[1])
+				}
 			}
 		}
 

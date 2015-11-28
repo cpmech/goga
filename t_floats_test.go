@@ -176,15 +176,15 @@ func Test_flt05(tst *testing.T) {
 	// parameters
 	var opt Optimiser
 	opt.Default()
-	opt.Nsol = 300
-	opt.Ncpu = 10
+	opt.Nsol = 100
+	opt.Ncpu = 1
 	opt.GenAll = false
-	//opt.PmFlt = 1
+	//opt.PmFlt = 0.1
 	//opt.DEpc = 0.1
 	//opt.DEmult = 0.5
 	opt.Tf = 300
 	opt.DtExc = opt.Tf / 10
-	opt.Problem = 1
+	opt.Problem = 5
 	showinitsols := false
 
 	// problem variables
@@ -226,7 +226,6 @@ func Test_flt05(tst *testing.T) {
 
 	// ZDT2, Deb 2001, p356
 	case 2:
-		opt.Tf = 500
 		pname = "ZDT2"
 		n := 30
 		opt.FltMin = make([]float64, n)
