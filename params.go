@@ -60,6 +60,8 @@ type Parameters struct {
 	use_tournament_ovadistance   bool // use ova distance in tournament
 	use_tournament_acopyfirst    bool // copy from a to A in tournament
 	use_solution_absdistance     bool // use abs distance in solution
+	use_solution_comparedneigh   bool // use distNeigh in comparison function
+	use_solution_frontcomparison bool // use front comparison in solution
 	use_solution_distneighfight  bool // use distNeigh in fight function
 	use_metrics_ovadistance      bool // use ova distance in metrics
 	use_metrics_repeated_enabled bool // use repeated_enabled in metrics
@@ -104,6 +106,8 @@ func (o *Parameters) Default() {
 	o.use_tournament_ovadistance = false
 	o.use_tournament_acopyfirst = true
 	o.use_solution_absdistance = false
+	o.use_solution_comparedneigh = false
+	o.use_solution_frontcomparison = true
 	o.use_solution_distneighfight = true
 	o.use_metrics_ovadistance = true
 	o.use_metrics_repeated_enabled = false

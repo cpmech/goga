@@ -182,7 +182,7 @@ func Test_flt05(tst *testing.T) {
 	opt.GenAll = false
 	opt.Tf = 500
 	opt.DtExc = 1 //opt.Tf / 10
-	opt.Problem = 5
+	opt.Problem = 4
 	opt.LatinDup = 5
 	opt.Verbose = false
 	showinitsols := false

@@ -24,16 +24,7 @@ func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
 		if rnd.FlipCoin(prms.DEpc) || i == ia {
 			switch scheme {
 			case 1:
-				x = B[i] + m*(C[i]-D[i])*(E[i]-F[i])
-			case 2:
-				x = B[i] + m*(C[i]-D[i])*(D[i]-E[i])*(E[i]-F[i])
-			case 3:
-				x = B[i] + m*(A[i]-B[i])*(C[i]-D[i])*(D[i]-E[i])*(E[i]-F[i])
-			case 4:
-				x = B[i] + m*(C[i]-D[i])*(E[i]-F[i]) + m*(C[i]-E[i])*(D[i]-F[i])
-			case 5:
-				δ := math.Abs(E[i]-F[i]) + 1e-15
-				x = B[i] - (C[i]-D[i])/δ
+				x = B[i] + m*(C[i]-D[i])
 			default:
 				x = B[i] + m*(C[i]-D[i])
 			}
@@ -46,16 +37,7 @@ func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
 		if rnd.FlipCoin(prms.DEpc) || i == ib {
 			switch scheme {
 			case 1:
-				x = A[i] + m*(D[i]-C[i])*(F[i]-E[i])
-			case 2:
-				x = A[i] + m*(D[i]-C[i])*(E[i]-D[i])*(F[i]-E[i])
-			case 3:
-				x = A[i] + m*(B[i]-A[i])*(D[i]-C[i])*(E[i]-D[i])*(F[i]-E[i])
-			case 4:
-				x = A[i] + m*(D[i]-C[i])*(F[i]-E[i]) + m*(D[i]-E[i])*(C[i]-F[i])
-			case 5:
-				δ := math.Abs(E[i]-F[i]) + 1e-15
-				x = A[i] - (D[i]-C[i])/δ
+				x = A[i] + m*(E[i]-F[i])
 			default:
 				x = A[i] + m*(D[i]-C[i])
 			}

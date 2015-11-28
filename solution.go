@@ -106,6 +106,16 @@ func (A *Solution) OvaDistance(B *Solution, omin, omax []float64) (dist float64)
 
 // Compare compares two solutions
 func (A *Solution) Compare(B *Solution) (A_dominates, B_dominates bool) {
+	if A.prms.use_solution_comparedneigh {
+		defer func() {
+			if A.DistNeigh > B.DistNeigh {
+				A_dominates = true
+			}
+			if B.DistNeigh > A.DistNeigh {
+				B_dominates = true
+			}
+		}()
+	}
 	var A_nviolations, B_nviolations int
 	for i := 0; i < len(A.Oor); i++ {
 		if A.Oor[i] > 0 {
@@ -151,12 +161,14 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 	if B_dom {
 		return false
 	}
-	if A.FrontId == B.FrontId {
-		if A.DistCrowd > B.DistCrowd {
-			return true
-		}
-		if B.DistCrowd > A.DistCrowd {
-			return false
+	if A.prms.use_solution_frontcomparison {
+		if A.FrontId == B.FrontId {
+			if A.DistCrowd > B.DistCrowd {
+				return true
+			}
+			if B.DistCrowd > A.DistCrowd {
+				return false
+			}
 		}
 	}
 	if A.prms.use_solution_distneighfight {
