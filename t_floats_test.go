@@ -185,7 +185,7 @@ func Test_flt05(tst *testing.T) {
 	//opt.DEmult = 0.5
 	opt.Tf = 300
 	opt.DtExc = opt.Tf / 10
-	opt.Problem = 5
+	opt.Problem = 4
 	showinitsols := false
 
 	// problem variables

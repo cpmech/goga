@@ -13,31 +13,26 @@ import (
 // CxFltDE implements the differential-evolution crossover
 func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
 	n := len(A)
-	sa := rnd.Int(0, n-1)
-	sb := rnd.Int(0, n-1)
+	ia := rnd.Int(0, n-1)
+	ib := rnd.Int(0, n-1)
 	var x float64
-	for s := 0; s < n; s++ {
+	for i := 0; i < n; i++ {
 
 		// a
-		if rnd.FlipCoin(prms.DEpc) || s == sa {
-			//x = B[s] + prms.DEmult*(C[s]-D[s])
-			x = B[s] + 0.1*(C[s]-D[s]) + 0.1*(E[s]-F[s])
+		if rnd.FlipCoin(prms.DEpc) || i == ia {
+			x = B[i] + prms.DEmult*(C[i]-D[i]) //+ prms.DEmult*(D[i]-E[i]) + prms.DEmult*(E[i]-F[i])
 		} else {
-			//x = A[s]
-			x = B[s]
+			x = A[i]
 		}
-		a[s] = prms.EnforceRange(s, x)
+		a[i] = prms.EnforceRange(i, x)
 
 		// b
-		if rnd.FlipCoin(prms.DEpc) || s == sb {
-			//x = A[s] + prms.DEmult*(D[s]-C[s])
-			x = A[s] + 0.1*(D[s]-C[s]) + 0.1*(F[s]-E[s])
-			//x = A[s] + prms.DEmult*(E[s]-F[s])
+		if rnd.FlipCoin(prms.DEpc) || i == ib {
+			x = A[i] + prms.DEmult*(D[i]-C[i]) //+ prms.DEmult*(E[i]-D[i]) + prms.DEmult*(F[i]-E[i])
 		} else {
-			//x = B[s]
-			x = A[s]
+			x = B[i]
 		}
-		b[s] = prms.EnforceRange(s, x)
+		b[i] = prms.EnforceRange(i, x)
 	}
 	return
 }

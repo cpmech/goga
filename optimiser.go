@@ -250,8 +250,6 @@ func (o *Optimiser) evolve(cpu int) (nfeval int) {
 	indices := o.Groups[cpu].Indices
 	pairs := o.Groups[cpu].Pairs
 
-	o.Groups[cpu].Metrics.Compute(o.Groups[cpu].All[:o.Groups[cpu].Ncur])
-
 	// compute random pairs
 	rnd.IntGetGroups(pairs, indices)
 
@@ -296,7 +294,6 @@ func (o *Optimiser) evolve(cpu int) (nfeval int) {
 
 // crossover performs crossover in A,B,C,D,E,F to obtain a and b
 func (o *Optimiser) crossover(a, b *Solution) {
-	SortByBest(o.selected)
 	if o.Nflt > 0 {
 		o.CxFlt(a.Flt, b.Flt,
 			o.selected[0].Flt,
@@ -331,19 +328,10 @@ func (o *Optimiser) mutation(a *Solution) {
 
 // tournament performs the tournament among 4 individuals
 func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
-	var dAa, dAb, dBa, dBb float64
-	if true {
-		//if false {
-		dAa = A.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
-		dAb = A.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
-		dBa = B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
-		dBb = B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
-	} else {
-		dAa = A.OvaDistance(a, m.Omin, m.Omax)
-		dAb = A.OvaDistance(b, m.Omin, m.Omax)
-		dBa = B.OvaDistance(a, m.Omin, m.Omax)
-		dBb = B.OvaDistance(b, m.Omin, m.Omax)
-	}
+	dAa := A.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
+	dAb := A.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
+	dBa := B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
+	dBb := B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	if dAa+dBb < dAb+dBa {
 		if a.Fight(A) {
 			a.CopyInto(A)

@@ -8,7 +8,6 @@ import (
 	"math"
 
 	"github.com/cpmech/gosl/chk"
-	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/utl"
 )
 
@@ -51,7 +50,6 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 	for i, sol := range sols {
 
 		// reset values
-		sol.Repeated = false
 		sol.Nwins = 0
 		sol.Nlosses = 0
 		sol.FrontId = 0
@@ -99,32 +97,13 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		}
 	}
 
-	// compute neighbour distances
+	// compute neighbour distances and dominance data
 	for i := 0; i < nsol; i++ {
 		A := sols[i]
 		for j := i + 1; j < nsol; j++ {
 			B := sols[j]
 			dist := A.Distance(B, o.Fmin, o.Fmax, o.Imin, o.Imax)
-			//dist := A.OvaDistance(B, o.Omin, o.Omax)
 			o.closest(A, B, dist)
-			if dist < DMIN {
-				B.Repeated = true
-			}
-		}
-	}
-
-	// compute neighbour distances and dominance data
-	for i := 0; i < nsol; i++ {
-		A := sols[i]
-		if A.Repeated {
-			//io.Pforan("rep = %v\n", A.Repeated)
-			continue
-		}
-		for j := i + 1; j < nsol; j++ {
-			B := sols[j]
-			if B.Repeated {
-				continue
-			}
 			A_dom, B_dom := A.Compare(B)
 			if A_dom {
 				A.WinOver[A.Nwins] = B // i dominates j
@@ -141,9 +120,6 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 
 	// first front
 	for _, sol := range sols {
-		if sol.Repeated {
-			continue
-		}
 		if sol.Nlosses == 0 {
 			o.Fronts[0][fz[0]] = sol
 			fz[0]++
@@ -158,16 +134,8 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		nfronts++
 		for s := 0; s < fz[r]; s++ {
 			A := front[s]
-			if A.Repeated {
-				io.Pforan("here = %v\n", 1)
-				continue
-			}
 			for k := 0; k < A.Nwins; k++ {
 				B := A.WinOver[k]
-				if B.Repeated {
-					io.Pforan("here = %v\n", 2)
-					continue
-				}
 				B.Nlosses--
 				if B.Nlosses == 0 { // B belongs to next front
 					B.FrontId = r + 1
@@ -189,8 +157,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		for j := 0; j < nova; j++ {
 			SortByOva(F, j)
 			δ := o.Omax[j] - o.Omin[j] + 1e-15
-			if true {
-				//if false {
+			if false {
 				F[0].DistCrowd += math.Pow((F[1].Ova[j]-F[0].Ova[j])/δ, 2.0)
 				F[m].DistCrowd += math.Pow((F[m].Ova[j]-F[n].Ova[j])/δ, 2.0)
 			} else {
