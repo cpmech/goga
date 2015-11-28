@@ -68,7 +68,7 @@ func (A *Solution) CopyInto(B *Solution) {
 
 // Distance computes (genotype) distance between A and B
 func (A *Solution) Distance(B *Solution, fmin, fmax []float64, imin, imax []int) (dist float64) {
-	if A.prms.solution_use_absdistance {
+	if A.prms.use_solution_absdistance {
 		for i := 0; i < len(A.Flt); i++ {
 			dist += math.Abs(A.Flt[i]-B.Flt[i]) / (fmax[i] - fmin[i] + 1e-15)
 		}
@@ -91,7 +91,7 @@ func (A *Solution) Distance(B *Solution, fmin, fmax []float64, imin, imax []int)
 
 // OvaDistance computes (phenotype) distance between A and B
 func (A *Solution) OvaDistance(B *Solution, omin, omax []float64) (dist float64) {
-	if A.prms.solution_use_absdistance {
+	if A.prms.use_solution_absdistance {
 		for i := 0; i < len(A.Ova); i++ {
 			dist += math.Abs(A.Ova[i]-B.Ova[i]) / (omax[i] - omin[i] + 1e-15)
 		}
@@ -159,7 +159,7 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 			return false
 		}
 	}
-	if A.prms.solution_use_dneighfight {
+	if A.prms.use_solution_distneighfight {
 		if A.DistNeigh > B.DistNeigh {
 			return true
 		}

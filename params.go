@@ -56,10 +56,12 @@ type Parameters struct {
 	DelInt []int     // max int range
 
 	// internal flags
-	tournament_use_ovadistance bool // use ova distance in tournament
-	tournament_use_acopyfirst  bool // copy from a to A in tournament
-	solution_use_absdistance   bool // use abs distance in solution
-	solution_use_dneighfight   bool // use distNeigh in fight function
+	use_tournament_ovadistance  bool // use ova distance in tournament
+	use_tournament_acopyfirst   bool // copy from a to A in tournament
+	use_solution_absdistance    bool // use abs distance in solution
+	use_solution_distneighfight bool // use distNeigh in fight function
+	use_exchange_via_tournament bool // use exchange via tournament
+	use_exchange_one_randomly   bool // use exchange one randomly
 }
 
 // Default sets default parameters
@@ -94,10 +96,12 @@ func (o *Parameters) Default() {
 	o.PmInt = 0.1
 
 	// internal flags
-	o.tournament_use_ovadistance = false
-	o.tournament_use_acopyfirst = true
-	o.solution_use_absdistance = false
-	o.solution_use_dneighfight = true
+	o.use_tournament_ovadistance = false
+	o.use_tournament_acopyfirst = true
+	o.use_solution_absdistance = false
+	o.use_solution_distneighfight = true
+	o.use_exchange_via_tournament = true
+	o.use_exchange_one_randomly = true
 }
 
 // Read reads configuration parameters from JSON file

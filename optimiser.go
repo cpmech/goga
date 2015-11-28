@@ -53,7 +53,7 @@ type Optimiser struct {
 	Nf, Ng, Nh int         // number of f, g, h functions
 	F, G, H    [][]float64 // [cpu] temporary
 	tmp        *Solution   // temporary solution
-	cpupairs   [][]int     // pairs of CPU ids. for exchange of solutions
+	cpupairs   [][]int     // pairs of CPU ids. for exchanging solutions
 
 	// stat
 	Nfeval int // number of function evaluations
@@ -188,8 +188,7 @@ func (o *Optimiser) Solve() {
 
 		// exchange via tournament
 		if o.Ncpu > 1 {
-			if true {
-				//if false {
+			if o.use_exchange_via_tournament {
 				for i := 0; i < o.Ncpu; i++ {
 					j := (i + 1) % o.Ncpu
 					o.exchange_via_tournament(i, j)
@@ -197,8 +196,7 @@ func (o *Optimiser) Solve() {
 			}
 
 			// exchange one randomly
-			if true {
-				//if false {
+			if o.use_exchange_one_randomly {
 				rnd.IntGetGroups(o.cpupairs, utl.IntRange(o.Ncpu))
 				for _, pair := range o.cpupairs {
 					o.exchange_one_randomly(pair[0], pair[1])
@@ -309,7 +307,7 @@ func (o *Optimiser) mutation(a *Solution) {
 // tournament performs the tournament among 4 individuals
 func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
 	var dAa, dAb, dBa, dBb float64
-	if o.tournament_use_ovadistance {
+	if o.use_tournament_ovadistance {
 		dAa = A.OvaDistance(a, m.Omin, m.Omax)
 		dAb = A.OvaDistance(b, m.Omin, m.Omax)
 		dBa = B.OvaDistance(a, m.Omin, m.Omax)
@@ -320,7 +318,7 @@ func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
 		dBa = B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
 		dBb = B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	}
-	if o.tournament_use_acopyfirst {
+	if o.use_tournament_acopyfirst {
 		if dAa+dBb < dAb+dBa {
 			if a.Fight(A) {
 				a.CopyInto(A)
