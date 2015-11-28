@@ -47,10 +47,13 @@ type Optimiser struct {
 	Solutions  []*Solution // current solutions
 	FutureSols []*Solution // future solutions
 	Groups     []*Group    // [cpu] competitors per CPU. pointers to current and future solutions
+	Metrics    *Metrics    // metrics
 
 	// auxiliary
 	Nf, Ng, Nh int         // number of f, g, h functions
 	F, G, H    [][]float64 // [cpu] temporary
+	tmp        *Solution   // temporary solution
+	cpupairs   [][]int     // pairs of CPU ids. for exchange of solutions
 
 	// stat
 	Nfeval int // number of function evaluations
@@ -108,6 +111,8 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 		o.Groups[cpu] = new(Group)
 		o.Groups[cpu].Init(cpu, o.Ncpu, o.Solutions, o.FutureSols)
 	}
+	o.Metrics = new(Metrics)
+	o.Metrics.Init(o.Nova, o.Nflt, o.Nint, o.Nsol)
 
 	// generate trial solutions
 	t0 := gotime.Now()
@@ -137,6 +142,10 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	if o.Verbose {
 		io.Pf(". . . trial solutions generated in %v . . .\n", gotime.Now().Sub(t0))
 	}
+
+	// auxiliary
+	o.tmp = NewSolution(0, 0, &o.Parameters)
+	o.cpupairs = utl.IntsAlloc(o.Ncpu/2, 2)
 }
 
 // GetSolutionsCopy returns a copy of Solutions
@@ -174,6 +183,27 @@ func (o *Optimiser) Solve() {
 			o.Nfeval += <-done
 		}
 
+		// compute metrics with all solutions included
+		o.Metrics.Compute(o.Solutions)
+
+		// exchange via tournament
+		if true {
+			//if false {
+			for i := 0; i < o.Ncpu; i++ {
+				j := (i + 1) % o.Ncpu
+				o.exchange_via_tournament(i, j)
+			}
+		}
+
+		// exchange one randomly
+		//if true {
+		if false {
+			rnd.IntGetGroups(o.cpupairs, utl.IntRange(o.Ncpu))
+			for _, pair := range o.cpupairs {
+				o.exchange_one_randomly(pair[0], pair[1])
+			}
+		}
+
 		// update time variables
 		time += o.DtExc
 		texc += o.DtExc
@@ -190,12 +220,28 @@ func (o *Optimiser) Solve() {
 	}
 }
 
+func (o *Optimiser) exchange_via_tournament(i, j int) {
+	selI := rnd.IntGetUnique(o.Groups[i].Indices, 2)
+	selJ := rnd.IntGetUnique(o.Groups[j].Indices, 2)
+	A, B := o.Groups[i].All[selI[0]], o.Groups[i].All[selI[1]]
+	a, b := o.Groups[j].All[selJ[0]], o.Groups[j].All[selJ[1]]
+	o.tournament(A, B, a, b, o.Metrics.Fmin, o.Metrics.Fmax, o.Metrics.Imin, o.Metrics.Imax)
+}
+
+func (o *Optimiser) exchange_one_randomly(i, j int) {
+	n := utl.Imin(o.Groups[i].Ncur, o.Groups[j].Ncur)
+	k := rnd.Int(0, n)
+	A := o.Groups[i].All[k]
+	B := o.Groups[j].All[k]
+	B.CopyInto(o.tmp)
+	A.CopyInto(B)
+	o.tmp.CopyInto(A)
+}
+
 // evolve evolves one group
 func (o *Optimiser) evolve(cpu int) (nfeval int) {
 
 	// auxiliary
-	fmin, fmax := o.Groups[cpu].Metrics.Fmin, o.Groups[cpu].Metrics.Fmax
-	imin, imax := o.Groups[cpu].Metrics.Imin, o.Groups[cpu].Metrics.Imax
 	competitors := o.Groups[cpu].All
 	indices := o.Groups[cpu].Indices
 	pairs := o.Groups[cpu].Pairs
@@ -235,25 +281,7 @@ func (o *Optimiser) evolve(cpu int) (nfeval int) {
 		a = competitors[idx]
 		b = competitors[idx+1]
 		idx += 2
-		dAa := A.Distance(a, fmin, fmax, imin, imax)
-		dAb := A.Distance(b, fmin, fmax, imin, imax)
-		dBa := B.Distance(a, fmin, fmax, imin, imax)
-		dBb := B.Distance(b, fmin, fmax, imin, imax)
-		if dAa+dBb < dAb+dBa {
-			if a.Fight(A) {
-				a.CopyInto(A)
-			}
-			if b.Fight(B) {
-				b.CopyInto(B)
-			}
-		} else {
-			if b.Fight(A) {
-				b.CopyInto(A)
-			}
-			if a.Fight(B) {
-				a.CopyInto(B)
-			}
-		}
+		o.tournament(A, B, a, b, o.Groups[cpu].Metrics.Fmin, o.Groups[cpu].Metrics.Fmax, o.Groups[cpu].Metrics.Imin, o.Groups[cpu].Metrics.Imax)
 	}
 	return
 }
@@ -275,5 +303,28 @@ func (o *Optimiser) mutation(a *Solution) {
 	}
 	if o.Nint > 0 && o.PmInt > 0 {
 		o.MtInt(a.Int, &o.Parameters)
+	}
+}
+
+// tournament performs the tournament among 4 individuals
+func (o *Optimiser) tournament(A, B, a, b *Solution, fmin, fmax []float64, imin, imax []int) {
+	dAa := A.Distance(a, fmin, fmax, imin, imax)
+	dAb := A.Distance(b, fmin, fmax, imin, imax)
+	dBa := B.Distance(a, fmin, fmax, imin, imax)
+	dBb := B.Distance(b, fmin, fmax, imin, imax)
+	if dAa+dBb < dAb+dBa {
+		if a.Fight(A) {
+			a.CopyInto(A)
+		}
+		if b.Fight(B) {
+			b.CopyInto(B)
+		}
+	} else {
+		if b.Fight(A) {
+			b.CopyInto(A)
+		}
+		if a.Fight(B) {
+			a.CopyInto(B)
+		}
 	}
 }

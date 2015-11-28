@@ -30,6 +30,7 @@ type Solution struct {
 	FrontId   int         // Pareto front rank
 	DistCrowd float64     // crowd distance
 	DistNeigh float64     // minimum distance to any neighbouring solution
+	Closest   *Solution   // closest solution to this one; i.e. with min(DistNeigh)
 }
 
 // NewSolution allocates new Solution
@@ -129,6 +130,7 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 		}
 	}
 	if true {
+		//if false {
 		if A.DistNeigh > B.DistNeigh {
 			return true
 		}
@@ -147,6 +149,7 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 type solByOva0 []*Solution
 type solByOva1 []*Solution
 type solByOva2 []*Solution
+type solByBest []*Solution
 
 func (o solByOva0) Len() int           { return len(o) }
 func (o solByOva0) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
@@ -160,6 +163,15 @@ func (o solByOva2) Len() int           { return len(o) }
 func (o solByOva2) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
 func (o solByOva2) Less(i, j int) bool { return o[i].Ova[2] < o[j].Ova[2] }
 
+func (o solByBest) Len() int      { return len(o) }
+func (o solByBest) Swap(i, j int) { o[i], o[j] = o[j], o[i] }
+func (o solByBest) Less(i, j int) bool {
+	if o[i].FrontId == o[j].FrontId {
+		return o[i].DistCrowd > o[j].DistCrowd
+	}
+	return o[i].FrontId < o[j].FrontId
+}
+
 // SortByOva sorts slice of solutions in ascending order of ova
 func SortByOva(s []*Solution, idxOva int) {
 	switch idxOva {
@@ -172,4 +184,9 @@ func SortByOva(s []*Solution, idxOva int) {
 	default:
 		chk.Panic("this code can only handle Nova ≤ 3 for now")
 	}
+}
+
+// SortByBest sorts slice of solutions with best solutions first
+func SortByBest(s []*Solution) {
+	sort.Sort(solByBest(s))
 }

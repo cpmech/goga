@@ -103,8 +103,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		for j := i + 1; j < nsol; j++ {
 			B := sols[j]
 			dist := A.Distance(B, o.Fmin, o.Fmax, o.Imin, o.Imax)
-			A.DistNeigh = utl.Min(A.DistNeigh, dist)
-			B.DistNeigh = utl.Min(B.DistNeigh, dist)
+			o.closest(A, B, dist)
 			A_dom, B_dom := A.Compare(B)
 			if A_dom {
 				A.WinOver[A.Nwins] = B // i dominates j
@@ -171,4 +170,15 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		}
 	}
 	return
+}
+
+func (o *Metrics) closest(A, B *Solution, dist float64) {
+	if dist < A.DistNeigh {
+		A.DistNeigh = dist
+		A.Closest = B
+	}
+	if dist < B.DistNeigh {
+		B.DistNeigh = dist
+		B.Closest = A
+	}
 }

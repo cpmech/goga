@@ -176,16 +176,16 @@ func Test_flt05(tst *testing.T) {
 	// parameters
 	var opt Optimiser
 	opt.Default()
-	opt.Nsol = 11
-	opt.Ncpu = 3
-	opt.GenAll = true
+	opt.Nsol = 300
+	opt.Ncpu = 10
+	opt.GenAll = false
 	//opt.PmFlt = 1
 	//opt.DEpc = 0.1
 	//opt.DEmult = 0.5
-	opt.Tf = 10
-	opt.DtExc = 3
-	opt.Problem = 4
-	showinitsols := true
+	opt.Tf = 300
+	opt.DtExc = opt.Tf / 10
+	opt.Problem = 1
+	showinitsols := false
 
 	// problem variables
 	var pname string
@@ -390,5 +390,13 @@ func Test_flt05(tst *testing.T) {
 			F1[i] = f1f0(F0[i])
 		}
 		plt.Plot(F0, F1, io.Sf("'b-', label='%s'", pname))
+		if false {
+			for _, sol := range opt.Solutions {
+				xa, ya := sol.Ova[0], sol.Ova[1]
+				xb, yb := sol.Closest.Ova[0], sol.Closest.Ova[1]
+				plt.Text(xa, ya, io.Sf("%d:%d", sol.Id, sol.Closest.Id), "")
+				plt.Arrow(xa, ya, xb, yb, "st='->'")
+			}
+		}
 	}, nil, false)
 }
