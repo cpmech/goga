@@ -34,6 +34,7 @@ type Parameters struct {
 	Verbose    bool    // show messages
 	Problem    int     // problem index
 	GenAll     bool    // generate all solutions together; i.e. not within each group/CPU
+	Mdmin      float64 // multiplier for min(distance) to find repeated solutions in Metrics
 
 	// crossover and mutation
 	DEpc    float64 // differential evolution pc
@@ -56,12 +57,15 @@ type Parameters struct {
 	DelInt []int     // max int range
 
 	// internal flags
-	use_tournament_ovadistance  bool // use ova distance in tournament
-	use_tournament_acopyfirst   bool // copy from a to A in tournament
-	use_solution_absdistance    bool // use abs distance in solution
-	use_solution_distneighfight bool // use distNeigh in fight function
-	use_exchange_via_tournament bool // use exchange via tournament
-	use_exchange_one_randomly   bool // use exchange one randomly
+	use_tournament_ovadistance   bool // use ova distance in tournament
+	use_tournament_acopyfirst    bool // copy from a to A in tournament
+	use_solution_absdistance     bool // use abs distance in solution
+	use_solution_distneighfight  bool // use distNeigh in fight function
+	use_metrics_ovadistance      bool // use ova distance in metrics
+	use_metrics_repeated_enabled bool // use repeated_enabled in metrics
+	use_metrics_inf_crowd_dist   bool // use inf_crowd_dist in metrics
+	use_exchange_via_tournament  bool // use exchange via tournament
+	use_exchange_one_randomly    bool // use exchange one randomly
 }
 
 // Default sets default parameters
@@ -86,6 +90,7 @@ func (o *Parameters) Default() {
 	o.Verbose = true
 	o.Problem = 1
 	o.GenAll = false
+	o.Mdmin = 0.0001
 
 	// crossover and mutation
 	o.DEpc = 0.1
@@ -100,6 +105,9 @@ func (o *Parameters) Default() {
 	o.use_tournament_acopyfirst = true
 	o.use_solution_absdistance = false
 	o.use_solution_distneighfight = true
+	o.use_metrics_ovadistance = true
+	o.use_metrics_repeated_enabled = false
+	o.use_metrics_inf_crowd_dist = true
 	o.use_exchange_via_tournament = true
 	o.use_exchange_one_randomly = true
 }
