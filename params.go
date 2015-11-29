@@ -111,7 +111,7 @@ func (o *Parameters) Default() {
 	o.use_metrics_repeated_enabled = false
 	o.use_metrics_inf_crowd_dist = true
 	o.use_exchange_via_tournament = true
-	o.use_exchange_one_randomly = true
+	o.use_exchange_one_randomly = false
 }
 
 // Read reads configuration parameters from JSON file

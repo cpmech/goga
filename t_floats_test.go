@@ -180,16 +180,12 @@ func Test_flt05(tst *testing.T) {
 	opt.Nsol = 100
 	opt.Ncpu = 1
 	opt.GenAll = false
-	//opt.PmFlt = 1
-	//opt.DebEtam = 10
-	//opt.DebEtac = 10
-	//opt.CxFlt = CxFltDeb
 	opt.UseTriples = false
-	opt.Tf = 500
-	opt.DtExc = 1 //opt.Tf / 10
+	opt.Tf = 400
+	opt.DtExc = opt.Tf / 10
 	opt.Problem = 4
 	opt.LatinDup = 5
-	opt.Verbose = false
+	opt.Verbose = true
 	showinitsols := false
 
 	// problem variables
@@ -425,9 +421,9 @@ func Test_flt06(tst *testing.T) {
 	opt.GenAll = false
 	opt.UseTriples = false
 	opt.Tf = 500
-	opt.DtExc = 1 //opt.Tf / 10
+	opt.DtExc = opt.Tf / 10
 	opt.LatinDup = 5
-	opt.Verbose = false
+	opt.Verbose = true
 	showinitsols := false
 
 	// FON (Fonseca and Fleming 1995), Deb 2001, p339

@@ -176,15 +176,21 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 			}
 		}
 	}
-	prob := 0.5
-	if A.prms.use_solution_distneighfight {
-		δ := math.Abs(A.DistNeigh - B.DistNeigh)
-		δmin := A.prms.DelMinFight
-		if δ < δmin {
-			return true
-		}
-		prob = 1.0 - math.Exp(-(δ/δmin)*A.DistNeigh/B.DistNeigh)
+	//prob := 0.5
+	//if A.prms.use_solution_distneighfight {
+	if A.FrontId == 0 {
+		return true
 	}
+	if B.FrontId == 0 {
+		return false
+	}
+	//δ := math.Abs(A.DistNeigh - B.DistNeigh)
+	//δmin := A.prms.DelMinFight
+	//if δ < δmin {
+	//return true
+	//}
+	m := float64(B.FrontId) / float64(A.FrontId)
+	prob := (1.0 - math.Exp(-10.0*m)) // (1.0 - math.Exp(-(δ/δmin)*A.DistNeigh/B.DistNeigh))
 	if rnd.FlipCoin(prob) {
 		return true
 	}

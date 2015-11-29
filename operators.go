@@ -59,7 +59,7 @@ func CxFltDE_triple(a, b, c, A, B, C, D, E, F []float64, prms *Parameters) {
 
 // CxFltDE implements the differential-evolution crossover
 func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
-	scheme := 3
+	scheme := 0
 	n := len(A)
 	ia := rnd.Int(0, n-1)
 	ib := rnd.Int(0, n-1)
