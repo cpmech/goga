@@ -111,16 +111,6 @@ func (A *Solution) OvaDistance(B *Solution, omin, omax []float64) (dist float64)
 
 // Compare compares two solutions
 func (A *Solution) Compare(B *Solution) (A_dominates, B_dominates bool) {
-	if A.prms.use_solution_comparedneigh {
-		defer func() {
-			if A.DistNeigh > B.DistNeigh {
-				A_dominates = true
-			}
-			if B.DistNeigh > A.DistNeigh {
-				B_dominates = true
-			}
-		}()
-	}
 	var A_nviolations, B_nviolations int
 	for i := 0; i < len(A.Oor); i++ {
 		if A.Oor[i] > 0 {
@@ -166,31 +156,22 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 	if B_dom {
 		return false
 	}
-	if A.prms.use_solution_frontcomparison {
-		if A.FrontId == B.FrontId {
-			if A.DistCrowd > B.DistCrowd {
-				return true
-			}
-			if B.DistCrowd > A.DistCrowd {
-				return false
-			}
+	if A.FrontId == B.FrontId {
+		if A.DistCrowd > B.DistCrowd {
+			return true
+		}
+		if B.DistCrowd > A.DistCrowd {
+			return false
 		}
 	}
-	//prob := 0.5
-	//if A.prms.use_solution_distneighfight {
 	if A.FrontId == 0 {
 		return true
 	}
 	if B.FrontId == 0 {
 		return false
 	}
-	//δ := math.Abs(A.DistNeigh - B.DistNeigh)
-	//δmin := A.prms.DelMinFight
-	//if δ < δmin {
-	//return true
-	//}
 	m := float64(B.FrontId) / float64(A.FrontId)
-	prob := (1.0 - math.Exp(-10.0*m)) // (1.0 - math.Exp(-(δ/δmin)*A.DistNeigh/B.DistNeigh))
+	prob := (1.0 - math.Exp(-10.0*m))
 	if rnd.FlipCoin(prob) {
 		return true
 	}
