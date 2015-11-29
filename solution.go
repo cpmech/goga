@@ -26,13 +26,10 @@ type Solution struct {
 
 	// metrics
 	WinOver   []*Solution // solutions dominated by this solution
-	Repeated  bool        // repeated solution
 	Nwins     int         // number of wins => current len(WinOver)
 	Nlosses   int         // number of solutions dominating this solution
 	FrontId   int         // Pareto front rank
 	DistCrowd float64     // crowd distance
-	DistNeigh float64     // minimum distance to any neighbouring solution
-	Closest   *Solution   // closest solution to this one; i.e. with min(DistNeigh)
 }
 
 // NewSolution allocates new Solution

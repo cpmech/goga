@@ -40,14 +40,20 @@ func (o *Metrics) Init(nsol int, prms *Parameters) {
 	}
 }
 
-// ComputeLimitsAndNeighDist computes ova,flt,int limits and neighbour distances
-func (o *Metrics) ComputeLimitsAndNeighDist(sols []*Solution) {
+// Compute computes limits, find non-dominated Pareto fronts, and compute crowd distances
+func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 
-	// find limits
+	// reset variables and find limits
+	fz := o.Fsizes
+	nsol := len(sols)
 	for i, sol := range sols {
 
 		// reset values
-		sol.DistNeigh = INF
+		sol.Nwins = 0
+		sol.Nlosses = 0
+		sol.FrontId = 0
+		sol.DistCrowd = 0
+		fz[i] = 0
 
 		// ovas range
 		for j := 0; j < o.prms.Nova; j++ {
@@ -87,21 +93,6 @@ func (o *Metrics) ComputeLimitsAndNeighDist(sols []*Solution) {
 				o.Imax[j] = utl.Imax(o.Imax[j], x)
 			}
 		}
-	}
-}
-
-// ComputeFrontsAndCrowdDist computes non-dominated Pareto fronts and crowd distances
-func (o *Metrics) ComputeFrontsAndCrowdDist(sols []*Solution) (nfronts int) {
-
-	// reset counters
-	fz := o.Fsizes
-	nsol := len(sols)
-	for i, sol := range sols {
-		sol.Nwins = 0
-		sol.Nlosses = 0
-		sol.FrontId = 0
-		sol.DistCrowd = 0
-		fz[i] = 0
 	}
 
 	// compute dominance data
