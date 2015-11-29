@@ -59,7 +59,7 @@ func CxFltDE_triple(a, b, c, A, B, C, D, E, F []float64, prms *Parameters) {
 
 // CxFltDE implements the differential-evolution crossover
 func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
-	scheme := 1
+	scheme := 3
 	n := len(A)
 	ia := rnd.Int(0, n-1)
 	ib := rnd.Int(0, n-1)
@@ -72,6 +72,8 @@ func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
 			switch scheme {
 			case 1:
 				x = B[i] + m*(C[i]-D[i])*(E[i]-F[i])
+			case 2:
+				x = B[i] + m*(C[i]-D[i])
 			default:
 				x = B[i] + m*(C[i]-D[i])
 			}
@@ -85,6 +87,8 @@ func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
 			switch scheme {
 			case 1:
 				x = A[i] + m*(D[i]-C[i])*(F[i]-E[i])
+			case 2:
+				x = A[i] + m*(E[i]-F[i])
 			default:
 				x = A[i] + m*(D[i]-C[i])
 			}

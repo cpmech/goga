@@ -184,7 +184,7 @@ func Test_flt05(tst *testing.T) {
 	//opt.DebEtam = 10
 	//opt.DebEtac = 10
 	//opt.CxFlt = CxFltDeb
-	opt.UseTriples = true
+	opt.UseTriples = false
 	opt.Tf = 500
 	opt.DtExc = 1 //opt.Tf / 10
 	opt.Problem = 4
@@ -423,7 +423,7 @@ func Test_flt06(tst *testing.T) {
 	opt.Nsol = 100
 	opt.Ncpu = 1
 	opt.GenAll = false
-	opt.UseTriples = true
+	opt.UseTriples = false
 	opt.Tf = 500
 	opt.DtExc = 1 //opt.Tf / 10
 	opt.LatinDup = 5

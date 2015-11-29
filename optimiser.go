@@ -357,7 +357,7 @@ func (o *Optimiser) evolve_with_triples(cpu int) (nfeval int) {
 		o.match.Run()
 		for i := 0; i < 3; i++ {
 			j := o.match.Links[i]
-			if news[j].Fight(main[i]) {
+			if !main[i].Fight(news[j]) {
 				news[j].CopyInto(main[i])
 			}
 		}
@@ -391,37 +391,19 @@ func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
 	dAb := A.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	dBa := B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	dBb := B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
-	if o.use_tournament_acopyfirst {
-		if dAa+dBb < dAb+dBa {
-			if a.Fight(A) {
-				a.CopyInto(A)
-			}
-			if b.Fight(B) {
-				b.CopyInto(B)
-			}
-		} else {
-			if b.Fight(A) {
-				b.CopyInto(A)
-			}
-			if a.Fight(B) {
-				a.CopyInto(B)
-			}
+	if dAa+dBb < dAb+dBa {
+		if !A.Fight(a) {
+			a.CopyInto(A)
+		}
+		if !B.Fight(b) {
+			b.CopyInto(B)
 		}
 	} else {
-		if dAa+dBb < dAb+dBa {
-			if !A.Fight(a) {
-				a.CopyInto(A)
-			}
-			if !B.Fight(b) {
-				b.CopyInto(B)
-			}
-		} else {
-			if !A.Fight(b) {
-				b.CopyInto(A)
-			}
-			if !B.Fight(a) {
-				a.CopyInto(B)
-			}
+		if !A.Fight(b) {
+			b.CopyInto(A)
+		}
+		if !B.Fight(a) {
+			a.CopyInto(B)
 		}
 	}
 }

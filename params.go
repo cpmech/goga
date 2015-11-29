@@ -27,15 +27,16 @@ type Parameters struct {
 	DtOut int // delta time for output
 
 	// options
-	Pll        bool    // parallel
-	Seed       int     // seed for random numbers generator
-	LatinDup   int     // Latin Hypercube duplicates number
-	EpsMinProb float64 // minimum value for 'h' constraints
-	Verbose    bool    // show messages
-	Problem    int     // problem index
-	GenAll     bool    // generate all solutions together; i.e. not within each group/CPU
-	Mdmin      float64 // multiplier for min(distance) to find repeated solutions in Metrics
-	UseTriples bool    // use triples in solution
+	Pll         bool    // parallel
+	Seed        int     // seed for random numbers generator
+	LatinDup    int     // Latin Hypercube duplicates number
+	EpsMinProb  float64 // minimum value for 'h' constraints
+	Verbose     bool    // show messages
+	Problem     int     // problem index
+	GenAll      bool    // generate all solutions together; i.e. not within each group/CPU
+	Mdmin       float64 // multiplier for min(distance) to find repeated solutions in Metrics
+	UseTriples  bool    // use triples in solution
+	DelMinFight float64 // δmin to compute probability in fight function
 
 	// crossover and mutation
 	DEpc    float64 // differential evolution pc
@@ -59,7 +60,6 @@ type Parameters struct {
 
 	// internal flags
 	use_nondomfront_distcrowd    bool // use non-dominated front and crowd distance in computations
-	use_tournament_acopyfirst    bool // copy from a to A in tournament
 	use_solution_comparedneigh   bool // use distNeigh in comparison function
 	use_solution_frontcomparison bool // use front comparison in solution
 	use_solution_distneighfight  bool // use distNeigh in fight function
@@ -93,6 +93,7 @@ func (o *Parameters) Default() {
 	o.GenAll = false
 	o.Mdmin = 0.0001
 	o.UseTriples = false
+	o.DelMinFight = 1e-8
 
 	// crossover and mutation
 	o.DEpc = 0.1
@@ -104,7 +105,6 @@ func (o *Parameters) Default() {
 
 	// internal flags
 	o.use_nondomfront_distcrowd = true
-	o.use_tournament_acopyfirst = true
 	o.use_solution_comparedneigh = false
 	o.use_solution_frontcomparison = o.use_nondomfront_distcrowd
 	o.use_solution_distneighfight = true
