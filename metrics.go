@@ -105,8 +105,6 @@ func (o *Metrics) ComputeLimitsAndNeighDist(sols []*Solution) {
 // ComputeFrontsAndCrowdDist computes non-dominated Pareto fronts and crowd distances
 func (o *Metrics) ComputeFrontsAndCrowdDist(sols []*Solution) (nfronts int) {
 
-	chk.Panic("stop")
-
 	// reset counters
 	fz := o.Fsizes
 	nsol := len(sols)

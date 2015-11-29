@@ -104,12 +104,12 @@ func (o *Parameters) Default() {
 	o.PmInt = 0.1
 
 	// internal flags
-	o.use_nondomfront_distcrowd = false
+	o.use_nondomfront_distcrowd = true
 	o.use_tournament_ovadistance = false
 	o.use_tournament_acopyfirst = true
 	o.use_solution_absdistance = false
 	o.use_solution_comparedneigh = false
-	o.use_solution_frontcomparison = true
+	o.use_solution_frontcomparison = o.use_nondomfront_distcrowd
 	o.use_solution_distneighfight = true
 	o.use_metrics_ovadistance = true
 	o.use_metrics_repeated_enabled = false
