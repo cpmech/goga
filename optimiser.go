@@ -144,7 +144,7 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	// metrics
 	o.Metrics = new(Metrics)
 	o.Metrics.Init(o.Nsol, &o.Parameters)
-	o.Metrics.Compute(o.Solutions)
+	o.Metrics.ComputeLimitsAndNeighDist(o.Solutions)
 
 	// auxiliary
 	o.tmp = NewSolution(0, 0, &o.Parameters)
@@ -187,7 +187,8 @@ func (o *Optimiser) Solve() {
 		}
 
 		// compute metrics with all solutions included
-		o.Metrics.Compute(o.Solutions)
+		o.Metrics.ComputeLimitsAndNeighDist(o.Solutions)
+		o.Metrics.ComputeFrontsAndCrowdDist(o.Solutions)
 
 		// exchange via tournament
 		if o.Ncpu > 1 {
@@ -274,7 +275,8 @@ func (o *Optimiser) evolve(cpu int) (nfeval int) {
 	}
 
 	// metrics
-	o.Groups[cpu].Metrics.Compute(competitors)
+	o.Groups[cpu].Metrics.ComputeLimitsAndNeighDist(competitors)
+	o.Groups[cpu].Metrics.ComputeFrontsAndCrowdDist(competitors)
 
 	// tournaments
 	for k := 0; k < len(pairs); k++ {

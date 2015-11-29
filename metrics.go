@@ -40,22 +40,16 @@ func (o *Metrics) Init(nsol int, prms *Parameters) {
 	}
 }
 
-// Compute computes all metric variables
-func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
+// ComputeLimitsAndNeighDist computes ova,flt,int limits and neighbour distances
+func (o *Metrics) ComputeLimitsAndNeighDist(sols []*Solution) {
 
-	// reset counters and find limits
-	fz := o.Fsizes
+	// find limits
 	nsol := len(sols)
 	for i, sol := range sols {
 
 		// reset values
 		sol.Repeated = false
-		sol.Nwins = 0
-		sol.Nlosses = 0
-		sol.FrontId = 0
-		sol.DistCrowd = 0
 		sol.DistNeigh = INF
-		fz[i] = 0
 
 		// ovas range
 		for j := 0; j < o.prms.Nova; j++ {
@@ -105,6 +99,21 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 			B := sols[j]
 			o.closest(A, B, dmax, nsol)
 		}
+	}
+}
+
+// ComputeFrontsAndCrowdDist computes non-dominated Pareto fronts and crowd distances
+func (o *Metrics) ComputeFrontsAndCrowdDist(sols []*Solution) (nfronts int) {
+
+	// reset counters
+	fz := o.Fsizes
+	nsol := len(sols)
+	for i, sol := range sols {
+		sol.Nwins = 0
+		sol.Nlosses = 0
+		sol.FrontId = 0
+		sol.DistCrowd = 0
+		fz[i] = 0
 	}
 
 	// compute dominance data
@@ -195,6 +204,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 	return
 }
 
+// closest computes neighbour distance and sets repeated flag
 func (o *Metrics) closest(A, B *Solution, dmax float64, nsol int) {
 	var dist float64
 	if o.prms.use_metrics_ovadistance {
@@ -218,6 +228,7 @@ func (o *Metrics) closest(A, B *Solution, dmax float64, nsol int) {
 	}
 }
 
+// calcdmax computes ova or flt max distance
 func (o *Metrics) calcdmax() (dmax float64) {
 	dmax = 1e-15
 	if o.prms.use_metrics_ovadistance {
