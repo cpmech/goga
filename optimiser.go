@@ -145,6 +145,9 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	o.Metrics = new(Metrics)
 	o.Metrics.Init(o.Nsol, &o.Parameters)
 	o.Metrics.ComputeLimitsAndNeighDist(o.Solutions)
+	if o.use_nondomfront_distcrowd {
+		o.Metrics.ComputeFrontsAndCrowdDist(o.Solutions)
+	}
 
 	// auxiliary
 	o.tmp = NewSolution(0, 0, &o.Parameters)
@@ -188,7 +191,9 @@ func (o *Optimiser) Solve() {
 
 		// compute metrics with all solutions included
 		o.Metrics.ComputeLimitsAndNeighDist(o.Solutions)
-		o.Metrics.ComputeFrontsAndCrowdDist(o.Solutions)
+		if o.use_nondomfront_distcrowd {
+			o.Metrics.ComputeFrontsAndCrowdDist(o.Solutions)
+		}
 
 		// exchange via tournament
 		if o.Ncpu > 1 {
@@ -276,7 +281,9 @@ func (o *Optimiser) evolve(cpu int) (nfeval int) {
 
 	// metrics
 	o.Groups[cpu].Metrics.ComputeLimitsAndNeighDist(competitors)
-	o.Groups[cpu].Metrics.ComputeFrontsAndCrowdDist(competitors)
+	if o.use_nondomfront_distcrowd {
+		o.Groups[cpu].Metrics.ComputeFrontsAndCrowdDist(competitors)
+	}
 
 	// tournaments
 	for k := 0; k < len(pairs); k++ {

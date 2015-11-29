@@ -57,6 +57,16 @@ func NewSolutions(nsol int, prms *Parameters) (res []*Solution) {
 	return
 }
 
+// Feasible tells whether this solution is feasible or not
+func (o *Solution) Feasible() bool {
+	for _, oor := range o.Oor {
+		if oor > 0 {
+			return false
+		}
+	}
+	return true
+}
+
 // CopyInto copies essential data into B
 func (A *Solution) CopyInto(B *Solution) {
 	B.Id = A.Id

@@ -57,6 +57,7 @@ type Parameters struct {
 	DelInt []int     // max int range
 
 	// internal flags
+	use_nondomfront_distcrowd    bool // use non-dominated front and crowd distance in computations
 	use_tournament_ovadistance   bool // use ova distance in tournament
 	use_tournament_acopyfirst    bool // copy from a to A in tournament
 	use_solution_absdistance     bool // use abs distance in solution
@@ -103,6 +104,7 @@ func (o *Parameters) Default() {
 	o.PmInt = 0.1
 
 	// internal flags
+	o.use_nondomfront_distcrowd = false
 	o.use_tournament_ovadistance = false
 	o.use_tournament_acopyfirst = true
 	o.use_solution_absdistance = false
