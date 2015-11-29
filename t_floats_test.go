@@ -180,6 +180,11 @@ func Test_flt05(tst *testing.T) {
 	opt.Nsol = 100
 	opt.Ncpu = 1
 	opt.GenAll = false
+	//opt.PmFlt = 1
+	//opt.DebEtam = 10
+	//opt.DebEtac = 10
+	//opt.CxFlt = CxFltDeb
+	opt.UseTriples = true
 	opt.Tf = 500
 	opt.DtExc = 1 //opt.Tf / 10
 	opt.Problem = 5
@@ -379,7 +384,12 @@ func Test_flt05(tst *testing.T) {
 
 	// solve
 	opt.Solve()
-	//opt.Metrics.Compute(opt.Solutions)
+
+	// print front results
+	//_, _, front := GetParetoFront(0, 1, opt.Solutions, true)
+	//for _, id := range front {
+	//io.Pforan("%8.5f\n", opt.Solutions[id].Flt)
+	//}
 
 	// plot
 	PlotOvaOvaPareto(io.Sf("fig_flt05_%s", pname), &opt, sols0, 0, 1, func() {

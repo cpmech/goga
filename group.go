@@ -12,6 +12,7 @@ type Group struct {
 	All     []*Solution // current and future solutions => view to Solutions and FutureSols
 	Indices []int       // indices of current solutions
 	Pairs   [][]int     // randomly selected pairs from Indices
+	Triples [][]int     // randomly selected tuples from Indices
 	Metrics *Metrics    // metrics
 }
 
@@ -23,6 +24,11 @@ func (o *Group) Init(cpu, ncpu int, solutions, futuresols []*Solution, prms *Par
 	o.All = make([]*Solution, o.Ncur*2)
 	o.Indices = make([]int, o.Ncur)
 	o.Pairs = utl.IntsAlloc(o.Ncur/2, 2)
+	if o.Ncur/3 > 1 {
+		o.Triples = utl.IntsAlloc(o.Ncur/3, 3)
+	} else {
+		o.Triples = utl.IntsAlloc(o.Ncur/2, 2)
+	}
 	for i := 0; i < o.Ncur; i++ {
 		o.All[i] = solutions[start+i]
 		o.All[o.Ncur+i] = futuresols[start+i]

@@ -10,6 +10,53 @@ import (
 	"github.com/cpmech/gosl/rnd"
 )
 
+// CxFltDE_triple implements the differential-evolution crossover
+func CxFltDE_triple(a, b, c, A, B, C, D, E, F []float64, prms *Parameters) {
+	scheme := 1
+	n := len(A)
+	ia := rnd.Int(0, n-1)
+	ib := rnd.Int(0, n-1)
+	ic := rnd.Int(0, n-1)
+	m := prms.DEmult
+	var x float64
+	for i := 0; i < n; i++ {
+
+		// a
+		if rnd.FlipCoin(prms.DEpc) || i == ia {
+			switch scheme {
+			default:
+				x = A[i] + m*(D[i]-E[i])
+			}
+		} else {
+			x = B[i]
+		}
+		a[i] = prms.EnforceRange(i, x)
+
+		// b
+		if rnd.FlipCoin(prms.DEpc) || i == ib {
+			switch scheme {
+			default:
+				x = B[i] + m*(E[i]-F[i])
+			}
+		} else {
+			x = C[i]
+		}
+		b[i] = prms.EnforceRange(i, x)
+
+		// c
+		if rnd.FlipCoin(prms.DEpc) || i == ic {
+			switch scheme {
+			default:
+				x = C[i] + m*(F[i]-D[i])
+			}
+		} else {
+			x = A[i]
+		}
+		c[i] = prms.EnforceRange(i, x)
+	}
+	return
+}
+
 // CxFltDE implements the differential-evolution crossover
 func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
 	scheme := 1

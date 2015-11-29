@@ -35,6 +35,7 @@ type Parameters struct {
 	Problem    int     // problem index
 	GenAll     bool    // generate all solutions together; i.e. not within each group/CPU
 	Mdmin      float64 // multiplier for min(distance) to find repeated solutions in Metrics
+	UseTriples bool    // use triples in solution
 
 	// crossover and mutation
 	DEpc    float64 // differential evolution pc
@@ -94,6 +95,7 @@ func (o *Parameters) Default() {
 	o.Problem = 1
 	o.GenAll = false
 	o.Mdmin = 0.0001
+	o.UseTriples = false
 
 	// crossover and mutation
 	o.DEpc = 0.1
@@ -154,6 +156,10 @@ func (o *Parameters) CalcDerived() {
 	}
 	if o.DtExc < 1 {
 		o.DtExc = 1
+	}
+	if o.Nsol/o.Ncpu/3 < 3 {
+		o.UseTriples = false
+		io.Pfred("WARNING: cannot use triples because %d < 3", o.Nsol/o.Ncpu/3)
 	}
 
 	// derived
