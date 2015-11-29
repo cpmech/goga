@@ -184,10 +184,10 @@ func Test_flt05(tst *testing.T) {
 	//opt.DebEtam = 10
 	//opt.DebEtac = 10
 	//opt.CxFlt = CxFltDeb
-	opt.UseTriples = true
+	opt.UseTriples = false
 	opt.Tf = 500
 	opt.DtExc = 1 //opt.Tf / 10
-	opt.Problem = 5
+	opt.Problem = 4
 	opt.LatinDup = 5
 	opt.Verbose = false
 	showinitsols := false
@@ -393,6 +393,88 @@ func Test_flt05(tst *testing.T) {
 
 	// plot
 	PlotOvaOvaPareto(io.Sf("fig_flt05_%s", pname), &opt, sols0, 0, 1, func() {
+		np := 101
+		F0 := utl.LinSpace(fmin[0], fmax[0], np)
+		F1 := make([]float64, np)
+		for i := 0; i < np; i++ {
+			F1[i] = f1f0(F0[i])
+		}
+		plt.Plot(F0, F1, io.Sf("'b-', label='%s'", pname))
+		if false {
+			for _, sol := range opt.Solutions {
+				xa, ya := sol.Ova[0], sol.Ova[1]
+				xb, yb := sol.Closest.Ova[0], sol.Closest.Ova[1]
+				plt.Text(xa, ya, io.Sf("%d:%d", sol.Id, sol.Closest.Id), "")
+				plt.Arrow(xa, ya, xb, yb, "st='->'")
+			}
+		}
+	}, nil, false)
+}
+
+func Test_flt06(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("flt06. FON problem")
+
+	// parameters
+	var opt Optimiser
+	opt.Default()
+	opt.Nsol = 100
+	opt.Ncpu = 1
+	opt.GenAll = false
+	opt.UseTriples = false
+	opt.Tf = 500
+	opt.DtExc = 1 //opt.Tf / 10
+	opt.LatinDup = 5
+	opt.Verbose = false
+	showinitsols := false
+
+	// FON (Fonseca and Fleming 1995), Deb 2001, p339
+	pname := "FON"
+	n := 10
+	opt.FltMin = make([]float64, n)
+	opt.FltMax = make([]float64, n)
+	for i := 0; i < n; i++ {
+		opt.FltMin[i] = -4
+		opt.FltMax[i] = 4
+	}
+	nf, ng, nh := 2, 0, 0
+	coef := 1.0 / math.Sqrt(float64(n))
+	fcn := func(f, g, h, x []float64, ξ []int, cpu int) {
+		sum0, sum1 := 0.0, 0.0
+		for i := 0; i < n; i++ {
+			sum0 += math.Pow(x[i]-coef, 2.0)
+			sum1 += math.Pow(x[i]+coef, 2.0)
+		}
+		f[0] = 1.0 - math.Exp(-sum0)
+		f[1] = 1.0 - math.Exp(-sum1)
+	}
+	fmin := []float64{0, 0}
+	fmax := []float64{0.98, 1}
+	f1f0 := func(f0 float64) float64 {
+		return 1.0 - math.Exp(-math.Pow(2.0-math.Sqrt(-math.Log(1.0-f0)), 2.0))
+	}
+
+	// initialise optimiser
+	opt.Init(GenTrialSolutions, nil, fcn, nf, ng, nh)
+
+	// initial solutions
+	var sols0 []*Solution
+	if showinitsols {
+		sols0 = opt.GetSolutionsCopy()
+	}
+
+	// solve
+	opt.Solve()
+
+	// print front results
+	//_, _, front := GetParetoFront(0, 1, opt.Solutions, true)
+	//for _, id := range front {
+	//io.Pforan("%8.5f\n", opt.Solutions[id].Flt)
+	//}
+
+	// plot
+	PlotOvaOvaPareto(io.Sf("fig_flt06_%s", pname), &opt, sols0, 0, 1, func() {
 		np := 101
 		F0 := utl.LinSpace(fmin[0], fmax[0], np)
 		F1 := make([]float64, np)

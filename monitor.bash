@@ -1,12 +1,12 @@
 #!/bin/bash
 
 FILES="*.go"
-TEST="flt05"
 
 refresh(){
     echo
     echo
-    go test -test.run="$TEST"
+    go test -test.run="flt05"
+    go test -test.run="flt06"
 }
 
 while true; do
