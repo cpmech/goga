@@ -16,7 +16,7 @@ import (
 
 func Test_flt01(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt01. sin⁶(5 π x) multimodal")
 
 	// parameters
@@ -46,7 +46,7 @@ func Test_flt01(tst *testing.T) {
 
 func Test_flt02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt02. quadratic function with inequalities")
 
 	// parameters
@@ -80,7 +80,7 @@ func Test_flt02(tst *testing.T) {
 
 func Test_flt03(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt03. circle with equality constraint")
 
 	// geometry
@@ -122,7 +122,7 @@ func Test_flt03(tst *testing.T) {
 
 func Test_flt04(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt04. two-bar truss. Pareto-optimal")
 
 	// data. from Coelho (2007) page 19
@@ -170,20 +170,21 @@ func Test_flt04(tst *testing.T) {
 
 func Test_flt05(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt05. ZDT problems")
 
 	// parameters
 	var opt Optimiser
 	opt.Default()
 	//opt.Seed = 1234
-	opt.Nsol = 100
-	opt.Ncpu = 4
+	opt.Nsol = 120
+	opt.Ncpu = 6
 	opt.GenAll = false
-	opt.UseTriples = true
-	opt.Tf = 500
+	opt.UseTriples = false
+	opt.Tf = 200
 	opt.DtExc = opt.Tf / 10
-	opt.Problem = 4
+	//opt.CxFlt = CxFltDeb
+	opt.Problem = 1
 	opt.LatinDup = 2
 	opt.Verbose = true
 	showinitsols := false
@@ -402,18 +403,19 @@ func Test_flt05(tst *testing.T) {
 
 func Test_flt06(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt06. FON problem")
 
 	// parameters
 	var opt Optimiser
 	opt.Default()
-	opt.Nsol = 100
-	opt.Ncpu = 4
+	opt.Nsol = 120
+	opt.Ncpu = 6
 	opt.GenAll = false
 	opt.UseTriples = true
-	opt.Tf = 500
+	opt.Tf = 200
 	opt.DtExc = opt.Tf / 10
+	//opt.CxFlt = CxFltDeb
 	opt.LatinDup = 2
 	opt.Verbose = true
 	showinitsols := false

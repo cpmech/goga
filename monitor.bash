@@ -6,7 +6,7 @@ refresh(){
     echo
     echo
     go test -test.run="flt05"
-    go test -test.run="flt06"
+    #go test -test.run="flt06"
 }
 
 while true; do
