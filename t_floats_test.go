@@ -184,7 +184,7 @@ func Test_flt05(tst *testing.T) {
 	//opt.DebEtam = 10
 	//opt.DebEtac = 10
 	//opt.CxFlt = CxFltDeb
-	opt.UseTriples = false
+	opt.UseTriples = true
 	opt.Tf = 500
 	opt.DtExc = 1 //opt.Tf / 10
 	opt.Problem = 4
@@ -384,6 +384,7 @@ func Test_flt05(tst *testing.T) {
 
 	// solve
 	opt.Solve()
+	io.Pforan("nfeval = %v\n", opt.Nfeval)
 
 	// print front results
 	//_, _, front := GetParetoFront(0, 1, opt.Solutions, true)
@@ -422,7 +423,7 @@ func Test_flt06(tst *testing.T) {
 	opt.Nsol = 100
 	opt.Ncpu = 1
 	opt.GenAll = false
-	opt.UseTriples = false
+	opt.UseTriples = true
 	opt.Tf = 500
 	opt.DtExc = 1 //opt.Tf / 10
 	opt.LatinDup = 5
@@ -466,6 +467,7 @@ func Test_flt06(tst *testing.T) {
 
 	// solve
 	opt.Solve()
+	io.Pforan("nfeval = %v\n", opt.Nfeval)
 
 	// print front results
 	//_, _, front := GetParetoFront(0, 1, opt.Solutions, true)

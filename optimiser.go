@@ -387,18 +387,10 @@ func (o *Optimiser) mutation(a *Solution) {
 
 // tournament performs the tournament among 4 individuals
 func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
-	var dAa, dAb, dBa, dBb float64
-	if o.use_tournament_ovadistance {
-		dAa = A.OvaDistance(a, m.Omin, m.Omax)
-		dAb = A.OvaDistance(b, m.Omin, m.Omax)
-		dBa = B.OvaDistance(a, m.Omin, m.Omax)
-		dBb = B.OvaDistance(b, m.Omin, m.Omax)
-	} else {
-		dAa = A.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
-		dAb = A.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
-		dBa = B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
-		dBb = B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
-	}
+	dAa := A.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
+	dAb := A.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
+	dBa := B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
+	dBb := B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	if o.use_tournament_acopyfirst {
 		if dAa+dBb < dAb+dBa {
 			if a.Fight(A) {

@@ -59,13 +59,10 @@ type Parameters struct {
 
 	// internal flags
 	use_nondomfront_distcrowd    bool // use non-dominated front and crowd distance in computations
-	use_tournament_ovadistance   bool // use ova distance in tournament
 	use_tournament_acopyfirst    bool // copy from a to A in tournament
-	use_solution_absdistance     bool // use abs distance in solution
 	use_solution_comparedneigh   bool // use distNeigh in comparison function
 	use_solution_frontcomparison bool // use front comparison in solution
 	use_solution_distneighfight  bool // use distNeigh in fight function
-	use_metrics_ovadistance      bool // use ova distance in metrics
 	use_metrics_repeated_enabled bool // use repeated_enabled in metrics
 	use_metrics_inf_crowd_dist   bool // use inf_crowd_dist in metrics
 	use_exchange_via_tournament  bool // use exchange via tournament
@@ -107,13 +104,10 @@ func (o *Parameters) Default() {
 
 	// internal flags
 	o.use_nondomfront_distcrowd = true
-	o.use_tournament_ovadistance = false
 	o.use_tournament_acopyfirst = true
-	o.use_solution_absdistance = false
 	o.use_solution_comparedneigh = false
 	o.use_solution_frontcomparison = o.use_nondomfront_distcrowd
 	o.use_solution_distneighfight = true
-	o.use_metrics_ovadistance = true
 	o.use_metrics_repeated_enabled = false
 	o.use_metrics_inf_crowd_dist = true
 	o.use_exchange_via_tournament = true

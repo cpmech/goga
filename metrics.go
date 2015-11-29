@@ -92,12 +92,11 @@ func (o *Metrics) ComputeLimitsAndNeighDist(sols []*Solution) {
 	}
 
 	// compute neighbour distances
-	dmax := o.calcdmax()
 	for i := 0; i < nsol; i++ {
 		A := sols[i]
 		for j := i + 1; j < nsol; j++ {
 			B := sols[j]
-			o.closest(A, B, dmax, nsol)
+			o.closest(A, B, nsol)
 		}
 	}
 }
@@ -205,13 +204,8 @@ func (o *Metrics) ComputeFrontsAndCrowdDist(sols []*Solution) (nfronts int) {
 }
 
 // closest computes neighbour distance and sets repeated flag
-func (o *Metrics) closest(A, B *Solution, dmax float64, nsol int) {
-	var dist float64
-	if o.prms.use_metrics_ovadistance {
-		dist = A.OvaDistance(B, o.Omin, o.Omax)
-	} else {
-		dist = A.Distance(B, o.Fmin, o.Fmax, o.Imin, o.Imax)
-	}
+func (o *Metrics) closest(A, B *Solution, nsol int) {
+	dist := A.OvaDistance(B, o.Omin, o.Omax)
 	if dist < A.DistNeigh {
 		A.DistNeigh = dist
 		A.Closest = B
@@ -220,26 +214,10 @@ func (o *Metrics) closest(A, B *Solution, dmax float64, nsol int) {
 		B.DistNeigh = dist
 		B.Closest = A
 	}
-	if dist < o.prms.Mdmin*dmax {
+	if dist < o.prms.Mdmin {
 		B.Repeated = o.prms.use_metrics_repeated_enabled
 		if o.prms.use_metrics_repeated_enabled {
 			B.FrontId = nsol
 		}
 	}
-}
-
-// calcdmax computes ova or flt max distance
-func (o *Metrics) calcdmax() (dmax float64) {
-	dmax = 1e-15
-	if o.prms.use_metrics_ovadistance {
-		for i := 0; i < o.prms.Nova; i++ {
-			dmax += math.Pow(o.Omax[i]-o.Omin[i], 2.0)
-		}
-	} else {
-		for i := 0; i < o.prms.Nflt; i++ {
-			dmax += math.Pow(o.Fmax[i]-o.Fmin[i], 2.0)
-		}
-	}
-	dmax = math.Sqrt(dmax)
-	return
 }
