@@ -178,13 +178,13 @@ func Test_flt05(tst *testing.T) {
 	opt.Default()
 	//opt.Seed = 1234
 	opt.Nsol = 100
-	opt.Ncpu = 1
+	opt.Ncpu = 4
 	opt.GenAll = false
-	opt.UseTriples = false
-	opt.Tf = 400
+	opt.UseTriples = true
+	opt.Tf = 500
 	opt.DtExc = opt.Tf / 10
 	opt.Problem = 4
-	opt.LatinDup = 5
+	opt.LatinDup = 2
 	opt.Verbose = true
 	showinitsols := false
 
@@ -417,12 +417,12 @@ func Test_flt06(tst *testing.T) {
 	var opt Optimiser
 	opt.Default()
 	opt.Nsol = 100
-	opt.Ncpu = 1
+	opt.Ncpu = 4
 	opt.GenAll = false
-	opt.UseTriples = false
-	opt.Tf = 500
+	opt.UseTriples = true
+	opt.Tf = 5000
 	opt.DtExc = opt.Tf / 10
-	opt.LatinDup = 5
+	opt.LatinDup = 2
 	opt.Verbose = true
 	showinitsols := false
 

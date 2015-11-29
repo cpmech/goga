@@ -4,16 +4,21 @@
 
 package goga
 
-import "github.com/cpmech/gosl/utl"
+import (
+	"github.com/cpmech/gosl/graph"
+	"github.com/cpmech/gosl/utl"
+)
 
 // Group holds a group of solutions
 type Group struct {
-	Ncur    int         // number of current solutions == len(All) / 2
-	All     []*Solution // current and future solutions => view to Solutions and FutureSols
-	Indices []int       // indices of current solutions
-	Pairs   [][]int     // randomly selected pairs from Indices
-	Triples [][]int     // randomly selected tuples from Indices
-	Metrics *Metrics    // metrics
+	Ncur    int           // number of current solutions == len(All) / 2
+	All     []*Solution   // current and future solutions => view to Solutions and FutureSols
+	Indices []int         // indices of current solutions
+	Pairs   [][]int       // randomly selected pairs from Indices
+	Triples [][]int       // randomly selected tuples from Indices
+	Metrics *Metrics      // metrics
+	Mdist   [][]float64   // match distances with triples
+	Match   graph.Munkres // matches with triples
 }
 
 // Init initialises group
@@ -36,4 +41,6 @@ func (o *Group) Init(cpu, ncpu int, solutions, futuresols []*Solution, prms *Par
 	}
 	o.Metrics = new(Metrics)
 	o.Metrics.Init(len(o.All), prms)
+	o.Mdist = utl.DblsAlloc(3, 3)
+	o.Match.Init(3, 3)
 }

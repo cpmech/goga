@@ -9,7 +9,6 @@ import (
 	gotime "time"
 
 	"github.com/cpmech/gosl/chk"
-	"github.com/cpmech/gosl/graph"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
@@ -51,12 +50,10 @@ type Optimiser struct {
 	Metrics    *Metrics    // metrics
 
 	// auxiliary
-	Nf, Ng, Nh int           // number of f, g, h functions
-	F, G, H    [][]float64   // [cpu] temporary
-	tmp        *Solution     // temporary solution
-	cpupairs   [][]int       // pairs of CPU ids. for exchanging solutions
-	mdist      [][]float64   // match distances with triples
-	match      graph.Munkres // matches with triples
+	Nf, Ng, Nh int         // number of f, g, h functions
+	F, G, H    [][]float64 // [cpu] temporary
+	tmp        *Solution   // temporary solution
+	cpupairs   [][]int     // pairs of CPU ids. for exchanging solutions
 
 	// stat
 	Nfeval int // number of function evaluations
@@ -153,8 +150,6 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	// auxiliary
 	o.tmp = NewSolution(0, 0, &o.Parameters)
 	o.cpupairs = utl.IntsAlloc(o.Ncpu/2, 2)
-	o.mdist = utl.DblsAlloc(3, 3)
-	o.match.Init(3, 3)
 }
 
 // GetSolutionsCopy returns a copy of Solutions
@@ -306,6 +301,8 @@ func (o *Optimiser) evolve_with_triples(cpu int) (nfeval int) {
 	competitors := o.Groups[cpu].All
 	indices := o.Groups[cpu].Indices
 	triples := o.Groups[cpu].Triples
+	mdist := o.Groups[cpu].Mdist
+	match := o.Groups[cpu].Match
 
 	// compute random triples
 	rnd.IntGetGroups(triples, indices)
@@ -342,13 +339,13 @@ func (o *Optimiser) evolve_with_triples(cpu int) (nfeval int) {
 		}
 		for i := 0; i < 3; i++ {
 			for j := 0; j < 3; j++ {
-				o.mdist[i][j] = main[i].Distance(news[j], m.Fmin, m.Fmax, m.Imin, m.Imax)
+				mdist[i][j] = main[i].Distance(news[j], m.Fmin, m.Fmax, m.Imin, m.Imax)
 			}
 		}
-		o.match.SetCostMatrix(o.mdist)
-		o.match.Run()
+		match.SetCostMatrix(mdist)
+		match.Run()
 		for i := 0; i < 3; i++ {
-			j := o.match.Links[i]
+			j := match.Links[i]
 			if !main[i].Fight(news[j]) {
 				news[j].CopyInto(main[i])
 			}
