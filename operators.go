@@ -12,7 +12,7 @@ import (
 
 // CxFltDE implements the differential-evolution crossover
 func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
-	scheme := 2
+	scheme := 1
 	n := len(A)
 	ia := rnd.Int(0, n-1)
 	ib := rnd.Int(0, n-1)
@@ -24,7 +24,7 @@ func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
 		if rnd.FlipCoin(prms.DEpc) || i == ia {
 			switch scheme {
 			case 1:
-				x = B[i] + m*(C[i]-D[i])
+				x = B[i] + m*(C[i]-D[i])*(E[i]-F[i])
 			default:
 				x = B[i] + m*(C[i]-D[i])
 			}
@@ -37,7 +37,7 @@ func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
 		if rnd.FlipCoin(prms.DEpc) || i == ib {
 			switch scheme {
 			case 1:
-				x = A[i] + m*(E[i]-F[i])
+				x = A[i] + m*(D[i]-C[i])*(F[i]-E[i])
 			default:
 				x = A[i] + m*(D[i]-C[i])
 			}
