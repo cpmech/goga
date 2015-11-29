@@ -149,7 +149,7 @@ func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt plt
 	if emptyMarker {
 		args += io.Sf(",markeredgecolor='%s',markerfacecolor='none'", fmt.C)
 	}
-	x, y := GetParetoFront(iOva, jOva, sols, false)
+	x, y, _ := GetParetoFront(iOva, jOva, sols, false)
 	plt.Plot(x, y, args)
 }
 

@@ -43,22 +43,22 @@ func GetResults(sols []*Solution, ovaOnly bool) (ova, oor [][]float64) {
 
 // GetParetoFrontRes returns results on Pareto front
 //  Input:
-//   j1  -- first column in res
-//   j2  -- second column in res
+//   p   -- first column in res
+//   q   -- second column in res
 //   res -- e.g. can be either ova or oor
-func GetParetoFrontRes(j1, j2 int, res [][]float64) (x, y []float64) {
-	front := utl.ParetoFront(res)
-	x = make([]float64, len(front))
-	y = make([]float64, len(front))
+func GetParetoFrontRes(p, q int, res [][]float64) (fp, fq []float64, front []int) {
+	front = utl.ParetoFront(res)
+	fp = make([]float64, len(front))
+	fq = make([]float64, len(front))
 	for i, id := range front {
-		x[i] = res[id][j1]
-		y[i] = res[id][j2]
+		fp[i] = res[id][p]
+		fq[i] = res[id][q]
 	}
 	return
 }
 
 // GetParetoFront returns Pareto front
-func GetParetoFront(iOva, jOva int, all []*Solution, feasibleOnly bool) (x, y []float64) {
+func GetParetoFront(p, q int, all []*Solution, feasibleOnly bool) (fp, fq []float64, front []int) {
 	var sols []*Solution
 	if feasibleOnly {
 		sols = GetFeasible(all)
@@ -66,5 +66,5 @@ func GetParetoFront(iOva, jOva int, all []*Solution, feasibleOnly bool) (x, y []
 		sols = all
 	}
 	ova, _ := GetResults(sols, true)
-	return GetParetoFrontRes(iOva, jOva, ova)
+	return GetParetoFrontRes(p, q, ova)
 }
