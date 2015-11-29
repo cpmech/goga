@@ -149,17 +149,8 @@ func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt plt
 	if emptyMarker {
 		args += io.Sf(",markeredgecolor='%s',markerfacecolor='none'", fmt.C)
 	}
-	first := true
-	for _, sol := range sols {
-		if sol.FrontId == 0 {
-			if first {
-				plt.PlotOne(sol.Ova[iOva], sol.Ova[jOva], args+",label='front'")
-				first = false
-			} else {
-				plt.PlotOne(sol.Ova[iOva], sol.Ova[jOva], args)
-			}
-		}
-	}
+	x, y := GetParetoFront(iOva, jOva, sols, false)
+	plt.Plot(x, y, args)
 }
 
 // PlotFltOva plots flt-ova points
