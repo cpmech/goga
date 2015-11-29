@@ -420,7 +420,7 @@ func Test_flt06(tst *testing.T) {
 	opt.Ncpu = 4
 	opt.GenAll = false
 	opt.UseTriples = true
-	opt.Tf = 5000
+	opt.Tf = 500
 	opt.DtExc = opt.Tf / 10
 	opt.LatinDup = 2
 	opt.Verbose = true

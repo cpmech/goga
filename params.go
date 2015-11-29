@@ -27,16 +27,14 @@ type Parameters struct {
 	DtOut int // delta time for output
 
 	// options
-	Pll         bool    // parallel
-	Seed        int     // seed for random numbers generator
-	LatinDup    int     // Latin Hypercube duplicates number
-	EpsMinProb  float64 // minimum value for 'h' constraints
-	Verbose     bool    // show messages
-	Problem     int     // problem index
-	GenAll      bool    // generate all solutions together; i.e. not within each group/CPU
-	Mdmin       float64 // multiplier for min(distance) to find repeated solutions in Metrics
-	UseTriples  bool    // use triples in solution
-	DelMinFight float64 // δmin to compute probability in fight function
+	Pll        bool    // parallel
+	Seed       int     // seed for random numbers generator
+	LatinDup   int     // Latin Hypercube duplicates number
+	EpsMinProb float64 // minimum value for 'h' constraints
+	Verbose    bool    // show messages
+	Problem    int     // problem index
+	GenAll     bool    // generate all solutions together; i.e. not within each group/CPU
+	UseTriples bool    // use triples in solution
 
 	// crossover and mutation
 	DEpc    float64 // differential evolution pc
@@ -59,10 +57,8 @@ type Parameters struct {
 	DelInt []int     // max int range
 
 	// internal flags
-	use_metrics_repeated_enabled bool // use repeated_enabled in metrics
-	use_metrics_inf_crowd_dist   bool // use inf_crowd_dist in metrics
-	use_exchange_via_tournament  bool // use exchange via tournament
-	use_exchange_one_randomly    bool // use exchange one randomly
+	use_exchange_via_tournament bool // use exchange via tournament
+	use_exchange_one_randomly   bool // use exchange one randomly
 }
 
 // Default sets default parameters
@@ -87,9 +83,7 @@ func (o *Parameters) Default() {
 	o.Verbose = true
 	o.Problem = 1
 	o.GenAll = false
-	o.Mdmin = 0.0001
 	o.UseTriples = false
-	o.DelMinFight = 1e-8
 
 	// crossover and mutation
 	o.DEpc = 0.1
@@ -100,8 +94,6 @@ func (o *Parameters) Default() {
 	o.PmInt = 0.1
 
 	// internal flags
-	o.use_metrics_repeated_enabled = false
-	o.use_metrics_inf_crowd_dist = true
 	o.use_exchange_via_tournament = true
 	o.use_exchange_one_randomly = false
 }

@@ -44,11 +44,9 @@ func (o *Metrics) Init(nsol int, prms *Parameters) {
 func (o *Metrics) ComputeLimitsAndNeighDist(sols []*Solution) {
 
 	// find limits
-	nsol := len(sols)
 	for i, sol := range sols {
 
 		// reset values
-		sol.Repeated = false
 		sol.DistNeigh = INF
 
 		// ovas range
@@ -90,15 +88,6 @@ func (o *Metrics) ComputeLimitsAndNeighDist(sols []*Solution) {
 			}
 		}
 	}
-
-	// compute neighbour distances
-	for i := 0; i < nsol; i++ {
-		A := sols[i]
-		for j := i + 1; j < nsol; j++ {
-			B := sols[j]
-			o.closest(A, B, nsol)
-		}
-	}
 }
 
 // ComputeFrontsAndCrowdDist computes non-dominated Pareto fronts and crowd distances
@@ -118,14 +107,8 @@ func (o *Metrics) ComputeFrontsAndCrowdDist(sols []*Solution) (nfronts int) {
 	// compute dominance data
 	for i := 0; i < nsol; i++ {
 		A := sols[i]
-		if A.Repeated {
-			continue
-		}
 		for j := i + 1; j < nsol; j++ {
 			B := sols[j]
-			if B.Repeated {
-				continue
-			}
 			A_dom, B_dom := A.Compare(B)
 			if A_dom {
 				A.WinOver[A.Nwins] = B // i dominates j
@@ -142,9 +125,6 @@ func (o *Metrics) ComputeFrontsAndCrowdDist(sols []*Solution) (nfronts int) {
 
 	// first front
 	for _, sol := range sols {
-		if sol.Repeated {
-			continue
-		}
 		if sol.Nlosses == 0 {
 			o.Fronts[0][fz[0]] = sol
 			fz[0]++
@@ -159,14 +139,8 @@ func (o *Metrics) ComputeFrontsAndCrowdDist(sols []*Solution) (nfronts int) {
 		nfronts++
 		for s := 0; s < fz[r]; s++ {
 			A := front[s]
-			if A.Repeated {
-				chk.Panic("_internal_error_ repeated is wrong 1")
-			}
 			for k := 0; k < A.Nwins; k++ {
 				B := A.WinOver[k]
-				if B.Repeated {
-					chk.Panic("_internal_error_ repeatd is wrong 2")
-				}
 				B.Nlosses--
 				if B.Nlosses == 0 { // B belongs to next front
 					B.FrontId = r + 1
@@ -179,7 +153,7 @@ func (o *Metrics) ComputeFrontsAndCrowdDist(sols []*Solution) (nfronts int) {
 
 	// crowd distances
 	for r := 0; r < nfronts; r++ {
-		l, m, n := fz[r], fz[r]-1, fz[r]-2
+		l, m := fz[r], fz[r]-1
 		if l == 1 {
 			o.Fronts[r][0].DistCrowd = -1
 			continue
@@ -188,36 +162,12 @@ func (o *Metrics) ComputeFrontsAndCrowdDist(sols []*Solution) (nfronts int) {
 		for j := 0; j < o.prms.Nova; j++ {
 			SortByOva(F, j)
 			δ := o.Omax[j] - o.Omin[j] + 1e-15
-			if o.prms.use_metrics_inf_crowd_dist {
-				F[0].DistCrowd = INF
-				F[m].DistCrowd = INF
-			} else {
-				F[0].DistCrowd += math.Pow((F[1].Ova[j]-F[0].Ova[j])/δ, 2.0)
-				F[m].DistCrowd += math.Pow((F[m].Ova[j]-F[n].Ova[j])/δ, 2.0)
-			}
+			F[0].DistCrowd = INF
+			F[m].DistCrowd = INF
 			for i := 1; i < m; i++ {
 				F[i].DistCrowd += ((F[i].Ova[j] - F[i-1].Ova[j]) / δ) * ((F[i+1].Ova[j] - F[i].Ova[j]) / δ)
 			}
 		}
 	}
 	return
-}
-
-// closest computes neighbour distance and sets repeated flag
-func (o *Metrics) closest(A, B *Solution, nsol int) {
-	dist := A.OvaDistance(B, o.Omin, o.Omax)
-	if dist < A.DistNeigh {
-		A.DistNeigh = dist
-		A.Closest = B
-	}
-	if dist < B.DistNeigh {
-		B.DistNeigh = dist
-		B.Closest = A
-	}
-	if dist < o.prms.Mdmin {
-		B.Repeated = o.prms.use_metrics_repeated_enabled
-		if o.prms.use_metrics_repeated_enabled {
-			B.FrontId = nsol
-		}
-	}
 }
