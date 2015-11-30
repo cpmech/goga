@@ -153,6 +153,12 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 	if B_dom {
 		return false
 	}
+	if A.prms.Nova < 2 {
+		if rnd.FlipCoin(0.5) {
+			return true
+		}
+		return false
+	}
 	if A.FrontId == B.FrontId {
 		if A.DistCrowd > B.DistCrowd {
 			return true
