@@ -35,6 +35,7 @@ type Parameters struct {
 	Problem    int     // problem index
 	GenAll     bool    // generate all solutions together; i.e. not within each group/CPU
 	UseTriples bool    // use triples in solution
+	Ntrials    int     // run manny trials
 
 	// crossover and mutation
 	DEpc    float64 // differential evolution pc
@@ -84,6 +85,7 @@ func (o *Parameters) Default() {
 	o.Problem = 1
 	o.GenAll = false
 	o.UseTriples = false
+	o.Ntrials = 10
 
 	// crossover and mutation
 	o.DEpc = 0.1

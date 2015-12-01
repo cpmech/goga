@@ -44,6 +44,7 @@ type Optimiser struct {
 	MtInt      MtInt_t   // mutation function for ints
 
 	// essential
+	Generator  Generator_t // generate solutions
 	Solutions  []*Solution // current solutions
 	FutureSols []*Solution // future solutions
 	Groups     []*Group    // [cpu] competitors per CPU. pointers to current and future solutions
@@ -56,7 +57,9 @@ type Optimiser struct {
 	cpupairs   [][]int     // pairs of CPU ids. for exchanging solutions
 
 	// stat
-	Nfeval int // number of function evaluations
+	Nfeval   int         // number of function evaluations
+	XfltBest [][]float64 // best results after RunMany
+	XintBest [][]int     // best results after RunMany
 }
 
 // Initialises continues initialisation by generating individuals
@@ -93,6 +96,7 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	}
 
 	// calc derived parameters
+	o.Generator = gen
 	o.CalcDerived()
 
 	// crossover and mutation functions
@@ -112,10 +116,22 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 		o.Groups[cpu].Init(cpu, o.Ncpu, o.Solutions, o.FutureSols, &o.Parameters)
 	}
 
+	// metrics
+	o.Metrics = new(Metrics)
+	o.Metrics.Init(o.Nsol, &o.Parameters)
+
+	// auxiliary
+	o.tmp = NewSolution(0, 0, &o.Parameters)
+	o.cpupairs = utl.IntsAlloc(o.Ncpu/2, 2)
+
 	// generate trial solutions
+	o.gensolutions(0)
+}
+
+func (o *Optimiser) gensolutions(itrial int) {
 	t0 := gotime.Now()
 	if o.GenAll {
-		gen(o.Solutions, &o.Parameters)
+		o.Generator(o.Solutions, &o.Parameters)
 		for _, sol := range o.Solutions {
 			o.ObjFunc(sol, 0)
 		}
@@ -125,7 +141,7 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 			go func(cpu int) {
 				start, endp1 := (cpu*o.Nsol)/o.Ncpu, ((cpu+1)*o.Nsol)/o.Ncpu
 				sols := o.Solutions[start:endp1]
-				gen(sols, &o.Parameters)
+				o.Generator(sols, &o.Parameters)
 				for _, sol := range sols {
 					o.ObjFunc(sol, cpu)
 				}
@@ -137,18 +153,10 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 		}
 	}
 	o.Nfeval = o.Nsol
-	if o.Verbose {
+	if o.Verbose && itrial > 0 {
 		io.Pf(". . . trial solutions generated in %v . . .\n", gotime.Now().Sub(t0))
 	}
-
-	// metrics
-	o.Metrics = new(Metrics)
-	o.Metrics.Init(o.Nsol, &o.Parameters)
 	o.Metrics.Compute(o.Solutions)
-
-	// auxiliary
-	o.tmp = NewSolution(0, 0, &o.Parameters)
-	o.cpupairs = utl.IntsAlloc(o.Ncpu/2, 2)
 }
 
 // GetSolutionsCopy returns a copy of Solutions
@@ -225,6 +233,76 @@ func (o *Optimiser) Solve() {
 	if o.Verbose {
 		io.Pf("nfeval = %d\n", o.Nfeval)
 	}
+}
+
+func (o *Optimiser) RunMany() {
+	if o.Verbose {
+		t0 := gotime.Now()
+		defer func() {
+			io.Pfblue2("\ncpu time = %v\n", gotime.Now().Sub(t0))
+		}()
+	}
+	for itrial := 0; itrial < o.Ntrials; itrial++ {
+		if itrial > 0 {
+			o.gensolutions(itrial)
+		}
+		o.Solve()
+		if o.Nova < 2 {
+			SortByOva(o.Solutions, 0)
+		} else {
+			SortByTradeoff(o.Solutions)
+		}
+		if o.Nflt > 0 {
+			o.XfltBest = append(o.XfltBest, o.Solutions[0].Flt)
+		}
+		if o.Nflt > 0 {
+			o.XintBest = append(o.XintBest, o.Solutions[0].Int)
+		}
+	}
+	return
+}
+
+// StatMinProb prints statistical analysis when using MinProb
+func (o *Optimiser) StatMinProb(idxF, hlen int, Fref float64, verbose bool) (fmin, fave, fmax, fdev float64) {
+	if o.MinProb == nil {
+		io.Pfred("_warning_ MinProb is <nil>\n")
+		return
+	}
+	nfb := len(o.XfltBest)
+	nib := len(o.XintBest)
+	if nfb+nib == 0 {
+		fmin, fave, fmax, fdev = 1e30, 1e30, 1e30, 1e30
+		io.Pfred("_warning_ XfltBest and XintBest are not available. Call RunMany first.\n")
+		return
+	}
+	nbest := utl.Imax(nfb, nib)
+	var xf []float64
+	var xi []int
+	F := make([]float64, nbest)
+	cpu := 0
+	for i := 0; i < nbest; i++ {
+		if nfb > 0 {
+			xf = o.XfltBest[i]
+		}
+		if nib > 0 {
+			xi = o.XintBest[i]
+		}
+		o.MinProb(o.F[cpu], o.G[cpu], o.H[cpu], xf, xi, cpu)
+		F[i] = o.F[cpu][idxF]
+	}
+	if nbest < 2 {
+		fmin, fave, fmax = F[0], F[0], F[0]
+		return
+	}
+	fmin, fave, fmax, fdev = rnd.StatBasic(F, true)
+	if verbose {
+		io.Pf("fmin = %v\n", fmin)
+		io.PfYel("fave = %v (%v)\n", fave, Fref)
+		io.Pf("fmax = %v\n", fmax)
+		io.Pf("fdev = %v\n\n", fdev)
+		io.Pf(rnd.BuildTextHist(nice_num(fmin-0.05), nice_num(fmax+0.05), 11, F, "%.2f", hlen))
+	}
+	return
 }
 
 func (o *Optimiser) exchange_via_tournament(i, j int) {
@@ -391,4 +469,10 @@ func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
 			a.CopyInto(B)
 		}
 	}
+}
+
+// nice_num returns a truncated float
+func nice_num(x float64) float64 {
+	s := io.Sf("%.2f", x)
+	return io.Atof(s)
 }

@@ -227,3 +227,8 @@ func SortByOva(s []*Solution, idxOva int) {
 func SortByBest(s []*Solution) {
 	sort.Sort(solByBest(s))
 }
+
+// TODO
+func SortByTradeoff(s []*Solution) {
+	chk.Panic("SortByTradeoff: TODO")
+}
