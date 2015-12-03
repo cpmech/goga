@@ -24,6 +24,7 @@ func Test_functions(tst *testing.T) {
 	opt.UseTriples = true
 	opt.Verbose = false
 	opt.Problem = 1
+	opt.Ntrials = 30
 
 	// problem variables
 	var ng, nh int    // number of functions
@@ -36,7 +37,7 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 1
 	case 1:
-		opt.Nsol = 12
+		opt.Nsol = 30
 		opt.Tf = 100
 		opt.FltMin = []float64{0, 0}
 		opt.FltMax = []float64{6, 6}
@@ -308,7 +309,7 @@ func Test_functions(tst *testing.T) {
 	opt.StatMinProb(0, 60, fs, true)
 
 	// results
-	SortByBest(opt.Solutions)
+	SortByOva(opt.Solutions, 0)
 	best := opt.Solutions[0]
 	io.Pfyel("     xs = %.6f\n", xs)
 	io.Pfyel("     fs = %.6f\n", fs)

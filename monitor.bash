@@ -5,8 +5,7 @@ FILES="*.go"
 refresh(){
     echo
     echo
-    go test -test.run="flt05"
-    #go test -test.run="flt06"
+    go test -test.run="functions"
 }
 
 while true; do

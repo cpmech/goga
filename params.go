@@ -127,6 +127,7 @@ func (o *Parameters) CalcDerived() {
 	if o.Ncpu < 2 {
 		o.Ncpu = 1
 		o.Pll = false
+		o.DtExc = 1
 	}
 	if o.Ncpu > o.Nsol/2 {
 		chk.Panic("number of CPU must be smaller than or equal to half the number of solutions. Ncpu=%d > Nsol/2=%d", o.Ncpu, o.Nsol/2)

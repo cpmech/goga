@@ -95,6 +95,11 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		}
 	}
 
+	// skip if single-objective problem
+	if o.prms.Nova < 2 {
+		return
+	}
+
 	// compute dominance data
 	for i := 0; i < nsol; i++ {
 		A := sols[i]

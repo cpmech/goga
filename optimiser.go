@@ -235,6 +235,7 @@ func (o *Optimiser) Solve() {
 	}
 }
 
+// RunMany runs many trials in order to produce statistics
 func (o *Optimiser) RunMany() {
 	if o.Verbose {
 		t0 := gotime.Now()
@@ -252,11 +253,14 @@ func (o *Optimiser) RunMany() {
 		} else {
 			SortByTradeoff(o.Solutions)
 		}
-		if o.Nflt > 0 {
-			o.XfltBest = append(o.XfltBest, o.Solutions[0].Flt)
-		}
-		if o.Nflt > 0 {
-			o.XintBest = append(o.XintBest, o.Solutions[0].Int)
+		if o.Solutions[0].Feasible() {
+			xf, xi := o.Solutions[0].GetCopyResults()
+			if o.Nflt > 0 {
+				o.XfltBest = append(o.XfltBest, xf)
+			}
+			if o.Nflt > 0 {
+				o.XintBest = append(o.XintBest, xi)
+			}
 		}
 	}
 	return
