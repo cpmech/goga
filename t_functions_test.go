@@ -21,10 +21,13 @@ func Test_functions(tst *testing.T) {
 	var opt Optimiser
 	opt.Default()
 	opt.Ncpu = 1
-	opt.UseTriples = true
 	opt.Verbose = false
-	opt.Problem = 1
-	opt.Ntrials = 30
+	opt.Problem = 2
+	opt.Ntrials = 100
+	opt.DEpc = 0.5
+	opt.DEmult = 0.5
+	//opt.PmFlt = 1
+	//opt.DebEtam = 1
 
 	// problem variables
 	var ng, nh int    // number of functions
@@ -37,7 +40,7 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 1
 	case 1:
-		opt.Nsol = 30
+		opt.Nsol = 20
 		opt.Tf = 100
 		opt.FltMin = []float64{0, 0}
 		opt.FltMax = []float64{6, 6}
@@ -52,8 +55,10 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 2
 	case 2:
-		opt.Nsol = 12
-		opt.Tf = 500
+		opt.Ncpu = 1
+		opt.Nsol = 50
+		opt.Tf = 200
+		opt.DtExc = opt.Tf / 20
 		opt.FltMin = []float64{704.4148, 68.6, 0.0, 193.0, 25.0}
 		opt.FltMax = []float64{906.3855, 288.88, 134.75, 287.0966, 84.1988}
 		xs = []float64{705.1803, 68.60005, 102.90001, 282.324999, 37.5850413}

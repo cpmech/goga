@@ -34,10 +34,11 @@ type Parameters struct {
 	Verbose    bool    // show messages
 	Problem    int     // problem index
 	GenAll     bool    // generate all solutions together; i.e. not within each group/CPU
-	UseTriples bool    // use triples in solution
 	Ntrials    int     // run manny trials
 
 	// crossover and mutation
+	DEuseC  bool    // differential evolution use C-multiplier (Normal Distributed)
+	DEpm    float64 // differential evolution pm
 	DEpc    float64 // differential evolution pc
 	DEmult  float64 // differential evolution multiplier
 	DebEtac float64 // Deb's crossover parameter
@@ -84,10 +85,11 @@ func (o *Parameters) Default() {
 	o.Verbose = true
 	o.Problem = 1
 	o.GenAll = false
-	o.UseTriples = false
 	o.Ntrials = 10
 
 	// crossover and mutation
+	o.DEuseC = true
+	o.DEpm = 0.5
 	o.DEpc = 0.1
 	o.DEmult = 0.5
 	o.DebEtac = 1
@@ -137,10 +139,6 @@ func (o *Parameters) CalcDerived() {
 	}
 	if o.DtExc < 1 {
 		o.DtExc = 1
-	}
-	if o.Nsol/o.Ncpu/3 < 3 {
-		o.UseTriples = false
-		io.Pfred("WARNING: cannot use triples because %d < 3", o.Nsol/o.Ncpu/3)
 	}
 
 	// derived

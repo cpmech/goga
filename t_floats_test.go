@@ -180,11 +180,9 @@ func Test_flt05(tst *testing.T) {
 	opt.Nsol = 120
 	opt.Ncpu = 6
 	opt.GenAll = false
-	opt.UseTriples = false
 	opt.Tf = 200
 	opt.DtExc = opt.Tf / 10
-	//opt.CxFlt = CxFltDeb
-	opt.Problem = 1
+	opt.Problem = 5
 	opt.LatinDup = 2
 	opt.Verbose = true
 	showinitsols := false
@@ -283,6 +281,8 @@ func Test_flt05(tst *testing.T) {
 	// ZDT4, Deb 2001, p358
 	case 4:
 		pname = "ZDT4"
+		opt.Tf = 500
+		opt.DtExc = opt.Tf / 10
 		n := 10
 		opt.FltMin = make([]float64, n)
 		opt.FltMax = make([]float64, n)
@@ -313,6 +313,8 @@ func Test_flt05(tst *testing.T) {
 	// FON (Fonseca and Fleming 1995), Deb 2001, p339
 	case 5:
 		pname = "FON"
+		opt.Tf = 300
+		opt.DtExc = opt.Tf / 10
 		n := 10
 		opt.FltMin = make([]float64, n)
 		opt.FltMax = make([]float64, n)
@@ -412,7 +414,6 @@ func Test_flt06(tst *testing.T) {
 	opt.Nsol = 120
 	opt.Ncpu = 6
 	opt.GenAll = false
-	opt.UseTriples = true
 	opt.Tf = 200
 	opt.DtExc = opt.Tf / 10
 	//opt.CxFlt = CxFltDeb

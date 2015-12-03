@@ -6,150 +6,38 @@ package goga
 
 import (
 	"math"
+	"math/rand"
 
 	"github.com/cpmech/gosl/rnd"
 )
 
-// CxFltDE_triple implements the differential-evolution crossover
-func CxFltDE_triple(a, b, c, A, B, C, D, E, F []float64, prms *Parameters) {
-	scheme := 1
-	n := len(A)
-	ia := rnd.Int(0, n-1)
-	ib := rnd.Int(0, n-1)
-	ic := rnd.Int(0, n-1)
-	m := prms.DEmult
-	var x float64
-	for i := 0; i < n; i++ {
-
-		// a
-		if rnd.FlipCoin(prms.DEpc) || i == ia {
-			switch scheme {
-			default:
-				x = A[i] + m*(D[i]-E[i])
-			}
-		} else {
-			x = B[i]
-		}
-		a[i] = prms.EnforceRange(i, x)
-
-		// b
-		if rnd.FlipCoin(prms.DEpc) || i == ib {
-			switch scheme {
-			default:
-				x = B[i] + m*(E[i]-F[i])
-			}
-		} else {
-			x = C[i]
-		}
-		b[i] = prms.EnforceRange(i, x)
-
-		// c
-		if rnd.FlipCoin(prms.DEpc) || i == ic {
-			switch scheme {
-			default:
-				x = C[i] + m*(F[i]-D[i])
-			}
-		} else {
-			x = A[i]
-		}
-		c[i] = prms.EnforceRange(i, x)
+func de_operator(u, x, x0, x1, x2 []float64, prms *Parameters) {
+	C := 1.0
+	if prms.DEuseC {
+		C = 1.0 + rand.NormFloat64()*0.25
 	}
-	return
+	F := prms.DEmult * C
+	K := 0.5 * (F + 1.0)
+	n := len(x)
+	I := rnd.Int(0, n-1)
+	for i := 0; i < n; i++ {
+		if rnd.FlipCoin(prms.DEpc) || i == I {
+			if rnd.FlipCoin(prms.DEpm) {
+				u[i] = x0[i] + F*(x1[i]-x2[i])
+			} else {
+				u[i] = x0[i] + K*(x1[i]+x2[i]-2.0*x0[i])
+			}
+		} else {
+			u[i] = x[i]
+		}
+		u[i] = prms.EnforceRange(i, u[i])
+	}
 }
 
 // CxFltDE implements the differential-evolution crossover
-func CxFltDE(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
-	scheme := 0
-	n := len(A)
-	ia := rnd.Int(0, n-1)
-	ib := rnd.Int(0, n-1)
-	m := prms.DEmult
-	var x float64
-	for i := 0; i < n; i++ {
-
-		// a
-		if rnd.FlipCoin(prms.DEpc) || i == ia {
-			switch scheme {
-			case 1:
-				x = B[i] + m*(C[i]-D[i])*(E[i]-F[i])
-			case 2:
-				x = B[i] + m*(C[i]-D[i])
-			default:
-				x = B[i] + m*(C[i]-D[i])
-			}
-		} else {
-			x = A[i]
-		}
-		a[i] = prms.EnforceRange(i, x)
-
-		// b
-		if rnd.FlipCoin(prms.DEpc) || i == ib {
-			switch scheme {
-			case 1:
-				x = A[i] + m*(D[i]-C[i])*(F[i]-E[i])
-			case 2:
-				x = A[i] + m*(E[i]-F[i])
-			default:
-				x = A[i] + m*(D[i]-C[i])
-			}
-		} else {
-			x = B[i]
-		}
-		b[i] = prms.EnforceRange(i, x)
-	}
-	return
-}
-
-// CxFltDeb implements Deb's simulated binary crossover (SBX)
-func CxFltDeb(a, b, A, B, C, D, E, F []float64, prms *Parameters) {
-
-	// for each gene
-	ϵ := 1e-10
-	cc := 1.0 / (prms.DebEtac + 1.0)
-	size := len(A)
-	var u, α, β, βb, x1, x2, δx, xl, xu float64
-	for i := 0; i < size; i++ {
-
-		// parents' basis values
-		x1, x2 = A[i], B[i]
-		if x1 > x2 {
-			x1, x2 = x2, x1
-		}
-		δx = x2 - x1
-
-		// copy only
-		if rnd.FlipCoin(0.5) || δx < ϵ {
-			a[i], b[i] = A[i], B[i]
-			continue
-		}
-
-		// random number
-		u = rnd.Float64(0, 1)
-
-		// range
-		xl, xu = prms.FltMin[i], prms.FltMax[i]
-
-		// first offspring
-		β = 1.0 + 2.0*(x1-xl)/δx
-		α = 2.0 - math.Pow(β, -(prms.DebEtac+1.0))
-		if u <= 1.0/α {
-			βb = math.Pow(α*u, cc)
-		} else {
-			βb = math.Pow(1.0/(2.0-α*u), cc)
-		}
-		a[i] = prms.EnforceRange(i, 0.5*(x1+x2-βb*δx))
-
-		// second offspring
-		β = 1.0 + 2.0*(xu-x2)/δx
-		α = 2.0 - math.Pow(β, -(prms.DebEtac+1.0))
-		if u <= (1.0 / α) {
-			βb = math.Pow(α*u, cc)
-		} else {
-			βb = math.Pow(1.0/(2.0-α*u), cc)
-		}
-		b[i] = prms.EnforceRange(i, 0.5*(x1+x2+βb*δx))
-	}
-	return
+func CxFltDE(a, b, A, B, x0, x1, x2, y0, y1, y2 []float64, prms *Parameters) {
+	de_operator(a, A, x0, x1, x2, prms)
+	de_operator(b, B, y0, y1, y2, prms)
 }
 
 // MtFltDeb implements Deb's parameter-based mutation operator
