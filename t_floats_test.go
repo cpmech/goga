@@ -170,7 +170,7 @@ func Test_flt04(tst *testing.T) {
 
 func Test_flt05(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("flt05. ZDT problems")
 
 	// parameters
@@ -178,11 +178,11 @@ func Test_flt05(tst *testing.T) {
 	opt.Default()
 	//opt.Seed = 1234
 	opt.Nsol = 120
-	opt.Ncpu = 6
+	opt.Ncpu = 3
 	opt.GenAll = false
 	opt.Tf = 200
 	opt.DtExc = opt.Tf / 10
-	opt.Problem = 5
+	opt.Problem = 4
 	opt.LatinDup = 2
 	opt.Verbose = true
 	showinitsols := false
@@ -281,7 +281,7 @@ func Test_flt05(tst *testing.T) {
 	// ZDT4, Deb 2001, p358
 	case 4:
 		pname = "ZDT4"
-		opt.Tf = 500
+		opt.Tf = 800
 		opt.DtExc = opt.Tf / 10
 		n := 10
 		opt.FltMin = make([]float64, n)

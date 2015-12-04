@@ -6,23 +6,25 @@ package goga
 
 import (
 	"math"
-	"math/rand"
 
 	"github.com/cpmech/gosl/rnd"
 )
 
 func de_operator(u, x, x0, x1, x2 []float64, prms *Parameters) {
-	C := 1.0
-	if prms.DEuseC {
-		C = 1.0 + rand.NormFloat64()*0.25
+	C, F := prms.DiffEvolC, prms.DiffEvolF
+	if prms.DiffEvolUseCmult {
+		C *= rnd.Float64(0, 1)
 	}
-	F := prms.DEmult * C
+	if prms.DiffEvolUseFmult {
+		//F *= (1.0 + rand.NormFloat64()*0.25)
+		F *= rnd.Float64(0, 1)
+	}
 	K := 0.5 * (F + 1.0)
 	n := len(x)
 	I := rnd.Int(0, n-1)
 	for i := 0; i < n; i++ {
-		if rnd.FlipCoin(prms.DEpc) || i == I {
-			if rnd.FlipCoin(prms.DEpm) {
+		if rnd.FlipCoin(C) || i == I {
+			if rnd.FlipCoin(prms.DiffEvolPm) {
 				u[i] = x0[i] + F*(x1[i]-x2[i])
 			} else {
 				u[i] = x0[i] + K*(x1[i]+x2[i]-2.0*x0[i])

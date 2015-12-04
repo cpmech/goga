@@ -24,10 +24,6 @@ func Test_functions(tst *testing.T) {
 	opt.Verbose = false
 	opt.Problem = 2
 	opt.Ntrials = 100
-	opt.DEpc = 0.5
-	opt.DEmult = 0.5
-	//opt.PmFlt = 1
-	//opt.DebEtam = 1
 
 	// problem variables
 	var ng, nh int    // number of functions

@@ -36,11 +36,14 @@ type Parameters struct {
 	GenAll     bool    // generate all solutions together; i.e. not within each group/CPU
 	Ntrials    int     // run manny trials
 
+	// differential evolution
+	DiffEvolC        float64 // crossover probability
+	DiffEvolF        float64 // vector length multiplier
+	DiffEvolPm       float64 // mutation probability. use rotation otherwise
+	DiffEvolUseCmult bool    // use C random multiplier
+	DiffEvolUseFmult bool    // use F random multiplier
+
 	// crossover and mutation
-	DEuseC  bool    // differential evolution use C-multiplier (Normal Distributed)
-	DEpm    float64 // differential evolution pm
-	DEpc    float64 // differential evolution pc
-	DEmult  float64 // differential evolution multiplier
 	DebEtac float64 // Deb's crossover parameter
 	DebEtam float64 // Deb's mutation parameters
 	PmFlt   float64 // probability of mutation for floats
@@ -87,11 +90,14 @@ func (o *Parameters) Default() {
 	o.GenAll = false
 	o.Ntrials = 10
 
+	// differential evolution
+	o.DiffEvolC = 1.0
+	o.DiffEvolF = 1.0
+	o.DiffEvolPm = 0.8
+	o.DiffEvolUseCmult = true
+	o.DiffEvolUseFmult = true
+
 	// crossover and mutation
-	o.DEuseC = true
-	o.DEpm = 0.5
-	o.DEpc = 0.1
-	o.DEmult = 0.5
 	o.DebEtac = 1
 	o.DebEtam = 1
 	o.PmFlt = 0.0
