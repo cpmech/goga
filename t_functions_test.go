@@ -22,8 +22,12 @@ func Test_functions(tst *testing.T) {
 	opt.Default()
 	opt.Ncpu = 1
 	opt.Verbose = false
-	opt.Problem = 2
-	opt.Ntrials = 100
+	opt.Problem = 7
+	opt.Ntrials = 20
+	//opt.DiffEvolC = 0.5
+	//opt.DiffEvolF = 0.5
+	//opt.DiffEvolUseCmult = false
+	//opt.DiffEvolUseFmult = false
 
 	// problem variables
 	var ng, nh int    // number of functions
@@ -54,7 +58,6 @@ func Test_functions(tst *testing.T) {
 		opt.Ncpu = 1
 		opt.Nsol = 50
 		opt.Tf = 200
-		opt.DtExc = opt.Tf / 20
 		opt.FltMin = []float64{704.4148, 68.6, 0.0, 193.0, 25.0}
 		opt.FltMax = []float64{906.3855, 288.88, 134.75, 287.0966, 84.1988}
 		xs = []float64{705.1803, 68.60005, 102.90001, 282.324999, 37.5850413}
@@ -115,8 +118,9 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 3
 	case 3:
-		opt.Nsol = 24
-		opt.Tf = 500
+		opt.Nsol = 130
+		opt.Ncpu = 6
+		opt.Tf = 300
 		opt.FltMin = make([]float64, 13)
 		opt.FltMax = make([]float64, 13)
 		for i := 0; i < 9; i++ {
@@ -152,8 +156,9 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 4
 	case 4:
-		opt.Nsol = 24
-		opt.Tf = 1000
+		opt.Nsol = 160
+		opt.Ncpu = 4
+		opt.Tf = 300
 		opt.FltMin = make([]float64, 8)
 		opt.FltMax = make([]float64, 8)
 		opt.FltMin[0], opt.FltMax[0] = 100, 10000
@@ -177,7 +182,9 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 5
 	case 5:
-		opt.Nsol = 24
+		opt.Nsol = 70
+		opt.Ncpu = 2
+		opt.Tf = 100
 		opt.FltMin = make([]float64, 7)
 		opt.FltMax = make([]float64, 7)
 		for i := 0; i < 7; i++ {
@@ -197,7 +204,8 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 6. also Coelho² 2002: Himmelblau's problem
 	case 6:
-		opt.Nsol = 12
+		opt.Nsol = 50
+		opt.Tf = 100
 		opt.FltMin = []float64{78, 33, 27, 27, 27}
 		opt.FltMax = []float64{102, 45, 45, 45, 45}
 		xs = []float64{78.0, 33.0, 29.995, 45.0, 36.776}
@@ -215,7 +223,8 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 7: Michaelwicz (1996) page 146
 	case 7:
-		opt.Nsol = 24
+		opt.Nsol = 500
+		opt.Ncpu = 10
 		opt.Tf = 2000
 		opt.FltMin = []float64{-2.3, -2.3, -3.2, -3.2, -3.2}
 		opt.FltMax = []float64{+2.3, +2.3, +3.2, +3.2, +3.2}
@@ -231,7 +240,9 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 8
 	case 8:
-		opt.Nsol = 24
+		opt.Nsol = 100
+		opt.Ncpu = 4
+		opt.Tf = 200
 		opt.FltMin = make([]float64, 10)
 		opt.FltMax = make([]float64, 10)
 		for i := 0; i < 10; i++ {
@@ -257,7 +268,8 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 9: welded beam design. Coello² (2002)
 	case 9:
-		opt.Nsol = 12
+		opt.Nsol = 40
+		opt.Tf = 200
 		opt.FltMin = []float64{0.125, 0.1, 0.1, 0.1}
 		opt.FltMax = []float64{10.0, 10.0, 10.0, 10.0}
 		xs = []float64{0.2444, 6.2187, 8.2915, 0.2444}
@@ -308,6 +320,7 @@ func Test_functions(tst *testing.T) {
 	// solve
 	opt.RunMany()
 	opt.StatMinProb(0, 60, fs, true)
+	io.Pf("DtExc = %v\n", opt.DtExc)
 
 	// results
 	SortByOva(opt.Solutions, 0)

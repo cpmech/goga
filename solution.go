@@ -30,6 +30,8 @@ type Solution struct {
 	Nlosses   int         // number of solutions dominating this solution
 	FrontId   int         // Pareto front rank
 	DistCrowd float64     // crowd distance
+	DistNeigh float64     // closest neighbour distance
+	Closest   *Solution   // closest neighbour
 }
 
 // NewSolution allocates new Solution
@@ -154,6 +156,12 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 		return false
 	}
 	if A.prms.Nova < 2 {
+		if A.DistNeigh > B.DistNeigh {
+			return true
+		}
+		if B.DistNeigh > A.DistNeigh {
+			return false
+		}
 		if rnd.FlipCoin(0.5) {
 			return true
 		}

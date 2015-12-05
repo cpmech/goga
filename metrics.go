@@ -53,6 +53,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		sol.Nlosses = 0
 		sol.FrontId = 0
 		sol.DistCrowd = 0
+		sol.DistNeigh = INF
 		fz[i] = 0
 
 		// ovas range
@@ -95,8 +96,15 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		}
 	}
 
-	// skip if single-objective problem
+	// compute neighbour distance and return if single-objective problem
 	if o.prms.Nova < 2 {
+		for i := 0; i < nsol; i++ {
+			A := sols[i]
+			for j := i + 1; j < nsol; j++ {
+				B := sols[j]
+				o.closest(A, B)
+			}
+		}
 		return
 	}
 
@@ -105,6 +113,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		A := sols[i]
 		for j := i + 1; j < nsol; j++ {
 			B := sols[j]
+			o.closest(A, B)
 			A_dom, B_dom := A.Compare(B)
 			if A_dom {
 				A.WinOver[A.Nwins] = B // i dominates j
@@ -166,4 +175,17 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		}
 	}
 	return
+}
+
+// closest computes distance and set closest neighbours
+func (o *Metrics) closest(A, B *Solution) {
+	dist := A.Distance(B, o.Fmin, o.Fmax, o.Imin, o.Imax)
+	if dist < A.DistNeigh {
+		A.DistNeigh = dist
+		A.Closest = B
+	}
+	if dist < B.DistNeigh {
+		B.DistNeigh = dist
+		B.Closest = A
+	}
 }

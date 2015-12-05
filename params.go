@@ -77,8 +77,8 @@ func (o *Parameters) Default() {
 
 	// time
 	o.Tf = 100
-	o.DtExc = o.Tf / 10
-	o.DtOut = o.Tf / 5
+	o.DtExc = -1
+	o.DtOut = -1
 
 	// options
 	o.Pll = true
@@ -144,7 +144,10 @@ func (o *Parameters) CalcDerived() {
 		o.Tf = 1
 	}
 	if o.DtExc < 1 {
-		o.DtExc = 1
+		o.DtExc = o.Tf / 10
+	}
+	if o.DtOut < 1 {
+		o.DtOut = o.Tf / 5
 	}
 
 	// derived
