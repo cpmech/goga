@@ -44,7 +44,6 @@ type Parameters struct {
 	DiffEvolUseFmult bool    // use F random multiplier
 
 	// crossover and mutation
-	DebEtac float64 // Deb's crossover parameter
 	DebEtam float64 // Deb's mutation parameters
 	PmFlt   float64 // probability of mutation for floats
 	PmInt   float64 // probability of mutation for ints
@@ -98,7 +97,6 @@ func (o *Parameters) Default() {
 	o.DiffEvolUseFmult = true
 
 	// crossover and mutation
-	o.DebEtac = 1
 	o.DebEtam = 1
 	o.PmFlt = 0.0
 	o.PmInt = 0.1

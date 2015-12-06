@@ -22,12 +22,10 @@ func Test_functions(tst *testing.T) {
 	opt.Default()
 	opt.Ncpu = 1
 	opt.Verbose = false
-	opt.Problem = 7
-	opt.Ntrials = 20
-	//opt.DiffEvolC = 0.5
-	//opt.DiffEvolF = 0.5
-	//opt.DiffEvolUseCmult = false
-	//opt.DiffEvolUseFmult = false
+	opt.Problem = 9
+	opt.Ntrials = 10
+	//opt.PmFlt = 0.1
+	//opt.DebEtam = 10
 
 	// problem variables
 	var ng, nh int    // number of functions
@@ -223,9 +221,9 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 7: Michaelwicz (1996) page 146
 	case 7:
-		opt.Nsol = 500
-		opt.Ncpu = 10
-		opt.Tf = 2000
+		opt.Nsol = 160
+		opt.Ncpu = 4
+		opt.Tf = 10000
 		opt.FltMin = []float64{-2.3, -2.3, -3.2, -3.2, -3.2}
 		opt.FltMax = []float64{+2.3, +2.3, +3.2, +3.2, +3.2}
 		xs = []float64{-1.717143, 1.595709, 1.827247, -0.7636413, -0.7636450}
