@@ -47,6 +47,7 @@ type Parameters struct {
 	DebEtam float64 // Deb's mutation parameters
 	PmFlt   float64 // probability of mutation for floats
 	PmInt   float64 // probability of mutation for ints
+	PcInt   float64 // probability of crossover for ints
 
 	// range
 	FltMin []float64 // minimum float allowed
@@ -100,6 +101,7 @@ func (o *Parameters) Default() {
 	o.DebEtam = 1
 	o.PmFlt = 0.0
 	o.PmInt = 0.1
+	o.PcInt = 0.8
 
 	// internal flags
 	o.use_exchange_via_tournament = true
