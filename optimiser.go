@@ -242,6 +242,7 @@ func (o *Optimiser) RunMany() {
 		o.Verbose = false
 	}
 	for itrial := 0; itrial < o.Ntrials; itrial++ {
+		o.Nfeval = 0
 		if itrial > 0 {
 			o.gensolutions(itrial)
 		}
@@ -265,7 +266,7 @@ func (o *Optimiser) RunMany() {
 }
 
 // StatMinProb prints statistical analysis when using MinProb
-func (o *Optimiser) StatMinProb(idxF, hlen int, Fref float64, verbose bool) (fmin, fave, fmax, fdev float64) {
+func (o *Optimiser) StatMinProb(idxF, hlen int, Fref float64, verbose bool) (fmin, fave, fmax, fdev float64, F []float64) {
 	if o.MinProb == nil {
 		io.Pfred("_warning_ MinProb is <nil>\n")
 		return
@@ -280,7 +281,7 @@ func (o *Optimiser) StatMinProb(idxF, hlen int, Fref float64, verbose bool) (fmi
 	nbest := utl.Imax(nfb, nib)
 	var xf []float64
 	var xi []int
-	F := make([]float64, nbest)
+	F = make([]float64, nbest)
 	cpu := 0
 	for i := 0; i < nbest; i++ {
 		if nfb > 0 {
@@ -425,10 +426,4 @@ func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
 			a.CopyInto(B)
 		}
 	}
-}
-
-// nice_num returns a truncated float
-func nice_num(x float64) float64 {
-	s := io.Sf("%.2f", x)
-	return io.Atof(s)
 }

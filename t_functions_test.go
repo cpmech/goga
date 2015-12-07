@@ -12,26 +12,22 @@ import (
 	"github.com/cpmech/gosl/io"
 )
 
-func Test_functions(tst *testing.T) {
+func solve_problem(problem, ntrials int) (opt *Optimiser, fref float64) {
 
-	verbose()
-	chk.PrintTitle("simple functions")
+	io.Pf("\n\n------------------------------------- problem = %d ---------------------------------------\n", problem)
 
 	// GA parameters
-	var opt Optimiser
+	opt = new(Optimiser)
 	opt.Default()
 	opt.Ncpu = 1
 	opt.Verbose = false
-	opt.Problem = 9
-	opt.Ntrials = 10
-	//opt.PmFlt = 0.1
-	//opt.DebEtam = 10
+	opt.Problem = problem
+	opt.Ntrials = ntrials
 
 	// problem variables
-	var ng, nh int    // number of functions
-	var fs float64    // best known solution
-	var xs []float64  // best known solution
-	var fcn MinProb_t // functions
+	var ng, nh int     // number of functions
+	var xref []float64 // best known solution corresponding to fref
+	var fcn MinProb_t  // functions
 
 	// problems
 	switch opt.Problem {
@@ -42,8 +38,8 @@ func Test_functions(tst *testing.T) {
 		opt.Tf = 100
 		opt.FltMin = []float64{0, 0}
 		opt.FltMax = []float64{6, 6}
-		xs = []float64{2.246826, 2.381865}
-		fs = 13.59085
+		xref = []float64{2.246826, 2.381865}
+		fref = 13.59085
 		ng = 2
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			f[0] = math.Pow(x[0]*x[0]+x[1]-11.0, 2.0) + math.Pow(x[0]+x[1]*x[1]-7.0, 2.0)
@@ -53,13 +49,12 @@ func Test_functions(tst *testing.T) {
 
 	// problem # 2
 	case 2:
-		opt.Ncpu = 1
 		opt.Nsol = 50
 		opt.Tf = 200
 		opt.FltMin = []float64{704.4148, 68.6, 0.0, 193.0, 25.0}
 		opt.FltMax = []float64{906.3855, 288.88, 134.75, 287.0966, 84.1988}
-		xs = []float64{705.1803, 68.60005, 102.90001, 282.324999, 37.5850413}
-		fs = -1.90513375
+		xref = []float64{705.1803, 68.60005, 102.90001, 282.324999, 37.5850413}
+		fref = -1.90513375
 		ng = 38
 		acf := []float64{0, 17.505, 11.275, 214.228, 7.458, 0.961, 1.612, 0.146, 107.99, 922.693, 926.832, 18.766, 1072.163, 8961.448, 0.063, 71084.33, 2802713.0}
 		bcf := []float64{0, 1053.6667, 35.03, 665.585, 584.463, 265.916, 7.046, 0.222, 273.366, 1286.105, 1444.046, 537.141, 3247.039, 26844.086, 0.386, 140000.0, 12146108.0}
@@ -118,7 +113,7 @@ func Test_functions(tst *testing.T) {
 	case 3:
 		opt.Nsol = 130
 		opt.Ncpu = 6
-		opt.Tf = 300
+		opt.Tf = 200
 		opt.FltMin = make([]float64, 13)
 		opt.FltMax = make([]float64, 13)
 		for i := 0; i < 9; i++ {
@@ -128,8 +123,8 @@ func Test_functions(tst *testing.T) {
 			opt.FltMin[i], opt.FltMax[i] = 0, 100
 		}
 		opt.FltMin[12], opt.FltMax[12] = 0, 1
-		xs = []float64{1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 1}
-		fs = -15.0
+		xref = []float64{1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 1}
+		fref = -15.0
 		ng = 9
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			s1, s2, s3 := 0.0, 0.0, 0.0
@@ -165,8 +160,8 @@ func Test_functions(tst *testing.T) {
 		for i := 3; i < 8; i++ {
 			opt.FltMin[i], opt.FltMax[i] = 10, 1000
 		}
-		xs = []float64{579.3167, 1359.943, 5110.071, 182.0174, 295.5985, 217.9799, 286.4162, 395.5979}
-		fs = 7049.330923
+		xref = []float64{579.3167, 1359.943, 5110.071, 182.0174, 295.5985, 217.9799, 286.4162, 395.5979}
+		fref = 7049.330923
 		ng = 6
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			f[0] = x[0] + x[1] + x[2]
@@ -182,14 +177,14 @@ func Test_functions(tst *testing.T) {
 	case 5:
 		opt.Nsol = 70
 		opt.Ncpu = 2
-		opt.Tf = 100
+		opt.Tf = 300
 		opt.FltMin = make([]float64, 7)
 		opt.FltMax = make([]float64, 7)
 		for i := 0; i < 7; i++ {
 			opt.FltMin[i], opt.FltMax[i] = -10, 10
 		}
-		xs = []float64{2.330499, 1.951372, -0.4775414, 4.365726, -0.6244870, 1.038131, 1.594227}
-		fs = 680.6300573
+		xref = []float64{2.330499, 1.951372, -0.4775414, 4.365726, -0.6244870, 1.038131, 1.594227}
+		fref = 680.6300573
 		ng = 4
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			f[0] = math.Pow(x[0]-10.0, 2.0) + 5.0*math.Pow(x[1]-12.0, 2.0) + math.Pow(x[2], 4.0) + 3.0*math.Pow(x[3]-11.0, 2.0) +
@@ -203,11 +198,11 @@ func Test_functions(tst *testing.T) {
 	// problem # 6. also Coelho² 2002: Himmelblau's problem
 	case 6:
 		opt.Nsol = 50
-		opt.Tf = 100
+		opt.Tf = 200
 		opt.FltMin = []float64{78, 33, 27, 27, 27}
 		opt.FltMax = []float64{102, 45, 45, 45, 45}
-		xs = []float64{78.0, 33.0, 29.995, 45.0, 36.776}
-		fs = -30665.5
+		xref = []float64{78.0, 33.0, 29.995, 45.0, 36.776}
+		fref = -30665.5
 		ng = 6
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			f[0] = 5.3578547*x[2]*x[2] + 0.8356891*x[0]*x[4] + 37.293239*x[0] - 40792.141
@@ -223,11 +218,11 @@ func Test_functions(tst *testing.T) {
 	case 7:
 		opt.Nsol = 160
 		opt.Ncpu = 4
-		opt.Tf = 10000
+		opt.Tf = 1000
 		opt.FltMin = []float64{-2.3, -2.3, -3.2, -3.2, -3.2}
 		opt.FltMax = []float64{+2.3, +2.3, +3.2, +3.2, +3.2}
-		xs = []float64{-1.717143, 1.595709, 1.827247, -0.7636413, -0.7636450}
-		fs = 0.0539498478
+		xref = []float64{-1.717143, 1.595709, 1.827247, -0.7636413, -0.7636450}
+		fref = 0.0539498478
 		nh = 3
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			f[0] = math.Exp(x[0] * x[1] * x[2] * x[3] * x[4])
@@ -240,14 +235,14 @@ func Test_functions(tst *testing.T) {
 	case 8:
 		opt.Nsol = 100
 		opt.Ncpu = 4
-		opt.Tf = 200
+		opt.Tf = 300
 		opt.FltMin = make([]float64, 10)
 		opt.FltMax = make([]float64, 10)
 		for i := 0; i < 10; i++ {
 			opt.FltMin[i], opt.FltMax[i] = -10, 10
 		}
-		xs = []float64{2.171996, 2.363683, 8.773926, 5.095984, 0.9906548, 1.430574, 1.321644, 9.828726, 8.280092, 8.375927}
-		fs = 24.3062091
+		xref = []float64{2.171996, 2.363683, 8.773926, 5.095984, 0.9906548, 1.430574, 1.321644, 9.828726, 8.280092, 8.375927}
+		fref = 24.3062091
 		ng = 8
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			x1, x2, x3, x4, x5, x6, x7, x8, x9, x10 := x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9]
@@ -267,11 +262,11 @@ func Test_functions(tst *testing.T) {
 	// problem # 9: welded beam design. Coello² (2002)
 	case 9:
 		opt.Nsol = 40
-		opt.Tf = 200
+		opt.Tf = 300
 		opt.FltMin = []float64{0.125, 0.1, 0.1, 0.1}
 		opt.FltMax = []float64{10.0, 10.0, 10.0, 10.0}
-		xs = []float64{0.2444, 6.2187, 8.2915, 0.2444}
-		fs = 2.38116
+		xref = []float64{0.2444, 6.2187, 8.2915, 0.2444}
+		fref = 2.38116
 		ng = 5
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			E := 30e+6
@@ -308,7 +303,7 @@ func Test_functions(tst *testing.T) {
 
 	// check best known solution
 	if false {
-		check(fcn, ng, nh, xs, fs, 1e-6)
+		check(fcn, ng, nh, xref, fref, 1e-6)
 	}
 
 	// initialise optimiser
@@ -317,16 +312,44 @@ func Test_functions(tst *testing.T) {
 
 	// solve
 	opt.RunMany()
-	opt.StatMinProb(0, 60, fs, true)
+	opt.StatMinProb(0, 60, fref, true)
 	io.Pf("DtExc = %v\n", opt.DtExc)
 
 	// results
 	SortByOva(opt.Solutions, 0)
 	best := opt.Solutions[0]
-	io.Pfyel("     xs = %.6f\n", xs)
-	io.Pfyel("     fs = %.6f\n", fs)
+	io.Pfyel("   xref = %.6f\n", xref)
+	io.Pfyel("   fref = %.6f\n", fref)
 	io.Pf("best x  = %.6f\n", best.Flt)
 	io.Pf("best f  = %.6f\n", best.Ova[0])
+	return
+}
+
+func Test_functions(tst *testing.T) {
+
+	verbose()
+	chk.PrintTitle("simple functions")
+
+	//P := []int{1, 2, 3, 4}
+	P := []int{8, 9}
+	fmtHist := []string{"%.2f", "%.2f", "%.2f", "%.0f"}
+	ntrials := 10
+
+	buf := TexDocumentStart()
+	TexSingleObjTableStart(buf, ntrials)
+	for i, problem := range P {
+		opt, fref := solve_problem(problem, ntrials)
+		opt.TexSingleObjTableItem(buf, opt.Problem, fref, "%.8f", "%.9f", fmtHist[i], "%.2f")
+		if i == len(P)-1 {
+			io.Ff(buf, `\bottomrule`)
+		} else {
+			io.Ff(buf, `\hline`)
+		}
+	}
+
+	TexSingleObjTableEnd(buf)
+	TexDocumentEnd(buf)
+	TexWrite("functions", buf, true)
 }
 
 func check(fcn MinProb_t, ng, nh int, xs []float64, fs, ϵ float64) {
