@@ -106,7 +106,8 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 
 // PlotAddFltFlt adds flt-flt points to existent plot
 func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
-	x, y := make([]float64, o.Nsol), make([]float64, o.Nsol)
+	nsol := len(sols)
+	x, y := make([]float64, nsol), make([]float64, nsol)
 	for i, sol := range sols {
 		x[i], y[i] = sol.Flt[iFlt], sol.Flt[jFlt]
 	}
@@ -119,7 +120,8 @@ func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, fmt plt.Fmt,
 
 // PlotAddFltOva adds flt-ova points to existent plot
 func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult float64, fmt plt.Fmt, emptyMarker bool) {
-	x, y := make([]float64, o.Nsol), make([]float64, o.Nsol)
+	nsol := len(sols)
+	x, y := make([]float64, nsol), make([]float64, nsol)
 	for i, sol := range sols {
 		x[i], y[i] = sol.Flt[iFlt], sol.Ova[iOva]*ovaMult
 	}
@@ -132,7 +134,8 @@ func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult floa
 
 // PlotAddOvaOva adds ova-ova points to existent plot
 func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
-	x, y := make([]float64, o.Nsol), make([]float64, o.Nsol)
+	nsol := len(sols)
+	x, y := make([]float64, nsol), make([]float64, nsol)
 	for i, sol := range sols {
 		x[i], y[i] = sol.Ova[iOva], sol.Ova[jOva]
 	}
