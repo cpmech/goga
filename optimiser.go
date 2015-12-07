@@ -199,7 +199,7 @@ func (o *Optimiser) Solve() {
 
 		// exchange via tournament
 		if o.Ncpu > 1 {
-			if o.use_exchange_via_tournament {
+			if o.ExcTour {
 				for i := 0; i < o.Ncpu; i++ {
 					j := (i + 1) % o.Ncpu
 					o.exchange_via_tournament(i, j)
@@ -207,7 +207,7 @@ func (o *Optimiser) Solve() {
 			}
 
 			// exchange one randomly
-			if o.use_exchange_one_randomly {
+			if o.ExcOne {
 				rnd.IntGetGroups(o.cpupairs, utl.IntRange(o.Ncpu))
 				for _, pair := range o.cpupairs {
 					o.exchange_one_randomly(pair[0], pair[1])

@@ -37,6 +37,8 @@ type Parameters struct {
 	Ntrials    int     // run many trials
 	BinInt     int     // flag that integers represent binary numbers if BinInt > 0; thus Nint=BinInt
 	ClearFlt   bool    // clear flt if corresponding int is 0
+	ExcTour    bool    // use exchange via tournament
+	ExcOne     bool    // use exchange one randomly
 
 	// differential evolution
 	DiffEvolC        float64 // crossover probability
@@ -62,10 +64,6 @@ type Parameters struct {
 	Nint   int       // number of integers
 	DelFlt []float64 // max float range
 	DelInt []int     // max int range
-
-	// internal flags
-	use_exchange_via_tournament bool // use exchange via tournament
-	use_exchange_one_randomly   bool // use exchange one randomly
 }
 
 // Default sets default parameters
@@ -108,8 +106,8 @@ func (o *Parameters) Default() {
 	o.PcInt = 0.8
 
 	// internal flags
-	o.use_exchange_via_tournament = true
-	o.use_exchange_one_randomly = false
+	o.ExcTour = true
+	o.ExcOne = false
 }
 
 // Read reads configuration parameters from JSON file
