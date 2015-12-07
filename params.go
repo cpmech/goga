@@ -34,7 +34,8 @@ type Parameters struct {
 	Verbose    bool    // show messages
 	Problem    int     // problem index
 	GenAll     bool    // generate all solutions together; i.e. not within each group/CPU
-	Ntrials    int     // run manny trials
+	Ntrials    int     // run many trials
+	BinInt     int     // flag that integers represent binary numbers if BinInt > 0; thus Nint=BinInt
 
 	// differential evolution
 	DiffEvolC        float64 // crossover probability
@@ -89,6 +90,7 @@ func (o *Parameters) Default() {
 	o.Problem = 1
 	o.GenAll = false
 	o.Ntrials = 10
+	o.BinInt = 0
 
 	// differential evolution
 	o.DiffEvolC = 1.0
@@ -153,19 +155,32 @@ func (o *Parameters) CalcDerived() {
 	// derived
 	o.Nflt = len(o.FltMin)
 	o.Nint = len(o.IntMin)
+	if o.BinInt > 0 {
+		o.Nint = o.BinInt
+	}
 	if o.Nflt == 0 && o.Nint == 0 {
 		chk.Panic("either floats and ints must be set (via FltMin/Max or IntMin/Max)")
 	}
-	chk.IntAssert(len(o.FltMax), o.Nflt)
-	chk.IntAssert(len(o.IntMax), o.Nint)
-	o.DelFlt = make([]float64, o.Nflt)
-	o.DelInt = make([]int, o.Nint)
-	for i := 0; i < o.Nflt; i++ {
-		o.DelFlt[i] = o.FltMax[i] - o.FltMin[i]
+
+	// floats
+	if o.Nflt > 0 {
+		chk.IntAssert(len(o.FltMax), o.Nflt)
+		o.DelFlt = make([]float64, o.Nflt)
+		for i := 0; i < o.Nflt; i++ {
+			o.DelFlt[i] = o.FltMax[i] - o.FltMin[i]
+		}
 	}
-	for i := 0; i < o.Nint; i++ {
-		o.DelInt[i] = o.IntMax[i] - o.IntMin[i]
+
+	// generic ints
+	if o.BinInt == 0 && o.Nint > 0 {
+		chk.IntAssert(len(o.IntMax), o.Nint)
+		o.DelInt = make([]int, o.Nint)
+		for i := 0; i < o.Nint; i++ {
+			o.DelInt[i] = o.IntMax[i] - o.IntMin[i]
+		}
 	}
+
+	// initialise random numbers generator
 	rnd.Init(o.Seed)
 }
 
