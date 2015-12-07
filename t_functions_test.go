@@ -149,8 +149,8 @@ func solve_problem(problem, ntrials int) (opt *Optimiser, fref float64) {
 
 	// problem # 4
 	case 4:
-		opt.Nsol = 160
-		opt.Ncpu = 4
+		opt.Nsol = 80
+		opt.Ncpu = 2
 		opt.Tf = 300
 		opt.FltMin = make([]float64, 8)
 		opt.FltMax = make([]float64, 8)
@@ -331,7 +331,8 @@ func Test_functions(tst *testing.T) {
 	chk.PrintTitle("simple functions")
 
 	//P := []int{1, 2, 3, 4}
-	P := []int{8, 9}
+	//P := []int{8, 9}
+	P := []int{4}
 	fmtHist := []string{"%.2f", "%.2f", "%.2f", "%.0f"}
 	ntrials := 10
 

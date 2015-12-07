@@ -182,7 +182,7 @@ func Test_flt05(tst *testing.T) {
 	opt.GenAll = false
 	opt.Tf = 200
 	opt.DtExc = opt.Tf / 10
-	opt.Problem = 5
+	opt.Problem = 4
 	opt.LatinDup = 2
 	opt.Verbose = true
 	showinitsols := false
@@ -405,19 +405,17 @@ func Test_flt05(tst *testing.T) {
 
 func Test_flt06(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("flt06. FON problem")
 
 	// parameters
 	var opt Optimiser
 	opt.Default()
 	opt.Nsol = 120
-	opt.Ncpu = 6
+	opt.Ncpu = 3
 	opt.GenAll = false
-	opt.Tf = 200
+	opt.Tf = 300
 	opt.DtExc = opt.Tf / 10
-	//opt.CxFlt = CxFltDeb
-	opt.LatinDup = 2
 	opt.Verbose = true
 	showinitsols := false
 

@@ -55,6 +55,9 @@ type Optimiser struct {
 	F, G, H    [][]float64 // [cpu] temporary
 	tmp        *Solution   // temporary solution
 	cpupairs   [][]int     // pairs of CPU ids. for exchanging solutions
+	nova0      int         // number of ova[0] in ova0 slice to assess convergence
+	iova0      int         // index of current item in ova[0]
+	ova0       []float64   // last nova0 ova[0] values to assess convergence
 
 	// stat
 	Nfeval   int         // number of function evaluations
@@ -123,40 +126,12 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	// auxiliary
 	o.tmp = NewSolution(0, 0, &o.Parameters)
 	o.cpupairs = utl.IntsAlloc(o.Ncpu/2, 2)
+	o.nova0 = 10
+	o.iova0 = 0
+	o.ova0 = make([]float64, o.nova0)
 
 	// generate trial solutions
-	o.gensolutions(0)
-}
-
-func (o *Optimiser) gensolutions(itrial int) {
-	t0 := gotime.Now()
-	if o.GenAll {
-		o.Generator(o.Solutions, &o.Parameters)
-		for _, sol := range o.Solutions {
-			o.ObjFunc(sol, 0)
-		}
-	} else {
-		done := make(chan int, o.Ncpu)
-		for icpu := 0; icpu < o.Ncpu; icpu++ {
-			go func(cpu int) {
-				start, endp1 := (cpu*o.Nsol)/o.Ncpu, ((cpu+1)*o.Nsol)/o.Ncpu
-				sols := o.Solutions[start:endp1]
-				o.Generator(sols, &o.Parameters)
-				for _, sol := range sols {
-					o.ObjFunc(sol, cpu)
-				}
-				done <- 1
-			}(icpu)
-		}
-		for cpu := 0; cpu < o.Ncpu; cpu++ {
-			<-done
-		}
-	}
-	o.Nfeval = o.Nsol
-	if o.Verbose && itrial > 0 {
-		io.Pf(". . . trial solutions generated in %v . . .\n", gotime.Now().Sub(t0))
-	}
-	o.Metrics.Compute(o.Solutions)
+	o.generate_solutions(0)
 }
 
 // GetSolutionsCopy returns a copy of Solutions
@@ -234,6 +209,8 @@ func (o *Optimiser) Solve() {
 
 // RunMany runs many trials in order to produce statistics
 func (o *Optimiser) RunMany() {
+
+	// benchmark
 	if o.Verbose {
 		t0 := gotime.Now()
 		defer func() {
@@ -241,10 +218,12 @@ func (o *Optimiser) RunMany() {
 		}()
 		o.Verbose = false
 	}
+
+	// perform trials
 	for itrial := 0; itrial < o.Ntrials; itrial++ {
 		o.Nfeval = 0
 		if itrial > 0 {
-			o.gensolutions(itrial)
+			o.generate_solutions(itrial)
 		}
 		o.Solve()
 		if o.Nova < 2 {
@@ -262,52 +241,11 @@ func (o *Optimiser) RunMany() {
 			}
 		}
 	}
-	return
 }
 
-// StatMinProb prints statistical analysis when using MinProb
-func (o *Optimiser) StatMinProb(idxF, hlen int, Fref float64, verbose bool) (fmin, fave, fmax, fdev float64, F []float64) {
-	if o.MinProb == nil {
-		io.Pfred("_warning_ MinProb is <nil>\n")
-		return
-	}
-	nfb := len(o.XfltBest)
-	nib := len(o.XintBest)
-	if nfb+nib == 0 {
-		fmin, fave, fmax, fdev = 1e30, 1e30, 1e30, 1e30
-		io.Pfred("_warning_ XfltBest and XintBest are not available. Call RunMany first.\n")
-		return
-	}
-	nbest := utl.Imax(nfb, nib)
-	var xf []float64
-	var xi []int
-	F = make([]float64, nbest)
-	cpu := 0
-	for i := 0; i < nbest; i++ {
-		if nfb > 0 {
-			xf = o.XfltBest[i]
-		}
-		if nib > 0 {
-			xi = o.XintBest[i]
-		}
-		o.MinProb(o.F[cpu], o.G[cpu], o.H[cpu], xf, xi, cpu)
-		F[i] = o.F[cpu][idxF]
-	}
-	if nbest < 2 {
-		fmin, fave, fmax = F[0], F[0], F[0]
-		return
-	}
-	fmin, fave, fmax, fdev = rnd.StatBasic(F, true)
-	if verbose {
-		io.Pf("fmin = %v\n", fmin)
-		io.PfYel("fave = %v (%v)\n", fave, Fref)
-		io.Pf("fmax = %v\n", fmax)
-		io.Pf("fdev = %v\n\n", fdev)
-		io.Pf(rnd.BuildTextHist(nice_num(fmin-0.05), nice_num(fmax+0.05), 11, F, "%.2f", hlen))
-	}
-	return
-}
+// internal functions //////////////////////////////////////////////////////////////////////////////
 
+// exchange_via_tournament runs exchange using tournament
 func (o *Optimiser) exchange_via_tournament(i, j int) {
 	selI := rnd.IntGetUnique(o.Groups[i].Indices, 2)
 	selJ := rnd.IntGetUnique(o.Groups[j].Indices, 2)
@@ -316,6 +254,7 @@ func (o *Optimiser) exchange_via_tournament(i, j int) {
 	o.tournament(A, B, a, b, o.Metrics)
 }
 
+// exchange_one_randomly exchange one solution between groups randomly
 func (o *Optimiser) exchange_one_randomly(i, j int) {
 	n := utl.Imin(o.Groups[i].Ncur, o.Groups[j].Ncur)
 	k := rnd.Int(0, n)
@@ -426,4 +365,45 @@ func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
 			a.CopyInto(B)
 		}
 	}
+}
+
+// generate_solutions generate solutions
+func (o *Optimiser) generate_solutions(itrial int) {
+
+	// benchmark
+	if o.Verbose && itrial == 0 {
+		t0 := gotime.Now()
+		defer func() {
+			io.Pfblue2("trial solutions generated in %v\n", gotime.Now().Sub(t0))
+		}()
+	}
+
+	// generate
+	if o.GenAll {
+		o.Generator(o.Solutions, &o.Parameters)
+		for _, sol := range o.Solutions {
+			o.ObjFunc(sol, 0)
+		}
+	} else {
+		done := make(chan int, o.Ncpu)
+		for icpu := 0; icpu < o.Ncpu; icpu++ {
+			go func(cpu int) {
+				start, endp1 := (cpu*o.Nsol)/o.Ncpu, ((cpu+1)*o.Nsol)/o.Ncpu
+				sols := o.Solutions[start:endp1]
+				o.Generator(sols, &o.Parameters)
+				for _, sol := range sols {
+					o.ObjFunc(sol, cpu)
+				}
+				done <- 1
+			}(icpu)
+		}
+		for cpu := 0; cpu < o.Ncpu; cpu++ {
+			<-done
+		}
+	}
+
+	// metrics
+	o.iova0 = 0
+	o.Nfeval = o.Nsol
+	o.Metrics.Compute(o.Solutions)
 }
