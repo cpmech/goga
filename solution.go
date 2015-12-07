@@ -148,6 +148,8 @@ func (A *Solution) Compare(B *Solution) (A_dominates, B_dominates bool) {
 
 // Fight implements the competition between A and B
 func (A *Solution) Fight(B *Solution) (A_wins bool) {
+
+	// compare solutions
 	A_dom, B_dom := A.Compare(B)
 	if A_dom {
 		return true
@@ -155,6 +157,8 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 	if B_dom {
 		return false
 	}
+
+	// tie: single-objective problems
 	if A.prms.Nova < 2 {
 		if A.DistNeigh > B.DistNeigh {
 			return true
@@ -162,11 +166,10 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 		if B.DistNeigh > A.DistNeigh {
 			return false
 		}
-		if rnd.FlipCoin(0.5) {
-			return true
-		}
-		return false
+		return rnd.FlipCoin(0.5)
 	}
+
+	// tie: multi-objective problems: same Pareto front
 	if A.FrontId == B.FrontId {
 		if A.DistCrowd > B.DistCrowd {
 			return true
@@ -174,19 +177,23 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 		if B.DistCrowd > A.DistCrowd {
 			return false
 		}
+		return rnd.FlipCoin(0.5)
 	}
-	if A.FrontId == 0 {
+
+	// tie: multi-objective problems: different Pareto fronts
+	if A.FrontId < B.FrontId {
 		return true
 	}
-	if B.FrontId == 0 {
+	if B.FrontId < A.FrontId {
 		return false
 	}
-	m := float64(B.FrontId) / float64(A.FrontId)
-	prob := (1.0 - math.Exp(-10.0*m))
-	if rnd.FlipCoin(prob) {
+	if A.DistNeigh > B.DistNeigh {
 		return true
 	}
-	return false
+	if B.DistNeigh > A.DistNeigh {
+		return false
+	}
+	return rnd.FlipCoin(0.5)
 }
 
 // GetCopyResults returns a copy of results (x vectors)

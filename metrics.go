@@ -96,15 +96,17 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		}
 	}
 
-	// compute neighbour distance and return if single-objective problem
-	if o.prms.Nova < 2 {
-		for i := 0; i < nsol; i++ {
-			A := sols[i]
-			for j := i + 1; j < nsol; j++ {
-				B := sols[j]
-				o.closest(A, B)
-			}
+	// compute neighbour distance
+	for i := 0; i < nsol; i++ {
+		A := sols[i]
+		for j := i + 1; j < nsol; j++ {
+			B := sols[j]
+			o.closest(A, B)
 		}
+	}
+
+	// skip if single-objective problem
+	if o.prms.Nova < 2 {
 		return
 	}
 
