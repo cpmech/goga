@@ -220,14 +220,11 @@ func (o *Optimiser) Solve() {
 		texc += o.DtExc
 		time = utl.Imin(time, o.Tf)
 		texc = utl.Imin(texc, o.Tf)
-		if o.Verbose {
-			io.Pf("\n")
-		}
 	}
 
 	// message
 	if o.Verbose {
-		io.Pf("nfeval = %d\n", o.Nfeval)
+		io.Pf("\nnfeval = %d\n", o.Nfeval)
 	}
 }
 
