@@ -350,6 +350,16 @@ func (o *Optimiser) evolve(cpu int) (nfeval int) {
 		o.crossover(a, b, A, B, x0, x1, x2, y0, y1, y2)
 		o.mutation(a)
 		o.mutation(b)
+		if o.BinInt > 0 && o.ClearFlt {
+			for i := 0; i < o.Nint; i++ {
+				if a.Int[i] == 0 {
+					a.Flt[i] = 0
+				}
+				if b.Int[i] == 0 {
+					b.Flt[i] = 0
+				}
+			}
+		}
 		o.ObjFunc(a, cpu)
 		o.ObjFunc(b, cpu)
 		nfeval += 2

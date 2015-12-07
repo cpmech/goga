@@ -9,6 +9,7 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/rnd"
+	"github.com/cpmech/gosl/utl"
 )
 
 // CxInt performs the crossover of genetic data from A and B
@@ -30,7 +31,8 @@ func CxInt(a, b, A, B []int, prms *Parameters) {
 		}
 		return
 	}
-	ends := GenerateCxEnds(size, 1, nil)
+	ncuts := utl.Imax(1, size/3)
+	ends := GenerateCxEnds(size, ncuts, nil)
 	swap := false
 	start := 0
 	for _, end := range ends {

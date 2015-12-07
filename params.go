@@ -36,6 +36,7 @@ type Parameters struct {
 	GenAll     bool    // generate all solutions together; i.e. not within each group/CPU
 	Ntrials    int     // run many trials
 	BinInt     int     // flag that integers represent binary numbers if BinInt > 0; thus Nint=BinInt
+	ClearFlt   bool    // clear flt if corresponding int is 0
 
 	// differential evolution
 	DiffEvolC        float64 // crossover probability
@@ -91,6 +92,7 @@ func (o *Parameters) Default() {
 	o.GenAll = false
 	o.Ntrials = 10
 	o.BinInt = 0
+	o.ClearFlt = false
 
 	// differential evolution
 	o.DiffEvolC = 1.0
@@ -178,6 +180,9 @@ func (o *Parameters) CalcDerived() {
 		for i := 0; i < o.Nint; i++ {
 			o.DelInt[i] = o.IntMax[i] - o.IntMin[i]
 		}
+	}
+	if o.Nint != o.Nflt {
+		o.ClearFlt = false
 	}
 
 	// initialise random numbers generator
