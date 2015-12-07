@@ -95,7 +95,7 @@ func (o *Parameters) Default() {
 	// differential evolution
 	o.DiffEvolC = 1.0
 	o.DiffEvolF = 1.0
-	o.DiffEvolPm = 0.8
+	o.DiffEvolPm = 1.0
 	o.DiffEvolUseCmult = true
 	o.DiffEvolUseFmult = true
 
