@@ -171,6 +171,15 @@ func (o *Optimiser) GetSolutionsCopy() (res []*Solution) {
 // Solve solves optimisation problem
 func (o *Optimiser) Solve() {
 
+	// benchmark
+	if o.Verbose {
+		t0 := gotime.Now()
+		defer func() {
+			io.Pf("\nnfeval = %d\n", o.Nfeval)
+			io.Pfblue2("cpu time = %v\n", gotime.Now().Sub(t0))
+		}()
+	}
+
 	// perform evolution
 	done := make(chan int, o.Ncpu)
 	time := 0
@@ -221,11 +230,6 @@ func (o *Optimiser) Solve() {
 		time = utl.Imin(time, o.Tf)
 		texc = utl.Imin(texc, o.Tf)
 	}
-
-	// message
-	if o.Verbose {
-		io.Pf("\nnfeval = %d\n", o.Nfeval)
-	}
 }
 
 // RunMany runs many trials in order to produce statistics
@@ -235,6 +239,7 @@ func (o *Optimiser) RunMany() {
 		defer func() {
 			io.Pfblue2("\ncpu time = %v\n", gotime.Now().Sub(t0))
 		}()
+		o.Verbose = false
 	}
 	for itrial := 0; itrial < o.Ntrials; itrial++ {
 		if itrial > 0 {
