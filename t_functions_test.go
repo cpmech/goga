@@ -36,6 +36,7 @@ func solve_problem(problem, ntrials int) (opt *Optimiser, fref float64) {
 	case 1:
 		opt.Nsol = 20
 		opt.Tf = 100
+		opt.ConvDova0 = 0.1
 		opt.FltMin = []float64{0, 0}
 		opt.FltMax = []float64{6, 6}
 		xref = []float64{2.246826, 2.381865}
@@ -332,7 +333,7 @@ func Test_functions(tst *testing.T) {
 
 	//P := []int{1, 2, 3, 4}
 	//P := []int{8, 9}
-	P := []int{4}
+	P := []int{1}
 	fmtHist := []string{"%.2f", "%.2f", "%.2f", "%.0f"}
 	ntrials := 10
 

@@ -55,9 +55,8 @@ type Optimiser struct {
 	F, G, H    [][]float64 // [cpu] temporary
 	tmp        *Solution   // temporary solution
 	cpupairs   [][]int     // pairs of CPU ids. for exchanging solutions
-	nova0      int         // number of ova[0] in ova0 slice to assess convergence
 	iova0      int         // index of current item in ova[0]
-	ova0       []float64   // last nova0 ova[0] values to assess convergence
+	ova0       []float64   // last ova[0] values to assess convergence
 
 	// stat
 	Nfeval   int         // number of function evaluations
@@ -126,9 +125,8 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	// auxiliary
 	o.tmp = NewSolution(0, 0, &o.Parameters)
 	o.cpupairs = utl.IntsAlloc(o.Ncpu/2, 2)
-	o.nova0 = 10
-	o.iova0 = 0
-	o.ova0 = make([]float64, o.nova0)
+	o.iova0 = -1
+	o.ova0 = make([]float64, o.Tf)
 
 	// generate trial solutions
 	o.generate_solutions(0)
@@ -169,7 +167,7 @@ func (o *Optimiser) Solve() {
 					if cpu == 0 && o.Verbose {
 						io.Pf("time = %10d\r", t+1)
 					}
-					nfeval += o.evolve(cpu)
+					nfeval += o.evolve_one_group(cpu)
 				}
 				done <- nfeval
 			}(icpu)
@@ -215,6 +213,7 @@ func (o *Optimiser) RunMany() {
 		t0 := gotime.Now()
 		defer func() {
 			io.Pfblue2("\ncpu time = %v\n", gotime.Now().Sub(t0))
+			o.Verbose = true
 		}()
 		o.Verbose = false
 	}
@@ -265,8 +264,8 @@ func (o *Optimiser) exchange_one_randomly(i, j int) {
 	o.tmp.CopyInto(A)
 }
 
-// evolve evolves one group
-func (o *Optimiser) evolve(cpu int) (nfeval int) {
+// evolve_one_group evolves one group (CPU)
+func (o *Optimiser) evolve_one_group(cpu int) (nfeval int) {
 
 	// auxiliary
 	competitors := o.Groups[cpu].All
@@ -403,7 +402,52 @@ func (o *Optimiser) generate_solutions(itrial int) {
 	}
 
 	// metrics
-	o.iova0 = 0
+	o.iova0 = -1
 	o.Nfeval = o.Nsol
 	o.Metrics.Compute(o.Solutions)
+}
+
+// conergence_analysis performs an analysis of convergence based on ova[0]
+func (o *Optimiser) convergence_analayis() (converged bool) {
+
+	// sort by ova[0]
+	SortByOva(o.Solutions, 0)
+
+	// check for feasible solution
+	if !o.Solutions[0].Feasible() {
+		return
+	}
+	best := o.Solutions[0].Ova[0]
+
+	// first item
+	if o.iova0 < 0 {
+		o.ova0[0] = best
+		o.iova0 = 0
+		return
+	}
+
+	// next item
+	prev := o.ova0[o.iova0]
+	//io.Pforan("prev=%v best=%v\n", prev, best)
+	if best <= prev {
+		o.iova0++
+		o.ova0[o.iova0] = best
+	}
+
+	// convergence assessment
+	szova0 := 3
+	if o.iova0 >= szova0-1 {
+		greater := false
+		for i := 1; i < szova0; i++ {
+			δ := o.ova0[i] - o.ova0[i-1]
+			if math.Abs(δ) > o.ConvDova0 {
+				greater = true
+				break
+			}
+		}
+		if !greater {
+			return true
+		}
+	}
+	return false
 }

@@ -39,6 +39,7 @@ type Parameters struct {
 	ClearFlt   bool    // clear flt if corresponding int is 0
 	ExcTour    bool    // use exchange via tournament
 	ExcOne     bool    // use exchange one randomly
+	ConvDova0  float64 // Δova[0] to decide on convergence
 
 	// differential evolution
 	DiffEvolC        float64 // crossover probability
@@ -91,6 +92,9 @@ func (o *Parameters) Default() {
 	o.Ntrials = 10
 	o.BinInt = 0
 	o.ClearFlt = false
+	o.ExcTour = true
+	o.ExcOne = false
+	o.ConvDova0 = 0.1
 
 	// differential evolution
 	o.DiffEvolC = 1.0
@@ -104,10 +108,6 @@ func (o *Parameters) Default() {
 	o.PmFlt = 0.0
 	o.PmInt = 0.1
 	o.PcInt = 0.8
-
-	// internal flags
-	o.ExcTour = true
-	o.ExcOne = false
 }
 
 // Read reads configuration parameters from JSON file
