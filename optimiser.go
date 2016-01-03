@@ -343,27 +343,28 @@ func (o *Optimiser) mutation(a *Solution) {
 	}
 }
 
+// fight_and_setnew implements the fight of current solution P with new solution q. If the current
+// solution loses, the new solution will replace it
+func (o *Optimiser) fight_and_setnew(P, q *Solution) {
+	if !P.Fight(q) {
+		q.CopyInto(P)
+	}
+}
+
 // tournament performs the tournament among 4 individuals
 func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
 	dAa := A.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	dAb := A.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	dBa := B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	dBb := B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
-	if dAa+dBb < dAb+dBa {
-		if !A.Fight(a) {
-			a.CopyInto(A)
-		}
-		if !B.Fight(b) {
-			b.CopyInto(B)
-		}
-	} else {
-		if !A.Fight(b) {
-			b.CopyInto(A)
-		}
-		if !B.Fight(a) {
-			a.CopyInto(B)
-		}
+	TOL := 1e-8
+	if dAa < TOL || dBb < TOL || dAa+dBb < dAb+dBa {
+		o.fight_and_setnew(A, a)
+		o.fight_and_setnew(B, b)
+		return
 	}
+	o.fight_and_setnew(A, b)
+	o.fight_and_setnew(B, a)
 }
 
 // generate_solutions generate solutions
@@ -408,7 +409,7 @@ func (o *Optimiser) generate_solutions(itrial int) {
 }
 
 // conergence_analysis performs an analysis of convergence based on ova[0]
-func (o *Optimiser) convergence_analayis() (converged bool) {
+func (o *Optimiser) convergence_analysis() (converged bool) {
 
 	// sort by ova[0]
 	SortByOva(o.Solutions, 0)
