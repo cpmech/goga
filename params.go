@@ -29,6 +29,7 @@ type Parameters struct {
 	// options
 	Pll        bool    // parallel
 	Seed       int     // seed for random numbers generator
+	Latin      bool    // use Latin Hypercube
 	LatinDup   int     // Latin Hypercube duplicates number
 	EpsMinProb float64 // minimum value for 'h' constraints
 	Verbose    bool    // show messages
@@ -84,6 +85,7 @@ func (o *Parameters) Default() {
 	// options
 	o.Pll = true
 	o.Seed = 0
+	o.Latin = true
 	o.LatinDup = 2
 	o.EpsMinProb = 0.1
 	o.Verbose = true
