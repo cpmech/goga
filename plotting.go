@@ -5,7 +5,6 @@
 package goga
 
 import (
-	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/utl"
@@ -186,9 +185,6 @@ func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np 
 
 // PlotFltFlt plots flt-flt contour
 func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jFlt, iOva int, extra func(), equalAxes bool) {
-	if !chk.Verbose {
-		return
-	}
 	plt.SetForEps(0.8, 455)
 	opt.PlotContour(iFlt, jFlt, iOva, ContourParams{})
 	if sols0 != nil {
@@ -210,9 +206,6 @@ func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jF
 
 // PlotOvaOvaPareto plots ova-ova Pareto values
 func PlotOvaOvaPareto(fnkey string, opt *Optimiser, sols0 []*Solution, iOva, jOva int, extra func(), lims []float64, equalAxes bool) {
-	if !chk.Verbose {
-		return
-	}
 	plt.SetForEps(0.8, 455)
 	if sols0 != nil {
 		opt.PlotAddOvaOva(iOva, jOva, sols0, plt.Fmt{L: "initial", M: "+", C: "g", Ls: "none", Ms: 4}, false)

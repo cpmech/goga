@@ -77,7 +77,9 @@ func Test_flt02(tst *testing.T) {
 	opt.Solve()
 
 	// plot
-	PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, nil, false)
+	if chk.Verbose {
+		PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, nil, false)
+	}
 }
 
 func Test_flt03(tst *testing.T) {
@@ -119,7 +121,9 @@ func Test_flt03(tst *testing.T) {
 	opt.Solve()
 
 	// plot
-	PlotFltFltContour("fig_flt03", &opt, sols0, 0, 1, 0, nil, false)
+	if chk.Verbose {
+		PlotFltFltContour("fig_flt03", &opt, sols0, 0, 1, 0, nil, false)
+	}
 }
 
 func Test_flt04(tst *testing.T) {
@@ -165,9 +169,11 @@ func Test_flt04(tst *testing.T) {
 	_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
 
 	// plot
-	PlotOvaOvaPareto("fig_flt04", &opt, sols0, 0, 1, func() {
-		plt.Plot(dat["f1"], dat["f2"], "'b*',ms=3,markeredgecolor='b'")
-	}, []float64{0, 250, 0, 0.15}, false)
+	if chk.Verbose {
+		PlotOvaOvaPareto("fig_flt04", &opt, sols0, 0, 1, func() {
+			plt.Plot(dat["f1"], dat["f2"], "'b*',ms=3,markeredgecolor='b'")
+		}, []float64{0, 250, 0, 0.15}, false)
+	}
 }
 
 func Test_flt05(tst *testing.T) {
@@ -394,15 +400,17 @@ func Test_flt05(tst *testing.T) {
 	//}
 
 	// plot
-	PlotOvaOvaPareto(io.Sf("fig_flt05_%s", pname), &opt, sols0, 0, 1, func() {
-		np := 101
-		F0 := utl.LinSpace(fmin[0], fmax[0], np)
-		F1 := make([]float64, np)
-		for i := 0; i < np; i++ {
-			F1[i] = f1f0(F0[i])
-		}
-		plt.Plot(F0, F1, io.Sf("'b-', label='%s'", pname))
-	}, nil, false)
+	if chk.Verbose {
+		PlotOvaOvaPareto(io.Sf("fig_flt05_%s", pname), &opt, sols0, 0, 1, func() {
+			np := 101
+			F0 := utl.LinSpace(fmin[0], fmax[0], np)
+			F1 := make([]float64, np)
+			for i := 0; i < np; i++ {
+				F1[i] = f1f0(F0[i])
+			}
+			plt.Plot(F0, F1, io.Sf("'b-', label='%s'", pname))
+		}, nil, false)
+	}
 }
 
 func Test_flt06(tst *testing.T) {
@@ -467,13 +475,15 @@ func Test_flt06(tst *testing.T) {
 	//}
 
 	// plot
-	PlotOvaOvaPareto(io.Sf("fig_flt06_%s", pname), &opt, sols0, 0, 1, func() {
-		np := 101
-		F0 := utl.LinSpace(fmin[0], fmax[0], np)
-		F1 := make([]float64, np)
-		for i := 0; i < np; i++ {
-			F1[i] = f1f0(F0[i])
-		}
-		plt.Plot(F0, F1, io.Sf("'b-', label='%s'", pname))
-	}, nil, false)
+	if chk.Verbose {
+		PlotOvaOvaPareto(io.Sf("fig_flt06_%s", pname), &opt, sols0, 0, 1, func() {
+			np := 101
+			F0 := utl.LinSpace(fmin[0], fmax[0], np)
+			F1 := make([]float64, np)
+			for i := 0; i < np; i++ {
+				F1[i] = f1f0(F0[i])
+			}
+			plt.Plot(F0, F1, io.Sf("'b-', label='%s'", pname))
+		}, nil, false)
+	}
 }
