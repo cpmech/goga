@@ -32,7 +32,7 @@ func TexSingleObjTableStart(buf *bytes.Buffer, ntrials int) {
 	io.Ff(buf, `\begin{table} \centering
 \caption{Constrained single objective problems: Results}
 \begin{tabular}[c]{cccc} \toprule
-problem & settings & results & histogram ($N_{trials}=%d$) \\ \hline
+P & settings & results & histogram ($N_{trials}=%d$) \\ \hline
 `, ntrials)
 }
 
@@ -67,9 +67,10 @@ func (o *Optimiser) TexSingleObjTableItem(buf *bytes.Buffer, problem int, fref f
 &
 \begin{minipage}{7cm} \scriptsize
 \begin{verbatim}
-%s\end{verbatim}
+%s
+\end{verbatim}
 \end{minipage} \\
-\multicolumn{4}{c}{best=`+fmtX+`} \\
+\multicolumn{4}{c}{$X_{best}$=`+fmtX+`} \\
 `, problem, o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval, fmin, fave, fref, fmax, fdev,
 		rnd.BuildTextHist(nice_num(fmin-0.05), nice_num(fmax+0.05), 11, F, fmtHist, hlen),
 		best.Flt)
@@ -77,12 +78,13 @@ func (o *Optimiser) TexSingleObjTableItem(buf *bytes.Buffer, problem int, fref f
 
 func TexWrite(fnkey string, buf *bytes.Buffer, dorun bool) {
 	tex := fnkey + ".tex"
-	io.WriteFileD("/tmp/goga", tex, buf)
+	io.WriteFileVD("/tmp/goga", tex, buf)
 	if dorun {
 		_, err := io.RunCmd(true, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory=/tmp/goga/", tex)
 		if err != nil {
 			chk.Panic("%v", err)
 		}
+		io.PfBlue("file </tmp/goga/%s.pdf> generated\n", fnkey)
 	}
 }
 
