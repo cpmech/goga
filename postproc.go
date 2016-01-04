@@ -48,7 +48,7 @@ func (o *Optimiser) StatMinProb(idxF, hlen int, Fref float64, verbose bool) (fmi
 		io.PfYel("fave = %v (%v)\n", fave, Fref)
 		io.Pf("fmax = %v\n", fmax)
 		io.Pf("fdev = %v\n\n", fdev)
-		io.Pf(rnd.BuildTextHist(nice_num(fmin-0.05), nice_num(fmax+0.05), 11, F, "%.2f", hlen))
+		io.Pf(rnd.BuildTextHist(nice_num(fmin-0.05, 2), nice_num(fmax+0.05, 2), 11, F, "%.2f", hlen))
 	}
 	return
 }

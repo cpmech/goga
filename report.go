@@ -47,11 +47,14 @@ func TexSingleObjTableEnd(buf *bytes.Buffer) {
 \end{table}`)
 }
 
-func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref float64, fmtFave, fmtFdev, fmtHist, fmtX string) {
-	hlen := 28
+func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref float64, nDigitsF, nDigitsX, nDigitsHist int) {
+	hlen := 25
 	SortByOva(o.Solutions, 0)
 	best := o.Solutions[0]
 	fmin, fave, fmax, fdev, F := o.StatMinProb(0, 20, fref, false)
+	fmtF := "%g"
+	fmtX := io.Sf("%%.%df", nDigitsX)
+	fmtHist := io.Sf("%%.%df", nDigitsHist)
 	io.Ff(buf, `%d
 &
 {$\!\begin{aligned}
@@ -63,11 +66,11 @@ func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref fl
 \end{aligned}$}
 &
 {$\!\begin{aligned}
-    f_{min}  &= `+fmtFave+`  \ACR
-    f_{ave}  &= {\bf `+fmtFave+`}  \ACR
-             &\phantom{=}( `+fmtFave+`) \ACR
-    f_{max}  &= `+fmtFave+`  \ACR
-    f_{dev}  &= `+fmtFdev+`
+    f_{min}  &= `+fmtF+`  \ACR
+    f_{ave}  &= {\bf `+fmtF+`}  \ACR
+             &\phantom{=}( `+fmtF+`) \ACR
+    f_{max}  &= `+fmtF+`  \ACR
+    f_{dev}  &= `+fmtF+`
 \end{aligned}$}
 &
 \begin{minipage}{7cm} \scriptsize
@@ -76,8 +79,9 @@ func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref fl
 \end{verbatim}
 \end{minipage} \\
 \multicolumn{4}{c}{$X_{best}$=`+fmtX+`} \\
-`, problem, o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval, fmin, fave, fref, fmax, fdev,
-		rnd.BuildTextHist(nice_num(fmin-0.05), nice_num(fmax+0.05), 11, F, fmtHist, hlen),
+`, problem, o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval,
+		nice_num(fmin, nDigitsF), nice_num(fave, nDigitsF), fref, nice_num(fmax, nDigitsF), nice_num(fdev, nDigitsF),
+		rnd.BuildTextHist(nice_num(fmin-0.05, nDigitsHist), nice_num(fmax+0.05, nDigitsHist), 11, F, fmtHist, hlen),
 		best.Flt)
 }
 
@@ -95,13 +99,15 @@ func TexWrite(dirout, fnkey string, buf *bytes.Buffer, dorun bool) {
 
 // TexReport produces TeX report
 //  nRowPerTab -- number of rows per table
-func TexReport(dirout, fnkey string, ntrials, nRowPerTab int, opts []*Optimiser, frefs []float64, fmtHist []string, dorun bool) {
+func TexReport(dirout, fnkey string, ntrials, nRowPerTab int, opts []*Optimiser, frefs []float64, nDigitsF, nDigitsX, nDigitsHist []int) {
 	nprob := len(opts)
 	if nRowPerTab < 1 {
 		chk.Panic("number of rows per table must be greater than 0")
 	}
+	if len(nDigitsHist) < nprob {
+		chk.Panic("size of slice with number of digits for histogram must be equal to or greater than the number of problems")
+	}
 	chk.IntAssert(len(frefs), nprob)
-	chk.IntAssert(len(fmtHist), nprob)
 	buf := TexDocumentStart()
 	for i, opt := range opts {
 		if i%nRowPerTab == 0 {
@@ -116,17 +122,17 @@ func TexReport(dirout, fnkey string, ntrials, nRowPerTab int, opts []*Optimiser,
 				io.Ff(buf, `\hline`)
 			}
 		}
-		TexSingleObjTableItem(opt, buf, i+1, frefs[i], "%.8f", "%.9f", fmtHist[i], "%.2f")
+		TexSingleObjTableItem(opt, buf, i+1, frefs[i], nDigitsF[i], nDigitsX[i], nDigitsHist[i])
 	}
 	io.Ff(buf, `\bottomrule`)
 	TexSingleObjTableEnd(buf) // end previous table
 	io.Ff(buf, "\n")
 	TexDocumentEnd(buf)
-	TexWrite(dirout, fnkey, buf, dorun)
+	TexWrite(dirout, fnkey, buf, true)
 }
 
 // nice_num returns a truncated float
-func nice_num(x float64) float64 {
-	s := io.Sf("%.2f", x)
+func nice_num(x float64, ndigits int) float64 {
+	s := io.Sf("%."+io.Sf("%d", ndigits)+"f", x)
 	return io.Atof(s)
 }
