@@ -351,7 +351,7 @@ func Test_functions(tst *testing.T) {
 	if chk.Verbose {
 		io.Pf("\n-------------------------- generating report --------------------------\nn")
 		nRowPerTab := 5
-		TexReport("/tmp/goga", "functions", ntrials, nRowPerTab, opts, frefs, nDigitsF, nDigitsX, nDigitsHist)
+		TexSingleObjReport("/tmp/goga", "functions", ntrials, nRowPerTab, opts, frefs, nDigitsF, nDigitsX, nDigitsHist)
 	}
 }
 

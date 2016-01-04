@@ -41,7 +41,9 @@ func Test_flt01(tst *testing.T) {
 	opt.Solve()
 
 	// plot
-	PlotFltOva("fig_flt01", &opt, sols0, 0, 0, 201, -1, yfcn, nil, false)
+	if chk.Verbose {
+		PlotFltOva("fig_flt01", &opt, sols0, 0, 0, 201, -1, yfcn, nil, false)
+	}
 }
 
 func Test_flt02(tst *testing.T) {

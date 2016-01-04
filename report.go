@@ -12,6 +12,9 @@ import (
 	"github.com/cpmech/gosl/rnd"
 )
 
+// TeX document ////////////////////////////////////////////////////////////////////////////////////
+
+// TexDocumentStart starts TeX document
 func TexDocumentStart() (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	io.Ff(buf, `\documentclass[a4paper]{article}
@@ -27,11 +30,78 @@ func TexDocumentStart() (buf *bytes.Buffer) {
 	return
 }
 
+// TexDocumentEnd ends TeX document
 func TexDocumentEnd(buf *bytes.Buffer) {
 	io.Ff(buf, `
 \end{document}`)
 }
 
+// TexWrite writes and compiles TeX document
+func TexWrite(dirout, fnkey string, buf *bytes.Buffer, dorun bool) {
+	tex := fnkey + ".tex"
+	io.WriteFileVD(dirout, tex, buf)
+	if dorun {
+		_, err := io.RunCmd(true, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory=/tmp/goga/", tex)
+		if err != nil {
+			chk.Panic("%v", err)
+		}
+		io.PfBlue("file <%s/%s.pdf> generated\n", dirout, fnkey)
+	}
+}
+
+// parameters only table ///////////////////////////////////////////////////////////////////////////
+
+// TexPrmsTableStart starts table with parameters
+func TexPrmsTableStart(buf *bytes.Buffer) {
+	io.Ff(buf, `
+\begin{table} \centering
+\caption{goga: Parameters}
+\begin{tabular}[c]{cccccc} \toprule
+P & $N_{sol}$ & $N_{cpu}$ & $t_{max}$ & $\Delta t_{exc}$ & $N_{eval}$ \\ \hline
+`)
+}
+
+// TexPrmsTableEnd ends table with parameters
+func TexPrmsTableEnd(buf *bytes.Buffer) {
+	io.Ff(buf, `\end{tabular}
+\label{tab:prms}
+\end{table}`)
+}
+
+// TexPrmsTableItem adds item to table with parameters
+func TexPrmsTableItem(o *Optimiser, buf *bytes.Buffer, problem int) {
+	io.Ff(buf, "%d & %d & %d & %d & %d & %d \\\\\n", problem, o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval)
+}
+
+// TexPrmsReport generates TeX report with parameters
+//  nRowPerTab -- number of rows per table
+func TexPrmsReport(dirout, fnkey string, opts []*Optimiser, nRowPerTab int) {
+	buf := TexDocumentStart()
+	for i, opt := range opts {
+		if i%nRowPerTab == 0 {
+			if i > 0 {
+				io.Ff(buf, `\bottomrule`)
+				TexPrmsTableEnd(buf) // end previous table
+				io.Ff(buf, "\n")
+			}
+			TexPrmsTableStart(buf) // begin new table
+		} else {
+			if i > 0 {
+				io.Ff(buf, `\hline`)
+			}
+		}
+		TexPrmsTableItem(opt, buf, i+1)
+	}
+	io.Ff(buf, `\bottomrule`)
+	TexPrmsTableEnd(buf) // end previous table
+	io.Ff(buf, "\n")
+	TexDocumentEnd(buf)
+	TexWrite(dirout, fnkey, buf, true)
+}
+
+// single objective tables /////////////////////////////////////////////////////////////////////////
+
+// TexSingleObjTableStart starts table for single-objective optimisation results with ntrials
 func TexSingleObjTableStart(buf *bytes.Buffer, ntrials int) {
 	io.Ff(buf, `
 \begin{table} \centering
@@ -41,12 +111,14 @@ P & settings & results & histogram ($N_{trials}=%d$) \\ \hline
 `, ntrials)
 }
 
+// TexSingleObjTableEnd ends table for single-objective optimisation results with ntrials
 func TexSingleObjTableEnd(buf *bytes.Buffer) {
 	io.Ff(buf, `\end{tabular}
 \label{tab:singleobj}
 \end{table}`)
 }
 
+// TexSingleObjTableItem adds item to table for single-objective optimisation results with ntrials
 func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref float64, nDigitsF, nDigitsX, nDigitsHist int) {
 	hlen := 25
 	SortByOva(o.Solutions, 0)
@@ -85,21 +157,9 @@ func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref fl
 		best.Flt)
 }
 
-func TexWrite(dirout, fnkey string, buf *bytes.Buffer, dorun bool) {
-	tex := fnkey + ".tex"
-	io.WriteFileVD(dirout, tex, buf)
-	if dorun {
-		_, err := io.RunCmd(true, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory=/tmp/goga/", tex)
-		if err != nil {
-			chk.Panic("%v", err)
-		}
-		io.PfBlue("file <%s/%s.pdf> generated\n", dirout, fnkey)
-	}
-}
-
-// TexReport produces TeX report
+// TexSingleObjReport produces Single-Objective table TeX report
 //  nRowPerTab -- number of rows per table
-func TexReport(dirout, fnkey string, ntrials, nRowPerTab int, opts []*Optimiser, frefs []float64, nDigitsF, nDigitsX, nDigitsHist []int) {
+func TexSingleObjReport(dirout, fnkey string, ntrials, nRowPerTab int, opts []*Optimiser, frefs []float64, nDigitsF, nDigitsX, nDigitsHist []int) {
 	nprob := len(opts)
 	if nRowPerTab < 1 {
 		chk.Panic("number of rows per table must be greater than 0")
@@ -130,6 +190,8 @@ func TexReport(dirout, fnkey string, ntrials, nRowPerTab int, opts []*Optimiser,
 	TexDocumentEnd(buf)
 	TexWrite(dirout, fnkey, buf, true)
 }
+
+// auxiliary ///////////////////////////////////////////////////////////////////////////////////////
 
 // nice_num returns a truncated float
 func nice_num(x float64, ndigits int) float64 {

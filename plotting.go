@@ -158,9 +158,6 @@ func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt plt
 
 // PlotFltOva plots flt-ova points
 func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np int, ovaMult float64, fcn func(x float64) float64, extra func(), equalAxes bool) {
-	if !chk.Verbose {
-		return
-	}
 	plt.SetForEps(0.8, 455)
 	if fcn != nil {
 		X := utl.LinSpace(opt.FltMin[0], opt.FltMax[0], np)
