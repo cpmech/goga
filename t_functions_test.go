@@ -10,6 +10,7 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/utl"
 )
 
 func solve_problem(problem, ntrials int) (opt *Optimiser, fref float64) {
@@ -152,7 +153,8 @@ func solve_problem(problem, ntrials int) (opt *Optimiser, fref float64) {
 	case 4:
 		opt.Nsol = 80
 		opt.Ncpu = 2
-		opt.Tf = 300
+		//opt.Tf = 1000
+		opt.Tf = 500
 		opt.FltMin = make([]float64, 8)
 		opt.FltMax = make([]float64, 8)
 		opt.FltMin[0], opt.FltMax[0] = 100, 10000
@@ -217,9 +219,10 @@ func solve_problem(problem, ntrials int) (opt *Optimiser, fref float64) {
 
 	// problem # 7: Michaelwicz (1996) page 146
 	case 7:
-		opt.Nsol = 160
+		opt.Nsol = 200
 		opt.Ncpu = 4
-		opt.Tf = 1000
+		//opt.Tf = 5000
+		opt.Tf = 500
 		opt.FltMin = []float64{-2.3, -2.3, -3.2, -3.2, -3.2}
 		opt.FltMax = []float64{+2.3, +2.3, +3.2, +3.2, +3.2}
 		xref = []float64{-1.717143, 1.595709, 1.827247, -0.7636413, -0.7636450}
@@ -328,30 +331,28 @@ func solve_problem(problem, ntrials int) (opt *Optimiser, fref float64) {
 
 func Test_functions(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("simple functions")
 
+	P := utl.IntRange2(1, 10)
 	//P := []int{1, 2, 3, 4}
 	//P := []int{8, 9}
-	P := []int{1}
-	fmtHist := []string{"%.2f", "%.2f", "%.2f", "%.0f"}
-	ntrials := 10
-
-	buf := TexDocumentStart()
-	TexSingleObjTableStart(buf, ntrials)
+	//P := []int{7}
+	//P := []int{5}
+	nDigitsF := []int{8, 8, 8, 8, 8, 8, 8, 8, 8}
+	nDigitsX := []int{6, 6, 3, 3, 6, 6, 6, 4, 6}
+	nDigitsHist := []int{4, 4, 4, 2, 2, 2, 4, 2, 2}
+	ntrials := 2
+	frefs := make([]float64, len(P))
+	opts := make([]*Optimiser, len(P))
 	for i, problem := range P {
-		opt, fref := solve_problem(problem, ntrials)
-		opt.TexSingleObjTableItem(buf, opt.Problem, fref, "%.8f", "%.9f", fmtHist[i], "%.2f")
-		if i == len(P)-1 {
-			io.Ff(buf, `\bottomrule`)
-		} else {
-			io.Ff(buf, `\hline`)
-		}
+		opts[i], frefs[i] = solve_problem(problem, ntrials)
 	}
-
-	TexSingleObjTableEnd(buf)
-	TexDocumentEnd(buf)
-	TexWrite("functions", buf, true)
+	if chk.Verbose {
+		io.Pf("\n-------------------------- generating report --------------------------\nn")
+		nRowPerTab := 5
+		TexReport("/tmp/goga", "functions", ntrials, nRowPerTab, opts, frefs, nDigitsF, nDigitsX, nDigitsHist)
+	}
 }
 
 func check(fcn MinProb_t, ng, nh int, xs []float64, fs, ϵ float64) {
