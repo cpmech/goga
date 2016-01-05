@@ -169,7 +169,7 @@ func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np 
 		opt.PlotAddFltOva(iFlt, iOva, sols0, ovaMult, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
 	}
 	SortByOva(opt.Solutions, iOva)
-	best := opt.Solutions[iOva]
+	best := opt.Solutions[0]
 	opt.PlotAddFltOva(iFlt, iOva, opt.Solutions, ovaMult, plt.Fmt{L: "final", M: "o", C: "r", Ls: "none", Ms: 6}, true)
 	plt.PlotOne(best.Flt[iFlt], best.Ova[iOva]*ovaMult, "'g*', markeredgecolor='g', label='best', clip_on=0, zorder=20")
 	if extra != nil {
@@ -184,14 +184,20 @@ func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np 
 
 // PlotFltFlt plots flt-flt contour
 func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jFlt, iOva int, cprms ContourParams, extra func(), equalAxes bool) {
+	clr1 := "green"
+	clr2 := "black"
+	if cprms.Csimple {
+		clr1 = "red"
+		clr2 = "green"
+	}
 	opt.PlotContour(iFlt, jFlt, iOva, cprms)
 	if sols0 != nil {
 		opt.PlotAddFltFlt(iFlt, jFlt, sols0, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
 	}
 	SortByOva(opt.Solutions, iOva)
-	best := opt.Solutions[iOva]
-	opt.PlotAddFltFlt(iFlt, jFlt, opt.Solutions, plt.Fmt{L: "final", M: "o", C: "k", Ls: "none", Ms: 6}, true)
-	plt.PlotOne(best.Flt[iFlt], best.Flt[jFlt], "'g*', markeredgecolor='g', label='best', clip_on=0, zorder=20")
+	best := opt.Solutions[0]
+	opt.PlotAddFltFlt(iFlt, jFlt, opt.Solutions, plt.Fmt{L: "final", M: "o", C: clr2, Ls: "none", Ms: 6}, true)
+	plt.PlotOne(best.Flt[iFlt], best.Flt[jFlt], io.Sf("'k*', color='%s', markeredgecolor='%s', label='best', clip_on=0, zorder=20", clr1, clr1))
 	if extra != nil {
 		extra()
 	}
