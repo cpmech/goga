@@ -199,3 +199,69 @@ func (o *Parameters) EnforceRange(i int, x float64) float64 {
 	}
 	return x
 }
+
+// LogParams returns a log with current parameters
+func (o *Parameters) LogParams() (l string) {
+
+	// sizes
+	l += io.ArgsTable("SIZES",
+		"number of objective values", "Nova", o.Nova,
+		"number of out-of-range values", "Noor", o.Noor,
+		"total number of solutions", "Nsol", o.Nsol,
+		"number of cpus", "Ncpu", o.Ncpu,
+	)
+
+	// time
+	l += "\n"
+	l += io.ArgsTable("TIME",
+		"final time", "Tf", o.Tf,
+		"delta time for exchange", "DtExc", o.DtExc,
+		"delta time for output", "DtOut", o.DtOut,
+	)
+
+	// options
+	l += "\n"
+	l += io.ArgsTable("OPTIONS",
+		"parallel", "Pll", o.Pll,
+		"seed for random numbers generator", "Seed", o.Seed,
+		"use Latin Hypercube", "Latin", o.Latin,
+		"Latin Hypercube duplicates number", "LatinDup", o.LatinDup,
+		"minimum value for 'h' constraints", "EpsMinProb", o.EpsMinProb,
+		"show messages", "Verbose", o.Verbose,
+		"problem index", "Problem", o.Problem,
+		"generate all solutions together", "GenAll", o.GenAll,
+		"run many trials", "Ntrials", o.Ntrials,
+		"integers represent binary numbers", "BinInt", o.BinInt,
+		"clear flt if corresponding int is 0", "ClearFlt", o.ClearFlt,
+		"use exchange via tournament", "ExcTour", o.ExcTour,
+		"use exchange one randomly", "ExcOne", o.ExcOne,
+		"Δova[0] to decide on convergence", "ConvDova0", o.ConvDova0,
+	)
+
+	// differential evolution
+	l += "\n"
+	l += io.ArgsTable("DIFFERENTIAL EVOLUTION",
+		"crossover probability", "DiffEvolC", o.DiffEvolC,
+		"vector length multiplier", "DiffEvolF", o.DiffEvolF,
+		"mutation probability", "DiffEvolPm", o.DiffEvolPm,
+		"use C random multiplier", "DiffEvolUseCmult", o.DiffEvolUseCmult,
+		"use F random multiplier", "DiffEvolUseFmult", o.DiffEvolUseFmult,
+	)
+
+	// crossover and mutation
+	l += "\n"
+	l += io.ArgsTable("CROSSOVER AND MUTATION",
+		"Deb's mutation parameters", "DebEtam", o.DebEtam,
+		"probability of mutation for floats", "PmFlt", o.PmFlt,
+		"probability of mutation for ints", "PmInt", o.PmInt,
+		"probability of crossover for ints", "PcInt", o.PcInt,
+	)
+
+	// derived
+	l += "\n"
+	l += io.ArgsTable("DERIVED",
+		"number of floats", "Nflt", o.Nflt,
+		"number of integers", "Nint", o.Nint,
+	)
+	return
+}

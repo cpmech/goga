@@ -76,6 +76,9 @@ func Test_flt02(tst *testing.T) {
 	// solve
 	opt.Solve()
 
+	// log
+	io.Pforan("%v\n", opt.LogParams())
+
 	// plot
 	if chk.Verbose {
 		PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, ContourParams{}, nil, false)
