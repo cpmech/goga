@@ -1,7 +1,9 @@
-# Goga &ndash; Go Genetic Algorithm
+# Goga &ndash; Go Evolutionary Algorithm
 
-Goga implements structures and routines for the development of Genetic Algorithms. The goal of this
-library is to handle integer- float-point- and mixed-type chromosomes.
+Goga implements structures and routines for the development of Evolutionary Algorithms. The goal of
+this library is to handle integer- float-point- and mixed-type representations. The origin of the
+name is related to genetic algorithms; but the code does not employ genetic operators any longer.
+Differential Evolution is used instead.
 
 ## License
 
