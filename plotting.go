@@ -157,7 +157,6 @@ func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt plt
 
 // PlotFltOva plots flt-ova points
 func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np int, ovaMult float64, fcn func(x float64) float64, extra func(), equalAxes bool) {
-	plt.SetForEps(0.8, 455)
 	if fcn != nil {
 		X := utl.LinSpace(opt.FltMin[0], opt.FltMax[0], np)
 		Y := make([]float64, np)
@@ -185,7 +184,6 @@ func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np 
 
 // PlotFltFlt plots flt-flt contour
 func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jFlt, iOva int, cprms ContourParams, extra func(), equalAxes bool) {
-	plt.SetForEps(0.8, 455)
 	opt.PlotContour(iFlt, jFlt, iOva, cprms)
 	if sols0 != nil {
 		opt.PlotAddFltFlt(iFlt, jFlt, sols0, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
@@ -206,7 +204,6 @@ func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jF
 
 // PlotOvaOvaPareto plots ova-ova Pareto values
 func PlotOvaOvaPareto(fnkey string, opt *Optimiser, sols0 []*Solution, iOva, jOva int, extra func(), lims []float64, equalAxes bool) {
-	plt.SetForEps(0.8, 455)
 	if sols0 != nil {
 		opt.PlotAddOvaOva(iOva, jOva, sols0, plt.Fmt{L: "initial", M: "+", C: "g", Ls: "none", Ms: 4}, false)
 	}
