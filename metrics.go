@@ -115,7 +115,6 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		A := sols[i]
 		for j := i + 1; j < nsol; j++ {
 			B := sols[j]
-			o.closest(A, B)
 			A_dom, B_dom := A.Compare(B)
 			if A_dom {
 				A.WinOver[A.Nwins] = B // i dominates j
