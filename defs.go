@@ -19,7 +19,7 @@ type ObjFunc_t func(sol *Solution, cpu int)
 type MinProb_t func(f, g, h, x []float64, ξ []int, cpu int)
 
 // CxFlt_t defines crossover function for floats
-type CxFlt_t func(a, b, A, B, C, D []float64, prms *Parameters)
+type CxFlt_t func(a, b, A, B, A0, A1, A2, B0, B1, B2 []float64, prms *Parameters)
 
 // CxInt_t defines crossover function for ints
 type CxInt_t func(a, b, A, B []int, prms *Parameters)
