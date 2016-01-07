@@ -279,19 +279,13 @@ func (o *Optimiser) evolve_one_group(cpu int) (nfeval int) {
 	z := o.Groups[cpu].Ncur
 	for k := 0; k < len(pairs); k++ {
 		l := (k + 1) % len(pairs)
-		m := (k + 2) % len(pairs)
-		n := (k + 3) % len(pairs)
 		A := competitors[pairs[k][0]]
 		B := competitors[pairs[k][1]]
-		x0 := competitors[pairs[l][0]]
-		x1 := competitors[pairs[l][1]]
-		x2 := competitors[pairs[m][0]]
-		y0 := competitors[pairs[m][1]]
-		y1 := competitors[pairs[n][0]]
-		y2 := competitors[pairs[n][1]]
+		C := competitors[pairs[l][0]]
+		D := competitors[pairs[l][1]]
 		a := competitors[z+pairs[k][0]]
 		b := competitors[z+pairs[k][1]]
-		o.crossover(a, b, A, B, x0, x1, x2, y0, y1, y2)
+		o.crossover(a, b, A, B, C, D)
 		o.mutation(a)
 		o.mutation(b)
 		if o.BinInt > 0 && o.ClearFlt {
@@ -324,9 +318,9 @@ func (o *Optimiser) evolve_one_group(cpu int) (nfeval int) {
 }
 
 // crossover performs crossover in A,B,xj to obtain a and b
-func (o *Optimiser) crossover(a, b, A, B, x0, x1, x2, y0, y1, y2 *Solution) {
+func (o *Optimiser) crossover(a, b, A, B, C, D *Solution) {
 	if o.Nflt > 0 {
-		o.CxFlt(a.Flt, b.Flt, A.Flt, B.Flt, x0.Flt, x1.Flt, x2.Flt, y0.Flt, y1.Flt, y2.Flt, &o.Parameters)
+		o.CxFlt(a.Flt, b.Flt, A.Flt, B.Flt, C.Flt, D.Flt, &o.Parameters)
 	}
 	if o.Nint > 0 {
 		o.CxInt(a.Int, b.Int, A.Int, B.Int, &o.Parameters)

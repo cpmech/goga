@@ -10,13 +10,13 @@ import (
 	"github.com/cpmech/gosl/rnd"
 )
 
+// de_operator performs the differential-evolution operation
 func de_operator(u, x, x0, x1, x2 []float64, prms *Parameters) {
 	C, F := prms.DiffEvolC, prms.DiffEvolF
 	if prms.DiffEvolUseCmult {
 		C *= rnd.Float64(0, 1)
 	}
 	if prms.DiffEvolUseFmult {
-		//F *= (1.0 + rand.NormFloat64()*0.25)
 		F *= rnd.Float64(0, 1)
 	}
 	K := 0.5 * (F + 1.0)
@@ -37,9 +37,9 @@ func de_operator(u, x, x0, x1, x2 []float64, prms *Parameters) {
 }
 
 // CxFltDE implements the differential-evolution crossover
-func CxFltDE(a, b, A, B, x0, x1, x2, y0, y1, y2 []float64, prms *Parameters) {
-	de_operator(a, A, x0, x1, x2, prms)
-	de_operator(b, B, y0, y1, y2, prms)
+func CxFltDE(a, b, A, B, C, D []float64, prms *Parameters) {
+	de_operator(a, A, B, C, D, prms)
+	de_operator(b, B, A, C, D, prms)
 }
 
 // MtFltDeb implements Deb's parameter-based mutation operator
