@@ -44,7 +44,7 @@ func (o *Metrics) Init(nsol int, prms *Parameters) {
 func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 
 	// reset variables and find limits
-	fz := o.Fsizes
+	z := o.Fsizes
 	nsol := len(sols)
 	for i, sol := range sols {
 
@@ -54,7 +54,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		sol.FrontId = 0
 		sol.DistCrowd = 0
 		sol.DistNeigh = INF
-		fz[i] = 0
+		z[i] = 0
 
 		// ovas range
 		for j := 0; j < o.prms.Nova; j++ {
@@ -132,26 +132,27 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 	// first front
 	for _, sol := range sols {
 		if sol.Nlosses == 0 {
-			o.Fronts[0][fz[0]] = sol
-			fz[0]++
+			o.Fronts[0][z[0]] = sol
+			z[0]++
 		}
 	}
 
 	// next fronts
 	for r, front := range o.Fronts {
-		if fz[r] == 0 {
+		if z[r] == 0 {
 			break
 		}
+		s := r + 1
 		nfronts++
-		for s := 0; s < fz[r]; s++ {
-			A := front[s]
-			for k := 0; k < A.Nwins; k++ {
-				B := A.WinOver[k]
+		for i := 0; i < z[r]; i++ {
+			A := front[i]
+			for j := 0; j < A.Nwins; j++ {
+				B := A.WinOver[j]
 				B.Nlosses--
 				if B.Nlosses == 0 { // B belongs to next front
-					B.FrontId = r + 1
-					o.Fronts[r+1][fz[r+1]] = B
-					fz[r+1]++
+					B.FrontId = s
+					o.Fronts[s][z[s]] = B
+					z[s]++
 				}
 			}
 		}
@@ -159,7 +160,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 
 	// crowd distances
 	for r := 0; r < nfronts; r++ {
-		l, m := fz[r], fz[r]-1
+		l, m := z[r], z[r]-1
 		if l == 1 {
 			o.Fronts[r][0].DistCrowd = -1
 			continue
