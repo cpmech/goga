@@ -110,21 +110,21 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		return
 	}
 
-	// compute dominance data
+	// compute wins/losses data
 	for i := 0; i < nsol; i++ {
 		A := sols[i]
 		for j := i + 1; j < nsol; j++ {
 			B := sols[j]
-			A_dom, B_dom := A.Compare(B)
-			if A_dom {
-				A.WinOver[A.Nwins] = B // i dominates j
-				A.Nwins++              // i has another dominated item
-				B.Nlosses++            // j is being dominated by i
+			A_win, B_win := A.Compare(B)
+			if A_win {
+				A.WinOver[A.Nwins] = B
+				A.Nwins++
+				B.Nlosses++
 			}
-			if B_dom {
-				B.WinOver[B.Nwins] = A // j dominates i
-				B.Nwins++              // j has another dominated item
-				A.Nlosses++            // i is being dominated by j
+			if B_win {
+				B.WinOver[B.Nwins] = A
+				B.Nwins++
+				A.Nlosses++
 			}
 		}
 	}
