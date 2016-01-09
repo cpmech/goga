@@ -268,7 +268,7 @@ func (o *Optimiser) exchange_one_randomly(i, j int) {
 func (o *Optimiser) evolve_one_group(cpu int) (nfeval int) {
 
 	// auxiliary
-	competitors := o.Groups[cpu].All
+	G := o.Groups[cpu].All // competitors (old and new)
 	indices := o.Groups[cpu].Indices
 	pairs := o.Groups[cpu].Pairs
 
@@ -276,22 +276,18 @@ func (o *Optimiser) evolve_one_group(cpu int) (nfeval int) {
 	rnd.IntGetGroups(pairs, indices)
 
 	// create new solutions
-	z := o.Groups[cpu].Ncur
+	z := o.Groups[cpu].Ncur // index of first new solution
 	for k := 0; k < len(pairs); k++ {
 		l := (k + 1) % len(pairs)
 		m := (k + 2) % len(pairs)
 		n := (k + 3) % len(pairs)
-		A := competitors[pairs[k][0]]
-		B := competitors[pairs[k][1]]
-		A0 := competitors[pairs[l][0]]
-		A1 := competitors[pairs[l][1]]
-		A2 := competitors[pairs[m][0]]
-		B0 := competitors[pairs[m][1]]
-		B1 := competitors[pairs[n][0]]
-		B2 := competitors[pairs[n][1]]
-		a := competitors[z+pairs[k][0]]
-		b := competitors[z+pairs[k][1]]
-		o.crossover(a, b, A, B, A0, A1, A2, B0, B1, B2)
+		A := G[pairs[k][0]]
+		B := G[pairs[k][1]]
+		A0, A1, A2 := G[pairs[l][0]], G[pairs[m][1]], G[pairs[n][0]]
+		B0, B1, B2 := G[pairs[l][1]], G[pairs[m][0]], G[pairs[n][1]]
+		a := G[z+pairs[k][0]]
+		b := G[z+pairs[k][1]]
+		o.recombination(a, b, A, B, A0, A1, A2, B0, B1, B2)
 		o.mutation(a)
 		o.mutation(b)
 		if o.BinInt > 0 && o.ClearFlt {
@@ -310,21 +306,21 @@ func (o *Optimiser) evolve_one_group(cpu int) (nfeval int) {
 	}
 
 	// metrics
-	o.Groups[cpu].Metrics.Compute(competitors)
+	o.Groups[cpu].Metrics.Compute(G)
 
 	// tournaments
 	for k := 0; k < len(pairs); k++ {
-		A := competitors[pairs[k][0]]
-		B := competitors[pairs[k][1]]
-		a := competitors[z+pairs[k][0]]
-		b := competitors[z+pairs[k][1]]
+		A := G[pairs[k][0]]
+		B := G[pairs[k][1]]
+		a := G[z+pairs[k][0]]
+		b := G[z+pairs[k][1]]
 		o.tournament(A, B, a, b, o.Groups[cpu].Metrics)
 	}
 	return
 }
 
-// crossover performs crossover in A,B,xj to obtain a and b
-func (o *Optimiser) crossover(a, b, A, B, A0, A1, A2, B0, B1, B2 *Solution) {
+// recombination performs crossover in A,B,xj to obtain a and b
+func (o *Optimiser) recombination(a, b, A, B, A0, A1, A2, B0, B1, B2 *Solution) {
 	if o.Nflt > 0 {
 		o.CxFlt(a.Flt, b.Flt, A.Flt, B.Flt, A0.Flt, A1.Flt, A2.Flt, B0.Flt, B1.Flt, B2.Flt, &o.Parameters)
 	}
