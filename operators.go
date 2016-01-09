@@ -38,8 +38,18 @@ func de_operator(u, x, x0, x1, x2 []float64, prms *Parameters) {
 
 // CxFltDE implements the differential-evolution crossover
 func CxFltDE(a, b, A, B, A0, A1, A2, B0, B1, B2 []float64, prms *Parameters) {
-	de_operator(a, A, A0, A1, A2, prms)
-	de_operator(b, B, B0, B1, B2, prms)
+	scheme := 3
+	switch scheme {
+	case 1:
+		de_operator(a, A, B, A1, A2, prms)
+		de_operator(b, B, A, B1, B2, prms)
+	case 2:
+		de_operator(a, A, A0, A1, A2, prms)
+		de_operator(b, B, A0, A1, A2, prms)
+	default:
+		de_operator(a, A, A0, A1, A2, prms)
+		de_operator(b, B, B0, B1, B2, prms)
+	}
 }
 
 // MtFltDeb implements Deb's parameter-based mutation operator
