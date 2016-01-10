@@ -27,20 +27,20 @@ type Parameters struct {
 	DtOut int // delta time for output
 
 	// options
-	Pll        bool    // parallel
-	Seed       int     // seed for random numbers generator
-	GenType    string  // generation type: "latin", "halton", "rnd"
-	LatinDup   int     // Latin Hypercube duplicates number
-	EpsMinProb float64 // minimum value for 'h' constraints
-	Verbose    bool    // show messages
-	Problem    int     // problem index
-	GenAll     bool    // generate all solutions together; i.e. not within each group/CPU
-	Ntrials    int     // run many trials
-	BinInt     int     // flag that integers represent binary numbers if BinInt > 0; thus Nint=BinInt
-	ClearFlt   bool    // clear flt if corresponding int is 0
-	ExcTour    bool    // use exchange via tournament
-	ExcOne     bool    // use exchange one randomly
-	ConvDova0  float64 // Δova[0] to decide on convergence
+	Pll       bool    // parallel
+	Seed      int     // seed for random numbers generator
+	GenType   string  // generation type: "latin", "halton", "rnd"
+	LatinDup  int     // Latin Hypercube duplicates number
+	EpsH      float64 // minimum value for 'h' constraints
+	Verbose   bool    // show messages
+	Problem   int     // problem index
+	GenAll    bool    // generate all solutions together; i.e. not within each group/CPU
+	Ntrials   int     // run many trials
+	BinInt    int     // flag that integers represent binary numbers if BinInt > 0; thus Nint=BinInt
+	ClearFlt  bool    // clear flt if corresponding int is 0
+	ExcTour   bool    // use exchange via tournament
+	ExcOne    bool    // use exchange one randomly
+	ConvDova0 float64 // Δova[0] to decide on convergence
 
 	// differential evolution
 	DiffEvolC        float64 // crossover probability
@@ -87,7 +87,7 @@ func (o *Parameters) Default() {
 	o.Seed = 0
 	o.GenType = "latin"
 	o.LatinDup = 2
-	o.EpsMinProb = 0.1
+	o.EpsH = 0.1
 	o.Verbose = true
 	o.Problem = 1
 	o.GenAll = false
@@ -226,7 +226,7 @@ func (o *Parameters) LogParams() (l string) {
 		"seed for random numbers generator", "Seed", o.Seed,
 		"generation type: 'latin', 'halton', 'rnd'", "GenType", o.GenType,
 		"Latin Hypercube duplicates number", "LatinDup", o.LatinDup,
-		"minimum value for 'h' constraints", "EpsMinProb", o.EpsMinProb,
+		"minimum value for 'h' constraints", "EpsH", o.EpsH,
 		"show messages", "Verbose", o.Verbose,
 		"problem index", "Problem", o.Problem,
 		"generate all solutions together", "GenAll", o.GenAll,
