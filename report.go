@@ -139,10 +139,11 @@ func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref fl
 &
 {$\!\begin{aligned}
     f_{min}  &= `+fmtF+`  \ACR
-    f_{ave}  &= {\bf `+fmtF+`}  \ACR
              &\phantom{=}( `+fmtF+`) \ACR
-    f_{max}  &= `+fmtF+`  \ACR
-    f_{dev}  &= `+fmtF+`
+    f_{ave}  &= `+fmtF+`  \ACR
+    f_{max}  &= `+fmtF+` \ACR
+    f_{dev}  &= {\bf `+fmtF+`} \ACR
+    T_{sys}  &= %v
 \end{aligned}$}
 &
 \begin{minipage}{7cm} \scriptsize
@@ -152,7 +153,7 @@ func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref fl
 \end{minipage} \\
 \multicolumn{4}{c}{$X_{best}$=`+fmtX+`} \\
 `, problem, o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval,
-		nice_num(fmin, nDigitsF), nice_num(fave, nDigitsF), fref, nice_num(fmax, nDigitsF), nice_num(fdev, nDigitsF),
+		nice_num(fmin, nDigitsF), fref, nice_num(fave, nDigitsF), nice_num(fmax, nDigitsF), fdev, o.SysTime,
 		rnd.BuildTextHist(nice_num(fmin-0.05, nDigitsHist), nice_num(fmax+0.05, nDigitsHist), 11, F, fmtHist, hlen),
 		best.Flt)
 }

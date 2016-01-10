@@ -59,9 +59,10 @@ type Optimiser struct {
 	ova0       []float64   // last ova[0] values to assess convergence
 
 	// stat
-	Nfeval   int         // number of function evaluations
-	XfltBest [][]float64 // best results after RunMany
-	XintBest [][]int     // best results after RunMany
+	Nfeval   int             // number of function evaluations
+	XfltBest [][]float64     // best results after RunMany
+	XintBest [][]int         // best results after RunMany
+	SysTime  gotime.Duration // system (real/CPU) time
 }
 
 // Initialises continues initialisation by generating individuals
@@ -209,10 +210,14 @@ func (o *Optimiser) Solve() {
 func (o *Optimiser) RunMany() {
 
 	// benchmark
+	t0 := gotime.Now()
+	defer func() {
+		o.SysTime = gotime.Now().Sub(t0)
+	}()
+
+	// disable verbose flag temporarily
 	if o.Verbose {
-		t0 := gotime.Now()
 		defer func() {
-			io.Pfblue2("\ncpu time = %v\n", gotime.Now().Sub(t0))
 			o.Verbose = true
 		}()
 		o.Verbose = false
