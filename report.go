@@ -104,7 +104,7 @@ func TexPrmsReport(dirout, fnkey string, opts []*Optimiser, nRowPerTab int) {
 // TexSingleObjTableStart starts table for single-objective optimisation results with ntrials
 func TexSingleObjTableStart(buf *bytes.Buffer, ntrials int) {
 	io.Ff(buf, `
-\begin{table} \centering
+\begin{table*} \centering
 \caption{Constrained single objective problems: Results}
 \begin{tabular}[c]{cccc} \toprule
 P & settings & results & histogram ($N_{trials}=%d$) \\ \hline
@@ -115,12 +115,12 @@ P & settings & results & histogram ($N_{trials}=%d$) \\ \hline
 func TexSingleObjTableEnd(buf *bytes.Buffer) {
 	io.Ff(buf, `\end{tabular}
 \label{tab:singleobj}
-\end{table}`)
+\end{table*}`)
 }
 
 // TexSingleObjTableItem adds item to table for single-objective optimisation results with ntrials
 func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref float64, nDigitsF, nDigitsX, nDigitsHist int) {
-	hlen := 25
+	hlen := 20
 	SortByOva(o.Solutions, 0)
 	best := o.Solutions[0]
 	fmin, fave, fmax, fdev, F := o.StatMinProb(0, 20, fref, false)
