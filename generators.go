@@ -12,14 +12,22 @@ func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 	// floats
 	n := len(sols)
 	if prms.Nflt > 0 {
-		if prms.Latin {
+		switch prms.GenType {
+		case "latin":
 			K := rnd.LatinIHS(prms.Nflt, n, prms.LatinDup)
 			for i := 0; i < n; i++ {
 				for j := 0; j < prms.Nflt; j++ {
 					sols[i].Flt[j] = prms.FltMin[j] + float64(K[j][i]-1)*prms.DelFlt[j]/float64(n-1)
 				}
 			}
-		} else {
+		case "halton":
+			H := rnd.HaltonPoints(prms.Nflt, n)
+			for i := 0; i < n; i++ {
+				for j := 0; j < prms.Nflt; j++ {
+					sols[i].Flt[j] = prms.FltMin[j] + H[j][i]*prms.DelFlt[j]
+				}
+			}
+		default:
 			for i := 0; i < n; i++ {
 				for j := 0; j < prms.Nflt; j++ {
 					sols[i].Flt[j] = rnd.Float64(prms.FltMin[j], prms.FltMax[j])

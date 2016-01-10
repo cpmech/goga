@@ -29,7 +29,7 @@ type Parameters struct {
 	// options
 	Pll        bool    // parallel
 	Seed       int     // seed for random numbers generator
-	Latin      bool    // use Latin Hypercube
+	GenType    string  // generation type: "latin", "halton", "rnd"
 	LatinDup   int     // Latin Hypercube duplicates number
 	EpsMinProb float64 // minimum value for 'h' constraints
 	Verbose    bool    // show messages
@@ -85,7 +85,7 @@ func (o *Parameters) Default() {
 	// options
 	o.Pll = true
 	o.Seed = 0
-	o.Latin = true
+	o.GenType = "latin"
 	o.LatinDup = 2
 	o.EpsMinProb = 0.1
 	o.Verbose = true
@@ -224,7 +224,7 @@ func (o *Parameters) LogParams() (l string) {
 	l += io.ArgsTable("OPTIONS",
 		"parallel", "Pll", o.Pll,
 		"seed for random numbers generator", "Seed", o.Seed,
-		"use Latin Hypercube", "Latin", o.Latin,
+		"generation type: 'latin', 'halton', 'rnd'", "GenType", o.GenType,
 		"Latin Hypercube duplicates number", "LatinDup", o.LatinDup,
 		"minimum value for 'h' constraints", "EpsMinProb", o.EpsMinProb,
 		"show messages", "Verbose", o.Verbose,
