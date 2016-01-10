@@ -147,7 +147,6 @@ func Test_flt04(tst *testing.T) {
 	opt.Nsol = 30
 	opt.Ncpu = 1
 	opt.Tf = 100
-	opt.PmFlt = 0.0
 	opt.LatinDup = 5
 	opt.FltMin = []float64{0.1, 0.5}
 	opt.FltMax = []float64{2.25, 2.5}
@@ -181,7 +180,7 @@ func Test_flt04(tst *testing.T) {
 
 func Test_flt05(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("flt05. ZDT problems")
 
 	// parameters
@@ -418,7 +417,7 @@ func Test_flt05(tst *testing.T) {
 
 func Test_flt06(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("flt06. FON problem")
 
 	// parameters

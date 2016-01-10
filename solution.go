@@ -99,15 +99,6 @@ func (A *Solution) Distance(B *Solution, fmin, fmax []float64, imin, imax []int)
 	return
 }
 
-// OvaDistance computes (phenotype) distance between A and B
-func (A *Solution) OvaDistance(B *Solution, omin, omax []float64) (dist float64) {
-	for i := 0; i < len(A.Ova); i++ {
-		dist += math.Abs(A.Ova[i]-B.Ova[i]) / (omax[i] - omin[i] + 1e-15)
-	}
-	dist /= float64(len(A.Ova))
-	return
-}
-
 // Compare compares two solutions
 func (A *Solution) Compare(B *Solution) (A_dominates, B_dominates bool) {
 	var A_nviolations, B_nviolations int

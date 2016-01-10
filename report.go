@@ -199,3 +199,38 @@ func nice_num(x float64, ndigits int) float64 {
 	s := io.Sf("%."+io.Sf("%d", ndigits)+"f", x)
 	return io.Atof(s)
 }
+
+// write all values ////////////////////////////////////////////////////////////////////////////////
+
+func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
+	var buf bytes.Buffer
+	for i := 0; i < opt.Nova; i++ {
+		io.Ff(&buf, "%23s", io.Sf("f%d", i))
+	}
+	for i := 0; i < opt.Noor; i++ {
+		io.Ff(&buf, "%23s", io.Sf("u%d", i))
+	}
+	for i := 0; i < opt.Nflt; i++ {
+		io.Ff(&buf, "%23s", io.Sf("x%d", i))
+	}
+	for i := 0; i < opt.Nint; i++ {
+		io.Ff(&buf, "%23s", io.Sf("y%d", i))
+	}
+	io.Ff(&buf, "\n")
+	for _, sol := range opt.Solutions {
+		for i := 0; i < opt.Nova; i++ {
+			io.Ff(&buf, "%23g", sol.Ova[i])
+		}
+		for i := 0; i < opt.Noor; i++ {
+			io.Ff(&buf, "%23g", sol.Oor[i])
+		}
+		for i := 0; i < opt.Nflt; i++ {
+			io.Ff(&buf, "%23g", sol.Flt[i])
+		}
+		for i := 0; i < opt.Nint; i++ {
+			io.Ff(&buf, "%23g", sol.Int[i])
+		}
+		io.Ff(&buf, "\n")
+	}
+	io.WriteFileVD(dirout, fnkey+".res", &buf)
+}

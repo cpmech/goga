@@ -38,17 +38,14 @@ type Optimiser struct {
 	Parameters           // input parameters
 	ObjFunc    ObjFunc_t // objective function
 	MinProb    MinProb_t // minimisation problem function
-	CxFlt      CxFlt_t   // crossover function for floats
 	CxInt      CxInt_t   // crossover function for ints
-	MtFlt      MtFlt_t   // mutation function for floats
 	MtInt      MtInt_t   // mutation function for ints
 
 	// essential
-	Generator  Generator_t // generate solutions
-	Solutions  []*Solution // current solutions
-	FutureSols []*Solution // future solutions
-	Groups     []*Group    // [cpu] competitors per CPU. pointers to current and future solutions
-	Metrics    *Metrics    // metrics
+	Generator Generator_t // generate solutions
+	Solutions []*Solution // current solutions
+	Groups    []*Group    // [cpu] competitors per CPU. pointers to current and future solutions
+	Metrics   *Metrics    // metrics
 
 	// auxiliary
 	Nf, Ng, Nh int         // number of f, g, h functions
@@ -102,21 +99,12 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	o.Generator = gen
 	o.CalcDerived()
 
-	// crossover and mutation functions
-	if o.CxFlt == nil {
-		o.CxFlt = CxFltDE
-	}
-	if o.MtFlt == nil {
-		o.MtFlt = MtFltDeb
-	}
-
 	// allocate solutions
 	o.Solutions = NewSolutions(o.Nsol, &o.Parameters)
-	o.FutureSols = NewSolutions(o.Nsol, &o.Parameters)
 	o.Groups = make([]*Group, o.Ncpu)
 	for cpu := 0; cpu < o.Ncpu; cpu++ {
 		o.Groups[cpu] = new(Group)
-		o.Groups[cpu].Init(cpu, o.Ncpu, o.Solutions, o.FutureSols, &o.Parameters)
+		o.Groups[cpu].Init(cpu, o.Ncpu, o.Solutions, &o.Parameters)
 	}
 
 	// metrics
@@ -168,7 +156,7 @@ func (o *Optimiser) Solve() {
 					if cpu == 0 && o.Verbose {
 						io.Pf("time = %10d\r", t+1)
 					}
-					nfeval += o.evolve_one_group(cpu)
+					nfeval += o.EvolveOneGroup(cpu)
 				}
 				done <- nfeval
 			}(icpu)
@@ -185,7 +173,11 @@ func (o *Optimiser) Solve() {
 			if o.ExcTour {
 				for i := 0; i < o.Ncpu; i++ {
 					j := (i + 1) % o.Ncpu
-					o.exchange_via_tournament(i, j)
+					I := rnd.IntGetUnique(o.Groups[i].Indices, 2)
+					J := rnd.IntGetUnique(o.Groups[j].Indices, 2)
+					A, B := o.Groups[i].All[I[0]], o.Groups[i].All[I[1]]
+					a, b := o.Groups[j].All[J[0]], o.Groups[j].All[J[1]]
+					o.Tournament(A, B, a, b, o.Metrics)
 				}
 			}
 
@@ -193,7 +185,14 @@ func (o *Optimiser) Solve() {
 			if o.ExcOne {
 				rnd.IntGetGroups(o.cpupairs, utl.IntRange(o.Ncpu))
 				for _, pair := range o.cpupairs {
-					o.exchange_one_randomly(pair[0], pair[1])
+					i, j := pair[0], pair[1]
+					n := utl.Imin(o.Groups[i].Ncur, o.Groups[j].Ncur)
+					k := rnd.Int(0, n)
+					A := o.Groups[i].All[k]
+					B := o.Groups[j].All[k]
+					B.CopyInto(o.tmp)
+					A.CopyInto(B)
+					o.tmp.CopyInto(A)
 				}
 			}
 		}
@@ -206,8 +205,8 @@ func (o *Optimiser) Solve() {
 	}
 }
 
-// RunMany runs many trials in order to produce statistics
-func (o *Optimiser) RunMany() {
+// RunMany runs many trials in order to produce statistical data
+func (o *Optimiser) RunMany(dirout, fnkey string) {
 
 	// benchmark
 	t0 := gotime.Now()
@@ -223,18 +222,36 @@ func (o *Optimiser) RunMany() {
 		o.Verbose = false
 	}
 
+	// remove previous results
+	if fnkey != "" {
+		io.RemoveAll(dirout + "/" + fnkey + "-*.res")
+	}
+
 	// perform trials
 	for itrial := 0; itrial < o.Ntrials; itrial++ {
+
+		// re-generate solutions
 		o.Nfeval = 0
 		if itrial > 0 {
 			o.generate_solutions(itrial)
 		}
+
+		// save initial solutions
+		if fnkey != "" {
+			WriteAllValues(dirout, io.Sf("%s-%04d_ini", fnkey, itrial), o)
+		}
+
+		// solve
 		o.Solve()
+
+		// sort
 		if o.Nova < 2 {
 			SortByOva(o.Solutions, 0)
 		} else {
 			SortByTradeoff(o.Solutions)
 		}
+
+		// find best
 		if o.Solutions[0].Feasible() {
 			xf, xi := o.Solutions[0].GetCopyResults()
 			if o.Nflt > 0 {
@@ -244,57 +261,61 @@ func (o *Optimiser) RunMany() {
 				o.XintBest = append(o.XintBest, xi)
 			}
 		}
+
+		// save final solutions
+		if fnkey != "" {
+			f0min := o.Solutions[0].Ova[0]
+			for _, sol := range o.Solutions {
+				f0min = utl.Min(f0min, sol.Ova[0])
+			}
+			WriteAllValues(dirout, io.Sf("%s-%04d_f0min=%g", fnkey, itrial, f0min), o)
+		}
 	}
 }
 
-// internal functions //////////////////////////////////////////////////////////////////////////////
-
-// exchange_via_tournament runs exchange using tournament
-func (o *Optimiser) exchange_via_tournament(i, j int) {
-	selI := rnd.IntGetUnique(o.Groups[i].Indices, 2)
-	selJ := rnd.IntGetUnique(o.Groups[j].Indices, 2)
-	A, B := o.Groups[i].All[selI[0]], o.Groups[i].All[selI[1]]
-	a, b := o.Groups[j].All[selJ[0]], o.Groups[j].All[selJ[1]]
-	o.tournament(A, B, a, b, o.Metrics)
-}
-
-// exchange_one_randomly exchange one solution between groups randomly
-func (o *Optimiser) exchange_one_randomly(i, j int) {
-	n := utl.Imin(o.Groups[i].Ncur, o.Groups[j].Ncur)
-	k := rnd.Int(0, n)
-	A := o.Groups[i].All[k]
-	B := o.Groups[j].All[k]
-	B.CopyInto(o.tmp)
-	A.CopyInto(B)
-	o.tmp.CopyInto(A)
-}
-
-// evolve_one_group evolves one group (CPU)
-func (o *Optimiser) evolve_one_group(cpu int) (nfeval int) {
+// EvolveOneGroup evolves one group (CPU)
+func (o *Optimiser) EvolveOneGroup(cpu int) (nfeval int) {
 
 	// auxiliary
 	G := o.Groups[cpu].All // competitors (old and new)
-	indices := o.Groups[cpu].Indices
-	pairs := o.Groups[cpu].Pairs
+	I := o.Groups[cpu].Indices
+	P := o.Groups[cpu].Pairs
 
 	// compute random pairs
-	rnd.IntGetGroups(pairs, indices)
+	rnd.IntGetGroups(P, I)
+	np := len(P)
 
 	// create new solutions
 	z := o.Groups[cpu].Ncur // index of first new solution
-	for k := 0; k < len(pairs); k++ {
-		l := (k + 1) % len(pairs)
-		m := (k + 2) % len(pairs)
-		n := (k + 3) % len(pairs)
-		A := G[pairs[k][0]]
-		B := G[pairs[k][1]]
-		A0, A1, A2 := G[pairs[l][0]], G[pairs[m][1]], G[pairs[n][0]]
-		B0, B1, B2 := G[pairs[l][1]], G[pairs[m][0]], G[pairs[n][1]]
-		a := G[z+pairs[k][0]]
-		b := G[z+pairs[k][1]]
-		o.recombination(a, b, A, B, A0, A1, A2, B0, B1, B2)
-		o.mutation(a)
-		o.mutation(b)
+	for k := 0; k < np; k++ {
+		l := (k + 1) % np
+		m := (k + 2) % np
+		n := (k + 3) % np
+
+		A := G[P[k][0]]
+		A0 := G[P[l][0]]
+		A1 := G[P[m][0]]
+		A2 := G[P[n][0]]
+
+		B := G[P[k][1]]
+		B0 := G[P[l][1]]
+		B1 := G[P[m][1]]
+		B2 := G[P[n][1]]
+
+		a := G[z+P[k][0]]
+		b := G[z+P[k][1]]
+
+		if o.Nflt > 0 {
+			DiffEvol(a.Flt, A.Flt, A0.Flt, A1.Flt, A2.Flt, &o.Parameters)
+			DiffEvol(b.Flt, B.Flt, B0.Flt, B1.Flt, B2.Flt, &o.Parameters)
+		}
+
+		if o.Nint > 0 {
+			o.CxInt(a.Int, b.Int, A.Int, B.Int, &o.Parameters)
+			o.MtInt(a.Int, &o.Parameters)
+			o.MtInt(b.Int, &o.Parameters)
+		}
+
 		if o.BinInt > 0 && o.ClearFlt {
 			for i := 0; i < o.Nint; i++ {
 				if a.Int[i] == 0 {
@@ -305,6 +326,7 @@ func (o *Optimiser) evolve_one_group(cpu int) (nfeval int) {
 				}
 			}
 		}
+
 		o.ObjFunc(a, cpu)
 		o.ObjFunc(b, cpu)
 		nfeval += 2
@@ -314,59 +336,40 @@ func (o *Optimiser) evolve_one_group(cpu int) (nfeval int) {
 	o.Groups[cpu].Metrics.Compute(G)
 
 	// tournaments
-	for k := 0; k < len(pairs); k++ {
-		A := G[pairs[k][0]]
-		B := G[pairs[k][1]]
-		a := G[z+pairs[k][0]]
-		b := G[z+pairs[k][1]]
-		o.tournament(A, B, a, b, o.Groups[cpu].Metrics)
+	for k := 0; k < np; k++ {
+		A := G[P[k][0]]
+		B := G[P[k][1]]
+		a := G[z+P[k][0]]
+		b := G[z+P[k][1]]
+		o.Tournament(A, B, a, b, o.Groups[cpu].Metrics)
 	}
 	return
 }
 
-// recombination performs crossover in A,B,xj to obtain a and b
-func (o *Optimiser) recombination(a, b, A, B, A0, A1, A2, B0, B1, B2 *Solution) {
-	if o.Nflt > 0 {
-		o.CxFlt(a.Flt, b.Flt, A.Flt, B.Flt, A0.Flt, A1.Flt, A2.Flt, B0.Flt, B1.Flt, B2.Flt, &o.Parameters)
-	}
-	if o.Nint > 0 {
-		o.CxInt(a.Int, b.Int, A.Int, B.Int, &o.Parameters)
-	}
-}
-
-// mutation performs mutation in a
-func (o *Optimiser) mutation(a *Solution) {
-	if o.Nflt > 0 && o.PmFlt > 0 {
-		o.MtFlt(a.Flt, &o.Parameters)
-	}
-	if o.Nint > 0 && o.PmInt > 0 {
-		o.MtInt(a.Int, &o.Parameters)
-	}
-}
-
-// fight_and_setnew implements the fight of current solution P with new solution q. If the current
-// solution loses, the new solution will replace it
-func (o *Optimiser) fight_and_setnew(P, q *Solution) {
-	if !P.Fight(q) {
-		q.CopyInto(P)
-	}
-}
-
-// tournament performs the tournament among 4 individuals
-func (o *Optimiser) tournament(A, B, a, b *Solution, m *Metrics) {
+// Tournament performs the tournament among 4 individuals
+func (o *Optimiser) Tournament(A, B, a, b *Solution, m *Metrics) {
 	dAa := A.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	dAb := A.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	dBa := B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
 	dBb := B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
-	TOL := 1e-8
-	if dAa < TOL || dBb < TOL || dAa+dBb < dAb+dBa {
-		o.fight_and_setnew(A, a)
-		o.fight_and_setnew(B, b)
+	if dAa+dBb < dAb+dBa {
+		if !A.Fight(a) {
+			a.CopyInto(A)
+		}
+		if !B.Fight(b) {
+			b.CopyInto(B)
+		}
 		return
 	}
-	o.fight_and_setnew(A, b)
-	o.fight_and_setnew(B, a)
+	if !A.Fight(b) {
+		b.CopyInto(A)
+	}
+	if !B.Fight(a) {
+		a.CopyInto(B)
+	}
 }
+
+// auxiliary //////////////////////////////////////////////////////////////////////////////////////
 
 // generate_solutions generate solutions
 func (o *Optimiser) generate_solutions(itrial int) {

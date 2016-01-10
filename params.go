@@ -50,10 +50,8 @@ type Parameters struct {
 	DiffEvolUseFmult bool    // use F random multiplier
 
 	// crossover and mutation
-	DebEtam float64 // Deb's mutation parameters
-	PmFlt   float64 // probability of mutation for floats
-	PmInt   float64 // probability of mutation for ints
-	PcInt   float64 // probability of crossover for ints
+	PmInt float64 // probability of mutation for ints
+	PcInt float64 // probability of crossover for ints
 
 	// range
 	FltMin []float64 // minimum float allowed
@@ -106,9 +104,7 @@ func (o *Parameters) Default() {
 	o.DiffEvolUseFmult = true
 
 	// crossover and mutation
-	o.DebEtam = 1
-	o.PmFlt = 0.0
-	o.PmInt = 0.1
+	o.PmInt = 0.01
 	o.PcInt = 0.8
 }
 
@@ -251,8 +247,6 @@ func (o *Parameters) LogParams() (l string) {
 	// crossover and mutation
 	l += "\n"
 	l += io.ArgsTable("CROSSOVER AND MUTATION",
-		"Deb's mutation parameters", "DebEtam", o.DebEtam,
-		"probability of mutation for floats", "PmFlt", o.PmFlt,
 		"probability of mutation for ints", "PmInt", o.PmInt,
 		"probability of crossover for ints", "PcInt", o.PcInt,
 	)
