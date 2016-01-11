@@ -187,19 +187,6 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 	return rnd.FlipCoin(0.5)
 }
 
-// GetCopyResults returns a copy of results (x vectors)
-func (o *Solution) GetCopyResults() (xFlt []float64, xInt []int) {
-	if o.prms.Nflt > 0 {
-		xFlt = make([]float64, o.prms.Nflt)
-		copy(xFlt, o.Flt)
-	}
-	if o.prms.Nint > 0 {
-		xInt = make([]int, o.prms.Nint)
-		copy(xInt, o.Int)
-	}
-	return
-}
-
 // sorting /////////////////////////////////////////////////////////////////////////////////////////
 
 type solByOva0 []*Solution

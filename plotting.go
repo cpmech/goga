@@ -132,11 +132,13 @@ func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult floa
 }
 
 // PlotAddOvaOva adds ova-ova points to existent plot
-func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
-	nsol := len(sols)
-	x, y := make([]float64, nsol), make([]float64, nsol)
-	for i, sol := range sols {
-		x[i], y[i] = sol.Ova[iOva], sol.Ova[jOva]
+func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt plt.Fmt, emptyMarker bool) {
+	var x, y []float64
+	for _, sol := range sols {
+		if sol.Feasible() || !feasibleOnly {
+			x = append(x, sol.Ova[iOva])
+			y = append(y, sol.Ova[jOva])
+		}
 	}
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
 	if emptyMarker {
@@ -146,7 +148,7 @@ func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, fmt plt.Fmt,
 }
 
 // PlotAddParetoFront highlights Pareto front
-func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
+func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt *plt.Fmt, emptyMarker bool) {
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
 	if emptyMarker {
 		args += io.Sf(",markeredgecolor='%s',markerfacecolor='none'", fmt.C)
@@ -209,21 +211,16 @@ func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jF
 }
 
 // PlotOvaOvaPareto plots ova-ova Pareto values
-func PlotOvaOvaPareto(fnkey string, opt *Optimiser, sols0 []*Solution, iOva, jOva int, extra func(), lims []float64, equalAxes bool) {
+func PlotOvaOvaPareto(opt *Optimiser, sols0 []*Solution, iOva, jOva int, feasibleOnly, frontOnly, emptyMarker bool, fmt *plt.Fmt) {
 	if sols0 != nil {
-		opt.PlotAddOvaOva(iOva, jOva, sols0, plt.Fmt{L: "initial", M: "+", C: "g", Ls: "none", Ms: 4}, false)
+		opt.PlotAddOvaOva(iOva, jOva, sols0, feasibleOnly, plt.Fmt{L: "initial", M: "+", C: "g", Ls: "none", Ms: 4}, false)
 	}
-	opt.PlotAddOvaOva(iOva, jOva, opt.Solutions, plt.Fmt{L: "final", M: ".", C: "r", Ls: "none", Ms: 5}, false)
-	opt.PlotAddParetoFront(iOva, jOva, opt.Solutions, plt.Fmt{M: "o", C: "k", Ls: "none", Ms: 6}, true)
-	if extra != nil {
-		extra()
+	if !frontOnly {
+		opt.PlotAddOvaOva(iOva, jOva, opt.Solutions, feasibleOnly, plt.Fmt{L: "final", M: ".", C: "r", Ls: "none", Ms: 5}, false)
 	}
-	if lims != nil {
-		plt.AxisLims(lims)
+	if fmt == nil {
+		fmt = &plt.Fmt{M: "o", C: "k", Ls: "none", Ms: 6}
 	}
-	if equalAxes {
-		plt.Equal()
-	}
+	opt.PlotAddParetoFront(iOva, jOva, opt.Solutions, fmt, emptyMarker)
 	plt.Gll(io.Sf("$f_%d$", iOva), io.Sf("$f_%d$", jOva), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
-	plt.SaveD("/tmp/goga", fnkey+".eps")
 }

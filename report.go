@@ -6,10 +6,15 @@ package goga
 
 import (
 	"bytes"
+	"strings"
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/rnd"
+)
+
+const (
+	SCIENTIFIC_NOTATION_TEX = true // convert scientific notation to tex
 )
 
 // TeX document ////////////////////////////////////////////////////////////////////////////////////
@@ -19,7 +24,9 @@ func TexDocumentStart() (buf *bytes.Buffer) {
 	buf = new(bytes.Buffer)
 	io.Ff(buf, `\documentclass[a4paper]{article}
 
-\usepackage{mydefaults}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
 \usepackage[margin=1.5cm,footskip=0.5cm]{geometry}
 
 \title{GOGA Report}
@@ -63,7 +70,8 @@ P & $N_{sol}$ & $N_{cpu}$ & $t_{max}$ & $\Delta t_{exc}$ & $N_{eval}$ \\ \hline
 
 // TexPrmsTableEnd ends table with parameters
 func TexPrmsTableEnd(buf *bytes.Buffer) {
-	io.Ff(buf, `\end{tabular}
+	io.Ff(buf, `
+\end{tabular}
 \label{tab:prms}
 \end{table}`)
 }
@@ -119,30 +127,32 @@ func TexSingleObjTableEnd(buf *bytes.Buffer) {
 }
 
 // TexSingleObjTableItem adds item to table for single-objective optimisation results with ntrials
-func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref float64, nDigitsF, nDigitsX, nDigitsHist int) {
-	hlen := 20
-	SortByOva(o.Solutions, 0)
-	best := o.Solutions[0]
-	fmin, fave, fmax, fdev, F := o.StatMinProb(0, 20, fref, false)
-	fmtF := "%g"
-	fmtX := io.Sf("%%.%df", nDigitsX)
-	fmtHist := io.Sf("%%.%df", nDigitsHist)
-	io.Ff(buf, `%d
+func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer) {
+	o.fix_formatting_data()
+	FrefTxt := "N/A"
+	if len(o.RptFref) > 0 {
+		FrefTxt = tex(o.RptFmtF, o.RptFref[0])
+	}
+	Fmin, Fave, Fmax, Fdev, F := StatF(o, 0, false)
+	FminTxt, FaveTxt, FmaxTxt, FdevTxt := tex(o.RptFmtF, Fmin), tex(o.RptFmtF, Fave), tex(o.RptFmtF, Fmax), tex(o.RptFmtFdev, Fdev)
+	hist := rnd.BuildTextHist(nice(Fmin-0.05, o.HistNdig), nice(Fmax+0.05, o.HistNdig), o.HistNsta, F, o.HistFmt, o.HistLen)
+	io.Ff(buf,
+		`%s
 &
 {$\!\begin{aligned}
-    N_{sol}        & = %d \ACR
-	N_{cpu}        & = %d \ACR
-	t_{max}        & = %d \ACR
-	\Delta t_{exc} & = %d \ACR
-	N_{eval}       & = %d
+    N_{sol}        &= %d \\
+	N_{cpu}        &= %d \\
+	t_{max}        &= %d \\
+	\Delta t_{exc} &= %d \\
+	N_{eval}       &= %d
 \end{aligned}$}
 &
 {$\!\begin{aligned}
-    f_{min}  &= `+fmtF+`  \ACR
-             &\phantom{=}( `+fmtF+`) \ACR
-    f_{ave}  &= `+fmtF+`  \ACR
-    f_{max}  &= `+fmtF+` \ACR
-    f_{dev}  &= {\bf `+fmtF+`} \ACR
+    f_{min}  &= %s \\
+             &\phantom{=} (%s) \\
+    f_{ave}  &= %s \\
+    f_{max}  &= %s \\
+    f_{dev}  &= {\bf %s} \\
     T_{sys}  &= %v
 \end{aligned}$}
 &
@@ -151,39 +161,39 @@ func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref fl
 %s
 \end{verbatim}
 \end{minipage} \\
-\multicolumn{4}{c}{$X_{best}$=`+fmtX+`} \\
-`, problem, o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval,
-		nice_num(fmin, nDigitsF), fref, nice_num(fave, nDigitsF), nice_num(fmax, nDigitsF), fdev, o.SysTime,
-		rnd.BuildTextHist(nice_num(fmin-0.05, nDigitsHist), nice_num(fmax+0.05, nDigitsHist), 11, F, fmtHist, hlen),
-		best.Flt)
+\multicolumn{4}{c}{$X_{best}$=`+o.RptFmtX+`} \\
+`,
+		o.RptName,
+		o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval,
+		FminTxt, FrefTxt, FaveTxt, FmaxTxt, FdevTxt, o.SysTime,
+		hist, o.BestOfBestFlt)
+	if len(o.RptXref) == o.Nflt {
+		io.Ff(buf, ` \multicolumn{4}{c}{$X_{ref}$=`+o.RptFmtX+`} \\`, o.RptXref)
+	}
 }
 
 // TexSingleObjReport produces Single-Objective table TeX report
 //  nRowPerTab -- number of rows per table
-func TexSingleObjReport(dirout, fnkey string, ntrials, nRowPerTab int, opts []*Optimiser, frefs []float64, nDigitsF, nDigitsX, nDigitsHist []int) {
-	nprob := len(opts)
+func TexSingleObjReport(dirout, fnkey string, nRowPerTab int, opts []*Optimiser) {
 	if nRowPerTab < 1 {
-		chk.Panic("number of rows per table must be greater than 0")
+		nRowPerTab = len(opts)
 	}
-	if len(nDigitsHist) < nprob {
-		chk.Panic("size of slice with number of digits for histogram must be equal to or greater than the number of problems")
-	}
-	chk.IntAssert(len(frefs), nprob)
 	buf := TexDocumentStart()
 	for i, opt := range opts {
 		if i%nRowPerTab == 0 {
 			if i > 0 {
 				io.Ff(buf, `\bottomrule`)
 				TexSingleObjTableEnd(buf) // end previous table
-				io.Ff(buf, "\n")
+				io.Ff(buf, "\n\n\n")
 			}
-			TexSingleObjTableStart(buf, ntrials) // begin new table
+			TexSingleObjTableStart(buf, opt.Ntrials) // begin new table
 		} else {
 			if i > 0 {
 				io.Ff(buf, `\hline`)
+				io.Ff(buf, "\n\n")
 			}
 		}
-		TexSingleObjTableItem(opt, buf, i+1, frefs[i], nDigitsF[i], nDigitsX[i], nDigitsHist[i])
+		TexSingleObjTableItem(opt, buf)
 	}
 	io.Ff(buf, `\bottomrule`)
 	TexSingleObjTableEnd(buf) // end previous table
@@ -192,12 +202,93 @@ func TexSingleObjReport(dirout, fnkey string, ntrials, nRowPerTab int, opts []*O
 	TexWrite(dirout, fnkey, buf, true)
 }
 
-// auxiliary ///////////////////////////////////////////////////////////////////////////////////////
+// F1F0 tables /////////////////////////////////////////////////////////////////////////////////////
 
-// nice_num returns a truncated float
-func nice_num(x float64, ndigits int) float64 {
-	s := io.Sf("%."+io.Sf("%d", ndigits)+"f", x)
-	return io.Atof(s)
+// TexF1F0TableStart starts table for single-objective optimisation results with ntrials
+func TexF1F0TableStart(buf *bytes.Buffer, ntrials int) {
+	io.Ff(buf, `
+\begin{table*} \centering
+\caption{Constrained multiple objective problems. $N_{trials}=%d$}
+\begin{tabular}[c]{cccc} \toprule
+P & settings & error & spread \\ \hline
+`, ntrials)
+}
+
+// TexF1F0TableEnd ends table for single-objective optimisation results with ntrials
+func TexF1F0TableEnd(buf *bytes.Buffer) {
+	io.Ff(buf, `
+\end{tabular}
+\label{tab:multiobj}
+\end{table*}`)
+}
+
+// TexF1F0TableItem adds item to table for single-objective optimisation results with ntrials
+func TexF1F0TableItem(o *Optimiser, buf *bytes.Buffer) {
+	o.fix_formatting_data()
+	Emin, Eave, Emax, Edev, E, Lmin, Lave, Lmax, Ldev, _ := StatF1F0(o, false)
+	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
+	LminTxt, LaveTxt, LmaxTxt, LdevTxt := tex(o.RptFmtL, Lmin), tex(o.RptFmtL, Lave), tex(o.RptFmtL, Lmax), tex(o.RptFmtLdev, Ldev)
+	io.Ff(buf,
+		`%s
+&
+{$\!\begin{aligned}
+    N_{sol}        &= %d \\
+	N_{cpu}        &= %d \\
+	t_{max}        &= %d \\
+	\Delta t_{exc} &= %d \\
+	N_{eval}       &= %d
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+    E_{min} &= %s \\
+    E_{ave} &= %s \\
+    E_{max} &= %s \\
+    E_{dev} &= {\bf %s} \\
+	T_{sys} &= %v
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+    L_{min} &= %s \\
+    L_{ave} &= %s \\
+    L_{max} &= %s \\
+    L_{dev} &= {\bf %s} \\
+	count   &= %d
+\end{aligned}$} \\
+`,
+		o.RptName,
+		o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval,
+		EminTxt, EaveTxt, EmaxTxt, EdevTxt, o.SysTime,
+		LminTxt, LaveTxt, LmaxTxt, LdevTxt, len(E))
+}
+
+// TexF1F0Report produces multi-objective (f1f0) table TeX report
+//  nRowPerTab -- number of rows per table
+func TexF1F0Report(dirout, fnkey string, nRowPerTab int, opts []*Optimiser) {
+	if nRowPerTab < 1 {
+		nRowPerTab = len(opts)
+	}
+	buf := TexDocumentStart()
+	for i, opt := range opts {
+		if i%nRowPerTab == 0 {
+			if i > 0 {
+				io.Ff(buf, `\bottomrule`)
+				TexF1F0TableEnd(buf) // end previous table
+				io.Ff(buf, "\n\n\n")
+			}
+			TexF1F0TableStart(buf, opt.Ntrials) // begin new table
+		} else {
+			if i > 0 {
+				io.Ff(buf, `\hline`)
+				io.Ff(buf, "\n\n")
+			}
+		}
+		TexF1F0TableItem(opt, buf)
+	}
+	io.Ff(buf, `\bottomrule`)
+	TexF1F0TableEnd(buf) // end previous table
+	io.Ff(buf, "\n")
+	TexDocumentEnd(buf)
+	TexWrite(dirout, fnkey, buf, true)
 }
 
 // write all values ////////////////////////////////////////////////////////////////////////////////
@@ -235,4 +326,22 @@ func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
 		io.Ff(&buf, "\n")
 	}
 	io.WriteFileVD(dirout, fnkey+".res", &buf)
+}
+
+func tex(fmt string, num float64) (l string) {
+	if fmt == "" {
+		fmt = "%g"
+	}
+	l = io.Sf(fmt, num)
+	if SCIENTIFIC_NOTATION_TEX {
+		s := strings.Split(l, "e-")
+		if len(s) == 2 {
+			e := s[1]
+			if e[0] == '0' {
+				e = string(e[1])
+			}
+			l = s[0] + "\\cdot 10^{-" + e + "}"
+		}
+	}
+	return
 }
