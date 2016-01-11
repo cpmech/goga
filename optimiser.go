@@ -48,18 +48,13 @@ type Optimiser struct {
 	Metrics   *Metrics    // metrics
 
 	// auxiliary
+	Stat                   // structure holding stat data
 	Nf, Ng, Nh int         // number of f, g, h functions
 	F, G, H    [][]float64 // [cpu] temporary
 	tmp        *Solution   // temporary solution
 	cpupairs   [][]int     // pairs of CPU ids. for exchanging solutions
 	iova0      int         // index of current item in ova[0]
 	ova0       []float64   // last ova[0] values to assess convergence
-
-	// stat
-	Nfeval   int             // number of function evaluations
-	XfltBest [][]float64     // best results after RunMany
-	XintBest [][]int         // best results after RunMany
-	SysTime  gotime.Duration // system (real/CPU) time
 }
 
 // Initialises continues initialisation by generating individuals
@@ -205,74 +200,6 @@ func (o *Optimiser) Solve() {
 	}
 }
 
-// RunMany runs many trials in order to produce statistical data
-func (o *Optimiser) RunMany(dirout, fnkey string) {
-
-	// benchmark
-	t0 := gotime.Now()
-	defer func() {
-		o.SysTime = gotime.Now().Sub(t0)
-	}()
-
-	// disable verbose flag temporarily
-	if o.Verbose {
-		defer func() {
-			o.Verbose = true
-		}()
-		o.Verbose = false
-	}
-
-	// remove previous results
-	if fnkey != "" {
-		io.RemoveAll(dirout + "/" + fnkey + "-*.res")
-	}
-
-	// perform trials
-	for itrial := 0; itrial < o.Ntrials; itrial++ {
-
-		// re-generate solutions
-		o.Nfeval = 0
-		if itrial > 0 {
-			o.generate_solutions(itrial)
-		}
-
-		// save initial solutions
-		if fnkey != "" {
-			WriteAllValues(dirout, io.Sf("%s-%04d_ini", fnkey, itrial), o)
-		}
-
-		// solve
-		o.Solve()
-
-		// sort
-		if o.Nova < 2 {
-			SortByOva(o.Solutions, 0)
-		} else {
-			SortByTradeoff(o.Solutions)
-		}
-
-		// find best
-		if o.Solutions[0].Feasible() {
-			xf, xi := o.Solutions[0].GetCopyResults()
-			if o.Nflt > 0 {
-				o.XfltBest = append(o.XfltBest, xf)
-			}
-			if o.Nflt > 0 {
-				o.XintBest = append(o.XintBest, xi)
-			}
-		}
-
-		// save final solutions
-		if fnkey != "" {
-			f0min := o.Solutions[0].Ova[0]
-			for _, sol := range o.Solutions {
-				f0min = utl.Min(f0min, sol.Ova[0])
-			}
-			WriteAllValues(dirout, io.Sf("%s-%04d_f0min=%g", fnkey, itrial, f0min), o)
-		}
-	}
-}
-
 // EvolveOneGroup evolves one group (CPU)
 func (o *Optimiser) EvolveOneGroup(cpu int) (nfeval int) {
 
@@ -410,49 +337,4 @@ func (o *Optimiser) generate_solutions(itrial int) {
 	o.iova0 = -1
 	o.Nfeval = o.Nsol
 	o.Metrics.Compute(o.Solutions)
-}
-
-// conergence_analysis performs an analysis of convergence based on ova[0]
-func (o *Optimiser) convergence_analysis() (converged bool) {
-
-	// sort by ova[0]
-	SortByOva(o.Solutions, 0)
-
-	// check for feasible solution
-	if !o.Solutions[0].Feasible() {
-		return
-	}
-	best := o.Solutions[0].Ova[0]
-
-	// first item
-	if o.iova0 < 0 {
-		o.ova0[0] = best
-		o.iova0 = 0
-		return
-	}
-
-	// next item
-	prev := o.ova0[o.iova0]
-	//io.Pforan("prev=%v best=%v\n", prev, best)
-	if best <= prev {
-		o.iova0++
-		o.ova0[o.iova0] = best
-	}
-
-	// convergence assessment
-	szova0 := 3
-	if o.iova0 >= szova0-1 {
-		greater := false
-		for i := 1; i < szova0; i++ {
-			δ := o.ova0[i] - o.ova0[i-1]
-			if math.Abs(δ) > o.ConvDova0 {
-				greater = true
-				break
-			}
-		}
-		if !greater {
-			return true
-		}
-	}
-	return false
 }

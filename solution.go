@@ -205,7 +205,7 @@ func (o *Solution) GetCopyResults() (xFlt []float64, xInt []int) {
 type solByOva0 []*Solution
 type solByOva1 []*Solution
 type solByOva2 []*Solution
-type solByBest []*Solution
+type solByFrontThenOva0 []*Solution
 
 func (o solByOva0) Len() int           { return len(o) }
 func (o solByOva0) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
@@ -219,11 +219,11 @@ func (o solByOva2) Len() int           { return len(o) }
 func (o solByOva2) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
 func (o solByOva2) Less(i, j int) bool { return o[i].Ova[2] < o[j].Ova[2] }
 
-func (o solByBest) Len() int      { return len(o) }
-func (o solByBest) Swap(i, j int) { o[i], o[j] = o[j], o[i] }
-func (o solByBest) Less(i, j int) bool {
+func (o solByFrontThenOva0) Len() int      { return len(o) }
+func (o solByFrontThenOva0) Swap(i, j int) { o[i], o[j] = o[j], o[i] }
+func (o solByFrontThenOva0) Less(i, j int) bool {
 	if o[i].FrontId == o[j].FrontId {
-		return o[i].DistCrowd > o[j].DistCrowd
+		return o[i].Ova[0] < o[j].Ova[0]
 	}
 	return o[i].FrontId < o[j].FrontId
 }
@@ -242,12 +242,12 @@ func SortByOva(s []*Solution, idxOva int) {
 	}
 }
 
-// SortByBest sorts slice of solutions with best solutions first
-func SortByBest(s []*Solution) {
-	sort.Sort(solByBest(s))
-}
-
-// TODO
-func SortByTradeoff(s []*Solution) {
-	chk.Panic("SortByTradeoff: TODO")
+// SortByFrontThenOva sorts solutions first by front and then by ova
+func SortByFrontThenOva(s []*Solution, idxOva int) {
+	switch idxOva {
+	case 0:
+		sort.Sort(solByFrontThenOva0(s))
+	default:
+		chk.Panic("this code can only handle Nova ≤ 1 for now")
+	}
 }

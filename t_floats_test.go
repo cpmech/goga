@@ -200,9 +200,9 @@ func Test_flt05(tst *testing.T) {
 	// problem variables
 	var pname string
 	var fmin, fmax []float64
-	var f1f0 func(f0 float64) float64
 	var nf, ng, nh int
 	var fcn MinProb_t
+	spreadref := 1.0
 
 	// problems
 	switch opt.Problem {
@@ -230,7 +230,7 @@ func Test_flt05(tst *testing.T) {
 		}
 		fmin = []float64{0, 0}
 		fmax = []float64{1, 1}
-		f1f0 = func(f0 float64) float64 {
+		opt.F1F0func = func(f0 float64) float64 {
 			return 1.0 - math.Sqrt(f0)
 		}
 
@@ -257,7 +257,7 @@ func Test_flt05(tst *testing.T) {
 		}
 		fmin = []float64{0, 0}
 		fmax = []float64{1, 1}
-		f1f0 = func(f0 float64) float64 {
+		opt.F1F0func = func(f0 float64) float64 {
 			return 1.0 - math.Pow(f0, 2.0)
 		}
 
@@ -284,14 +284,14 @@ func Test_flt05(tst *testing.T) {
 		}
 		fmin = []float64{0, -1}
 		fmax = []float64{1, 1}
-		f1f0 = func(f0 float64) float64 {
+		opt.F1F0func = func(f0 float64) float64 {
 			return 1.0 - math.Sqrt(f0) - math.Sin(10.0*math.Pi*f0)*f0
 		}
 
 	// ZDT4, Deb 2001, p358
 	case 4:
 		pname = "ZDT4"
-		opt.Tf = 600
+		opt.Tf = 500
 		opt.DtExc = opt.Tf / 10
 		n := 10
 		opt.FltMin = make([]float64, n)
@@ -316,9 +316,11 @@ func Test_flt05(tst *testing.T) {
 		}
 		fmin = []float64{0, 0}
 		fmax = []float64{1, 1}
-		f1f0 = func(f0 float64) float64 {
+		opt.F1F0func = func(f0 float64) float64 {
 			return 1.0 - math.Sqrt(f0)
 		}
+		// arc length = sqrt(5)/2 + log(sqrt(5)+2)/4 ≈ 1.4789428575445975
+		spreadref = math.Sqrt(5.0)/2.0 + math.Log(math.Sqrt(5.0)+2.0)/4.0
 
 	// FON (Fonseca and Fleming 1995), Deb 2001, p339
 	case 5:
@@ -345,9 +347,10 @@ func Test_flt05(tst *testing.T) {
 		}
 		fmin = []float64{0, 0}
 		fmax = []float64{0.98, 1}
-		f1f0 = func(f0 float64) float64 {
+		opt.F1F0func = func(f0 float64) float64 {
 			return 1.0 - math.Exp(-math.Pow(2.0-math.Sqrt(-math.Log(1.0-f0)), 2.0))
 		}
+		// arc length ≈ 1.45831385
 
 	// ZDT6, Deb 2001, p360
 	case 6:
@@ -374,7 +377,7 @@ func Test_flt05(tst *testing.T) {
 		}
 		fmin = []float64{0, 0}
 		fmax = []float64{1, 1}
-		f1f0 = func(f0 float64) float64 {
+		opt.F1F0func = func(f0 float64) float64 {
 			return 1.0 - math.Pow(f0, 2.0)
 		}
 
@@ -392,14 +395,9 @@ func Test_flt05(tst *testing.T) {
 	}
 
 	// solve
-	opt.Solve()
-	io.Pforan("nfeval = %v\n", opt.Nfeval)
-
-	// print front results
-	//_, _, front := GetParetoFront(0, 1, opt.Solutions, true)
-	//for _, id := range front {
-	//io.Pforan("%8.5f\n", opt.Solutions[id].Flt)
-	//}
+	opt.Ntrials = 10
+	opt.RunMany("", "")
+	opt.StatMultiObj(20, spreadref, chk.Verbose)
 
 	// plot
 	if chk.Verbose {
@@ -408,7 +406,7 @@ func Test_flt05(tst *testing.T) {
 			F0 := utl.LinSpace(fmin[0], fmax[0], np)
 			F1 := make([]float64, np)
 			for i := 0; i < np; i++ {
-				F1[i] = f1f0(F0[i])
+				F1[i] = opt.F1F0func(F0[i])
 			}
 			plt.Plot(F0, F1, io.Sf("'b-', label='%s'", pname))
 		}, nil, false)
@@ -453,9 +451,10 @@ func Test_flt06(tst *testing.T) {
 	}
 	fmin := []float64{0, 0}
 	fmax := []float64{0.98, 1}
-	f1f0 := func(f0 float64) float64 {
+	opt.F1F0func = func(f0 float64) float64 {
 		return 1.0 - math.Exp(-math.Pow(2.0-math.Sqrt(-math.Log(1.0-f0)), 2.0))
 	}
+	spreadref := 1.45831385
 
 	// initialise optimiser
 	opt.Init(GenTrialSolutions, nil, fcn, nf, ng, nh)
@@ -467,14 +466,9 @@ func Test_flt06(tst *testing.T) {
 	}
 
 	// solve
-	opt.Solve()
-	io.Pforan("nfeval = %v\n", opt.Nfeval)
-
-	// print front results
-	//_, _, front := GetParetoFront(0, 1, opt.Solutions, true)
-	//for _, id := range front {
-	//io.Pforan("%8.5f\n", opt.Solutions[id].Flt)
-	//}
+	opt.Ntrials = 10
+	opt.RunMany("", "")
+	opt.StatMultiObj(20, spreadref, chk.Verbose)
 
 	// plot
 	if chk.Verbose {
@@ -483,7 +477,7 @@ func Test_flt06(tst *testing.T) {
 			F0 := utl.LinSpace(fmin[0], fmax[0], np)
 			F1 := make([]float64, np)
 			for i := 0; i < np; i++ {
-				F1[i] = f1f0(F0[i])
+				F1[i] = opt.F1F0func(F0[i])
 			}
 			plt.Plot(F0, F1, io.Sf("'b-', label='%s'", pname))
 		}, nil, false)

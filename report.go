@@ -204,31 +204,33 @@ func nice_num(x float64, ndigits int) float64 {
 
 func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
 	var buf bytes.Buffer
+	io.Ff(&buf, "%5s", "front")
 	for i := 0; i < opt.Nova; i++ {
-		io.Ff(&buf, "%23s", io.Sf("f%d", i))
+		io.Ff(&buf, "%24s", io.Sf("f%d", i))
 	}
 	for i := 0; i < opt.Noor; i++ {
-		io.Ff(&buf, "%23s", io.Sf("u%d", i))
+		io.Ff(&buf, "%24s", io.Sf("u%d", i))
 	}
 	for i := 0; i < opt.Nflt; i++ {
-		io.Ff(&buf, "%23s", io.Sf("x%d", i))
+		io.Ff(&buf, "%24s", io.Sf("x%d", i))
 	}
 	for i := 0; i < opt.Nint; i++ {
-		io.Ff(&buf, "%23s", io.Sf("y%d", i))
+		io.Ff(&buf, "%24s", io.Sf("y%d", i))
 	}
 	io.Ff(&buf, "\n")
 	for _, sol := range opt.Solutions {
+		io.Ff(&buf, "%5d", sol.FrontId)
 		for i := 0; i < opt.Nova; i++ {
-			io.Ff(&buf, "%23g", sol.Ova[i])
+			io.Ff(&buf, "%24g", sol.Ova[i])
 		}
 		for i := 0; i < opt.Noor; i++ {
-			io.Ff(&buf, "%23g", sol.Oor[i])
+			io.Ff(&buf, "%24g", sol.Oor[i])
 		}
 		for i := 0; i < opt.Nflt; i++ {
-			io.Ff(&buf, "%23g", sol.Flt[i])
+			io.Ff(&buf, "%24g", sol.Flt[i])
 		}
 		for i := 0; i < opt.Nint; i++ {
-			io.Ff(&buf, "%23g", sol.Int[i])
+			io.Ff(&buf, "%24g", sol.Int[i])
 		}
 		io.Ff(&buf, "\n")
 	}

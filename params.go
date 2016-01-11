@@ -27,20 +27,19 @@ type Parameters struct {
 	DtOut int // delta time for output
 
 	// options
-	Pll       bool    // parallel
-	Seed      int     // seed for random numbers generator
-	GenType   string  // generation type: "latin", "halton", "rnd"
-	LatinDup  int     // Latin Hypercube duplicates number
-	EpsH      float64 // minimum value for 'h' constraints
-	Verbose   bool    // show messages
-	Problem   int     // problem index
-	GenAll    bool    // generate all solutions together; i.e. not within each group/CPU
-	Ntrials   int     // run many trials
-	BinInt    int     // flag that integers represent binary numbers if BinInt > 0; thus Nint=BinInt
-	ClearFlt  bool    // clear flt if corresponding int is 0
-	ExcTour   bool    // use exchange via tournament
-	ExcOne    bool    // use exchange one randomly
-	ConvDova0 float64 // Δova[0] to decide on convergence
+	Pll      bool    // parallel
+	Seed     int     // seed for random numbers generator
+	GenType  string  // generation type: "latin", "halton", "rnd"
+	LatinDup int     // Latin Hypercube duplicates number
+	EpsH     float64 // minimum value for 'h' constraints
+	Verbose  bool    // show messages
+	Problem  int     // problem index
+	GenAll   bool    // generate all solutions together; i.e. not within each group/CPU
+	Ntrials  int     // run many trials
+	BinInt   int     // flag that integers represent binary numbers if BinInt > 0; thus Nint=BinInt
+	ClearFlt bool    // clear flt if corresponding int is 0
+	ExcTour  bool    // use exchange via tournament
+	ExcOne   bool    // use exchange one randomly
 
 	// differential evolution
 	DiffEvolC        float64 // crossover probability
@@ -94,7 +93,6 @@ func (o *Parameters) Default() {
 	o.ClearFlt = false
 	o.ExcTour = true
 	o.ExcOne = false
-	o.ConvDova0 = 0.1
 
 	// differential evolution
 	o.DiffEvolC = 1.0
@@ -231,7 +229,6 @@ func (o *Parameters) LogParams() (l string) {
 		"clear flt if corresponding int is 0", "ClearFlt", o.ClearFlt,
 		"use exchange via tournament", "ExcTour", o.ExcTour,
 		"use exchange one randomly", "ExcOne", o.ExcOne,
-		"Δova[0] to decide on convergence", "ConvDova0", o.ConvDova0,
 	)
 
 	// differential evolution
