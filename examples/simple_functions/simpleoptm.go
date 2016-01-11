@@ -23,7 +23,6 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	opt.Ncpu = 1
 	opt.Tf = 40
 	opt.Verbose = false
-	opt.Problem = problem
 	opt.EpsH = 1e-3
 
 	// problem variables
@@ -35,7 +34,7 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	eps_size := 400.0
 
 	// problems
-	switch opt.Problem {
+	switch problem {
 
 	// problem # 1: quadratic function with inequalities
 	case 1:
@@ -111,7 +110,7 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 
 	// plot
 	plt.SetForEps(eps_prop, eps_size)
-	goga.PlotFltFltContour(io.Sf("simpleoptm%d", opt.Problem), opt, sols0, 0, 1, 0, cprms, extra, true)
+	goga.PlotFltFltContour(io.Sf("simpleoptm%d", problem), opt, sols0, 0, 1, 0, cprms, extra, true)
 	return opt
 }
 
