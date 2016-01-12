@@ -52,7 +52,7 @@ func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
 			g[0] = 4.84 - math.Pow(x[0]-0.05, 2.0) - math.Pow(x[1]-2.5, 2.0)
 			g[1] = x[0]*x[0] + math.Pow(x[1]-2.5, 2.0) - 4.84
 		}
-		opt.RptFmtFdev = "%.4e"
+		opt.RptFmtFdev = "%.3e"
 
 	// problem # 2 -- Deb's problem 3 -- Z. Michalewicz 1995
 	case 2:
@@ -90,7 +90,7 @@ func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
 			g[7] = 2.0*x[5] + x[6] - x[10]
 			g[8] = 2.0*x[7] + x[8] - x[11]
 		}
-		opt.RptFmtFdev = "%.4e"
+		opt.RptFmtFdev = "%.3e"
 		opt.RptFmtX = "%.3f"
 
 	// problem # 3 -- Deb's problem 6 -- Z. Michalewicz 1996 -- D.M. Himmelblau 1972
@@ -114,7 +114,7 @@ func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
 			g[5] = 25.0 - c2
 		}
 		opt.RptFmtF = "%.3f"
-		opt.RptFmtFdev = "%.3f"
+		opt.RptFmtFdev = "%.3e"
 
 	// problem # 4 -- Deb's problem 2 -- D.M. Himmelblau 1972 -- W. Hock, K. Schittkowski 1981
 	case 4:
@@ -176,42 +176,28 @@ func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
 			g[36] = 21.0 - 3496.0*y[1]/c[11]
 			g[37] = 62212.0/c[16] - 110.6 - y[0]
 		}
+		opt.RptFmtFdev = "%.3e"
 
-	// problem # 5 -- G.V. Reklaitis, A. Ravindran, K.M. Ragsdell 1983 -- Coello 2002
+	// problem # 5 -- A. Ravindran, K. M. Ragsdell, and G. V. Reklaitis (2007)
 	case 5:
 		opt.RptName = "5"
-		opt.RptFref = []float64{2.38116}
-		opt.RptXref = []float64{0.2444, 6.2187, 8.2915, 0.2444}
-		opt.FltMin = []float64{0.125, 0.1, 0.1, 0.1}
+		opt.RptFref = []float64{2.34027}
+		opt.RptXref = []float64{0.2536, 7.141, 7.1044, 0.2536}
+		//opt.RptFref = []float64{28.0671}
+		//opt.RptXref = []float64{2, 4, 4, 3}
+		opt.FltMin = []float64{0.125, 0.0, 0.0, 0.125}
 		opt.FltMax = []float64{10.0, 10.0, 10.0, 10.0}
 		ng = 5
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
-			E := 30e+6
-			G := 12e+6
-			P := 6000.0
-			L := 14.0
-			τmax := 13600.0
-			σmax := 30000.0
-			δmax := 0.25
-			SQ2 := math.Sqrt2
-			R := math.Sqrt(x[1]*x[1]/4.0 + math.Pow((x[0]+x[2])/2.0, 2.0))
-			J := 2.0 * SQ2 * x[0] * x[1] * (x[1]*x[1]/12.0 + math.Pow((x[0]+x[2])/2.0, 2.0))
-			M := P * (L + x[1]/2.0)
-			τd := P / (SQ2 * x[0] * x[1])
-			τdd := M * R / J
-			τ := math.Sqrt(τd*τd + τd*τdd*x[1]/R + τdd*τdd)
-			LL := L * L
-			x2two := x[2] * x[2]
-			x3six := math.Pow(x[3], 6.0)
-			σ := 6.0 * P * L / (x2two * x[3])
-			δ := 4.0 * P * L * LL / (E * x2two * x[2] * x[3])
-			Pc := 4.013 * E * math.Sqrt(x2two*x3six/36.0) * (1.0 - 0.5*x[2]*math.Sqrt(E/(4.0*G))/L) / LL
+			F, τd := 6000.0, 13600.0
+			c0 := x[0] * x[0] * x[1] * x[1]
+			c1 := x[1]*x[1] + 3.0*math.Pow(x[0]+x[2], 2.0)
 			f[0] = 1.10471*x[0]*x[0]*x[1] + 0.04811*x[2]*x[3]*(14.0+x[1])
-			g[0] = x[3] - x[0]
-			g[1] = Pc - P
-			g[2] = τmax - τ
-			g[3] = σmax - σ
-			g[4] = δmax - δ
+			g[0] = (τd / F) - math.Sqrt(1.0/(2.0*c0)+3.0*(28.0+x[1])/(x[0]*x[0]*x[1]*c1)+4.5*math.Pow(28.0+x[1], 2.0)*(x[1]*x[1]+math.Pow(x[0]+x[2], 2.0))/(c0*c1*c1))
+			g[1] = x[2]*x[2]*x[3] - 12.8
+			g[2] = x[3] - x[0]
+			g[3] = x[2]*math.Pow(x[3], 3.0)*(1.0-0.02823*x[2]) - 0.09267
+			g[4] = math.Pow(x[2], 3.0)*x[3] - 8.7808
 		}
 
 	// problem # 6 -- Deb's problem 5 -- Z. Michalewicz 1995
@@ -329,8 +315,6 @@ func main() {
 	checkOnly := false
 	P := utl.IntRange2(1, 10)
 	//P := []int{5}
-	//P := []int{4}
-	//P := []int{7}
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {
 		opts[i] = solve_problem(problem, ntrials, checkOnly)
