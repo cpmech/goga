@@ -4,16 +4,12 @@
 
 package goga
 
-import (
-	"math"
-
-	"github.com/cpmech/gosl/rnd"
-)
+import "github.com/cpmech/gosl/rnd"
 
 // DiffEvol performs the differential-evolution operation
 func DiffEvol(xnew, x, x0, x1, x2 []float64, prms *Parameters) {
 	n := len(x)
-	C := rnd.Float64(0.0, 1.0/math.Pow(float64(n), 0.1))
+	C := rnd.Float64(0.0, 1.0)
 	F := rnd.Float64(0.0, 1.0)
 	I := rnd.Int(0, n-1)
 	for i := 0; i < n; i++ {
