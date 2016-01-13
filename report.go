@@ -112,6 +112,8 @@ func TexPrmsReport(dirout, fnkey string, opts []*Optimiser, nRowPerTab int) {
 // TexSingleObjTableStart starts table for single-objective optimisation results with ntrials
 func TexSingleObjTableStart(buf *bytes.Buffer, ntrials int) {
 	io.Ff(buf, `
+
+
 \begin{table*} \centering
 \caption{Constrained single objective problems: Results}
 \begin{tabular}[c]{cccc} \toprule
@@ -120,10 +122,11 @@ P & settings & results & histogram ($N_{trials}=%d$) \\ \hline
 }
 
 // TexSingleObjTableEnd ends table for single-objective optimisation results with ntrials
-func TexSingleObjTableEnd(buf *bytes.Buffer) {
+func TexSingleObjTableEnd(buf *bytes.Buffer, label string) {
 	io.Ff(buf, `\end{tabular}
-\label{tab:singleobj}
-\end{table*}`)
+\label{tab:%s}
+\end{table*}
+`, label)
 }
 
 // TexSingleObjTableItem adds item to table for single-objective optimisation results with ntrials
@@ -174,17 +177,24 @@ func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer) {
 
 // TexSingleObjReport produces Single-Objective table TeX report
 //  nRowPerTab -- number of rows per table
-func TexSingleObjReport(dirout, fnkey string, nRowPerTab int, opts []*Optimiser) {
+func TexSingleObjReport(dirout, fnkey, label string, nRowPerTab int, docHeader bool, opts []*Optimiser) {
 	if nRowPerTab < 1 {
 		nRowPerTab = len(opts)
 	}
-	buf := TexDocumentStart()
+	var buf *bytes.Buffer
+	if docHeader {
+		buf = TexDocumentStart()
+	} else {
+		buf = new(bytes.Buffer)
+	}
+	idxtab := 0
 	for i, opt := range opts {
 		if i%nRowPerTab == 0 {
 			if i > 0 {
 				io.Ff(buf, `\bottomrule`)
-				TexSingleObjTableEnd(buf) // end previous table
+				TexSingleObjTableEnd(buf, lbl(idxtab, label)) // end previous table
 				io.Ff(buf, "\n\n\n")
+				idxtab++
 			}
 			TexSingleObjTableStart(buf, opt.Ntrials) // begin new table
 		} else {
@@ -196,10 +206,12 @@ func TexSingleObjReport(dirout, fnkey string, nRowPerTab int, opts []*Optimiser)
 		TexSingleObjTableItem(opt, buf)
 	}
 	io.Ff(buf, `\bottomrule`)
-	TexSingleObjTableEnd(buf) // end previous table
+	TexSingleObjTableEnd(buf, lbl(idxtab, label)) // end previous table
 	io.Ff(buf, "\n")
-	TexDocumentEnd(buf)
-	TexWrite(dirout, fnkey, buf, true)
+	if docHeader {
+		TexDocumentEnd(buf)
+	}
+	TexWrite(dirout, fnkey, buf, docHeader)
 }
 
 // F1F0 tables /////////////////////////////////////////////////////////////////////////////////////
@@ -215,11 +227,11 @@ P & settings & error & spread \\ \hline
 }
 
 // TexF1F0TableEnd ends table for single-objective optimisation results with ntrials
-func TexF1F0TableEnd(buf *bytes.Buffer) {
-	io.Ff(buf, `
-\end{tabular}
-\label{tab:multiobj}
-\end{table*}`)
+func TexF1F0TableEnd(buf *bytes.Buffer, label string) {
+	io.Ff(buf, `\end{tabular}
+\label{tab:%s}
+\end{table*}
+`, label)
 }
 
 // TexF1F0TableItem adds item to table for single-objective optimisation results with ntrials
@@ -263,17 +275,24 @@ func TexF1F0TableItem(o *Optimiser, buf *bytes.Buffer) {
 
 // TexF1F0Report produces multi-objective (f1f0) table TeX report
 //  nRowPerTab -- number of rows per table
-func TexF1F0Report(dirout, fnkey string, nRowPerTab int, opts []*Optimiser) {
+func TexF1F0Report(dirout, fnkey, label string, nRowPerTab int, docHeader bool, opts []*Optimiser) {
 	if nRowPerTab < 1 {
 		nRowPerTab = len(opts)
 	}
-	buf := TexDocumentStart()
+	var buf *bytes.Buffer
+	if docHeader {
+		buf = TexDocumentStart()
+	} else {
+		buf = new(bytes.Buffer)
+	}
+	idxtab := 0
 	for i, opt := range opts {
 		if i%nRowPerTab == 0 {
 			if i > 0 {
 				io.Ff(buf, `\bottomrule`)
-				TexF1F0TableEnd(buf) // end previous table
+				TexF1F0TableEnd(buf, lbl(idxtab, label)) // end previous table
 				io.Ff(buf, "\n\n\n")
+				idxtab++
 			}
 			TexF1F0TableStart(buf, opt.Ntrials) // begin new table
 		} else {
@@ -285,10 +304,12 @@ func TexF1F0Report(dirout, fnkey string, nRowPerTab int, opts []*Optimiser) {
 		TexF1F0TableItem(opt, buf)
 	}
 	io.Ff(buf, `\bottomrule`)
-	TexF1F0TableEnd(buf) // end previous table
+	TexF1F0TableEnd(buf, lbl(idxtab, label)) // end previous table
 	io.Ff(buf, "\n")
-	TexDocumentEnd(buf)
-	TexWrite(dirout, fnkey, buf, true)
+	if docHeader {
+		TexDocumentEnd(buf)
+	}
+	TexWrite(dirout, fnkey, buf, docHeader)
 }
 
 // write all values ////////////////////////////////////////////////////////////////////////////////
@@ -344,4 +365,9 @@ func tex(fmt string, num float64) (l string) {
 		}
 	}
 	return
+}
+
+func lbl(i int, label string) string {
+	C := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	return io.Sf("%s:%s", label, string(C[i%len(C)]))
 }
