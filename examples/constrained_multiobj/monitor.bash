@@ -16,8 +16,8 @@ echo
 refresh(){
     echo
     echo
-    #go run functions.go
-    go run prob9.go
+    #go run constrmulti.go
+    go run tnk.go
 }
 
 while true; do
