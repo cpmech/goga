@@ -199,6 +199,7 @@ func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
 			g[3] = x[2]*math.Pow(x[3], 3.0)*(1.0-0.02823*x[2]) - 0.09267
 			g[4] = math.Pow(x[2], 3.0)*x[3] - 8.7808
 		}
+		opt.RptFmtFdev = "%.3e"
 
 	// problem # 6 -- Deb's problem 5 -- Z. Michalewicz 1995
 	case 6:
@@ -219,6 +220,7 @@ func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
 			g[2] = 196.0 - 23.0*x[0] - x[1]*x[1] - 6.0*x[5]*x[5] + 8.0*x[6]
 			g[3] = -4.0*x[0]*x[0] - x[1]*x[1] + 3.0*x[0]*x[1] - 2.0*x[2]*x[2] - 5.0*x[5] + 11.0*x[6]
 		}
+		opt.RptFmtFdev = "%.3e"
 
 	// problem # 7 -- Deb's problem 8 -- Z. Michalewicz 1995
 	case 7:
@@ -239,8 +241,8 @@ func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
 			g[2] = 8.0*x[0] - 2.0*x[1] - 5.0*x[8] + 2.0*x[9] + 12.0
 			g[3] = -3.0*math.Pow(x[0]-2, 2.0) - 4.0*math.Pow(x[1]-3.0, 2.0) - 2.0*x[2]*x[2] + 7.0*x[3] + 120.0
 			g[4] = -5.0*x[0]*x[0] - 8.0*x[1] - math.Pow(x[2]-6.0, 2.0) + 2.0*x[3] + 40.0
-			g[5] = -x[0]*x[0] - 2.0*math.Pow(x[1]-2.0, 2.0) + 2.0*x[0]*x[1] - 14.0*x[4] + 6.0*x[5]
 			g[6] = -0.5*math.Pow(x[0]-8.0, 2.0) - 2.0*math.Pow(x[1]-4.0, 2.0) - 3.0*x[4]*x[4] + x[5] + 30.0
+			g[5] = -x[0]*x[0] - 2.0*math.Pow(x[1]-2.0, 2.0) + 2.0*x[0]*x[1] - 14.0*x[4] + 6.0*x[5]
 			g[7] = 3.0*x[0] - 6.0*x[1] - 12.0*math.Pow(x[8]-8.0, 2.0) + 7.0*x[9]
 		}
 		opt.RptFmtX = "%.4f"
@@ -311,10 +313,11 @@ func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
 }
 
 func main() {
-	ntrials := 100
+	ntrials := 10
 	checkOnly := false
 	P := utl.IntRange2(1, 10)
-	//P := []int{5}
+	//P := utl.IntRange2(1, 7)
+	//P := []int{1}
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {
 		opts[i] = solve_problem(problem, ntrials, checkOnly)
@@ -322,8 +325,9 @@ func main() {
 	if !checkOnly {
 		io.Pf("\n-------------------------- generating report --------------------------\nn")
 		nRowPerTab := 5
-		goga.TexSingleObjReport("/tmp/goga", "functions", nRowPerTab, opts)
-		io.Pf("\n%v\n", opts[0].LogParams())
+		goga.TexSingleObjReport("/tmp/goga", "tmp_functions", "singleobj", nRowPerTab, true, opts)
+		goga.TexSingleObjReport("/tmp/goga", "functions", "singleobj", nRowPerTab, false, opts)
+		//io.Pf("\n%v\n", opts[0].LogParams())
 	}
 }
 

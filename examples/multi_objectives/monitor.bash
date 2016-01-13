@@ -16,8 +16,9 @@ echo
 refresh(){
     echo
     echo
-    go run multiobj.go
     #go run calcZDT3points.go
+    #go run plotLognorm.go
+    go run multiobj.go
 }
 
 while true; do

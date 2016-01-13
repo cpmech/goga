@@ -142,6 +142,10 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 	case 4:
 		opt.Ncpu = 2
 		opt.RptName = "ZDT4"
+		opt.RptFmtE = "%.8f"
+		opt.RptFmtL = "%.8f"
+		opt.RptFmtEdev = "%.8f"
+		opt.RptFmtLdev = "%.8f"
 		n := 10
 		opt.FltMin = make([]float64, n)
 		opt.FltMax = make([]float64, n)
@@ -250,6 +254,8 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 
 	// number of trial solutions and number of groups
 	opt.Nsol = len(opt.FltMin) * 10
+	//opt.Nsol = 120
+	//opt.Ncpu = 4
 
 	// initialise optimiser
 	opt.Init(goga.GenTrialSolutions, nil, fcn, nf, ng, nh)
@@ -292,15 +298,16 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 }
 
 func main() {
-	ntrials := 100
+	ntrials := 10
 	P := utl.IntRange2(1, 7)
-	//P := []int{6}
+	//P := []int{4}
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {
 		opts[i] = solve_problem(problem, ntrials, true)
 	}
 	io.Pf("\n-------------------------- generating report --------------------------\nn")
 	nRowPerTab := 6
-	goga.TexF1F0Report("/tmp/goga", "multiobj", nRowPerTab, opts)
-	io.Pf("\n%v\n", opts[0].LogParams())
+	goga.TexF1F0Report("/tmp/goga", "tmp_multiobj", "multiobj", nRowPerTab, true, opts)
+	goga.TexF1F0Report("/tmp/goga", "multiobj", "multiobj", nRowPerTab, false, opts)
+	//io.Pf("\n%v\n", opts[0].LogParams())
 }
