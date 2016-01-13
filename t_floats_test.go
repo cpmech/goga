@@ -173,7 +173,10 @@ func Test_flt04(tst *testing.T) {
 		_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
 
 		// doplot
-		PlotOvaOvaPareto(&opt, sols0, 0, 1, false, false, false, nil)
+		feasibleOnly := false
+		fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
+		fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
+		PlotOvaOvaPareto(&opt, sols0, 0, 1, feasibleOnly, fmtAll, fmtFront)
 		plt.Plot(dat["f1"], dat["f2"], "'b-',ms=3,markeredgecolor='b'")
 		plt.AxisRange(0, 250, 0, 0.15)
 		plt.SaveD("/tmp/goga", "fig_flt04.eps")
