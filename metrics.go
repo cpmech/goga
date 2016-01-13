@@ -56,6 +56,13 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		sol.DistNeigh = INF
 		z[i] = 0
 
+		// check oors
+		for j := 0; j < o.prms.Noor; j++ {
+			if math.IsNaN(sol.Oor[j]) {
+				chk.Panic("NaN found in out-of-range value array\n\txFlt = %v\n\txInt = %v\n\tova = %v\n\toor = %v", sol.Flt, sol.Int, sol.Ova, sol.Oor)
+			}
+		}
+
 		// ovas range
 		for j := 0; j < o.prms.Nova; j++ {
 			x := sol.Ova[j]
