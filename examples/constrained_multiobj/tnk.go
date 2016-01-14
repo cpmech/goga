@@ -41,7 +41,7 @@ func main() {
 	fcn := func(f, g, h, x []float64, ξ []int, cpu int) {
 		f[0] = x[0]
 		f[1] = x[1]
-		g[0] = x[0]*x[0] + x[1]*x[1] - 1.0 - 0.1*math.Cos(16.0*math.Atan2(x[1], x[0]))
+		g[0] = x[0]*x[0] + x[1]*x[1] - 1.0 - 0.1*math.Cos(16.0*math.Atan2(x[0], x[1]))
 		g[1] = 0.5 - math.Pow(x[0]-0.5, 2.0) - math.Pow(x[1]-0.5, 2.0)
 	}
 

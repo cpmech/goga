@@ -285,7 +285,7 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 
 func main() {
 	ntrials := 1
-	P := utl.IntRange2(1, 8)
+	P := utl.IntRange2(1, 9)
 	//P := []int{1}
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {

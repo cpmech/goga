@@ -16,8 +16,8 @@ echo
 refresh(){
     echo
     echo
-    #go run constrmulti.go
-    go run tnk.go
+    go run constrmulti.go
+    #go run tnk.go
 }
 
 while true; do
