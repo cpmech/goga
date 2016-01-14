@@ -16,8 +16,8 @@ echo
 refresh(){
     echo
     echo
-    #go run functions.go
-    go run prob9.go
+    go run functions.go
+    #go run prob9.go
 }
 
 while true; do

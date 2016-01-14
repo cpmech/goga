@@ -22,8 +22,7 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 	opt = new(goga.Optimiser)
 	opt.Default()
 	opt.Ncpu = 1
-	opt.Tf = 400
-	opt.EpsH = 0.01
+	opt.Tf = 500
 	opt.Verbose = false
 	opt.Ntrials = ntrials
 	opt.GenType = "latin"
@@ -232,7 +231,7 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 				sum += x[i]
 			}
 			w = float64(n - 1)
-			c0 := 1.0 + w*math.Pow(sum/w, 0.25)
+			c0 := 1.0 + 9.0*math.Pow(sum/w, 0.25)
 			c1 := 1.0 - math.Pow(f[0]/c0, 2.0)
 			f[1] = c0 * c1
 		}
@@ -254,8 +253,6 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 
 	// number of trial solutions and number of groups
 	opt.Nsol = len(opt.FltMin) * 10
-	//opt.Nsol = 120
-	//opt.Ncpu = 4
 
 	// initialise optimiser
 	opt.Init(goga.GenTrialSolutions, nil, fcn, nf, ng, nh)
@@ -273,11 +270,10 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 	// plot
 	if doplot {
 		feasibleOnly := true
-		frontOnly := true
-		emptyMarker := false
 		plt.SetForEps(0.8, 300)
-		goga.PlotOvaOvaPareto(opt, sols0, 0, 1, feasibleOnly, frontOnly, emptyMarker,
-			&plt.Fmt{C: "r", M: "o", Ms: 3, Ls: "none"})
+		fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
+		fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
+		goga.PlotOvaOvaPareto(opt, sols0, 0, 1, feasibleOnly, fmtAll, fmtFront)
 		np := 201
 		F0 := utl.LinSpace(fmin[0], fmax[0], np)
 		F1 := make([]float64, np)
@@ -300,6 +296,7 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 func main() {
 	ntrials := 10
 	P := utl.IntRange2(1, 7)
+	//P := []int{1, 2, 4, 6}
 	//P := []int{4}
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {
