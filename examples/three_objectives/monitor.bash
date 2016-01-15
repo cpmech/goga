@@ -17,6 +17,7 @@ refresh(){
     echo
     echo
     go run multiobj3.go
+    #go run doplot.go
 }
 
 while true; do
