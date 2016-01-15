@@ -141,7 +141,7 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	opt.Nsol = 200
 	opt.Ncpu = 8
 	opt.Tf = 500
-	opt.Ntrials = 10
+	opt.Ntrials = 1
 
 	// options for report
 	opt.RptFmtE = "%.4e"
@@ -384,7 +384,7 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	}
 
 	// plot results
-	if false {
+	if true {
 		plt.SetForEps(1.0, 400)
 		plot_solution()
 		plt.Plot3dPoints(X, Y, Z, "s=7, color='r', facecolor='r', edgecolor='r', preservePrev=1, xlbl='$f_0$', ylbl='$f_1$', zlbl='$f_2$'")
@@ -477,7 +477,7 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 }
 
 func main() {
-	P := utl.IntRange2(2, 7)
+	P := utl.IntRange2(1, 7)
 	//P := []int{6}
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {
