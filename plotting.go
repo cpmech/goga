@@ -145,9 +145,9 @@ func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, feasibleOnly
 }
 
 // PlotAddParetoFront highlights Pareto front
-func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt *plt.Fmt) {
+func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.Fmt) {
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
-	x, y, _ := GetParetoFront(iOva, jOva, sols, false)
+	x, y, _ := GetParetoFront(iOva, jOva, sols, feasibleOnly)
 	plt.Plot(x, y, args)
 }
 
@@ -215,7 +215,7 @@ func PlotOvaOvaPareto(opt *Optimiser, sols0 []*Solution, iOva, jOva int, feasibl
 		opt.PlotAddOvaOva(iOva, jOva, opt.Solutions, feasibleOnly, fmtAll)
 	}
 	if fmtFront != nil {
-		opt.PlotAddParetoFront(iOva, jOva, opt.Solutions, fmtFront)
+		opt.PlotAddParetoFront(iOva, jOva, opt.Solutions, feasibleOnly, fmtFront)
 	}
 	plt.Gll(io.Sf("$f_%d$", iOva), io.Sf("$f_%d$", jOva), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
 }
