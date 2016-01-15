@@ -245,11 +245,11 @@ func StatF(o *Optimiser, idxF int, verbose bool) (fmin, fave, fmax, fdev float64
 	return
 }
 
-// StatF1F0 prints statistical analysis for multi-objective problems
+// StatF1F0 prints statistical analysis for two-objective problems
 //  emin, eave, emax, edev -- errors on f1(f0)
 //  lmin, lave, lmax, ldev -- arc-lengths along f1(f0) curve
 func StatF1F0(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []float64, lmin, lave, lmax, ldev float64, L []float64) {
-	if len(o.F1F0_err) == 0 && len(o.F1F0_arcLen) == 0 && len(o.Multi_err) == 0 {
+	if len(o.F1F0_err) == 0 && len(o.F1F0_arcLen) == 0 {
 		io.Pfred("there are no samples for statistical analysis\n")
 		return
 	}
@@ -288,19 +288,29 @@ func StatF1F0(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []f
 				o.HistNsta, L, o.HistFmt, o.HistLen))
 		}
 	}
-	if len(o.Multi_err) > 2 {
-		E = make([]float64, len(o.Multi_err))
-		copy(E, o.Multi_err)
-		emin, eave, emax, edev = rnd.StatBasic(E, true)
-		if verbose {
-			io.Pf("\nerror on Pareto front (multi)\n")
-			io.Pf("emin = %g\n", emin)
-			io.Pf("eave = %g\n", eave)
-			io.Pf("emax = %g\n", emax)
-			io.Pf("edev = %g\n", edev)
-			io.Pf(rnd.BuildTextHist(nice(emin-0.05, o.HistNdig), nice(emax+0.05, o.HistNdig),
-				o.HistNsta, E, o.HistFmt, o.HistLen))
-		}
+	return
+}
+
+// StatMulti prints statistical analysis for multi-objective problems
+//  emin, eave, emax, edev -- errors on f1(f0)
+//  lmin, lave, lmax, ldev -- arc-lengths along f1(f0) curve
+func StatMulti(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []float64) {
+	if len(o.Multi_err) < 2 {
+		io.Pfred("there are no samples for statistical analysis\n")
+		return
+	}
+	o.fix_formatting_data()
+	E = make([]float64, len(o.Multi_err))
+	copy(E, o.Multi_err)
+	emin, eave, emax, edev = rnd.StatBasic(E, true)
+	if verbose {
+		io.Pf("\nerror on Pareto front (multi)\n")
+		io.Pf("emin = %g\n", emin)
+		io.Pf("eave = %g\n", eave)
+		io.Pf("emax = %g\n", emax)
+		io.Pf("edev = %g\n", edev)
+		io.Pf(rnd.BuildTextHist(nice(emin-0.05, o.HistNdig), nice(emax+0.05, o.HistNdig),
+			o.HistNsta, E, o.HistFmt, o.HistLen))
 	}
 	return
 }

@@ -312,6 +312,102 @@ func TexF1F0Report(dirout, fnkey, label string, nRowPerTab int, docHeader bool, 
 	TexWrite(dirout, fnkey, buf, docHeader)
 }
 
+// Multi tables /////////////////////////////////////////////////////////////////////////////////////
+
+// TexMultiTableStart starts table for single-objective optimisation results with ntrials
+func TexMultiTableStart(buf *bytes.Buffer, ntrials int) {
+	io.Ff(buf, `
+\begin{table*} \centering
+\caption{Constrained multiple objective problems.}
+\begin{tabular}[c]{cccc} \toprule
+P & settings & error & histogram ($N_{trials}=%d$) \\ \hline
+`, ntrials)
+}
+
+// TexMultiTableEnd ends table for single-objective optimisation results with ntrials
+func TexMultiTableEnd(buf *bytes.Buffer, label string) {
+	io.Ff(buf, `\end{tabular}
+\label{tab:%s}
+\end{table*}
+`, label)
+}
+
+// TexMultiTableItem adds item to table for single-objective optimisation results with ntrials
+func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer) {
+	o.fix_formatting_data()
+	Emin, Eave, Emax, Edev, E := StatMulti(o, false)
+	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
+	hist := rnd.BuildTextHist(nice(Emin-0.05, o.HistNdig), nice(Emax+0.05, o.HistNdig), o.HistNsta, E, o.HistFmt, o.HistLen)
+	io.Ff(buf,
+		`%s
+&
+{$\!\begin{aligned}
+    N_{sol}        &= %d \\
+	N_{cpu}        &= %d \\
+	t_{max}        &= %d \\
+	\Delta t_{exc} &= %d \\
+	N_{eval}       &= %d
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+    E_{min} &= %s \\
+    E_{ave} &= %s \\
+    E_{max} &= %s \\
+    E_{dev} &= {\bf %s} \\
+	T_{sys} &= %v
+\end{aligned}$}
+&
+\begin{minipage}{7cm} \scriptsize
+\begin{verbatim}
+%s
+\end{verbatim}
+\end{minipage} \\
+`,
+		o.RptName,
+		o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval,
+		EminTxt, EaveTxt, EmaxTxt, EdevTxt, o.SysTime,
+		hist)
+}
+
+// TexMultiReport produces multi-objective (f1f0) table TeX report
+//  nRowPerTab -- number of rows per table
+func TexMultiReport(dirout, fnkey, label string, nRowPerTab int, docHeader bool, opts []*Optimiser) {
+	if nRowPerTab < 1 {
+		nRowPerTab = len(opts)
+	}
+	var buf *bytes.Buffer
+	if docHeader {
+		buf = TexDocumentStart()
+	} else {
+		buf = new(bytes.Buffer)
+	}
+	idxtab := 0
+	for i, opt := range opts {
+		if i%nRowPerTab == 0 {
+			if i > 0 {
+				io.Ff(buf, `\bottomrule`)
+				TexMultiTableEnd(buf, lbl(idxtab, label)) // end previous table
+				io.Ff(buf, "\n\n\n")
+				idxtab++
+			}
+			TexMultiTableStart(buf, opt.Ntrials) // begin new table
+		} else {
+			if i > 0 {
+				io.Ff(buf, `\hline`)
+				io.Ff(buf, "\n\n")
+			}
+		}
+		TexMultiTableItem(opt, buf)
+	}
+	io.Ff(buf, `\bottomrule`)
+	TexMultiTableEnd(buf, lbl(idxtab, label)) // end previous table
+	io.Ff(buf, "\n")
+	if docHeader {
+		TexDocumentEnd(buf)
+	}
+	TexWrite(dirout, fnkey, buf, docHeader)
+}
+
 // write all values ////////////////////////////////////////////////////////////////////////////////
 
 func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
