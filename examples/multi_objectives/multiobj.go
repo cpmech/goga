@@ -14,7 +14,7 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
+func solve_problem(problem int) (opt *goga.Optimiser) {
 
 	io.Pf("\n\n------------------------------------- problem = %d ---------------------------------------\n", problem)
 
@@ -24,7 +24,7 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 	opt.Ncpu = 1
 	opt.Tf = 500
 	opt.Verbose = false
-	opt.Ntrials = ntrials
+	opt.Ntrials = 1
 	opt.GenType = "latin"
 
 	// options for report
@@ -268,7 +268,7 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 	goga.StatF1F0(opt, true)
 
 	// plot
-	if doplot {
+	if true {
 		feasibleOnly := true
 		plt.SetForEps(0.8, 300)
 		fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
@@ -294,13 +294,12 @@ func solve_problem(problem, ntrials int, doplot bool) (opt *goga.Optimiser) {
 }
 
 func main() {
-	ntrials := 10
 	P := utl.IntRange2(1, 7)
 	//P := []int{1, 2, 4, 6}
 	//P := []int{4}
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {
-		opts[i] = solve_problem(problem, ntrials, true)
+		opts[i] = solve_problem(problem)
 	}
 	io.Pf("\n-------------------------- generating report --------------------------\nn")
 	nRowPerTab := 6
