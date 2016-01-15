@@ -138,19 +138,19 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 
 			// check multi-objective results
 			if o.F1F0_func != nil {
-				var f1_err_max float64
-				var found bool
+				var rms_err float64
+				var nfeasible int
 				for _, sol := range o.Solutions {
 					if sol.Feasible() && sol.FrontId == 0 {
 						f0, f1 := sol.Ova[0], sol.Ova[1]
 						f1_cor := o.F1F0_func(f0)
-						f1_err := math.Abs(f1 - f1_cor)
-						f1_err_max = utl.Max(f1_err_max, f1_err)
-						found = true
+						rms_err += math.Pow(f1-f1_cor, 2.0)
+						nfeasible++
 					}
 				}
-				if found {
-					o.F1F0_err = append(o.F1F0_err, f1_err_max)
+				if nfeasible > 0 {
+					rms_err = math.Sqrt(rms_err / float64(nfeasible))
+					o.F1F0_err = append(o.F1F0_err, rms_err)
 				}
 			}
 
@@ -183,17 +183,18 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 
 			// multiple OVAs
 			if o.Nova > 2 && o.Multi_fcnErr != nil {
-				var err_max float64
-				var found bool
+				var rms_err float64
+				var nfeasible int
 				for _, sol := range o.Solutions {
 					if sol.Feasible() && sol.FrontId == 0 {
 						f_err := o.Multi_fcnErr(sol.Ova)
-						err_max = utl.Max(err_max, f_err)
-						found = true
+						rms_err += f_err * f_err
+						nfeasible++
 					}
 				}
-				if found {
-					o.Multi_err = append(o.Multi_err, err_max)
+				if nfeasible > 0 {
+					rms_err = math.Sqrt(rms_err / float64(nfeasible))
+					o.Multi_err = append(o.Multi_err, rms_err)
 				}
 			}
 
