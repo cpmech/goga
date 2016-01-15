@@ -141,6 +141,11 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	opt.Nsol = 200
 	opt.Ncpu = 8
 	opt.Tf = 500
+	opt.Ntrials = 10
+
+	// options for report
+	opt.RptFmtE = "%.4e"
+	opt.RptFmtEdev = "%.4e"
 
 	// problem variables
 	var nf, ng, nh int       // number of functions
@@ -170,6 +175,9 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 			f[1] = 0.5 * x[0] * (1.0 - x[1]) * (1.0 + c)
 			f[2] = 0.5 * (1.0 - x[0]) * (1.0 + c)
 		}
+		opt.Multi_fcnErr = func(f []float64) float64 {
+			return f[0] + f[1] + f[2] - 0.5
+		}
 		plot_solution = func() { plot_plane(false) }
 		rng = []float64{0, 0.5, 0, 0.5, 0, 0.5}
 
@@ -190,6 +198,9 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 			f[0] = (1.0 + c) * math.Cos(x[0]*PI/2.0) * math.Cos(x[1]*PI/2.0)
 			f[1] = (1.0 + c) * math.Cos(x[0]*PI/2.0) * math.Sin(x[1]*PI/2.0)
 			f[2] = (1.0 + c) * math.Sin(x[0]*PI/2.0)
+		}
+		opt.Multi_fcnErr = func(f []float64) float64 {
+			return f[0]*f[0] + f[1]*f[1] + f[2]*f[2] - 1.0
 		}
 		plot_solution = func() { plot_sphere(false) }
 
@@ -213,6 +224,9 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 			f[1] = (1.0 + c) * math.Cos(x[0]*PI/2.0) * math.Sin(x[1]*PI/2.0)
 			f[2] = (1.0 + c) * math.Sin(x[0]*PI/2.0)
 		}
+		opt.Multi_fcnErr = func(f []float64) float64 {
+			return f[0]*f[0] + f[1]*f[1] + f[2]*f[2] - 1.0
+		}
 		plot_solution = func() { plot_sphere(false) }
 
 	// problem # 4: DTLZ4
@@ -233,6 +247,9 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 			f[0] = (1.0 + c) * math.Cos(math.Pow(x[0], α)*PI/2.0) * math.Cos(math.Pow(x[1], α)*PI/2.0)
 			f[1] = (1.0 + c) * math.Cos(math.Pow(x[0], α)*PI/2.0) * math.Sin(math.Pow(x[1], α)*PI/2.0)
 			f[2] = (1.0 + c) * math.Sin(math.Pow(x[0], α)*PI/2.0)
+		}
+		opt.Multi_fcnErr = func(f []float64) float64 {
+			return f[0]*f[0] + f[1]*f[1] + f[2]*f[2] - 1.0
 		}
 		plot_solution = func() { plot_sphere(false) }
 
@@ -257,6 +274,9 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 			f[1] = math.Pow(f[1], 4.0)
 			f[2] = math.Pow(f[2], 2.0)
 		}
+		opt.Multi_fcnErr = func(f []float64) float64 {
+			return math.Pow(math.Abs(f[0]), 0.5) + math.Pow(math.Abs(f[1]), 0.5) + f[2] - 1.0
+		}
 		plot_solution = func() { plot_convex(1.0, false) }
 
 	// problem # 2: DTLZ2c
@@ -280,6 +300,9 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 			f[1] = (1.0 + c) * math.Cos(x[0]*PI/2.0) * math.Sin(x[1]*PI/2.0)
 			f[2] = (1.0 + c) * math.Sin(x[0]*PI/2.0)
 			g[0] = math.Tan(α) - cone_angle(f)
+		}
+		opt.Multi_fcnErr = func(f []float64) float64 {
+			return f[0]*f[0] + f[1]*f[1] + f[2]*f[2] - 1.0
 		}
 		plot_solution = func() {
 			plot_sphere(false)
@@ -308,6 +331,9 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 			f[2] = (1.0 + c) * math.Sin(x[0]*PI/2.0)
 			g[0] = math.Tan(α) - cone_angle(f)
 		}
+		opt.Multi_fcnErr = func(f []float64) float64 {
+			return f[0]*f[0] + f[1]*f[1] + f[2]*f[2] - 1.0
+		}
 		plot_solution = func() {
 			plot_sphere(false)
 			plot_cone(α, true)
@@ -321,7 +347,8 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	opt.Init(goga.GenTrialSolutions, nil, fcn, nf, ng, nh)
 
 	// solve
-	opt.Solve()
+	opt.RunMany("", "")
+	goga.StatMulti(opt, true)
 
 	// check
 	var failed bool
@@ -339,13 +366,25 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	}
 
 	// results
-	X, Y, Z := make([]float64, opt.Nsol), make([]float64, opt.Nsol), make([]float64, opt.Nsol)
-	for i, sol := range opt.Solutions {
-		X[i], Y[i], Z[i] = sol.Ova[0], sol.Ova[1], sol.Ova[2]
+	var X, Y, Z []float64
+	onlyFront0 := true
+	if onlyFront0 {
+		for _, sol := range opt.Solutions {
+			if sol.Feasible() && sol.FrontId == 0 {
+				X = append(X, sol.Ova[0])
+				Y = append(Y, sol.Ova[1])
+				Z = append(Z, sol.Ova[2])
+			}
+		}
+	} else {
+		X, Y, Z = make([]float64, opt.Nsol), make([]float64, opt.Nsol), make([]float64, opt.Nsol)
+		for i, sol := range opt.Solutions {
+			X[i], Y[i], Z[i] = sol.Ova[0], sol.Ova[1], sol.Ova[2]
+		}
 	}
 
 	// plot results
-	if true {
+	if false {
 		plt.SetForEps(1.0, 400)
 		plot_solution()
 		plt.Plot3dPoints(X, Y, Z, "s=7, color='r', facecolor='r', edgecolor='r', preservePrev=1, xlbl='$f_0$', ylbl='$f_1$', zlbl='$f_2$'")
@@ -356,7 +395,7 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 		plt.Camera(e, a, "")
 		plt.AxDist(11.0)
 		plt.AxisRange3d(rng[0], rng[1], rng[2], rng[3], rng[4], rng[5])
-		plt.SaveD("/tmp/goga", io.Sf("multiobj3_%s_A.eps", opt.RptName))
+		plt.SaveD("/tmp/goga", io.Sf("py_%s_A.eps", opt.RptName))
 		e, a = 10, -45
 		if problem == 6 {
 			e, a = 10, -45
@@ -364,7 +403,7 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 		plt.Camera(e, a, "")
 		plt.AxDist(11.0)
 		plt.AxisRange3d(rng[0], rng[1], rng[2], rng[3], rng[4], rng[5])
-		plt.SaveD("/tmp/goga", io.Sf("multiobj3_%s_B.eps", opt.RptName))
+		plt.SaveD("/tmp/goga", io.Sf("py_%s_B.eps", opt.RptName))
 		//plt.Show()
 	}
 
@@ -380,18 +419,21 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 		scn.LblX = "f0"
 		scn.LblY = "f1"
 		scn.LblZ = "f2"
-		scn.LblSz = 30
+		scn.LblSz = 20
+		if problem == 1 {
+			scn.AxesLen = 0.6
+		}
 
-		// slice of sphere
-		slice := vtk.NewIsoSurf(func(x []float64) (f, vx, vy, vz float64) {
-			f = x[0]*x[0] + x[1]*x[1] + x[2]*x[2] - 1.0
+		// optimal Pareto front
+		front := vtk.NewIsoSurf(func(x []float64) (f, vx, vy, vz float64) {
+			f = opt.Multi_fcnErr(x)
 			return
 		})
-		slice.Limits = []float64{0, 1, 0, 1, 0, 1}
-		slice.Color = []float64{0, 0, 1, 0.5}
-		slice.CmapNclrs = 0 // use this to use specified color
-		slice.Ndiv = []int{21, 21, 21}
-		slice.AddTo(scn)
+		front.Limits = []float64{0, 1, 0, 1, 0, 1}
+		front.Color = []float64{0.45098039, 0.70588235, 1., 0.8}
+		front.CmapNclrs = 0 // use this to use specified color
+		front.Ndiv = []int{61, 61, 61}
+		front.AddTo(scn)
 
 		// cone
 		α := 15.0
@@ -400,22 +442,24 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 			f = cone_angle(x) - kα
 			return
 		})
-		cone.Limits = []float64{0, -1, 0, 1, 0, 360}
-		cone.Ndiv = []int{21, 21, 41}
-		cone.OctRotate = true
-		cone.GridShowPts = false
-		//cone.Color = []float64{0.61960784, 0.74117647, 0.54117647, 0.8}
-		//cone.Color = []float64{0.94901961, 0.83921569, 0.66666667, 0.8}
-		cone.Color = []float64{0.96862745, 0.75294118, 0.40784314, 0.5}
-		cone.CmapNclrs = 0 // use this to use specified color
-		cone.AddTo(scn)    // remember to add to Scene
+		if ng > 0 {
+			cone.Limits = []float64{0, -1, 0, 1, 0, 360}
+			cone.Ndiv = []int{61, 61, 81}
+			cone.OctRotate = true
+			cone.GridShowPts = false
+			//cone.Color = []float64{0.61960784, 0.74117647, 0.54117647, 0.8}
+			//cone.Color = []float64{0.94901961, 0.83921569, 0.66666667, 0.8}
+			cone.Color = []float64{0.96862745, 0.75294118, 0.40784314, 0.5}
+			cone.CmapNclrs = 0 // use this to use specified color
+			cone.AddTo(scn)    // remember to add to Scene
+		}
 
 		// particles
 		var P vtk.Spheres
 		P.X = X
 		P.Y = Y
 		P.Z = Z
-		P.R = utl.DblVals(len(X), 0.02)
+		P.R = utl.DblVals(len(X), 0.015)
 		P.Color = []float64{1, 0, 0, 1}
 		P.AddTo(scn)
 
@@ -423,7 +467,9 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 		scn.SaveEps = false
 		scn.SavePng = true
 		scn.PngMag = 2
-		scn.Fnk = io.Sf("/tmp/goga/vtk_multiobj3_%s", opt.RptName)
+		scn.Fnk = io.Sf("/tmp/goga/%s_A", opt.RptName)
+		scn.Run()
+		scn.Fnk = io.Sf("/tmp/goga/%s_B", opt.RptName)
 		scn.Run()
 	}
 
@@ -431,10 +477,14 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 }
 
 func main() {
-	P := utl.IntRange2(1, 6)
-	//P := []int{7}
+	P := utl.IntRange2(2, 7)
+	//P := []int{6}
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {
 		opts[i] = solve_problem(problem)
 	}
+	io.Pf("\n-------------------------- generating report --------------------------\nn")
+	nRowPerTab := 10
+	goga.TexMultiReport("/tmp/goga", "tmp_threeobj", "threeobj", nRowPerTab, true, opts)
+	goga.TexMultiReport("/tmp/goga", "threeobj", "threeobj", nRowPerTab, false, opts)
 }
