@@ -40,13 +40,6 @@ type Parameters struct {
 	ExcTour  bool    // use exchange via tournament
 	ExcOne   bool    // use exchange one randomly
 
-	// differential evolution
-	DiffEvolC        float64 // crossover probability
-	DiffEvolF        float64 // vector length multiplier
-	DiffEvolPm       float64 // mutation probability. use rotation otherwise
-	DiffEvolUseCmult bool    // use C random multiplier
-	DiffEvolUseFmult bool    // use F random multiplier
-
 	// crossover and mutation
 	PmInt float64 // probability of mutation for ints
 	PcInt float64 // probability of crossover for ints
@@ -91,13 +84,6 @@ func (o *Parameters) Default() {
 	o.ClearFlt = false
 	o.ExcTour = true
 	o.ExcOne = false
-
-	// differential evolution
-	o.DiffEvolC = 1.0
-	o.DiffEvolF = 1.0
-	o.DiffEvolPm = 1.0
-	o.DiffEvolUseCmult = true
-	o.DiffEvolUseFmult = true
 
 	// crossover and mutation
 	o.PmInt = 0.01
@@ -226,16 +212,6 @@ func (o *Parameters) LogParams() (l string) {
 		"clear flt if corresponding int is 0", "ClearFlt", o.ClearFlt,
 		"use exchange via tournament", "ExcTour", o.ExcTour,
 		"use exchange one randomly", "ExcOne", o.ExcOne,
-	)
-
-	// differential evolution
-	l += "\n"
-	l += io.ArgsTable("DIFFERENTIAL EVOLUTION",
-		"crossover probability", "DiffEvolC", o.DiffEvolC,
-		"vector length multiplier", "DiffEvolF", o.DiffEvolF,
-		"mutation probability", "DiffEvolPm", o.DiffEvolPm,
-		"use C random multiplier", "DiffEvolUseCmult", o.DiffEvolUseCmult,
-		"use F random multiplier", "DiffEvolUseFmult", o.DiffEvolUseFmult,
 	)
 
 	// crossover and mutation
