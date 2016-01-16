@@ -1,0 +1,14 @@
+{
+  "materials" : [
+    {
+      "name"  : "M",
+      "type"  : "sld",
+      "model" : "oned-elast",
+      "prms"  : [
+        {"n":"E",   "v":1e4},
+        {"n":"A",   "v":35.0},
+        {"n":"rho", "v":0.1}
+      ]
+    }
+  ]
+}

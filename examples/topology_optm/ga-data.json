@@ -1,0 +1,8 @@
+{
+  "nsol"     : 500,
+  "ncpu"     : 4,
+  "tf"       : 500,
+  "excTour"  : true,
+  "excOne"   : true,
+  "clearflt" : true
+}
