@@ -63,31 +63,23 @@ func (o *OptData) CalcDerived() {
 
 // FemData structure
 type FemData struct {
-	Analysis *fem.FEM    // fem structure
-	Reg      *inp.Region // region
-	Dom      *fem.Domain // domain
-	Opt      OptData     // optimisation data
-	ReqVids  []int       // required vertex ids
-	Cid2xid  []int       // element id => areas array id (group)
-	Ncells   int         // len(Cells)
-	Nareas   int         // len(Areas)
-	VidU     int         // vertex id corresponding to VtagU; -1 means all vertices
+	Opt       OptData     // optimisation data
+	Analysis  *fem.FEM    // fem structure
+	Reg       *inp.Region // region
+	Dom       *fem.Domain // domain
+	ReqVids   []int       // required vertex ids
+	Cid2xid   []int       // element id => areas array id (group)
+	Ncells    int         // len(Cells)
+	Nareas    int         // len(Areas)
+	VidU      int         // vertex id corresponding to VtagU; -1 means all vertices
+	MaxWeight float64     // max weight will all rods active
 }
 
 // NewData allocates and initialises a new FEM data structure
-func NewData(cpu int) *FemData {
-
-	// input filename
-	//fn, fnkey := io.ArgToFilename(0, "truss10bar", ".sim", true)
-	fn, fnkey := io.ArgToFilename(0, "bridge", ".sim", true)
-
-	// load FEM data
-	var o FemData
-	o.Analysis = fem.NewFEM(fn, io.Sf("cpu%d", cpu), false, false, false, false, false, cpu)
-	o.Reg = o.Analysis.Sim.Regions[0]
-	o.Dom = o.Analysis.Domains[0]
+func NewData(filename, fnkey string, cpu int) *FemData {
 
 	// load opt data
+	var o FemData
 	buf, err := io.ReadFile("od-" + fnkey + ".json")
 	if err != nil {
 		chk.Panic("cannot load opt data:\n%v", err)
@@ -97,6 +89,11 @@ func NewData(cpu int) *FemData {
 		chk.Panic("cannot unmarshal opt data:\n%v", err)
 	}
 	o.Opt.CalcDerived()
+
+	// load FEM data
+	o.Analysis = fem.NewFEM(filename, io.Sf("cpu%d", cpu), false, false, false, false, false, cpu)
+	o.Reg = o.Analysis.Sim.Regions[0]
+	o.Dom = o.Analysis.Domains[0]
 
 	// required vertices
 	for _, vtag := range o.Opt.ReqVtags {
@@ -132,6 +129,13 @@ func NewData(cpu int) *FemData {
 			chk.Panic("cannot set vertex to track deflection: verts = %v", verts)
 		}
 		o.VidU = verts[0].Id
+	}
+
+	// compute max weight
+	o.Analysis.SetStage(0)
+	for _, elem := range o.Dom.Elems {
+		ele := elem.(*fem.ElastRod)
+		o.MaxWeight += ele.Mdl.Rho * ele.Mdl.A * ele.L
 	}
 	return &o
 }

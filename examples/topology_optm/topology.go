@@ -16,15 +16,19 @@ import (
 // main function
 func main() {
 
+	// input filename
+	fn, fnkey := io.ArgToFilename(0, "cantilever", ".sim", true)
+
 	// GA parameters
 	var opt goga.Optimiser
-	opt.Read("ga-data.json")
+	opt.Read("ga-" + fnkey + ".json")
 
 	// FEM
 	data := make([]*FemData, opt.Ncpu)
 	for i := 0; i < opt.Ncpu; i++ {
-		data[i] = NewData(i)
+		data[i] = NewData(fn, fnkey, i)
 	}
+	io.Pforan("MaxWeight = %v\n", data[0].MaxWeight)
 
 	// set integers
 	if data[0].Opt.BinInt {
@@ -53,10 +57,6 @@ func main() {
 		sol.Oor[2] = errU
 		sol.Oor[3] = errS
 	}, nil, 0, 0, 0)
-
-	// initial solutions
-	//io.Pforan("%s\n", PrintSolutions(data[0], opt.Solutions))
-	io.Pforan("DtExc = %v\n", opt.DtExc)
 
 	// initial solutions
 	var sols0 []*goga.Solution
@@ -92,7 +92,6 @@ func main() {
 
 	// save results
 	goga.SortByOva(opt.Solutions, 0)
-	fnkey := data[0].Analysis.Sim.Key
 	var log, res bytes.Buffer
 	io.Ff(&log, opt.LogParams())
 	io.Ff(&res, PrintSolutions(data[0], opt.Solutions))
@@ -103,7 +102,7 @@ func main() {
 	// plot
 	feasibleOnly := true
 	plt.SetForEps(0.8, 355)
-	if strings.HasPrefix(fnkey, "truss10bar") {
+	if strings.HasPrefix(fnkey, "cantilever") {
 		_, ref, _ := io.ReadTable("p460_fig300.dat")
 		plt.Plot(ref["w"], ref["u"], "'b-'")
 	}

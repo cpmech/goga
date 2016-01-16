@@ -11,9 +11,10 @@ import (
 
 func main() {
 
-	L, H := 1000.0, 300.0
-	ncol, nrow := 6, 2
+	L, H := 720.0, 360.0
+	ncol, nrow := 2, 1
 	xmin, ymin := 0.0, 0.0
+	skipleft := true
 
 	nx, ny := ncol+1, nrow+1
 	nhoriz := ny * ncol
@@ -22,6 +23,9 @@ func main() {
 	ncells := nhoriz + nverti + ndiago
 	npoints := nx * ny
 	dx, dy := L/float64(ncol), H/float64(nrow)
+	if skipleft {
+		ncells -= nrow
+	}
 
 	io.Pforan("nx=%v ny=%v nhoriz=%v nverti=%v ncells=%v npoints=%v\n", nx, ny, nhoriz, nverti, ncells, npoints)
 
@@ -45,7 +49,7 @@ func main() {
 				C.Tags[ic] = -1
 				ic++
 			}
-			if i == 0 && j > 0 {
+			if i == 0 && j > 0 && !skipleft {
 				C.Conn[ic] = []int{ip - nx, ip} // vertical
 				C.Types[ic] = "lin2"
 				C.Tags[ic] = -1
@@ -70,27 +74,31 @@ func main() {
 		}
 	}
 
-	// -2 are places of applied load
-	// -5 are the second row
-	dat.VtagsL = &gemlab.VtagsL{
-		Tags: []int{-2, -5},
-		Xxa: [][]float64{
-			{xmin, ymin},
-			{xmin + dx, ymin + dy},
-		},
-		Xxb: [][]float64{
-			{xmin + L, ymin},
-			{xmin + L - dx, ymin + dy},
-		},
+	// -10 are the lower horizontal bars
+	// -20 are the second horizontal bars
+	if false {
+		dat.VtagsL = &gemlab.VtagsL{
+			Tags: []int{-10, -20},
+			Xxa: [][]float64{
+				{xmin, ymin},
+				{xmin + dx, ymin + dy},
+			},
+			Xxb: [][]float64{
+				{xmin + L, ymin},
+				{xmin + L - dx, ymin + dy},
+			},
+		}
 	}
 
-	// -1 is the vertex to track deflection
-	// -3 and -4 are supports
+	// -1 and -2 are supports
+	// -3 are places to apply load
+	// -4 is the vertex to track deflection
 	dat.Vtags = &gemlab.Vtags{
-		Tags: []int{-1, -3, -4},
+		Tags: []int{-1, -2, -3, -4},
 		Coords: [][]float64{
-			{xmin + L/2, ymin},
 			{xmin, ymin},
+			{xmin, ymin + H},
+			{xmin + L/2, ymin},
 			{xmin + L, ymin},
 		},
 	}
