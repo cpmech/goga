@@ -9,7 +9,6 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/rnd"
-	"github.com/cpmech/gosl/utl"
 )
 
 // CxInt performs the crossover of genetic data from A and B
@@ -25,14 +24,13 @@ import (
 //     b = * b c d e * * *
 func CxInt(a, b, A, B []int, prms *Parameters) {
 	size := len(A)
-	if !rnd.FlipCoin(prms.PcInt) || size < 2 {
+	if !rnd.FlipCoin(prms.IntPc) || size < 2 {
 		for i := 0; i < len(A); i++ {
 			a[i], b[i] = A[i], B[i]
 		}
 		return
 	}
-	ncuts := utl.Imax(1, size/3)
-	ends := GenerateCxEnds(size, ncuts, nil)
+	ends := GenerateCxEnds(size, prms.IntNcuts, nil)
 	swap := false
 	start := 0
 	for _, end := range ends {
@@ -79,7 +77,7 @@ func CxInt(a, b, A, B []int, prms *Parameters) {
 //     b = h g | c d e | a b f         get from B: | e̶ c̶ a | b d̶ | f h g
 func CxIntOrd(a, b, A, B []int, prms *Parameters) {
 	size := len(A)
-	if !rnd.FlipCoin(prms.PcInt) || size < 3 {
+	if !rnd.FlipCoin(prms.IntPc) || size < 3 {
 		for i := 0; i < len(A); i++ {
 			a[i], b[i] = A[i], B[i]
 		}
@@ -132,12 +130,11 @@ func CxIntOrd(a, b, A, B []int, prms *Parameters) {
 //  Output: modified individual 'A'
 func MtInt(A []int, prms *Parameters) {
 	size := len(A)
-	if !rnd.FlipCoin(prms.PmInt) || size < 1 {
+	if !rnd.FlipCoin(prms.IntPm) || size < 1 {
 		return
 	}
-	nchanges := 1
 	mmax := 2
-	pos := rnd.IntGetUniqueN(0, size, nchanges)
+	pos := rnd.IntGetUniqueN(0, size, prms.IntNchanges)
 	for _, i := range pos {
 		m := rnd.Int(1, mmax)
 		if rnd.FlipCoin(0.5) {
@@ -152,11 +149,10 @@ func MtInt(A []int, prms *Parameters) {
 //  Output: modified individual 'A'
 func MtIntBin(A []int, prms *Parameters) {
 	size := len(A)
-	if !rnd.FlipCoin(prms.PmInt) || size < 1 {
+	if !rnd.FlipCoin(prms.IntPm) || size < 1 {
 		return
 	}
-	nchanges := 1
-	pos := rnd.IntGetUniqueN(0, size, nchanges)
+	pos := rnd.IntGetUniqueN(0, size, prms.IntNchanges)
 	for _, i := range pos {
 		if A[i] == 0 {
 			A[i] = 1
@@ -192,7 +188,7 @@ func MtIntBin(A []int, prms *Parameters) {
 //                       4 = ins
 func MtIntOrd(A []int, prms *Parameters) {
 	size := len(A)
-	if !rnd.FlipCoin(prms.PmInt) || size < 3 {
+	if !rnd.FlipCoin(prms.IntPm) || size < 3 {
 		if size == 2 {
 			A[0], A[1] = A[1], A[0]
 		}

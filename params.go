@@ -40,9 +40,11 @@ type Parameters struct {
 	ExcTour  bool    // use exchange via tournament
 	ExcOne   bool    // use exchange one randomly
 
-	// crossover and mutation
-	PmInt float64 // probability of mutation for ints
-	PcInt float64 // probability of crossover for ints
+	// crossover and mutation of integers
+	IntPc       float64 // probability of crossover for ints
+	IntNcuts    int     // number of cuts in crossover of ints
+	IntPm       float64 // probability of mutation for ints
+	IntNchanges int     // number of changes during mutation of ints
 
 	// range
 	FltMin []float64 // minimum float allowed
@@ -85,9 +87,11 @@ func (o *Parameters) Default() {
 	o.ExcTour = true
 	o.ExcOne = false
 
-	// crossover and mutation
-	o.PmInt = 0.01
-	o.PcInt = 0.8
+	// crossover and mutation of integers
+	o.IntPc = 0.8
+	o.IntNcuts = 1
+	o.IntPm = 0.01
+	o.IntNchanges = 1
 }
 
 // Read reads configuration parameters from JSON file
@@ -163,6 +167,16 @@ func (o *Parameters) CalcDerived() {
 		o.ClearFlt = false
 	}
 
+	// number of cuts and changes in ints
+	if o.Nint > 0 {
+		if o.IntNcuts > o.Nint {
+			o.IntNcuts = o.Nint
+		}
+		if o.IntNchanges > o.Nint {
+			o.IntNchanges = o.Nint
+		}
+	}
+
 	// initialise random numbers generator
 	rnd.Init(o.Seed)
 }
@@ -214,11 +228,13 @@ func (o *Parameters) LogParams() (l string) {
 		"use exchange one randomly", "ExcOne", o.ExcOne,
 	)
 
-	// crossover and mutation
+	// crossover and mutation of integers
 	l += "\n"
-	l += io.ArgsTable("CROSSOVER AND MUTATION",
-		"probability of mutation for ints", "PmInt", o.PmInt,
-		"probability of crossover for ints", "PcInt", o.PcInt,
+	l += io.ArgsTable("CROSSOVER AND MUTATION OF INTS",
+		"probability of crossover for ints", "IntPc", o.IntPc,
+		"number of cuts in crossover of ints", "IntNcuts", o.IntNcuts,
+		"probability of mutation for ints", "IntPm", o.IntPm,
+		"number of changes during mutation of ints", "IntNchanges", o.IntNchanges,
 	)
 
 	// derived
