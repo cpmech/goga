@@ -5,7 +5,7 @@
   "VtagU"    : -4,
   "Groups"   : false,
   "BinInt"   : true,
-  "Mobility" : true,
+  "Mobility" : false,
   "ReqVtags" : [-1, -2, -3, -4],
   "ScompAwd" : [
     {"tag":-1, "val":35} 

@@ -1,8 +1,12 @@
 {
-  "nsol"     : 120,
-  "ncpu"     : 4,
-  "tf"       : 300,
-  "excTour"  : true,
-  "excOne"   : true,
-  "clearflt" : true
+  "Nsol"         : 200,
+  "Ncpu"         : 5,
+  "Tf"           : 200,
+  "ExcTour"      : true,
+  "ExcOne"       : true,
+  "ClearFlt_bad" : false,
+  "IntPc"        : 0.8,
+  "IntNcuts"     : 3,
+  "intPm"        : 0.01,
+  "IntNchanges"  : 2
 }
