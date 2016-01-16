@@ -18,6 +18,7 @@ refresh(){
     echo
     #go run genmsh.go
     go run femsim.go topology.go
+    #go run setandrunfem.go
 }
 
 while true; do

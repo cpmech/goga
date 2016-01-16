@@ -12,7 +12,7 @@
   ],
   "regions" : [
     {
-      "mshfile": "ground36.msh",
+      "mshfile": "ground10.msh",
       "elemsdata" : [
         { "tag":-1, "mat":"M", "type":"elastrod" }
       ]
@@ -22,12 +22,10 @@
     {
       "desc": "apply loads",
       "nodebcs": [
-        { "tag":-10, "keys":["ux","uy"], "funcs":["zero","zero"] },
-        { "tag":-1,  "keys":["ux","uy"], "funcs":["zero","zero"] },
-        { "tag":-2,  "keys":["ux","uy"], "funcs":["zero","zero"] },
-        { "tag":-3,  "keys":["fy"],      "funcs":["Py"] },
-        { "tag":-4,  "keys":["fy"],      "funcs":["Py"] },
-        { "tag":-20, "keys":["fy"],      "funcs":["Py"] }
+        { "tag":-1, "keys":["ux","uy"], "funcs":["zero","zero"] },
+        { "tag":-2, "keys":["ux","uy"], "funcs":["zero","zero"] },
+        { "tag":-3, "keys":["fy"],      "funcs":["Py"] },
+        { "tag":-4, "keys":["fy"],      "funcs":["Py"] }
       ]
     }
   ]

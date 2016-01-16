@@ -141,7 +141,16 @@ func NewData(filename, fnkey string, cpu int) *FemData {
 }
 
 // RunFEM runs FE analysis.
-func (o *FemData) RunFEM(Enabled []int, Areas []float64, debug bool) (mobility, failed, weight, umax, smax, errU, errS float64) {
+func (o *FemData) RunFEM(Enabled []int, Areas []float64, draw int, debug bool) (mobility, failed, weight, umax, smax, errU, errS float64) {
+
+	// check for NaNs
+	defer func() {
+		if math.IsNaN(mobility) || math.IsNaN(failed) || math.IsNaN(weight) || math.IsNaN(umax) || math.IsNaN(smax) || math.IsNaN(errU) || math.IsNaN(errS) {
+			io.PfRed("enabled := %+#v\n", Enabled)
+			io.PfRed("areas := %+#v\n", Areas)
+			chk.Panic("NaN: mobility=%v failed=%v weight=%v umax=%v smax=%v errU=%v errS=%v\n", mobility, failed, weight, umax, smax, errU, errS)
+		}
+	}()
 
 	// function to set worst values
 	setworst := func(W float64) {
@@ -213,10 +222,11 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, debug bool) (mobility, 
 	}
 
 	// find maximum deflection
+	// Note that sometimes a mechanism can happen that makes the tip to move upwards
 	if o.VidU >= 0 {
 		eq := o.Dom.Vid2node[o.VidU].GetEq("uy")
 		uy := o.Dom.Sol.Y[eq]
-		umax = math.Abs(uy)
+		umax = utl.Max(umax, math.Abs(uy))
 	} else {
 		for _, nod := range o.Dom.Nodes {
 			eq := nod.GetEq("uy")
@@ -236,14 +246,36 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, debug bool) (mobility, 
 	}
 	errS = fun.Ramp(errS)
 
+	// draw
+	if draw > 0 {
+		lwds := make(map[int]float64)
+		for _, elem := range o.Dom.Elems {
+			ele := elem.(*fem.ElastRod)
+			cid := ele.Cell.Id
+			lwds[cid] = 0.1 + ele.Mdl.A/20.0
+		}
+		o.Dom.Msh.Draw2d(true, false, lwds, 1)
+		//plt.Title(io.Sf("weight=%.3f deflection=%.6f", weight, umax), "")
+		//plt.SaveD("/tmp/goga", io.Sf("mesh-topology-%03d.eps", draw))
+	}
+
 	// debug
-	if debug {
-		io.Pf("areas  = %.6f\n", Areas)
-		io.Pf("weight = %v\n", weight)
-		io.Pf("umax   = %v\n", umax)
-		io.Pf("smax   = %v\n", smax)
-		io.Pf("errU   = %v\n", errU)
-		io.Pf("errS   = %v\n", errS)
+	if false && (umax > 0 && errS < 1e-10) {
+		io.PfYel("enabled := %+#v\n", Enabled)
+		io.Pf("areas := %+#v\n", Areas)
+		io.Pf("weight  = %v\n", weight)
+		io.Pf("umax    = %v\n", umax)
+		io.Pf("smax    = %v\n", smax)
+		io.Pf("errU    = %v\n", errU)
+		io.Pf("errS    = %v\n", errS)
+
+		// post-processing
+		msh := o.Dom.Msh
+		vid := msh.VertTag2verts[-4][0].Id
+		nod := o.Dom.Vid2node[vid]
+		eqy := nod.GetEq("uy")
+		uy := o.Dom.Sol.Y[eqy]
+		io.Pfblue2("%2d : uy = %g\n", vid, uy)
 	}
 	return
 }

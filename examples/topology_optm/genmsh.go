@@ -12,7 +12,7 @@ import (
 func main() {
 
 	L, H := 720.0, 360.0
-	ncol, nrow := 2, 1
+	ncol, nrow := 4, 2
 	xmin, ymin := 0.0, 0.0
 	skipleft := true
 
@@ -74,16 +74,19 @@ func main() {
 		}
 	}
 
-	// -10 are the lower horizontal bars
-	// -20 are the second horizontal bars
-	if false {
+	// -10 are left vertical points
+	// -20 are the lower horizontal bars
+	// -30 are the second horizontal bars
+	if true {
 		dat.VtagsL = &gemlab.VtagsL{
-			Tags: []int{-10, -20},
+			Tags: []int{-10, -20, -30},
 			Xxa: [][]float64{
+				{xmin, ymin},
 				{xmin, ymin},
 				{xmin + dx, ymin + dy},
 			},
 			Xxb: [][]float64{
+				{xmin, ymin + H},
 				{xmin + L, ymin},
 				{xmin + L - dx, ymin + dy},
 			},
