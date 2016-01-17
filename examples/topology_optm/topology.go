@@ -18,7 +18,7 @@ import (
 func main() {
 
 	// flags
-	benchmark := true
+	benchmark := false
 	ncpuMax := 16
 
 	// benchmarking
