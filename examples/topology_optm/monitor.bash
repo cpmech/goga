@@ -19,6 +19,7 @@ refresh(){
     #go run genmsh.go
     go run femsim.go topology.go
     #go run setandrunfem.go
+    #go run plotCPUtime.go
 }
 
 while true; do

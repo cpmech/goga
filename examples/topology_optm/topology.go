@@ -7,6 +7,7 @@ package main
 import (
 	"bytes"
 	"strings"
+	"time"
 
 	"github.com/cpmech/goga"
 	"github.com/cpmech/gosl/io"
@@ -16,12 +17,58 @@ import (
 // main function
 func main() {
 
+	// flags
+	benchmark := true
+	ncpuMax := 16
+
+	// benchmarking
+	if benchmark {
+		var nsol, tf int
+		var et time.Duration
+		X := make([]float64, ncpuMax)
+		T := make([]float64, ncpuMax)
+		S := make([]float64, ncpuMax) // speedup
+		S[0] = 1
+		for i := 0; i < ncpuMax; i++ {
+			io.Pf("\n\n")
+			nsol, tf, et = runone(i + 1)
+			io.PfYel("elaspsedTime = %v\n", et)
+			X[i] = float64(i + 1)
+			T[i] = et.Seconds()
+			if i > 0 {
+				S[i] = T[0] / T[i] // Told / Tnew
+			}
+		}
+
+		plt.SetForEps(0.75, 250)
+		plt.Plot(X, S, io.Sf("'b-',marker='.', label='speedup: $N_{sol}=%d,\\,t_f=%d$', clip_on=0, zorder=100", nsol, tf))
+		plt.Plot([]float64{1, 16}, []float64{1, 16}, "'k--',zorder=50")
+		plt.Gll("$N_{cpu}:\\;$ number of groups", "speedup", "leg_out=1")
+		plt.DoubleYscale("$T_{sys}:\\;$ system time [s]")
+		plt.Plot(X, T, "'k-',color='gray', clip_on=0")
+		plt.SaveD("/tmp/goga", "topology-speedup.eps")
+		return
+	}
+
+	// normal run
+	runone(-1)
+}
+
+func runone(ncpu int) (nsol, tf int, elaspsedTime time.Duration) {
+
 	// input filename
 	fn, fnkey := io.ArgToFilename(0, "ground10", ".sim", true)
 
 	// GA parameters
 	var opt goga.Optimiser
 	opt.Read("ga-" + fnkey + ".json")
+	opt.GenType = "rnd"
+	nsol, tf = opt.Nsol, opt.Tf
+	postproc := true
+	if ncpu > 0 {
+		opt.Ncpu = ncpu
+		postproc = false
+	}
 
 	// FEM
 	data := make([]*FemData, opt.Ncpu)
@@ -64,10 +111,21 @@ func main() {
 		sols0 = opt.GetSolutionsCopy()
 	}
 
+	// benchmark
+	initialTime := time.Now()
+	defer func() {
+		elaspsedTime = time.Now().Sub(initialTime)
+	}()
+
 	// solve
 	opt.Verbose = true
 	opt.Solve()
 	goga.SortByOva(opt.Solutions, 0)
+
+	// post processing
+	if !postproc {
+		return
+	}
 
 	// check
 	front0 := make([]*goga.Solution, 0)
@@ -160,6 +218,7 @@ axis('off')
 
 	// save
 	plt.SaveD("/tmp/goga", fnkey+".eps")
+	return
 }
 
 type FltFormatter []float64
