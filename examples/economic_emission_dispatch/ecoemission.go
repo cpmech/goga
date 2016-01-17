@@ -20,7 +20,7 @@ func main() {
 	opt.Default()
 	opt.Nsol = 120
 	opt.Ncpu = 4
-	opt.Tf = 500
+	opt.Tf = 300
 	opt.Verbose = false
 	opt.Ntrials = 1
 	opt.GenType = "latin"
