@@ -152,12 +152,6 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, draw int, debug bool) (
 		}
 	}()
 
-	// function to set worst values
-	ERR := 1.0
-	setworst := func(W float64) {
-		mobility, failed, weight, errU, errS = ERR, ERR, W, ERR, ERR
-	}
-
 	// set connectivity
 	if o.Opt.BinInt {
 		for cid, ena := range Enabled {
@@ -181,24 +175,23 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, draw int, debug bool) (
 	o.Analysis.SetStage(0)
 
 	// check for required vertices
+	nnod := len(o.Dom.Nodes)
 	for _, vid := range o.ReqVids {
 		if o.Dom.Vid2node[vid] == nil {
 			//io.Pforan("required vertex (%d) missing\n", vid)
-			setworst(ERR)
+			mobility, failed, errU, errS = float64(1+2*nnod), 1, 1, 1
 			return
 		}
 	}
 
 	// compute mobility
 	if o.Opt.Mobility {
-		n := len(o.Dom.Nodes)
 		m := len(o.Dom.Elems)
 		d := len(o.Dom.EssenBcs.Bcs)
-		F := 2*n - m - d
-		if F > 0 {
-			//io.Pforan("full mobility: F=%v\n", F)
-			setworst(ERR)
-			mobility = float64(F)
+		M := 2*nnod - m - d
+		if M > 0 {
+			//io.Pforan("full mobility: M=%v\n", M)
+			mobility, failed, errU, errS = float64(M), 1, 1, 1
 			return
 		}
 	}
@@ -217,8 +210,7 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, draw int, debug bool) (
 	err := o.Analysis.SolveOneStage(0, true)
 	if err != nil {
 		//io.Pforan("analysis failed\n")
-		setworst(weight)
-		mobility = 0
+		mobility, failed, errU, errS = 0, 1, 1, 1
 		return
 	}
 
