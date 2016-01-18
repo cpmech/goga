@@ -153,8 +153,9 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, draw int, debug bool) (
 	}()
 
 	// function to set worst values
+	ERR := 1.0
 	setworst := func(W float64) {
-		mobility, failed, weight, errU, errS = 1e8, 1e8, W, 1e8, 1e8
+		mobility, failed, weight, errU, errS = ERR, ERR, W, ERR, ERR
 	}
 
 	// set connectivity
@@ -183,7 +184,7 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, draw int, debug bool) (
 	for _, vid := range o.ReqVids {
 		if o.Dom.Vid2node[vid] == nil {
 			//io.Pforan("required vertex (%d) missing\n", vid)
-			setworst(1e8)
+			setworst(ERR)
 			return
 		}
 	}
@@ -196,7 +197,7 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, draw int, debug bool) (
 		F := 2*n - m - d
 		if F > 0 {
 			//io.Pforan("full mobility: F=%v\n", F)
-			setworst(1e8)
+			setworst(ERR)
 			mobility = float64(F)
 			return
 		}
@@ -226,7 +227,7 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, draw int, debug bool) (
 	if o.VidU >= 0 {
 		eq := o.Dom.Vid2node[o.VidU].GetEq("uy")
 		uy := o.Dom.Sol.Y[eq]
-		umax = utl.Max(umax, math.Abs(uy))
+		umax = math.Abs(uy)
 	} else {
 		for _, nod := range o.Dom.Nodes {
 			eq := nod.GetEq("uy")

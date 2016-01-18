@@ -180,7 +180,7 @@ func runone(ncpu int) (nsol, tf int, elaspsedTime time.Duration) {
 	// plot selected results
 	nfront0 := len(front0)
 	if nfront0 > 2 {
-		m := nfront0 / 2
+		m := nfront0 / 4
 		l := nfront0 - 1
 		io.Pforan("nfront0=%d m=%d l=%v\n", nfront0, m, l)
 		_, _, weight, umax, _, _, _ := data[0].RunFEM(front0[0].Int, front0[0].Flt, 0, false)
