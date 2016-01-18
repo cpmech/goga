@@ -1,7 +1,7 @@
 #!/bin/bash
 
 GOGA="$HOME/10.go/pkg/linux_amd64/github.com/cpmech/goga.a"
-FILES="*.go *.json *.msh *.sim"
+FILES="*.go *.json *.msh *.sim *.py"
 
 if [ -f $GOGA ]; then
    FILES="$FILES $GOGA"
@@ -20,6 +20,7 @@ refresh(){
     go run femsim.go topology.go
     #go run setandrunfem.go
     #go run plotCPUtime.go
+    #python fig-mesh.py
 }
 
 while true; do
