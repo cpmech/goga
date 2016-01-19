@@ -27,7 +27,7 @@ func main() {
 	opt.EpsH = 1e-3
 
 	// flags
-	problem := 4
+	problem := 3
 	checkOnly := false
 
 	// generators
