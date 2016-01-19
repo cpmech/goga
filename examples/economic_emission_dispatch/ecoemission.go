@@ -18,22 +18,22 @@ func main() {
 	// goga parameters
 	opt := new(goga.Optimiser)
 	opt.Default()
-	opt.Nsol = 120
+	opt.Nsol = 200
 	opt.Ncpu = 4
-	opt.Tf = 300
+	opt.Tf = 500
 	opt.Verbose = false
 	opt.Ntrials = 1
 	opt.GenType = "latin"
-	opt.EpsH = 1e-4
+	opt.EpsH = 1e-3
 
 	// flags
-	problem := 3 // 1=cost only; 2=emission only; default=cost and emission
+	problem := 4
 	checkOnly := false
 
 	// generators
 	Pdemand := 2.834
 	Ploss := 0.0
-	gs := NewGenerators(false)
+	gs, B00, B0, B := NewGenerators(false)
 	ngs := len(gs) // number of generators == number of variables (Nx)
 	opt.FltMin = make([]float64, ngs)
 	opt.FltMax = make([]float64, ngs)
@@ -71,12 +71,29 @@ func main() {
 		}
 
 	// lossless and unsecured: cost and emission
+	case 3:
+		nf, nh = 2, 1
+		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
+			sumP := la.VecAccum(x)
+			f[0] = gs.FuelCost(x)
+			f[1] = gs.Emission(x)
+			h[0] = sumP - Pdemand - Ploss
+		}
+
+	// with loss but unsecured: cost and emission
 	default:
 		nf, nh = 2, 1
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
 			sumP := la.VecAccum(x)
 			f[0] = gs.FuelCost(x)
 			f[1] = gs.Emission(x)
+			Ploss = B00
+			for i := 0; i < ngs; i++ {
+				Ploss += B0[i] * x[i]
+				for j := 0; j < ngs; j++ {
+					Ploss += x[i] * B[i][j] * x[j]
+				}
+			}
 			h[0] = sumP - Pdemand - Ploss
 		}
 	}
@@ -130,10 +147,15 @@ func main() {
 		fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
 		fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
 		goga.PlotOvaOvaPareto(opt, sols0, 0, 1, feasibleOnly, fmtAll, fmtFront)
-		_, dat, _ := io.ReadTable("abido-fig6.dat")
+		var dat map[string][]float64
+		if problem == 3 {
+			_, dat, _ = io.ReadTable("abido2006-fig6.dat")
+		} else {
+			_, dat, _ = io.ReadTable("abido2006-fig8.dat")
+		}
 		plt.Plot(dat["cost"], dat["emission"], "'b-', label='reference'")
 		plt.Gll("$f_0:\\;$ cost~[\\$/h]", "$f_1:\\quad$ emission~[ton/h]", "")
-		plt.SaveD("/tmp/goga", "ecoemission.eps")
+		plt.SaveD("/tmp/goga", io.Sf("ecoemission_prob%d.eps", problem))
 
 		// report
 		goga.TexF1F0Report("/tmp/goga", "tmp_ecoemission", "ecoemission", 10, true, []*goga.Optimiser{opt})
