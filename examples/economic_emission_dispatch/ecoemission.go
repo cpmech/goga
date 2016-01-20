@@ -5,11 +5,12 @@
 package main
 
 import (
+	"bytes"
 	"math"
 
 	"github.com/cpmech/goga"
+	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
-	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/plt"
 )
 
@@ -28,17 +29,18 @@ func main() {
 
 	// flags
 	problem := 3
+	idxsel := 120
 	checkOnly := false
+	lossless := problem < 4
 
 	// generators
-	Pdemand := 2.834
-	Ploss := 0.0
-	gs, B00, B0, B := NewGenerators(false)
-	ngs := len(gs) // number of generators == number of variables (Nx)
+	var sys System
+	sys.Init(2.834, lossless, checkOnly)
+	ngs := len(sys.G) // number of generators == number of variables (Nx)
 	opt.FltMin = make([]float64, ngs)
 	opt.FltMax = make([]float64, ngs)
 	for i := 0; i < ngs; i++ {
-		opt.FltMin[i], opt.FltMax[i] = gs[i].Pmin, gs[i].Pmax
+		opt.FltMin[i], opt.FltMax[i] = sys.G[i].Pmin, sys.G[i].Pmax
 	}
 
 	// problem variables
@@ -54,9 +56,8 @@ func main() {
 		opt.RptFref = []float64{600.114}
 		nf, nh = 1, 1
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
-			sumP := la.VecAccum(x)
-			f[0] = gs.FuelCost(x)
-			h[0] = sumP - Pdemand - Ploss
+			f[0] = sys.FuelCost(x)
+			h[0] = sys.Balance(x)
 		}
 
 	// lossless and unsecured: emission only
@@ -65,37 +66,29 @@ func main() {
 		opt.RptFref = []float64{0.19420}
 		nf, nh = 1, 1
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
-			sumP := la.VecAccum(x)
-			f[0] = gs.Emission(x)
-			h[0] = sumP - Pdemand - Ploss
+			f[0] = sys.Emission(x)
+			h[0] = sys.Balance(x)
 		}
 
 	// lossless and unsecured: cost and emission
 	case 3:
 		nf, nh = 2, 1
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
-			sumP := la.VecAccum(x)
-			f[0] = gs.FuelCost(x)
-			f[1] = gs.Emission(x)
-			h[0] = sumP - Pdemand - Ploss
+			f[0] = sys.FuelCost(x)
+			f[1] = sys.Emission(x)
+			h[0] = sys.Balance(x)
 		}
+		checkOnly = false
 
 	// with loss but unsecured: cost and emission
 	default:
 		nf, nh = 2, 1
 		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
-			sumP := la.VecAccum(x)
-			f[0] = gs.FuelCost(x)
-			f[1] = gs.Emission(x)
-			Ploss = B00
-			for i := 0; i < ngs; i++ {
-				Ploss += B0[i] * x[i]
-				for j := 0; j < ngs; j++ {
-					Ploss += x[i] * B[i][j] * x[j]
-				}
-			}
-			h[0] = sumP - Pdemand - Ploss
+			f[0] = sys.FuelCost(x)
+			f[1] = sys.Emission(x)
+			h[0] = sys.Balance(x)
 		}
+		checkOnly = false
 	}
 
 	// check best known solution
@@ -116,12 +109,17 @@ func main() {
 	// solve
 	opt.RunMany("", "")
 
+	// selected solutions
+	goga.SortByOva(opt.Solutions, 0)
+	m, l := idxsel, opt.Nsol-1
+	A, B, C := opt.Solutions[0], opt.Solutions[m], opt.Solutions[l]
+
 	// post-processing
 	switch problem {
 	case 1:
 
 		// results
-		print_single(opt, gs, opt.RptXref, opt.RptFref[0], 0.22214, Pdemand, Ploss)
+		print_results(&sys, A, B, C, opt.RptXref, opt.RptFref[0], 0.22214)
 
 		// stat
 		io.Pf("\n")
@@ -130,13 +128,16 @@ func main() {
 	case 2:
 
 		// results
-		print_single(opt, gs, opt.RptXref, 638.260, opt.RptFref[0], Pdemand, Ploss)
+		print_results(&sys, A, B, C, opt.RptXref, 638.260, opt.RptFref[0])
 
 		// stat
 		io.Pf("\n")
 		goga.StatF(opt, 0, true)
 
 	default:
+
+		// results
+		print_results(&sys, A, B, C, nil, -1, -1)
 
 		// stat
 		goga.StatF1F0(opt, true)
@@ -147,6 +148,12 @@ func main() {
 		fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
 		fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
 		goga.PlotOvaOvaPareto(opt, sols0, 0, 1, feasibleOnly, fmtAll, fmtFront)
+		plt.PlotOne(A.Ova[0], A.Ova[1], "'g*', zorder=1000, clip_on=0")
+		plt.PlotOne(B.Ova[0], B.Ova[1], "'g*', zorder=1000, clip_on=0")
+		plt.PlotOne(C.Ova[0], C.Ova[1], "'g*', zorder=1000, clip_on=0")
+		plt.Text(A.Ova[0]+1, A.Ova[1], "A", "")
+		plt.Text(B.Ova[0]+1, B.Ova[1], "B", "")
+		plt.Text(C.Ova[0]+1, C.Ova[1], "C", "")
 		var dat map[string][]float64
 		if problem == 3 {
 			_, dat, _ = io.ReadTable("abido2006-fig6.dat")
@@ -155,36 +162,80 @@ func main() {
 		}
 		plt.Plot(dat["cost"], dat["emission"], "'b-', label='reference'")
 		plt.Gll("$f_0:\\;$ cost~[\\$/h]", "$f_1:\\quad$ emission~[ton/h]", "")
-		plt.SaveD("/tmp/goga", io.Sf("ecoemission_prob%d.eps", problem))
+		if problem == 3 {
+			plt.AxisXmin(599)
+		}
+		fnkey := io.Sf("ecoemission_prob%d", problem)
+		plt.SaveD("/tmp/goga", fnkey+".eps")
 
 		// report
-		goga.TexF1F0Report("/tmp/goga", "tmp_ecoemission", "ecoemission", 10, true, []*goga.Optimiser{opt})
-		goga.TexF1F0Report("/tmp/goga", "ecoemission", "ecoemission", 10, false, []*goga.Optimiser{opt})
+		goga.TexF1F0Report("/tmp/goga", "tmp_"+fnkey, fnkey, 10, true, []*goga.Optimiser{opt})
+		goga.TexF1F0Report("/tmp/goga", fnkey, fnkey, 10, false, []*goga.Optimiser{opt})
+		tex_results("/tmp/goga", "res_"+fnkey, &sys, A, B, C, true)
 	}
 }
 
-func print_single(opt *goga.Optimiser, gs Generators, Pref []float64, costRef, emisRef, Pdemand, Ploss float64) {
-	n := 9*2 + 8*6 + 12
-	P := Pref
-	sumP := la.VecAccum(P)
-	bal_err := math.Abs(sumP - Pdemand - Ploss)
+func print_results(sys *System, A, B, C *goga.Solution, Pref []float64, costRef, emisRef float64) {
+	n := 9*2 + 8*6 + 12 + 3
 	io.Pf("%s", io.StrThickLine(n))
-	io.Pf("%9s%9s%8s%8s%8s%8s%8s%8s%12s\n", "cost", "emis", "P1", "P2", "P3", "P4", "P5", "P6", "bal.err")
+	io.Pf("%3s%9s%9s%8s%8s%8s%8s%8s%8s%12s\n", "pt", "cost", "emis", "P1", "P2", "P3", "P4", "P5", "P6", "bal.err")
 	io.Pf("%s", io.StrThinLine(n))
-	io.Pfyel("%9.4f%9.5f%8.5f%8.5f%8.5f%8.5f%8.5f%8.5f%12.4e\n", costRef, emisRef, P[0], P[1], P[2], P[3], P[4], P[5], bal_err)
-	goga.SortByOva(opt.Solutions, 0)
-	for i, sol := range opt.Solutions {
-		P = sol.Flt
-		sumP = la.VecAccum(P)
-		cost := gs.FuelCost(P)
-		emis := gs.Emission(P)
-		bal_err = math.Abs(sumP - Pdemand - Ploss)
-		io.Pf("%9.4f%9.5f%8.5f%8.5f%8.5f%8.5f%8.5f%8.5f%12.4e\n", cost, emis, P[0], P[1], P[2], P[3], P[4], P[5], bal_err)
-		if i > 20 {
-			break
-		}
+	if Pref != nil {
+		io.Pfyel("%3s%9.4f%9.5f%8.5f%8.5f%8.5f%8.5f%8.5f%8.5f%12.4e\n", "ref", costRef, emisRef, Pref[0], Pref[1], Pref[2], Pref[3], Pref[4], Pref[5], sys.Balance(Pref))
 	}
+	writeline := func(pt string, P []float64) {
+		io.Pf("%3s%9.4f%9.5f%8.5f%8.5f%8.5f%8.5f%8.5f%8.5f%12.4e\n", pt, sys.FuelCost(P), sys.Emission(P), P[0], P[1], P[2], P[3], P[4], P[5], sys.Balance(P))
+	}
+	writeline("A", A.Flt)
+	writeline("B", B.Flt)
+	writeline("C", C.Flt)
 	io.Pf("%s", io.StrThickLine(n))
+}
+
+func tex_results(dirout, fnkey string, sys *System, A, B, C *goga.Solution, dorun bool) {
+	buf := new(bytes.Buffer)
+	io.Ff(buf, `\documentclass[a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage[margin=1.5cm,footskip=0.5cm]{geometry}
+
+\title{GOGA Report}
+\author{Dorival Pedroso}
+
+\begin{document}
+
+\begin{table} \centering
+\caption{goga: Parameters}
+\begin{tabular}[c]{cccccccccc} \toprule
+point & cost & emission & $P_0$ & $P_1$ & $P_2$ & $P_3$ & $P_4$ & $P_5$ & $h_0$ \\ \hline
+`)
+
+	writeline := func(pt string, P []float64) {
+		io.Ff(buf, "%s & $%.4f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.4e$ \\\\\n", pt, sys.FuelCost(P), sys.Emission(P), P[0], P[1], P[2], P[3], P[4], P[5], sys.Balance(P))
+	}
+
+	writeline("A", A.Flt)
+	writeline("B", B.Flt)
+	writeline("C", C.Flt)
+
+	io.Ff(buf, `
+\bottomrule
+\end{tabular}
+\label{tab:ecoemission}
+\end{table}
+\end{document}`)
+
+	tex := fnkey + ".tex"
+	io.WriteFileVD(dirout, tex, buf)
+	if dorun {
+		_, err := io.RunCmd(true, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory=/tmp/goga/", tex)
+		if err != nil {
+			chk.Panic("%v", err)
+		}
+		io.PfBlue("file <%s/%s.pdf> generated\n", dirout, fnkey)
+	}
 }
 
 func check(fcn goga.MinProb_t, ng, nh int, xs []float64, fs, ϵ float64) {
