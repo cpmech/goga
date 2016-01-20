@@ -13,7 +13,7 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
+func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 
 	io.Pf("\n\n------------------------------------- problem = %d ---------------------------------------\n", problem)
 
@@ -22,9 +22,8 @@ func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
 	opt.Default()
 	opt.Ncpu = 1
 	opt.Tf = 500
-	opt.EpsH = 0.01
 	opt.Verbose = false
-	opt.Ntrials = ntrials
+	opt.Ntrials = 1000
 	opt.GenType = "latin"
 
 	// options for report
@@ -275,6 +274,7 @@ func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
 
 	// problem # 9 -- Deb's problem 7 -- Z. Michalewicz 1995
 	case 9:
+		opt.EpsH = 1e-3
 		opt.RptName = "9"
 		opt.RptFref = []float64{0.0539498478}
 		opt.RptXref = []float64{-1.717143, 1.595709, 1.827247, -0.7636413, -0.7636450}
@@ -313,18 +313,17 @@ func solve_problem(problem, ntrials int, checkOnly bool) (opt *goga.Optimiser) {
 }
 
 func main() {
-	ntrials := 10
 	checkOnly := false
 	P := utl.IntRange2(1, 10)
 	//P := utl.IntRange2(1, 7)
 	//P := []int{1}
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {
-		opts[i] = solve_problem(problem, ntrials, checkOnly)
+		opts[i] = solve_problem(problem, checkOnly)
 	}
 	if !checkOnly {
 		io.Pf("\n-------------------------- generating report --------------------------\nn")
-		nRowPerTab := 5
+		nRowPerTab := 3
 		goga.TexSingleObjReport("/tmp/goga", "tmp_functions", "singleobj", nRowPerTab, true, opts)
 		goga.TexSingleObjReport("/tmp/goga", "functions", "singleobj", nRowPerTab, false, opts)
 		//io.Pf("\n%v\n", opts[0].LogParams())

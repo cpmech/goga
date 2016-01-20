@@ -61,7 +61,7 @@ func main() {
 	// solve
 	//opt.RunMany("/tmp/goga", "functions")
 	opt.RunMany("", "")
-	opt.HistNsta = 21
+	opt.HistNsta = 11
 	goga.StatF(opt, 0, true)
 
 	goga.TexSingleObjReport("/tmp/goga", "tmp_prob9", "probNine", 10, true, []*goga.Optimiser{opt})
