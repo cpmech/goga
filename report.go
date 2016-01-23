@@ -7,6 +7,7 @@ package goga
 import (
 	"bytes"
 	"strings"
+	"time"
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
@@ -88,19 +89,19 @@ func TexPrmsReport(dirout, fnkey string, opts []*Optimiser, nRowPerTab int) {
 	for i, opt := range opts {
 		if i%nRowPerTab == 0 {
 			if i > 0 {
-				io.Ff(buf, `\bottomrule`)
+				io.Ff(buf, "\n\\bottomrule\n")
 				TexPrmsTableEnd(buf) // end previous table
 				io.Ff(buf, "\n")
 			}
 			TexPrmsTableStart(buf) // begin new table
 		} else {
 			if i > 0 {
-				io.Ff(buf, `\hline`)
+				io.Ff(buf, "\n\\hline\n")
 			}
 		}
 		TexPrmsTableItem(opt, buf, i+1)
 	}
-	io.Ff(buf, `\bottomrule`)
+	io.Ff(buf, "\n\\bottomrule\n")
 	TexPrmsTableEnd(buf) // end previous table
 	io.Ff(buf, "\n")
 	TexDocumentEnd(buf)
@@ -114,8 +115,8 @@ func TexSingleObjTableStart(buf *bytes.Buffer, ntrials int) {
 	io.Ff(buf, `
 
 
-\begin{table*} \centering
-\caption{Constrained single objective problems: Results}
+\begin{table*} [!t] \centering
+\caption{\textsc{Constrained single objective problems.}}
 \begin{tabular}[c]{cccc} \toprule
 P & settings & results & histogram ($N_{trials}=%d$) \\ \hline
 `, ntrials)
@@ -139,8 +140,10 @@ func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer) {
 	Fmin, Fave, Fmax, Fdev, F := StatF(o, 0, false)
 	FminTxt, FaveTxt, FmaxTxt, FdevTxt := tex(o.RptFmtF, Fmin), tex(o.RptFmtF, Fave), tex(o.RptFmtF, Fmax), tex(o.RptFmtFdev, Fdev)
 	hist := rnd.BuildTextHist(nice(Fmin-0.05, o.HistNdig), nice(Fmax+0.05, o.HistNdig), o.HistNsta, F, o.HistFmt, o.HistLen)
-	io.Ff(buf,
-		`%s
+	io.Ff(buf, `
+{$\!\begin{aligned}
+    %s \\ \\ T_{sys}= \\ %v 
+\end{aligned}$}
 &
 {$\!\begin{aligned}
     N_{sol}        &= %d \\
@@ -155,8 +158,7 @@ func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer) {
              &\phantom{=} (%s) \\
     f_{ave}  &= %s \\
     f_{max}  &= %s \\
-    f_{dev}  &= {\bf %s} \\
-    T_{sys}  &= %v
+    f_{dev}  &= {\bf %s}
 \end{aligned}$}
 &
 \begin{minipage}{7cm} \scriptsize
@@ -164,14 +166,15 @@ func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer) {
 %s
 \end{verbatim}
 \end{minipage} \\
-\multicolumn{4}{c}{$X_{best}$=`+o.RptFmtX+`} \\
+\multicolumn{4}{c}{{\scriptsize $X_{best}$=`+o.RptFmtX+`}} \\
 `,
-		o.RptName,
+		o.RptName, dround(o.SysTime, 0.001e9),
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval,
-		FminTxt, FrefTxt, FaveTxt, FmaxTxt, FdevTxt, o.SysTime,
+		FminTxt, FrefTxt, FaveTxt, FmaxTxt, FdevTxt,
 		hist, o.BestOfBestFlt)
 	if len(o.RptXref) == o.Nflt {
-		io.Ff(buf, ` \multicolumn{4}{c}{$X_{ref}$=`+o.RptFmtX+`} \\`, o.RptXref)
+		io.Ff(buf, `
+\multicolumn{4}{c}{{\scriptsize $X_{ref.}$=`+o.RptFmtX+`}} \\`, o.RptXref)
 	}
 }
 
@@ -191,7 +194,7 @@ func TexSingleObjReport(dirout, fnkey, label string, nRowPerTab int, docHeader b
 	for i, opt := range opts {
 		if i%nRowPerTab == 0 {
 			if i > 0 {
-				io.Ff(buf, `\bottomrule`)
+				io.Ff(buf, "\n\\bottomrule\n")
 				TexSingleObjTableEnd(buf, lbl(idxtab, label)) // end previous table
 				io.Ff(buf, "\n\n\n")
 				idxtab++
@@ -199,13 +202,13 @@ func TexSingleObjReport(dirout, fnkey, label string, nRowPerTab int, docHeader b
 			TexSingleObjTableStart(buf, opt.Ntrials) // begin new table
 		} else {
 			if i > 0 {
-				io.Ff(buf, `\hline`)
+				io.Ff(buf, "\n\\hline\n")
 				io.Ff(buf, "\n\n")
 			}
 		}
 		TexSingleObjTableItem(opt, buf)
 	}
-	io.Ff(buf, `\bottomrule`)
+	io.Ff(buf, "\n\\bottomrule\n")
 	TexSingleObjTableEnd(buf, lbl(idxtab, label)) // end previous table
 	io.Ff(buf, "\n")
 	if docHeader {
@@ -219,10 +222,10 @@ func TexSingleObjReport(dirout, fnkey, label string, nRowPerTab int, docHeader b
 // TexF1F0TableStart starts table for single-objective optimisation results with ntrials
 func TexF1F0TableStart(buf *bytes.Buffer, ntrials int) {
 	io.Ff(buf, `
-\begin{table*} \centering
-\caption{Constrained multiple objective problems. $N_{trials}=%d$}
-\begin{tabular}[c]{cccc} \toprule
-P & settings & error & spread \\ \hline
+\begin{table*} [!t] \centering
+\caption{\textsc{Constrained multiple objective problems. $N_{trials}=%d$}}
+\begin{tabular}[c]{ccccc} \toprule
+P & settings & error & spread & info \\ \hline
 `, ntrials)
 }
 
@@ -247,30 +250,34 @@ func TexF1F0TableItem(o *Optimiser, buf *bytes.Buffer) {
     N_{sol}        &= %d \\
 	N_{cpu}        &= %d \\
 	t_{max}        &= %d \\
-	\Delta t_{exc} &= %d \\
-	N_{eval}       &= %d
+	\Delta t_{exc} &= %d
 \end{aligned}$}
 &
 {$\!\begin{aligned}
     E_{min} &= %s \\
     E_{ave} &= %s \\
     E_{max} &= %s \\
-    E_{dev} &= {\bf %s} \\
-	T_{sys} &= %v
+    E_{dev} &= {\bf %s}
 \end{aligned}$}
 &
 {$\!\begin{aligned}
     L_{min} &= %s \\
     L_{ave} &= %s \\
     L_{max} &= %s \\
-    L_{dev} &= {\bf %s} \\
-	count   &= %d
+    L_{dev} &= {\bf %s}
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+	N_{eval} &= %d \\
+	T_{sys}  &= %v \\
+	count    &= %d \\
 \end{aligned}$} \\
 `,
 		o.RptName,
-		o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval,
-		EminTxt, EaveTxt, EmaxTxt, EdevTxt, o.SysTime,
-		LminTxt, LaveTxt, LmaxTxt, LdevTxt, len(E))
+		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
+		EminTxt, EaveTxt, EmaxTxt, EdevTxt,
+		LminTxt, LaveTxt, LmaxTxt, LdevTxt,
+		o.Nfeval, dround(o.SysTime, 0.001e9), len(E))
 }
 
 // TexF1F0Report produces multi-objective (f1f0) table TeX report
@@ -289,7 +296,7 @@ func TexF1F0Report(dirout, fnkey, label string, nRowPerTab int, docHeader bool, 
 	for i, opt := range opts {
 		if i%nRowPerTab == 0 {
 			if i > 0 {
-				io.Ff(buf, `\bottomrule`)
+				io.Ff(buf, "\n\\bottomrule\n")
 				TexF1F0TableEnd(buf, lbl(idxtab, label)) // end previous table
 				io.Ff(buf, "\n\n\n")
 				idxtab++
@@ -297,13 +304,13 @@ func TexF1F0Report(dirout, fnkey, label string, nRowPerTab int, docHeader bool, 
 			TexF1F0TableStart(buf, opt.Ntrials) // begin new table
 		} else {
 			if i > 0 {
-				io.Ff(buf, `\hline`)
+				io.Ff(buf, "\n\\hline\n")
 				io.Ff(buf, "\n\n")
 			}
 		}
 		TexF1F0TableItem(opt, buf)
 	}
-	io.Ff(buf, `\bottomrule`)
+	io.Ff(buf, "\n\\bottomrule\n")
 	TexF1F0TableEnd(buf, lbl(idxtab, label)) // end previous table
 	io.Ff(buf, "\n")
 	if docHeader {
@@ -317,8 +324,8 @@ func TexF1F0Report(dirout, fnkey, label string, nRowPerTab int, docHeader bool, 
 // TexMultiTableStart starts table for single-objective optimisation results with ntrials
 func TexMultiTableStart(buf *bytes.Buffer, ntrials int) {
 	io.Ff(buf, `
-\begin{table*} \centering
-\caption{Constrained multiple objective problems.}
+\begin{table*} [!t] \centering
+\caption{\textsc{Constrained multiple objective problems.}}
 \begin{tabular}[c]{cccc} \toprule
 P & settings & error & histogram ($N_{trials}=%d$) \\ \hline
 `, ntrials)
@@ -359,14 +366,12 @@ func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer) {
 &
 \begin{minipage}{7cm} \scriptsize
 \begin{verbatim}
-%s
-\end{verbatim}
+%s \end{verbatim}
 \end{minipage} \\
 `,
 		o.RptName,
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval,
-		EminTxt, EaveTxt, EmaxTxt, EdevTxt, o.SysTime,
-		hist)
+		EminTxt, EaveTxt, EmaxTxt, EdevTxt, dround(o.SysTime, 0.001e9), hist)
 }
 
 // TexMultiReport produces multi-objective (f1f0) table TeX report
@@ -385,7 +390,7 @@ func TexMultiReport(dirout, fnkey, label string, nRowPerTab int, docHeader bool,
 	for i, opt := range opts {
 		if i%nRowPerTab == 0 {
 			if i > 0 {
-				io.Ff(buf, `\bottomrule`)
+				io.Ff(buf, "\n\\bottomrule\n")
 				TexMultiTableEnd(buf, lbl(idxtab, label)) // end previous table
 				io.Ff(buf, "\n\n\n")
 				idxtab++
@@ -393,13 +398,13 @@ func TexMultiReport(dirout, fnkey, label string, nRowPerTab int, docHeader bool,
 			TexMultiTableStart(buf, opt.Ntrials) // begin new table
 		} else {
 			if i > 0 {
-				io.Ff(buf, `\hline`)
+				io.Ff(buf, "\n\\hline\n")
 				io.Ff(buf, "\n\n")
 			}
 		}
 		TexMultiTableItem(opt, buf)
 	}
-	io.Ff(buf, `\bottomrule`)
+	io.Ff(buf, "\n\\bottomrule\n")
 	TexMultiTableEnd(buf, lbl(idxtab, label)) // end previous table
 	io.Ff(buf, "\n")
 	if docHeader {
@@ -466,4 +471,23 @@ func tex(fmt string, num float64) (l string) {
 func lbl(i int, label string) string {
 	C := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	return io.Sf("%s:%s", label, string(C[i%len(C)]))
+}
+
+func dround(d, r time.Duration) time.Duration {
+	if r <= 0 {
+		return d
+	}
+	neg := d < 0
+	if neg {
+		d = -d
+	}
+	if m := d % r; m+m < r {
+		d = d - m
+	} else {
+		d = d + r - m
+	}
+	if neg {
+		return -d
+	}
+	return d
 }

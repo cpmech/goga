@@ -5,6 +5,8 @@
 package goga
 
 import (
+	"math"
+
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/utl"
@@ -218,4 +220,57 @@ func PlotOvaOvaPareto(opt *Optimiser, sols0 []*Solution, iOva, jOva int, feasibl
 		opt.PlotAddParetoFront(iOva, jOva, opt.Solutions, feasibleOnly, fmtFront)
 	}
 	plt.Gll(io.Sf("$f_%d$", iOva), io.Sf("$f_%d$", jOva), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
+}
+
+// PlotStar plots star with normalised OVAs
+func PlotStar(opt *Optimiser) {
+	nf := opt.Nf
+	dθ := 2.0 * math.Pi / float64(nf)
+	θ0 := 0.0
+	if nf == 3 {
+		θ0 = -math.Pi / 6.0
+	}
+	for _, ρ := range []float64{0.25, 0.5, 0.75, 1.0} {
+		plt.Circle(0, 0, ρ, "ec='gray',lw=0.5,zorder=5")
+	}
+	arrowM, textM := 1.1, 1.15
+	for i := 0; i < nf; i++ {
+		θ := θ0 + float64(i)*dθ
+		xi, yi := 0.0, 0.0
+		xf, yf := arrowM*math.Cos(θ), arrowM*math.Sin(θ)
+		plt.Arrow(xi, yi, xf, yf, "sc=10,st='->',lw=0.7,zorder=10,clip_on=0")
+		plt.PlotOne(xf, yf, "'k+', ms=0")
+		xf, yf = textM*math.Cos(θ), textM*math.Sin(θ)
+		plt.Text(xf, yf, io.Sf("%d", i), "size=6,zorder=10,clip_on=0")
+	}
+	X, Y := make([]float64, nf+1), make([]float64, nf+1)
+	clr := false
+	neg := false
+	step := 1
+	count := 0
+	colors := []string{"m", "orange", "g", "r", "b", "k"}
+	var ρ float64
+	for i, sol := range opt.Solutions {
+		if sol.Feasible() && sol.FrontId == 0 && i%step == 0 {
+			for j := 0; j < nf; j++ {
+				if neg {
+					ρ = 1.0 - sol.Ova[j]/(opt.RptFmax[j]-opt.RptFmin[j])
+				} else {
+					ρ = sol.Ova[j] / (opt.RptFmax[j] - opt.RptFmin[j])
+				}
+				θ := θ0 + float64(j)*dθ
+				X[j], Y[j] = ρ*math.Cos(θ), ρ*math.Sin(θ)
+			}
+			X[nf], Y[nf] = X[0], Y[0]
+			if clr {
+				j := count % len(colors)
+				plt.Plot(X, Y, io.Sf("'k-',color='%s',markersize=3,clip_on=0", colors[j]))
+			} else {
+				plt.Plot(X, Y, "'r-',marker='.',markersize=3,clip_on=0")
+			}
+			count++
+		}
+	}
+	plt.Equal()
+	plt.AxisOff()
 }

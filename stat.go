@@ -23,6 +23,8 @@ type Stat struct {
 	RptName    string    // problem name
 	RptFref    []float64 // reference OVAs
 	RptXref    []float64 // reference flts
+	RptFmin    []float64 // min OVAs for reports/graphs
+	RptFmax    []float64 // max OVAs for reports/graphs
 	RptFmtF    string    // format for fmin, fave and fmax
 	RptFmtFdev string    // format for fdev
 	RptFmtE    string    // format for emin, eave and emax

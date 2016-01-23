@@ -189,10 +189,30 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 
 // sorting /////////////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////
+// TODO: Improve this part to handle any number of Ovas ////
+////////////////////////////////////////////////////////////
+
 type solByOva0 []*Solution
 type solByOva1 []*Solution
 type solByOva2 []*Solution
-type solByFrontThenOva0 []*Solution
+type solByOva3 []*Solution
+type solByOva4 []*Solution
+type solByOva5 []*Solution
+type solByOva6 []*Solution
+type solByOva7 []*Solution
+type solByOva8 []*Solution
+type solByOva9 []*Solution
+type solByOva10 []*Solution
+type solByOva11 []*Solution
+type solByOva12 []*Solution
+type solByOva13 []*Solution
+type solByOva14 []*Solution
+type solByOva15 []*Solution
+type solByOva16 []*Solution
+type solByOva17 []*Solution
+type solByOva18 []*Solution
+type solByOva19 []*Solution
 
 func (o solByOva0) Len() int           { return len(o) }
 func (o solByOva0) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
@@ -205,6 +225,76 @@ func (o solByOva1) Less(i, j int) bool { return o[i].Ova[1] < o[j].Ova[1] }
 func (o solByOva2) Len() int           { return len(o) }
 func (o solByOva2) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
 func (o solByOva2) Less(i, j int) bool { return o[i].Ova[2] < o[j].Ova[2] }
+
+func (o solByOva3) Len() int           { return len(o) }
+func (o solByOva3) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva3) Less(i, j int) bool { return o[i].Ova[3] < o[j].Ova[3] }
+
+func (o solByOva4) Len() int           { return len(o) }
+func (o solByOva4) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva4) Less(i, j int) bool { return o[i].Ova[4] < o[j].Ova[4] }
+
+func (o solByOva5) Len() int           { return len(o) }
+func (o solByOva5) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva5) Less(i, j int) bool { return o[i].Ova[5] < o[j].Ova[5] }
+
+func (o solByOva6) Len() int           { return len(o) }
+func (o solByOva6) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva6) Less(i, j int) bool { return o[i].Ova[6] < o[j].Ova[6] }
+
+func (o solByOva7) Len() int           { return len(o) }
+func (o solByOva7) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva7) Less(i, j int) bool { return o[i].Ova[7] < o[j].Ova[7] }
+
+func (o solByOva8) Len() int           { return len(o) }
+func (o solByOva8) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva8) Less(i, j int) bool { return o[i].Ova[8] < o[j].Ova[8] }
+
+func (o solByOva9) Len() int           { return len(o) }
+func (o solByOva9) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva9) Less(i, j int) bool { return o[i].Ova[9] < o[j].Ova[9] }
+
+func (o solByOva10) Len() int           { return len(o) }
+func (o solByOva10) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva10) Less(i, j int) bool { return o[i].Ova[10] < o[j].Ova[10] }
+
+func (o solByOva11) Len() int           { return len(o) }
+func (o solByOva11) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva11) Less(i, j int) bool { return o[i].Ova[11] < o[j].Ova[11] }
+
+func (o solByOva12) Len() int           { return len(o) }
+func (o solByOva12) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva12) Less(i, j int) bool { return o[i].Ova[12] < o[j].Ova[12] }
+
+func (o solByOva13) Len() int           { return len(o) }
+func (o solByOva13) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva13) Less(i, j int) bool { return o[i].Ova[13] < o[j].Ova[13] }
+
+func (o solByOva14) Len() int           { return len(o) }
+func (o solByOva14) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva14) Less(i, j int) bool { return o[i].Ova[14] < o[j].Ova[14] }
+
+func (o solByOva15) Len() int           { return len(o) }
+func (o solByOva15) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva15) Less(i, j int) bool { return o[i].Ova[15] < o[j].Ova[15] }
+
+func (o solByOva16) Len() int           { return len(o) }
+func (o solByOva16) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva16) Less(i, j int) bool { return o[i].Ova[16] < o[j].Ova[16] }
+
+func (o solByOva17) Len() int           { return len(o) }
+func (o solByOva17) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva17) Less(i, j int) bool { return o[i].Ova[17] < o[j].Ova[17] }
+
+func (o solByOva18) Len() int           { return len(o) }
+func (o solByOva18) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva18) Less(i, j int) bool { return o[i].Ova[18] < o[j].Ova[18] }
+
+func (o solByOva19) Len() int           { return len(o) }
+func (o solByOva19) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
+func (o solByOva19) Less(i, j int) bool { return o[i].Ova[19] < o[j].Ova[19] }
+
+type solByFrontThenOva0 []*Solution
 
 func (o solByFrontThenOva0) Len() int      { return len(o) }
 func (o solByFrontThenOva0) Swap(i, j int) { o[i], o[j] = o[j], o[i] }
@@ -224,8 +314,42 @@ func SortByOva(s []*Solution, idxOva int) {
 		sort.Sort(solByOva1(s))
 	case 2:
 		sort.Sort(solByOva2(s))
+	case 3:
+		sort.Sort(solByOva3(s))
+	case 4:
+		sort.Sort(solByOva4(s))
+	case 5:
+		sort.Sort(solByOva5(s))
+	case 6:
+		sort.Sort(solByOva6(s))
+	case 7:
+		sort.Sort(solByOva7(s))
+	case 8:
+		sort.Sort(solByOva8(s))
+	case 9:
+		sort.Sort(solByOva9(s))
+	case 10:
+		sort.Sort(solByOva10(s))
+	case 11:
+		sort.Sort(solByOva11(s))
+	case 12:
+		sort.Sort(solByOva12(s))
+	case 13:
+		sort.Sort(solByOva13(s))
+	case 14:
+		sort.Sort(solByOva14(s))
+	case 15:
+		sort.Sort(solByOva15(s))
+	case 16:
+		sort.Sort(solByOva16(s))
+	case 17:
+		sort.Sort(solByOva17(s))
+	case 18:
+		sort.Sort(solByOva18(s))
+	case 19:
+		sort.Sort(solByOva19(s))
 	default:
-		chk.Panic("this code can only handle Nova ≤ 3 for now")
+		chk.Panic("this code can only handle Nova ≤ 20 for now")
 	}
 }
 
