@@ -27,6 +27,7 @@ type Parameters struct {
 	DtOut int // delta time for output
 
 	// options
+	DEC      float64 // C-coefficient for differential evolution
 	Pll      bool    // parallel
 	Seed     int     // seed for random numbers generator
 	GenType  string  // generation type: "latin", "halton", "rnd"
@@ -74,6 +75,7 @@ func (o *Parameters) Default() {
 	o.DtOut = -1
 
 	// options
+	o.DEC = 0.8
 	o.Pll = true
 	o.Seed = 0
 	o.GenType = "latin"
@@ -85,7 +87,7 @@ func (o *Parameters) Default() {
 	o.BinInt = 0
 	o.ClearFlt = false
 	o.ExcTour = true
-	o.ExcOne = false
+	o.ExcOne = true
 
 	// crossover and mutation of integers
 	o.IntPc = 0.8
@@ -214,6 +216,7 @@ func (o *Parameters) LogParams() (l string) {
 	// options
 	l += "\n"
 	l += io.ArgsTable("OPTIONS",
+		"C-coefficient for differential evolution", "DEC", o.DEC,
 		"parallel", "Pll", o.Pll,
 		"seed for random numbers generator", "Seed", o.Seed,
 		"generation type: 'latin', 'halton', 'rnd'", "GenType", o.GenType,
