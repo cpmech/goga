@@ -57,130 +57,44 @@ func TexWrite(dirout, fnkey string, buf *bytes.Buffer, dorun bool) {
 	}
 }
 
-// parameters only table ///////////////////////////////////////////////////////////////////////////
-
-// TexPrmsTableStart starts table with parameters
-func TexPrmsTableStart(buf *bytes.Buffer) {
+// TexTableStart starts table for single-objective optimisation results with ntrials
+func TexTableStart(buf *bytes.Buffer, title, col4, col5 string) {
 	io.Ff(buf, `
-\begin{table} \centering
-\caption{goga: Parameters}
-\begin{tabular}[c]{cccccc} \toprule
-P & $N_{sol}$ & $N_{cpu}$ & $t_{max}$ & $\Delta t_{exc}$ & $N_{eval}$ \\ \hline
-`)
+\begin{table*} [!t] \centering
+\caption{\textsc{%s.}}
+
+\begin{tabular}[c]{ccccc} \toprule
+P & settings & settings/info & %s & %s \\ \hline
+`, title, col4, col5)
 }
 
-// TexPrmsTableEnd ends table with parameters
-func TexPrmsTableEnd(buf *bytes.Buffer) {
+// TexTableEnd ends table
+func TexTableEnd(buf *bytes.Buffer, label string) {
 	io.Ff(buf, `
 \end{tabular}
-\label{tab:prms}
-\end{table}`)
-}
-
-// TexPrmsTableItem adds item to table with parameters
-func TexPrmsTableItem(o *Optimiser, buf *bytes.Buffer, problem int) {
-	io.Ff(buf, "%d & %d & %d & %d & %d & %d \\\\\n", problem, o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval)
-}
-
-// TexPrmsReport generates TeX report with parameters
-//  nRowPerTab -- number of rows per table
-func TexPrmsReport(dirout, fnkey string, opts []*Optimiser, nRowPerTab int) {
-	buf := TexDocumentStart()
-	for i, opt := range opts {
-		if i%nRowPerTab == 0 {
-			if i > 0 {
-				io.Ff(buf, "\n\\bottomrule\n")
-				TexPrmsTableEnd(buf) // end previous table
-				io.Ff(buf, "\n")
-			}
-			TexPrmsTableStart(buf) // begin new table
-		} else {
-			if i > 0 {
-				io.Ff(buf, "\n\\hline\n")
-			}
-		}
-		TexPrmsTableItem(opt, buf, i+1)
-	}
-	io.Ff(buf, "\n\\bottomrule\n")
-	TexPrmsTableEnd(buf) // end previous table
-	io.Ff(buf, "\n")
-	TexDocumentEnd(buf)
-	TexWrite(dirout, fnkey, buf, true)
-}
-
-// single objective tables /////////////////////////////////////////////////////////////////////////
-
-// TexSingleObjTableStart starts table for single-objective optimisation results with ntrials
-func TexSingleObjTableStart(buf *bytes.Buffer, ntrials int) {
-	io.Ff(buf, `
-
-
-\begin{table*} [!t] \centering
-\caption{\textsc{Constrained single objective problems.}}
-\begin{tabular}[c]{cccc} \toprule
-P & settings & results & histogram ($N_{trials}=%d$) \\ \hline
-`, ntrials)
-}
-
-// TexSingleObjTableEnd ends table for single-objective optimisation results with ntrials
-func TexSingleObjTableEnd(buf *bytes.Buffer, label string) {
-	io.Ff(buf, `\end{tabular}
 \label{tab:%s}
 \end{table*}
 `, label)
 }
 
-// TexSingleObjTableItem adds item to table for single-objective optimisation results with ntrials
-func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer) {
-	o.fix_formatting_data()
-	FrefTxt := "N/A"
-	if len(o.RptFref) > 0 {
-		FrefTxt = tex(o.RptFmtF, o.RptFref[0])
+// TexReport produces table TeX report
+//  Type:
+//     1 -- one objective; with histogram of OVA
+//     2 -- two objective; no histogram; with E(error) and L(spread)
+//     3 -- multi objective; with histogram of error
+func TexReport(dirout, fnkey, title, label string, Type, nRowPerTab int, docHeader bool, opts []*Optimiser) {
+	col4, col5 := "error", io.Sf("histogram ($N_{trials}=%d$)", opts[0].Ntrials)
+	var addrow func(opt *Optimiser, buf *bytes.Buffer)
+	switch Type {
+	case 1:
+		col4 = "objective"
+		addrow = TexOneObjTableItem
+	case 2:
+		col5 = "spread"
+		addrow = TexTwoObjTableItem
+	default:
+		addrow = TexMultiTableItem
 	}
-	Fmin, Fave, Fmax, Fdev, F := StatF(o, 0, false)
-	FminTxt, FaveTxt, FmaxTxt, FdevTxt := tex(o.RptFmtF, Fmin), tex(o.RptFmtF, Fave), tex(o.RptFmtF, Fmax), tex(o.RptFmtFdev, Fdev)
-	hist := rnd.BuildTextHist(nice(Fmin-0.05, o.HistNdig), nice(Fmax+0.05, o.HistNdig), o.HistNsta, F, o.HistFmt, o.HistLen)
-	io.Ff(buf, `
-{$\!\begin{aligned}
-    %s \\ \\ T_{sys}= \\ %v 
-\end{aligned}$}
-&
-{$\!\begin{aligned}
-    N_{sol}        &= %d \\
-	N_{cpu}        &= %d \\
-	t_{max}        &= %d \\
-	\Delta t_{exc} &= %d \\
-	N_{eval}       &= %d
-\end{aligned}$}
-&
-{$\!\begin{aligned}
-    f_{min}  &= %s \\
-             &\phantom{=} (%s) \\
-    f_{ave}  &= %s \\
-    f_{max}  &= %s \\
-    f_{dev}  &= {\bf %s}
-\end{aligned}$}
-&
-\begin{minipage}{7cm} \scriptsize
-\begin{verbatim}
-%s
-\end{verbatim}
-\end{minipage} \\
-\multicolumn{4}{c}{{\scriptsize $X_{best}$=`+o.RptFmtX+`}} \\
-`,
-		o.RptName, dround(o.SysTime, 0.001e9),
-		o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval,
-		FminTxt, FrefTxt, FaveTxt, FmaxTxt, FdevTxt,
-		hist, o.BestOfBestFlt)
-	if len(o.RptXref) == o.Nflt {
-		io.Ff(buf, `
-\multicolumn{4}{c}{{\scriptsize $X_{ref.}$=`+o.RptFmtX+`}} \\`, o.RptXref)
-	}
-}
-
-// TexSingleObjReport produces Single-Objective table TeX report
-//  nRowPerTab -- number of rows per table
-func TexSingleObjReport(dirout, fnkey, label string, nRowPerTab int, docHeader bool, opts []*Optimiser) {
 	if nRowPerTab < 1 {
 		nRowPerTab = len(opts)
 	}
@@ -191,66 +105,111 @@ func TexSingleObjReport(dirout, fnkey, label string, nRowPerTab int, docHeader b
 		buf = new(bytes.Buffer)
 	}
 	idxtab := 0
+	contd := ""
 	for i, opt := range opts {
 		if i%nRowPerTab == 0 {
 			if i > 0 {
-				io.Ff(buf, "\n\\bottomrule\n")
-				TexSingleObjTableEnd(buf, lbl(idxtab, label)) // end previous table
-				io.Ff(buf, "\n\n\n")
+				io.Ff(buf, "\n\\bottomrule\n\n")
+				TexTableEnd(buf, lbl(idxtab, label)) // end previous table
+				io.Ff(buf, "\n\n\n\n\n\n")
+				contd = " (contd.)"
 				idxtab++
 			}
-			TexSingleObjTableStart(buf, opt.Ntrials) // begin new table
+			TexTableStart(buf, title+contd, col4, col5) // begin new table
 		} else {
 			if i > 0 {
 				io.Ff(buf, "\n\\hline\n")
 				io.Ff(buf, "\n\n")
 			}
 		}
-		TexSingleObjTableItem(opt, buf)
+		addrow(opt, buf)
 	}
-	io.Ff(buf, "\n\\bottomrule\n")
-	TexSingleObjTableEnd(buf, lbl(idxtab, label)) // end previous table
-	io.Ff(buf, "\n")
+	io.Ff(buf, "\n\\bottomrule\n\n")
+	TexTableEnd(buf, lbl(idxtab, label)) // end previous table
+	io.Ff(buf, "\n\n\n\n\n\n")
 	if docHeader {
 		TexDocumentEnd(buf)
 	}
 	TexWrite(dirout, fnkey, buf, docHeader)
 }
 
-// F1F0 tables /////////////////////////////////////////////////////////////////////////////////////
+// one-obj table ///////////////////////////////////////////////////////////////////////////////////
 
-// TexF1F0TableStart starts table for single-objective optimisation results with ntrials
-func TexF1F0TableStart(buf *bytes.Buffer, ntrials int) {
-	io.Ff(buf, `
-\begin{table*} [!t] \centering
-\caption{\textsc{Constrained multiple objective problems. $N_{trials}=%d$}}
-\begin{tabular}[c]{ccccc} \toprule
-P & settings & error & spread & info \\ \hline
-`, ntrials)
-}
-
-// TexF1F0TableEnd ends table for single-objective optimisation results with ntrials
-func TexF1F0TableEnd(buf *bytes.Buffer, label string) {
-	io.Ff(buf, `\end{tabular}
-\label{tab:%s}
-\end{table*}
-`, label)
-}
-
-// TexF1F0TableItem adds item to table for single-objective optimisation results with ntrials
-func TexF1F0TableItem(o *Optimiser, buf *bytes.Buffer) {
+// TexOneObjTableItem adds item to one-obj table
+func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer) {
 	o.fix_formatting_data()
-	Emin, Eave, Emax, Edev, E, Lmin, Lave, Lmax, Ldev, _ := StatF1F0(o, false)
-	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
-	LminTxt, LaveTxt, LmaxTxt, LdevTxt := tex(o.RptFmtL, Lmin), tex(o.RptFmtL, Lave), tex(o.RptFmtL, Lmax), tex(o.RptFmtLdev, Ldev)
-	io.Ff(buf,
-		`%s
+	FrefTxt := "N/A"
+	if len(o.RptFref) > 0 {
+		FrefTxt = tex(o.RptFmtF, o.RptFref[0])
+	}
+	Fmin, Fave, Fmax, Fdev, F := StatF(o, 0, false)
+	FminTxt, FaveTxt, FmaxTxt, FdevTxt := tex(o.RptFmtF, Fmin), tex(o.RptFmtF, Fave), tex(o.RptFmtF, Fmax), tex(o.RptFmtFdev, Fdev)
+	hist := rnd.BuildTextHist(nice(Fmin-0.05, o.HistNdig), nice(Fmax+0.05, o.HistNdig), o.HistNsta, F, o.HistFmt, o.HistLen)
+	io.Ff(buf, `
+%s
 &
 {$\!\begin{aligned}
     N_{sol}        &= %d \\
 	N_{cpu}        &= %d \\
 	t_{max}        &= %d \\
 	\Delta t_{exc} &= %d
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+	f_{ref}  &= {\bf %s} \\
+	C_{DE}   &= %g \\
+	N_{eval} &= %d \\
+	T_{sys}  &= %v
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+    f_{min}  &= {\bf %s} \\
+    f_{ave}  &= %s \\
+    f_{max}  &= %s \\
+    f_{dev}  &= {\bf %s}
+\end{aligned}$}
+&
+\begin{minipage}{5cm} \tiny
+\begin{verbatim}
+%s \end{verbatim}
+\end{minipage} \\
+\multicolumn{5}{c}{{\scriptsize $X_{best}$=`+o.RptFmtX+`}} \\`,
+		o.RptName,
+		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
+		FrefTxt, o.DEC, o.Nfeval, dround(o.SysTime, 0.001e9),
+		FminTxt, FaveTxt, FmaxTxt, FdevTxt,
+		hist,
+		o.BestOfBestFlt)
+	if len(o.RptXref) == o.Nflt {
+		io.Ff(buf, `
+\multicolumn{5}{c}{{\scriptsize $X_{ref.}$=`+o.RptFmtX+`}} \\`, o.RptXref)
+	}
+	io.Ff(buf, "\n")
+}
+
+// two-obj table ///////////////////////////////////////////////////////////////////////////////////
+
+// TexTwoObjTableItem adds item to two-obj table
+func TexTwoObjTableItem(o *Optimiser, buf *bytes.Buffer) {
+	o.fix_formatting_data()
+	Emin, Eave, Emax, Edev, E, Lmin, Lave, Lmax, Ldev, _ := StatF1F0(o, false)
+	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
+	LminTxt, LaveTxt, LmaxTxt, LdevTxt := tex(o.RptFmtL, Lmin), tex(o.RptFmtL, Lave), tex(o.RptFmtL, Lmax), tex(o.RptFmtLdev, Ldev)
+	io.Ff(buf, `
+%s
+&
+{$\!\begin{aligned}
+    N_{sol}        &= %d \\
+	N_{cpu}        &= %d \\
+	t_{max}        &= %d \\
+	\Delta t_{exc} &= %d
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+	count    &= %d \\
+	C_{DE}   &= %g \\
+	N_{eval} &= %d \\
+	T_{sys}  &= %v
 \end{aligned}$}
 &
 {$\!\begin{aligned}
@@ -265,152 +224,57 @@ func TexF1F0TableItem(o *Optimiser, buf *bytes.Buffer) {
     L_{ave} &= %s \\
     L_{max} &= %s \\
     L_{dev} &= {\bf %s}
-\end{aligned}$}
-&
-{$\!\begin{aligned}
-	N_{eval} &= %d \\
-	T_{sys}  &= %v \\
-	count    &= %d \\
 \end{aligned}$} \\
 `,
 		o.RptName,
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
+		len(E), o.DEC, o.Nfeval, dround(o.SysTime, 0.001e9),
 		EminTxt, EaveTxt, EmaxTxt, EdevTxt,
-		LminTxt, LaveTxt, LmaxTxt, LdevTxt,
-		o.Nfeval, dround(o.SysTime, 0.001e9), len(E))
+		LminTxt, LaveTxt, LmaxTxt, LdevTxt)
 }
 
-// TexF1F0Report produces multi-objective (f1f0) table TeX report
-//  nRowPerTab -- number of rows per table
-func TexF1F0Report(dirout, fnkey, label string, nRowPerTab int, docHeader bool, opts []*Optimiser) {
-	if nRowPerTab < 1 {
-		nRowPerTab = len(opts)
-	}
-	var buf *bytes.Buffer
-	if docHeader {
-		buf = TexDocumentStart()
-	} else {
-		buf = new(bytes.Buffer)
-	}
-	idxtab := 0
-	for i, opt := range opts {
-		if i%nRowPerTab == 0 {
-			if i > 0 {
-				io.Ff(buf, "\n\\bottomrule\n")
-				TexF1F0TableEnd(buf, lbl(idxtab, label)) // end previous table
-				io.Ff(buf, "\n\n\n")
-				idxtab++
-			}
-			TexF1F0TableStart(buf, opt.Ntrials) // begin new table
-		} else {
-			if i > 0 {
-				io.Ff(buf, "\n\\hline\n")
-				io.Ff(buf, "\n\n")
-			}
-		}
-		TexF1F0TableItem(opt, buf)
-	}
-	io.Ff(buf, "\n\\bottomrule\n")
-	TexF1F0TableEnd(buf, lbl(idxtab, label)) // end previous table
-	io.Ff(buf, "\n")
-	if docHeader {
-		TexDocumentEnd(buf)
-	}
-	TexWrite(dirout, fnkey, buf, docHeader)
-}
+// multi-obj table //////////////////////////////////////////////////////////////////////////////////
 
-// Multi tables /////////////////////////////////////////////////////////////////////////////////////
-
-// TexMultiTableStart starts table for single-objective optimisation results with ntrials
-func TexMultiTableStart(buf *bytes.Buffer, ntrials int) {
-	io.Ff(buf, `
-\begin{table*} [!t] \centering
-\caption{\textsc{Constrained multiple objective problems.}}
-\begin{tabular}[c]{cccc} \toprule
-P & settings & error & histogram ($N_{trials}=%d$) \\ \hline
-`, ntrials)
-}
-
-// TexMultiTableEnd ends table for single-objective optimisation results with ntrials
-func TexMultiTableEnd(buf *bytes.Buffer, label string) {
-	io.Ff(buf, `\end{tabular}
-\label{tab:%s}
-\end{table*}
-`, label)
-}
-
-// TexMultiTableItem adds item to table for single-objective optimisation results with ntrials
+// TexMultiTableItem adds item to multi-obj table
 func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer) {
 	o.fix_formatting_data()
 	Emin, Eave, Emax, Edev, E := StatMulti(o, false)
 	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
 	hist := rnd.BuildTextHist(nice(Emin-0.05, o.HistNdig), nice(Emax+0.05, o.HistNdig), o.HistNsta, E, o.HistFmt, o.HistLen)
-	io.Ff(buf,
-		`%s
+	io.Ff(buf, `
+%s
 &
 {$\!\begin{aligned}
     N_{sol}        &= %d \\
 	N_{cpu}        &= %d \\
 	t_{max}        &= %d \\
-	\Delta t_{exc} &= %d \\
-	N_{eval}       &= %d
+	\Delta t_{exc} &= %d
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+	N_{f}    &= %d \\
+	C_{DE}   &= %g \\
+	N_{eval} &= %d \\
+	T_{sys}  &= %v
 \end{aligned}$}
 &
 {$\!\begin{aligned}
     E_{min} &= %s \\
     E_{ave} &= %s \\
     E_{max} &= %s \\
-    E_{dev} &= {\bf %s} \\
-	T_{sys} &= %v
+    E_{dev} &= {\bf %s}
 \end{aligned}$}
 &
-\begin{minipage}{7cm} \scriptsize
+\begin{minipage}{5cm} \tiny
 \begin{verbatim}
 %s \end{verbatim}
 \end{minipage} \\
 `,
 		o.RptName,
-		o.Nsol, o.Ncpu, o.Tf, o.DtExc, o.Nfeval,
-		EminTxt, EaveTxt, EmaxTxt, EdevTxt, dround(o.SysTime, 0.001e9), hist)
-}
-
-// TexMultiReport produces multi-objective (f1f0) table TeX report
-//  nRowPerTab -- number of rows per table
-func TexMultiReport(dirout, fnkey, label string, nRowPerTab int, docHeader bool, opts []*Optimiser) {
-	if nRowPerTab < 1 {
-		nRowPerTab = len(opts)
-	}
-	var buf *bytes.Buffer
-	if docHeader {
-		buf = TexDocumentStart()
-	} else {
-		buf = new(bytes.Buffer)
-	}
-	idxtab := 0
-	for i, opt := range opts {
-		if i%nRowPerTab == 0 {
-			if i > 0 {
-				io.Ff(buf, "\n\\bottomrule\n")
-				TexMultiTableEnd(buf, lbl(idxtab, label)) // end previous table
-				io.Ff(buf, "\n\n\n")
-				idxtab++
-			}
-			TexMultiTableStart(buf, opt.Ntrials) // begin new table
-		} else {
-			if i > 0 {
-				io.Ff(buf, "\n\\hline\n")
-				io.Ff(buf, "\n\n")
-			}
-		}
-		TexMultiTableItem(opt, buf)
-	}
-	io.Ff(buf, "\n\\bottomrule\n")
-	TexMultiTableEnd(buf, lbl(idxtab, label)) // end previous table
-	io.Ff(buf, "\n")
-	if docHeader {
-		TexDocumentEnd(buf)
-	}
-	TexWrite(dirout, fnkey, buf, docHeader)
+		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
+		o.Nova, o.DEC, o.Nfeval, dround(o.SysTime, 0.001e9),
+		EminTxt, EaveTxt, EmaxTxt, EdevTxt,
+		hist)
 }
 
 // write all values ////////////////////////////////////////////////////////////////////////////////

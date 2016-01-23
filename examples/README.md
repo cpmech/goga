@@ -1,17 +1,43 @@
 # Goga &ndash; examples
 
 ## Summary
-1. **tsp-simple** -- Small travelling salesman problem (TSP)
+1. 01-one-obj:    one objective optimisation problems (with constraints)
+2. 02-two-obj:    two objective optimisation problems (no constraints)
+3. 02-two-obj-ct: two objective optimisation problems (with constraints)
+4. 03-three-obj:  three objective optimisation problems (with and without constraints)
+5. 04-many-obj:   more than three objectives (unconstrained)
+6. eed:           economic emission dispatch
+7. simple:        simple one objective problems with 2 variables => contour plots
+8. truss:         truss shape and topology optimisation
 
+## 1. 01-one-obj:    one objective optimisation problems (with constraints)
 
-# 1 tsp-simple -- Small travelling salesman problem (TSP)
+TODO
 
-<div id="container">
-<p><img src="figs/tsp-simple-OVA897.png" width="400"></p>
-Travelling salesman problem: objective value = 897
-</div>
+## 2. 02-two-obj:    two objective optimisation problems (no constraints)
 
-<div id="container">
-<p><img src="figs/tsp-simple-OVA871.png" width="400"></p>
-Travelling salesman problem: objective value = 871
-</div>
+TODO
+
+## 3. 02-two-obj-ct: two objective optimisation problems (with constraints)
+
+TODO
+
+## 4. 03-three-obj:  three objective optimisation problems (with and without constraints)
+
+TODO
+
+## 5. 04-many-obj:   more than three objectives (unconstrained)
+
+TODO
+
+## 6. eed:           economic emission dispatch
+
+TODO
+
+## 7. simple:        simple one objective problems with 2 variables => contour plots
+
+TODO
+
+## 8. truss:         truss shape and topology optimisation
+
+TODO

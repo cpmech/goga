@@ -184,7 +184,7 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 			}
 
 			// multiple OVAs
-			if o.Nova > 2 && o.Multi_fcnErr != nil {
+			if o.Nova > 1 && o.Multi_fcnErr != nil {
 				var rms_err float64
 				var nfeasible int
 				for _, sol := range o.Solutions {
