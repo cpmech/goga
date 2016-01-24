@@ -57,7 +57,7 @@ func TexWrite(dirout, fnkey string, buf *bytes.Buffer, dorun bool) {
 	}
 }
 
-// TexTableStart starts table for single-objective optimisation results with ntrials
+// TexTableStart starts table
 func TexTableStart(buf *bytes.Buffer, title, col4, col5 string) {
 	io.Ff(buf, `
 \begin{table*} [!t] \centering
@@ -83,7 +83,7 @@ func TexTableEnd(buf *bytes.Buffer, label string) {
 //     2 -- two objective; no histogram; with E(error) and L(spread)
 //     3 -- multi objective; with histogram of error
 func TexReport(dirout, fnkey, title, label string, Type, nRowPerTab int, docHeader bool, opts []*Optimiser) {
-	col4, col5 := "error", io.Sf("histogram ($N_{trials}=%d$)", opts[0].Ntrials)
+	col4, col5 := "error", io.Sf("histogram ($N_{samples}=%d$)", opts[0].Nsamples)
 	var addrow func(opt *Optimiser, buf *bytes.Buffer)
 	switch Type {
 	case 1:

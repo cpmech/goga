@@ -35,7 +35,7 @@ type Parameters struct {
 	EpsH     float64 // minimum value for 'h' constraints
 	Verbose  bool    // show messages
 	GenAll   bool    // generate all solutions together; i.e. not within each group/CPU
-	Ntrials  int     // run many trials
+	Nsamples int     // run many samples
 	BinInt   int     // flag that integers represent binary numbers if BinInt > 0; thus Nint=BinInt
 	ClearFlt bool    // clear flt if corresponding int is 0
 	ExcTour  bool    // use exchange via tournament
@@ -83,7 +83,7 @@ func (o *Parameters) Default() {
 	o.EpsH = 0.1
 	o.Verbose = true
 	o.GenAll = false
-	o.Ntrials = 10
+	o.Nsamples = 10
 	o.BinInt = 0
 	o.ClearFlt = false
 	o.ExcTour = true
@@ -224,7 +224,7 @@ func (o *Parameters) LogParams() (l string) {
 		"minimum value for 'h' constraints", "EpsH", o.EpsH,
 		"show messages", "Verbose", o.Verbose,
 		"generate all solutions together", "GenAll", o.GenAll,
-		"run many trials", "Ntrials", o.Ntrials,
+		"run many trials", "Nsamples", o.Nsamples,
 		"integers represent binary numbers", "BinInt", o.BinInt,
 		"clear flt if corresponding int is 0", "ClearFlt", o.ClearFlt,
 		"use exchange via tournament", "ExcTour", o.ExcTour,

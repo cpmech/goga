@@ -86,7 +86,7 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 	o.BestOfBestInt = make([]int, o.Nint)
 
 	// perform trials
-	for itrial := 0; itrial < o.Ntrials; itrial++ {
+	for itrial := 0; itrial < o.Nsamples; itrial++ {
 
 		// re-generate solutions
 		o.Nfeval = 0
@@ -347,7 +347,7 @@ func (o *Stat) fix_formatting_data() {
 		o.HistNdig = 3
 	}
 	if o.HistNsta == 0 {
-		o.HistNsta = 11
+		o.HistNsta = 8
 	}
 	if o.HistLen == 0 {
 		o.HistLen = 20
