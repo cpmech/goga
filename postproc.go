@@ -4,7 +4,10 @@
 
 package goga
 
-import "github.com/cpmech/gosl/utl"
+import (
+	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/utl"
+)
 
 // GetFeasible returns all feasible solutions
 func GetFeasible(sols []*Solution) (feasible []*Solution) {
@@ -67,4 +70,36 @@ func GetParetoFront(p, q int, all []*Solution, feasibleOnly bool) (fp, fq []floa
 	}
 	ova, _ := GetResults(sols, true)
 	return GetParetoFrontRes(p, q, ova)
+}
+
+// CheckFront0 returns front0 and number of failed/success
+func CheckFront0(opt *Optimiser, verbose bool) (nfailed int, front0 []*Solution) {
+	front0 = make([]*Solution, 0)
+	var nsuccess int
+	for _, sol := range opt.Solutions {
+		var failed bool
+		for _, oor := range sol.Oor {
+			if oor > 0 {
+				failed = true
+				break
+			}
+		}
+		if failed {
+			nfailed++
+		} else {
+			nsuccess++
+			if sol.FrontId == 0 {
+				front0 = append(front0, sol)
+			}
+		}
+	}
+	if verbose {
+		if nfailed > 0 {
+			io.PfRed("N failed = %d out of %d\n", nfailed, opt.Nsol)
+		} else {
+			io.PfGreen("N success = %d out of %d\n", nsuccess, opt.Nsol)
+		}
+		io.PfYel("N front 0 = %d\n", len(front0))
+	}
+	return
 }
