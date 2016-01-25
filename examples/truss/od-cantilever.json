@@ -1,0 +1,13 @@
+{
+  "Amin"     : 0.09,
+  "Amax"     : 35.0,
+  "Uawd"     : 5.6,
+  "VtagU"    : 0,
+  "Groups"   : false,
+  "BinInt"   : true,
+  "Mobility" : true,
+  "ReqVtags" : [-1, -2, -3, -4],
+  "ScompAwd" : [
+    {"tag":-1, "val":35} 
+  ]
+}

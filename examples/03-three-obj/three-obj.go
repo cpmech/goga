@@ -11,7 +11,6 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
-	"github.com/cpmech/gosl/utl"
 )
 
 func solve_problem(problem int) (opt *goga.Optimiser) {
@@ -24,7 +23,7 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	opt.Nsol = 200
 	opt.Ncpu = 5
 	opt.Tf = 500
-	opt.Nsamples = 1000
+	opt.Nsamples = 1
 	opt.DEC = 0.01
 
 	// options for report
@@ -268,7 +267,7 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	}
 
 	// vtk
-	if false {
+	if true {
 		ptRad := 0.015
 		if opt.RptName == "DTLZ1" {
 			ptRad = 0.01
@@ -291,8 +290,8 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 }
 
 func main() {
-	P := utl.IntRange2(1, 9)
-	//P := []int{7}
+	//P := utl.IntRange2(1, 9)
+	P := []int{2}
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {
 		opts[i] = solve_problem(problem)

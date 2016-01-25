@@ -1,0 +1,34 @@
+{
+  "data" : {
+    "matfile": "materials.mat",
+    "steady": true,
+    "showR": false
+  },
+  "linsol" : {
+    "symmetric" : true
+  },
+  "functions" : [
+    { "name":"Py", "type":"cte", "prms":[ {"n":"c", "v":-100} ] }
+  ],
+  "regions" : [
+    {
+      "mshfile": "ground36.msh",
+      "elemsdata" : [
+        { "tag":-1, "mat":"M", "type":"elastrod" }
+      ]
+    }
+  ],
+  "stages" : [
+    {
+      "desc": "apply loads",
+      "nodebcs": [
+        { "tag":-10, "keys":["ux","uy"], "funcs":["zero","zero"] },
+        { "tag":-1,  "keys":["ux","uy"], "funcs":["zero","zero"] },
+        { "tag":-2,  "keys":["ux","uy"], "funcs":["zero","zero"] },
+        { "tag":-3,  "keys":["fy"],      "funcs":["Py"] },
+        { "tag":-4,  "keys":["fy"],      "funcs":["Py"] },
+        { "tag":-20, "keys":["fy"],      "funcs":["Py"] }
+      ]
+    }
+  ]
+}
