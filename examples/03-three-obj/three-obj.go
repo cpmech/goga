@@ -11,6 +11,7 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
+	"github.com/cpmech/gosl/utl"
 )
 
 func solve_problem(problem int) (opt *goga.Optimiser) {
@@ -261,13 +262,23 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	// check
 	goga.CheckFront0(opt, true)
 
+	// print results
+	if false {
+		goga.SortByOva(opt.Solutions, 0)
+		m, l := opt.Nsol/2, opt.Nsol-1
+		A, B, C := opt.Solutions[0], opt.Solutions[m], opt.Solutions[l]
+		io.Pforan("A = %v\n", A.Flt)
+		io.Pforan("B = %v\n", B.Flt)
+		io.Pforan("C = %v\n", C.Flt)
+	}
+
 	// plot results
 	if false {
 		py_plot3(0, 1, nf-1, opt, plot_solution, true, true)
 	}
 
 	// vtk
-	if true {
+	if false {
 		ptRad := 0.015
 		if opt.RptName == "DTLZ1" {
 			ptRad = 0.01
@@ -290,8 +301,8 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 }
 
 func main() {
-	//P := utl.IntRange2(1, 9)
-	P := []int{2}
+	P := utl.IntRange2(1, 9)
+	//P := []int{2}
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {
 		opts[i] = solve_problem(problem)
