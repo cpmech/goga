@@ -72,13 +72,16 @@
 			
 			
 				
-				<dd><a href="#CxFltDE">func CxFltDE(a, b, A, B, x0, x1, x2, y0, y1, y2 []float64, prms *Parameters)</a></dd>
+				<dd><a href="#CheckFront0">func CheckFront0(opt *Optimiser, verbose bool) (nfailed int, front0 []*Solution)</a></dd>
 			
 				
 				<dd><a href="#CxInt">func CxInt(a, b, A, B []int, prms *Parameters)</a></dd>
 			
 				
 				<dd><a href="#CxIntOrd">func CxIntOrd(a, b, A, B []int, prms *Parameters)</a></dd>
+			
+				
+				<dd><a href="#DiffEvol">func DiffEvol(xnew, x, x0, x1, x2 []float64, prms *Parameters)</a></dd>
 			
 				
 				<dd><a href="#GenTrialSolutions">func GenTrialSolutions(sols []*Solution, prms *Parameters)</a></dd>
@@ -99,9 +102,6 @@
 				<dd><a href="#GetResults">func GetResults(sols []*Solution, ovaOnly bool) (ova, oor [][]float64)</a></dd>
 			
 				
-				<dd><a href="#MtFltDeb">func MtFltDeb(A []float64, prms *Parameters)</a></dd>
-			
-				
 				<dd><a href="#MtInt">func MtInt(A []int, prms *Parameters)</a></dd>
 			
 				
@@ -120,16 +120,25 @@
 				<dd><a href="#PlotFltOva">func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np int, ovaMult float64, fcn func(x float64) float64, extra func(), equalAxes bool)</a></dd>
 			
 				
-				<dd><a href="#PlotOvaOvaPareto">func PlotOvaOvaPareto(fnkey string, opt *Optimiser, sols0 []*Solution, iOva, jOva int, extra func(), lims []float64, equalAxes bool)</a></dd>
+				<dd><a href="#PlotOvaOvaPareto">func PlotOvaOvaPareto(opt *Optimiser, sols0 []*Solution, iOva, jOva int, feasibleOnly bool, fmtAll, fmtFront *plt.Fmt)</a></dd>
 			
 				
-				<dd><a href="#SortByBest">func SortByBest(s []*Solution)</a></dd>
+				<dd><a href="#PlotStar">func PlotStar(opt *Optimiser)</a></dd>
+			
+				
+				<dd><a href="#SortByFrontThenOva">func SortByFrontThenOva(s []*Solution, idxOva int)</a></dd>
 			
 				
 				<dd><a href="#SortByOva">func SortByOva(s []*Solution, idxOva int)</a></dd>
 			
 				
-				<dd><a href="#SortByTradeoff">func SortByTradeoff(s []*Solution)</a></dd>
+				<dd><a href="#StatF">func StatF(o *Optimiser, idxF int, verbose bool) (fmin, fave, fmax, fdev float64, F []float64)</a></dd>
+			
+				
+				<dd><a href="#StatF1F0">func StatF1F0(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []float64, lmin, lave, lmax, ldev float64, L []float64)</a></dd>
+			
+				
+				<dd><a href="#StatMulti">func StatMulti(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []float64)</a></dd>
 			
 				
 				<dd><a href="#TexDocumentEnd">func TexDocumentEnd(buf *bytes.Buffer)</a></dd>
@@ -138,40 +147,32 @@
 				<dd><a href="#TexDocumentStart">func TexDocumentStart() (buf *bytes.Buffer)</a></dd>
 			
 				
-				<dd><a href="#TexPrmsReport">func TexPrmsReport(dirout, fnkey string, opts []*Optimiser, nRowPerTab int)</a></dd>
+				<dd><a href="#TexMultiTableItem">func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer)</a></dd>
 			
 				
-				<dd><a href="#TexPrmsTableEnd">func TexPrmsTableEnd(buf *bytes.Buffer)</a></dd>
+				<dd><a href="#TexOneObjTableItem">func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer)</a></dd>
 			
 				
-				<dd><a href="#TexPrmsTableItem">func TexPrmsTableItem(o *Optimiser, buf *bytes.Buffer, problem int)</a></dd>
+				<dd><a href="#TexReport">func TexReport(dirout, fnkey, title, label string, Type, nRowPerTab int, docHeader bool, opts []*Optimiser)</a></dd>
 			
 				
-				<dd><a href="#TexPrmsTableStart">func TexPrmsTableStart(buf *bytes.Buffer)</a></dd>
+				<dd><a href="#TexTableEnd">func TexTableEnd(buf *bytes.Buffer, label string)</a></dd>
 			
 				
-				<dd><a href="#TexSingleObjReport">func TexSingleObjReport(dirout, fnkey string, ntrials, nRowPerTab int, opts []*Optimiser, frefs []float64, nDigitsF, nDigitsX, nDigitsHist []int)</a></dd>
+				<dd><a href="#TexTableStart">func TexTableStart(buf *bytes.Buffer, title, col4, col5 string)</a></dd>
 			
 				
-				<dd><a href="#TexSingleObjTableEnd">func TexSingleObjTableEnd(buf *bytes.Buffer)</a></dd>
-			
-				
-				<dd><a href="#TexSingleObjTableItem">func TexSingleObjTableItem(o *Optimiser, buf *bytes.Buffer, problem int, fref float64, nDigitsF, nDigitsX, nDigitsHist int)</a></dd>
-			
-				
-				<dd><a href="#TexSingleObjTableStart">func TexSingleObjTableStart(buf *bytes.Buffer, ntrials int)</a></dd>
+				<dd><a href="#TexTwoObjTableItem">func TexTwoObjTableItem(o *Optimiser, buf *bytes.Buffer)</a></dd>
 			
 				
 				<dd><a href="#TexWrite">func TexWrite(dirout, fnkey string, buf *bytes.Buffer, dorun bool)</a></dd>
 			
+				
+				<dd><a href="#WriteAllValues">func WriteAllValues(dirout, fnkey string, opt *Optimiser)</a></dd>
+			
 			
 				
 				<dd><a href="#ContourParams">type ContourParams</a></dd>
-				
-				
-			
-				
-				<dd><a href="#CxFlt_t">type CxFlt_t</a></dd>
 				
 				
 			
@@ -190,7 +191,7 @@
 				
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#Group.Init">func (o *Group) Init(cpu, ncpu int, solutions, futuresols []*Solution, prms *Parameters)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#Group.Init">func (o *Group) Init(cpu, ncpu int, solutions []*Solution, prms *Parameters)</a></dd>
 				
 			
 				
@@ -210,11 +211,6 @@
 				
 			
 				
-				<dd><a href="#MtFlt_t">type MtFlt_t</a></dd>
-				
-				
-			
-				
 				<dd><a href="#MtInt_t">type MtInt_t</a></dd>
 				
 				
@@ -229,6 +225,9 @@
 				
 				
 					
+					<dd>&nbsp; &nbsp; <a href="#Optimiser.EvolveOneGroup">func (o *Optimiser) EvolveOneGroup(cpu int) (nfeval int)</a></dd>
+				
+					
 					<dd>&nbsp; &nbsp; <a href="#Optimiser.GetSolutionsCopy">func (o *Optimiser) GetSolutionsCopy() (res []*Solution)</a></dd>
 				
 					
@@ -241,22 +240,22 @@
 					<dd>&nbsp; &nbsp; <a href="#Optimiser.PlotAddFltOva">func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult float64, fmt plt.Fmt, emptyMarker bool)</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#Optimiser.PlotAddOvaOva">func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, fmt plt.Fmt, emptyMarker bool)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#Optimiser.PlotAddOvaOva">func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.Fmt)</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#Optimiser.PlotAddParetoFront">func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, fmt plt.Fmt, emptyMarker bool)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#Optimiser.PlotAddParetoFront">func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.Fmt)</a></dd>
 				
 					
 					<dd>&nbsp; &nbsp; <a href="#Optimiser.PlotContour">func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams)</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#Optimiser.RunMany">func (o *Optimiser) RunMany()</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#Optimiser.RunMany">func (o *Optimiser) RunMany(dirout, fnkey string)</a></dd>
 				
 					
 					<dd>&nbsp; &nbsp; <a href="#Optimiser.Solve">func (o *Optimiser) Solve()</a></dd>
 				
 					
-					<dd>&nbsp; &nbsp; <a href="#Optimiser.StatMinProb">func (o *Optimiser) StatMinProb(idxF, hlen int, Fref float64, verbose bool) (fmin, fave, fmax, fdev float64, F []float64)</a></dd>
+					<dd>&nbsp; &nbsp; <a href="#Optimiser.Tournament">func (o *Optimiser) Tournament(A, B, a, b *Solution, m *Metrics)</a></dd>
 				
 			
 				
@@ -301,11 +300,10 @@
 					
 					<dd>&nbsp; &nbsp; <a href="#Solution.Fight">func (A *Solution) Fight(B *Solution) (A_wins bool)</a></dd>
 				
-					
-					<dd>&nbsp; &nbsp; <a href="#Solution.GetCopyResults">func (o *Solution) GetCopyResults() (xFlt []float64, xInt []int)</a></dd>
+			
 				
-					
-					<dd>&nbsp; &nbsp; <a href="#Solution.OvaDistance">func (A *Solution) OvaDistance(B *Solution, omin, omax []float64) (dist float64)</a></dd>
+				<dd><a href="#Stat">type Stat</a></dd>
+				
 				
 			
 			
@@ -342,6 +340,8 @@
 				<a href="/src/github.com/cpmech/goga/report.go">report.go</a>
 			
 				<a href="/src/github.com/cpmech/goga/solution.go">solution.go</a>
+			
+				<a href="/src/github.com/cpmech/goga/stat.go">stat.go</a>
 			
 			</span>
 			</p>
@@ -397,15 +397,20 @@ constants
 </p>
 
 			
+				<pre>const (
+    <span id="SCIENTIFIC_NOTATION_TEX">SCIENTIFIC_NOTATION_TEX</span> = <a href="/pkg/builtin/#true">true</a> <span class="comment">// convert scientific notation to tex</span>
+)</pre>
+				
+			
 		
 		
 		
 			
 			
-			<h2 id="CxFltDE">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=876:952#L30">CxFltDE</a></h2>
-			<pre>func CxFltDE(a, b, A, B, x0, x1, x2, y0, y1, y2 []<a href="/pkg/builtin/#float64">float64</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
+			<h2 id="CheckFront0">func <a href="https://github.com/cpmech/goga/blob/master//postproc.go?s=1821:1901#L66">CheckFront0</a></h2>
+			<pre>func CheckFront0(opt *<a href="#Optimiser">Optimiser</a>, verbose <a href="/pkg/builtin/#bool">bool</a>) (nfailed <a href="/pkg/builtin/#int">int</a>, front0 []*<a href="#Solution">Solution</a>)</pre>
 			<p>
-CxFltDE implements the differential-evolution crossover
+CheckFront0 returns front0 and number of failed/success
 </p>
 
 			
@@ -414,7 +419,7 @@ CxFltDE implements the differential-evolution crossover
 		
 			
 			
-			<h2 id="CxInt">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=653:699#L16">CxInt</a></h2>
+			<h2 id="CxInt">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=623:669#L15">CxInt</a></h2>
 			<pre>func CxInt(a, b, A, B []<a href="/pkg/builtin/#int">int</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
 			<p>
 CxInt performs the crossover of genetic data from A and B
@@ -437,7 +442,7 @@ Example:
 		
 			
 			
-			<h2 id="CxIntOrd">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=2560:2609#L70">CxIntOrd</a></h2>
+			<h2 id="CxIntOrd">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=2508:2557#L68">CxIntOrd</a></h2>
 			<pre>func CxIntOrd(a, b, A, B []<a href="/pkg/builtin/#int">int</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
 			<p>
 CxIntOrd performs the crossover in a pair of individuals with integer numbers
@@ -475,6 +480,18 @@ Example:
 		
 			
 			
+			<h2 id="DiffEvol">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=280:342#L1">DiffEvol</a></h2>
+			<pre>func DiffEvol(xnew, x, x0, x1, x2 []<a href="/pkg/builtin/#float64">float64</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
+			<p>
+DiffEvol performs the differential-evolution operation
+</p>
+
+			
+			
+
+		
+			
+			
 			<h2 id="GenTrialSolutions">func <a href="https://github.com/cpmech/goga/blob/master//generators.go?s=279:337#L1">GenTrialSolutions</a></h2>
 			<pre>func GenTrialSolutions(sols []*<a href="#Solution">Solution</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
 			<p>
@@ -487,7 +504,7 @@ GenTrialSolutions generates (initial) trial solutions
 		
 			
 			
-			<h2 id="GenerateCxEnds">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=6853:6914#L247">GenerateCxEnds</a></h2>
+			<h2 id="GenerateCxEnds">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=6787:6848#L243">GenerateCxEnds</a></h2>
 			<pre>func GenerateCxEnds(size, ncuts <a href="/pkg/builtin/#int">int</a>, cuts []<a href="/pkg/builtin/#int">int</a>) (ends []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 GenerateCxEnds randomly computes the end positions of cuts in chromosomes
@@ -511,7 +528,7 @@ Example:
 		
 			
 			
-			<h2 id="GetFeasible">func <a href="https://github.com/cpmech/goga/blob/master//postproc.go?s=1476:1533#L47">GetFeasible</a></h2>
+			<h2 id="GetFeasible">func <a href="https://github.com/cpmech/goga/blob/master//postproc.go?s=302:359#L3">GetFeasible</a></h2>
 			<pre>func GetFeasible(sols []*<a href="#Solution">Solution</a>) (feasible []*<a href="#Solution">Solution</a>)</pre>
 			<p>
 GetFeasible returns all feasible solutions
@@ -523,7 +540,7 @@ GetFeasible returns all feasible solutions
 		
 			
 			
-			<h2 id="GetParetoFront">func <a href="https://github.com/cpmech/goga/blob/master//postproc.go?s=2669:2766#L98">GetParetoFront</a></h2>
+			<h2 id="GetParetoFront">func <a href="https://github.com/cpmech/goga/blob/master//postproc.go?s=1495:1592#L54">GetParetoFront</a></h2>
 			<pre>func GetParetoFront(p, q <a href="/pkg/builtin/#int">int</a>, all []*<a href="#Solution">Solution</a>, feasibleOnly <a href="/pkg/builtin/#bool">bool</a>) (fp, fq []<a href="/pkg/builtin/#float64">float64</a>, front []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 GetParetoFront returns Pareto front
@@ -535,7 +552,7 @@ GetParetoFront returns Pareto front
 		
 			
 			
-			<h2 id="GetParetoFrontRes">func <a href="https://github.com/cpmech/goga/blob/master//postproc.go?s=2364:2445#L86">GetParetoFrontRes</a></h2>
+			<h2 id="GetParetoFrontRes">func <a href="https://github.com/cpmech/goga/blob/master//postproc.go?s=1190:1271#L42">GetParetoFrontRes</a></h2>
 			<pre>func GetParetoFrontRes(p, q <a href="/pkg/builtin/#int">int</a>, res [][]<a href="/pkg/builtin/#float64">float64</a>) (fp, fq []<a href="/pkg/builtin/#float64">float64</a>, front []<a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 GetParetoFrontRes returns results on Pareto front
@@ -552,7 +569,7 @@ GetParetoFrontRes returns results on Pareto front
 		
 			
 			
-			<h2 id="GetResults">func <a href="https://github.com/cpmech/goga/blob/master//postproc.go?s=1779:1849#L60">GetResults</a></h2>
+			<h2 id="GetResults">func <a href="https://github.com/cpmech/goga/blob/master//postproc.go?s=605:675#L16">GetResults</a></h2>
 			<pre>func GetResults(sols []*<a href="#Solution">Solution</a>, ovaOnly <a href="/pkg/builtin/#bool">bool</a>) (ova, oor [][]<a href="/pkg/builtin/#float64">float64</a>)</pre>
 			<p>
 GetResults returns all ovas and oors
@@ -568,22 +585,7 @@ GetResults returns all ovas and oors
 		
 			
 			
-			<h2 id="MtFltDeb">func <a href="https://github.com/cpmech/goga/blob/master//operators.go?s=1288:1332#L38">MtFltDeb</a></h2>
-			<pre>func MtFltDeb(A []<a href="/pkg/builtin/#float64">float64</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
-			<p>
-MtFltDeb implements Deb&#39;s parameter-based mutation operator
-</p>
-<pre>[1] Deb K and Tiwari S (2008) Omni-optimizer: A generic evolutionary algorithm for single
-    and multi-objective optimization. European Journal of Operational Research, 185:1062-1087.
-</pre>
-
-			
-			
-
-		
-			
-			
-			<h2 id="MtInt">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=3666:3703#L123">MtInt</a></h2>
+			<h2 id="MtInt">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=3614:3651#L121">MtInt</a></h2>
 			<pre>func MtInt(A []<a href="/pkg/builtin/#int">int</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
 			<p>
 MtInt performs the mutation of genetic data from A
@@ -597,7 +599,7 @@ MtInt performs the mutation of genetic data from A
 		
 			
 			
-			<h2 id="MtIntBin">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=4077:4117#L143">MtIntBin</a></h2>
+			<h2 id="MtIntBin">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=4018:4058#L140">MtIntBin</a></h2>
 			<pre>func MtIntBin(A []<a href="/pkg/builtin/#int">int</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
 			<p>
 MtIntBin performs the mutation of a binary chromosome
@@ -611,7 +613,7 @@ MtIntBin performs the mutation of a binary chromosome
 		
 			
 			
-			<h2 id="MtIntOrd">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=5413:5453#L183">MtIntOrd</a></h2>
+			<h2 id="MtIntOrd">func <a href="https://github.com/cpmech/goga/blob/master//intoperators.go?s=5347:5387#L179">MtIntOrd</a></h2>
 			<pre>func MtIntOrd(A []<a href="/pkg/builtin/#int">int</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
 			<p>
 MtIntOrd performs the mutation of genetic data from a ordered list of integers A
@@ -659,7 +661,7 @@ NewSolutions allocates a number of Solutions
 		
 			
 			
-			<h2 id="PlotFltFltContour">func <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=5469:5613#L176">PlotFltFltContour</a></h2>
+			<h2 id="PlotFltFltContour">func <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=5315:5459#L174">PlotFltFltContour</a></h2>
 			<pre>func PlotFltFltContour(fnkey <a href="/pkg/builtin/#string">string</a>, opt *<a href="#Optimiser">Optimiser</a>, sols0 []*<a href="#Solution">Solution</a>, iFlt, jFlt, iOva <a href="/pkg/builtin/#int">int</a>, cprms <a href="#ContourParams">ContourParams</a>, extra func(), equalAxes <a href="/pkg/builtin/#bool">bool</a>)</pre>
 			<p>
 PlotFltFlt plots flt-flt contour
@@ -671,7 +673,7 @@ PlotFltFlt plots flt-flt contour
 		
 			
 			
-			<h2 id="PlotFltOva">func <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=4464:4624#L149">PlotFltOva</a></h2>
+			<h2 id="PlotFltOva">func <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=4310:4470#L147">PlotFltOva</a></h2>
 			<pre>func PlotFltOva(fnkey <a href="/pkg/builtin/#string">string</a>, opt *<a href="#Optimiser">Optimiser</a>, sols0 []*<a href="#Solution">Solution</a>, iFlt, iOva, np <a href="/pkg/builtin/#int">int</a>, ovaMult <a href="/pkg/builtin/#float64">float64</a>, fcn func(x <a href="/pkg/builtin/#float64">float64</a>) <a href="/pkg/builtin/#float64">float64</a>, extra func(), equalAxes <a href="/pkg/builtin/#bool">bool</a>)</pre>
 			<p>
 PlotFltOva plots flt-ova points
@@ -683,11 +685,14 @@ PlotFltOva plots flt-ova points
 		
 			
 			
-			<h2 id="PlotOvaOvaPareto">func <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=6446:6578#L202">PlotOvaOvaPareto</a></h2>
-			<pre>func PlotOvaOvaPareto(fnkey <a href="/pkg/builtin/#string">string</a>, opt *<a href="#Optimiser">Optimiser</a>, sols0 []*<a href="#Solution">Solution</a>, iOva, jOva <a href="/pkg/builtin/#int">int</a>, extra func(), lims []<a href="/pkg/builtin/#float64">float64</a>, equalAxes <a href="/pkg/builtin/#bool">bool</a>)</pre>
+			<h2 id="PlotOvaOvaPareto">func <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=6422:6540#L202">PlotOvaOvaPareto</a></h2>
+			<pre>func PlotOvaOvaPareto(opt *<a href="#Optimiser">Optimiser</a>, sols0 []*<a href="#Solution">Solution</a>, iOva, jOva <a href="/pkg/builtin/#int">int</a>, feasibleOnly <a href="/pkg/builtin/#bool">bool</a>, fmtAll, fmtFront *<a href="/pkg/github.com/cpmech/gosl/plt/">plt</a>.<a href="/pkg/github.com/cpmech/gosl/plt/#Fmt">Fmt</a>)</pre>
 			<p>
 PlotOvaOvaPareto plots ova-ova Pareto values
 </p>
+<pre>fmtAll   -- format for all points; use nil if not requested
+fmtFront -- format for Pareto front; use nil if not requested
+</pre>
 
 			
 			
@@ -695,10 +700,10 @@ PlotOvaOvaPareto plots ova-ova Pareto values
 		
 			
 			
-			<h2 id="SortByBest">func <a href="https://github.com/cpmech/goga/blob/master//solution.go?s=6271:6301#L245">SortByBest</a></h2>
-			<pre>func SortByBest(s []*<a href="#Solution">Solution</a>)</pre>
+			<h2 id="PlotStar">func <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=7011:7040#L216">PlotStar</a></h2>
+			<pre>func PlotStar(opt *<a href="#Optimiser">Optimiser</a>)</pre>
 			<p>
-SortByBest sorts slice of solutions with best solutions first
+PlotStar plots star with normalised OVAs
 </p>
 
 			
@@ -707,7 +712,19 @@ SortByBest sorts slice of solutions with best solutions first
 		
 			
 			
-			<h2 id="SortByOva">func <a href="https://github.com/cpmech/goga/blob/master//solution.go?s=5964:6005#L231">SortByOva</a></h2>
+			<h2 id="SortByFrontThenOva">func <a href="https://github.com/cpmech/goga/blob/master//solution.go?s=10456:10506#L347">SortByFrontThenOva</a></h2>
+			<pre>func SortByFrontThenOva(s []*<a href="#Solution">Solution</a>, idxOva <a href="/pkg/builtin/#int">int</a>)</pre>
+			<p>
+SortByFrontThenOva sorts solutions first by front and then by ova
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="SortByOva">func <a href="https://github.com/cpmech/goga/blob/master//solution.go?s=9529:9570#L299">SortByOva</a></h2>
 			<pre>func SortByOva(s []*<a href="#Solution">Solution</a>, idxOva <a href="/pkg/builtin/#int">int</a>)</pre>
 			<p>
 SortByOva sorts slice of solutions in ascending order of ova
@@ -719,10 +736,10 @@ SortByOva sorts slice of solutions in ascending order of ova
 		
 			
 			
-			<h2 id="SortByTradeoff">func <a href="https://github.com/cpmech/goga/blob/master//solution.go?s=6340:6374#L250">SortByTradeoff</a></h2>
-			<pre>func SortByTradeoff(s []*<a href="#Solution">Solution</a>)</pre>
+			<h2 id="StatF">func <a href="https://github.com/cpmech/goga/blob/master//stat.go?s=6196:6290#L206">StatF</a></h2>
+			<pre>func StatF(o *<a href="#Optimiser">Optimiser</a>, idxF <a href="/pkg/builtin/#int">int</a>, verbose <a href="/pkg/builtin/#bool">bool</a>) (fmin, fave, fmax, fdev <a href="/pkg/builtin/#float64">float64</a>, F []<a href="/pkg/builtin/#float64">float64</a>)</pre>
 			<p>
-TODO
+StatF computes statistical information corresponding to objective function idxF
 </p>
 
 			
@@ -731,7 +748,37 @@ TODO
 		
 			
 			
-			<h2 id="TexDocumentEnd">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=745:783#L24">TexDocumentEnd</a></h2>
+			<h2 id="StatF1F0">func <a href="https://github.com/cpmech/goga/blob/master//stat.go?s=7238:7370#L243">StatF1F0</a></h2>
+			<pre>func StatF1F0(o *<a href="#Optimiser">Optimiser</a>, verbose <a href="/pkg/builtin/#bool">bool</a>) (emin, eave, emax, edev <a href="/pkg/builtin/#float64">float64</a>, E []<a href="/pkg/builtin/#float64">float64</a>, lmin, lave, lmax, ldev <a href="/pkg/builtin/#float64">float64</a>, L []<a href="/pkg/builtin/#float64">float64</a>)</pre>
+			<p>
+StatF1F0 prints statistical analysis for two-objective problems
+</p>
+<pre>emin, eave, emax, edev -- errors on f1(f0)
+lmin, lave, lmax, ldev -- arc-lengths along f1(f0) curve
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="StatMulti">func <a href="https://github.com/cpmech/goga/blob/master//stat.go?s=8765:8853#L289">StatMulti</a></h2>
+			<pre>func StatMulti(o *<a href="#Optimiser">Optimiser</a>, verbose <a href="/pkg/builtin/#bool">bool</a>) (emin, eave, emax, edev <a href="/pkg/builtin/#float64">float64</a>, E []<a href="/pkg/builtin/#float64">float64</a>)</pre>
+			<p>
+StatMulti prints statistical analysis for multi-objective problems
+</p>
+<pre>emin, eave, emax, edev -- errors on f1(f0)
+lmin, lave, lmax, ldev -- arc-lengths along f1(f0) curve
+</pre>
+
+			
+			
+
+		
+			
+			
+			<h2 id="TexDocumentEnd">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=885:923#L32">TexDocumentEnd</a></h2>
 			<pre>func TexDocumentEnd(buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>)</pre>
 			<p>
 TexDocumentEnd ends TeX document
@@ -743,7 +790,7 @@ TexDocumentEnd ends TeX document
 		
 			
 			
-			<h2 id="TexDocumentStart">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=438:481#L8">TexDocumentStart</a></h2>
+			<h2 id="TexDocumentStart">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=538:581#L14">TexDocumentStart</a></h2>
 			<pre>func TexDocumentStart() (buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>)</pre>
 			<p>
 TexDocumentStart starts TeX document
@@ -755,12 +802,39 @@ TexDocumentStart starts TeX document
 		
 			
 			
-			<h2 id="TexPrmsReport">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=2093:2168#L68">TexPrmsReport</a></h2>
-			<pre>func TexPrmsReport(dirout, fnkey <a href="/pkg/builtin/#string">string</a>, opts []*<a href="#Optimiser">Optimiser</a>, nRowPerTab <a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="TexMultiTableItem">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=6146:6201#L229">TexMultiTableItem</a></h2>
+			<pre>func TexMultiTableItem(o *<a href="#Optimiser">Optimiser</a>, buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>)</pre>
 			<p>
-TexPrmsReport generates TeX report with parameters
+TexMultiTableItem adds item to multi-obj table
 </p>
-<pre>nRowPerTab -- number of rows per table
+
+			
+			
+
+		
+			
+			
+			<h2 id="TexOneObjTableItem">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=3385:3441#L129">TexOneObjTableItem</a></h2>
+			<pre>func TexOneObjTableItem(o *<a href="#Optimiser">Optimiser</a>, buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>)</pre>
+			<p>
+TexOneObjTableItem adds item to one-obj table
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="TexReport">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=2016:2123#L75">TexReport</a></h2>
+			<pre>func TexReport(dirout, fnkey, title, label <a href="/pkg/builtin/#string">string</a>, Type, nRowPerTab <a href="/pkg/builtin/#int">int</a>, docHeader <a href="/pkg/builtin/#bool">bool</a>, opts []*<a href="#Optimiser">Optimiser</a>)</pre>
+			<p>
+TexReport produces table TeX report
+</p>
+<pre>Type:
+   1 -- one objective; with histogram of OVA
+   2 -- two objective; no histogram; with E(error) and L(spread)
+   3 -- multi objective; with histogram of error
 </pre>
 
 			
@@ -769,10 +843,10 @@ TexPrmsReport generates TeX report with parameters
 		
 			
 			
-			<h2 id="TexPrmsTableEnd">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=1665:1704#L55">TexPrmsTableEnd</a></h2>
-			<pre>func TexPrmsTableEnd(buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>)</pre>
+			<h2 id="TexTableEnd">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=1675:1724#L62">TexTableEnd</a></h2>
+			<pre>func TexTableEnd(buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>, label <a href="/pkg/builtin/#string">string</a>)</pre>
 			<p>
-TexPrmsTableEnd ends table with parameters
+TexTableEnd ends table
 </p>
 
 			
@@ -781,10 +855,10 @@ TexPrmsTableEnd ends table with parameters
 		
 			
 			
-			<h2 id="TexPrmsTableItem">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=1823:1890#L62">TexPrmsTableItem</a></h2>
-			<pre>func TexPrmsTableItem(o *<a href="#Optimiser">Optimiser</a>, buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>, problem <a href="/pkg/builtin/#int">int</a>)</pre>
+			<h2 id="TexTableStart">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=1405:1468#L51">TexTableStart</a></h2>
+			<pre>func TexTableStart(buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>, title, col4, col5 <a href="/pkg/builtin/#string">string</a>)</pre>
 			<p>
-TexPrmsTableItem adds item to table with parameters
+TexTableStart starts table
 </p>
 
 			
@@ -793,10 +867,10 @@ TexPrmsTableItem adds item to table with parameters
 		
 			
 			
-			<h2 id="TexPrmsTableStart">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=1387:1428#L45">TexPrmsTableStart</a></h2>
-			<pre>func TexPrmsTableStart(buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>)</pre>
+			<h2 id="TexTwoObjTableItem">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=4873:4929#L183">TexTwoObjTableItem</a></h2>
+			<pre>func TexTwoObjTableItem(o *<a href="#Optimiser">Optimiser</a>, buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>)</pre>
 			<p>
-TexPrmsTableStart starts table with parameters
+TexTwoObjTableItem adds item to two-obj table
 </p>
 
 			
@@ -805,57 +879,7 @@ TexPrmsTableStart starts table with parameters
 		
 			
 			
-			<h2 id="TexSingleObjReport">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=4696:4841#L152">TexSingleObjReport</a></h2>
-			<pre>func TexSingleObjReport(dirout, fnkey <a href="/pkg/builtin/#string">string</a>, ntrials, nRowPerTab <a href="/pkg/builtin/#int">int</a>, opts []*<a href="#Optimiser">Optimiser</a>, frefs []<a href="/pkg/builtin/#float64">float64</a>, nDigitsF, nDigitsX, nDigitsHist []<a href="/pkg/builtin/#int">int</a>)</pre>
-			<p>
-TexSingleObjReport produces Single-Objective table TeX report
-</p>
-<pre>nRowPerTab -- number of rows per table
-</pre>
-
-			
-			
-
-		
-			
-			
-			<h2 id="TexSingleObjTableEnd">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=3214:3258#L105">TexSingleObjTableEnd</a></h2>
-			<pre>func TexSingleObjTableEnd(buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>)</pre>
-			<p>
-TexSingleObjTableEnd ends table for single-objective optimisation results with ntrials
-</p>
-
-			
-			
-
-		
-			
-			
-			<h2 id="TexSingleObjTableItem">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=3426:3549#L112">TexSingleObjTableItem</a></h2>
-			<pre>func TexSingleObjTableItem(o *<a href="#Optimiser">Optimiser</a>, buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>, problem <a href="/pkg/builtin/#int">int</a>, fref <a href="/pkg/builtin/#float64">float64</a>, nDigitsF, nDigitsX, nDigitsHist <a href="/pkg/builtin/#int">int</a>)</pre>
-			<p>
-TexSingleObjTableItem adds item to table for single-objective optimisation results with ntrials
-</p>
-
-			
-			
-
-		
-			
-			
-			<h2 id="TexSingleObjTableStart">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=2854:2913#L95">TexSingleObjTableStart</a></h2>
-			<pre>func TexSingleObjTableStart(buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>, ntrials <a href="/pkg/builtin/#int">int</a>)</pre>
-			<p>
-TexSingleObjTableStart starts table for single-objective optimisation results with ntrials
-</p>
-
-			
-			
-
-		
-			
-			
-			<h2 id="TexWrite">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=865:931#L30">TexWrite</a></h2>
+			<h2 id="TexWrite">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=1005:1071#L38">TexWrite</a></h2>
 			<pre>func TexWrite(dirout, fnkey <a href="/pkg/builtin/#string">string</a>, buf *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>, dorun <a href="/pkg/builtin/#bool">bool</a>)</pre>
 			<p>
 TexWrite writes and compiles TeX document
@@ -865,10 +889,19 @@ TexWrite writes and compiles TeX document
 			
 
 		
+			
+			
+			<h2 id="WriteAllValues">func <a href="https://github.com/cpmech/goga/blob/master//report.go?s=7259:7316#L272">WriteAllValues</a></h2>
+			<pre>func WriteAllValues(dirout, fnkey <a href="/pkg/builtin/#string">string</a>, opt *<a href="#Optimiser">Optimiser</a>)</pre>
+			
+			
+			
+
+		
 		
 			
 			
-			<h2 id="ContourParams">type <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=337:788#L4">ContourParams</a></h2>
+			<h2 id="ContourParams">type <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=346:797#L6">ContourParams</a></h2>
 			<pre>type ContourParams struct {
     Npts    <a href="/pkg/builtin/#int">int</a>       <span class="comment">// number of points for contour</span>
     CmapIdx <a href="/pkg/builtin/#int">int</a>       <span class="comment">// colormap index</span>
@@ -900,28 +933,7 @@ ContourParams holds parameters to plot contours
 		
 			
 			
-			<h2 id="CxFlt_t">type <a href="https://github.com/cpmech/goga/blob/master//defs.go?s=647:728#L12">CxFlt_t</a></h2>
-			<pre>type CxFlt_t func(a, b, A, B, x0, x1, x2, y0, y1, y2 []<a href="/pkg/builtin/#float64">float64</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
-			<p>
-CxFlt_t defines crossover function for floats
-</p>
-
-
-			
-
-			
-
-			
-			
-			
-
-			
-
-			
-		
-			
-			
-			<h2 id="CxInt_t">type <a href="https://github.com/cpmech/goga/blob/master//defs.go?s=777:830#L15">CxInt_t</a></h2>
+			<h2 id="CxInt_t">type <a href="https://github.com/cpmech/goga/blob/master//defs.go?s=645:698#L12">CxInt_t</a></h2>
 			<pre>type CxInt_t func(a, b, A, B []<a href="/pkg/builtin/#int">int</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
 			<p>
 CxInt_t defines crossover function for ints
@@ -963,16 +975,13 @@ Generator_t defines callback function to generate trial solutions
 		
 			
 			
-			<h2 id="Group">type <a href="https://github.com/cpmech/goga/blob/master//group.go?s=295:795#L3">Group</a></h2>
+			<h2 id="Group">type <a href="https://github.com/cpmech/goga/blob/master//group.go?s=258:580#L1">Group</a></h2>
 			<pre>type Group struct {
-    Ncur    <a href="/pkg/builtin/#int">int</a>           <span class="comment">// number of current solutions == len(All) / 2</span>
-    All     []*<a href="#Solution">Solution</a>   <span class="comment">// current and future solutions =&gt; view to Solutions and FutureSols</span>
-    Indices []<a href="/pkg/builtin/#int">int</a>         <span class="comment">// indices of current solutions</span>
-    Pairs   [][]<a href="/pkg/builtin/#int">int</a>       <span class="comment">// randomly selected pairs from Indices</span>
-    Triples [][]<a href="/pkg/builtin/#int">int</a>       <span class="comment">// randomly selected tuples from Indices</span>
-    Metrics *<a href="#Metrics">Metrics</a>      <span class="comment">// metrics</span>
-    Mdist   [][]<a href="/pkg/builtin/#float64">float64</a>   <span class="comment">// match distances with triples</span>
-    Match   <a href="/pkg/github.com/cpmech/gosl/graph/">graph</a>.<a href="/pkg/github.com/cpmech/gosl/graph/#Munkres">Munkres</a> <span class="comment">// matches with triples</span>
+    Ncur    <a href="/pkg/builtin/#int">int</a>         <span class="comment">// number of current solutions == len(All) / 2</span>
+    All     []*<a href="#Solution">Solution</a> <span class="comment">// current and future solutions. half part is a view to Solutions</span>
+    Indices []<a href="/pkg/builtin/#int">int</a>       <span class="comment">// indices of current solutions</span>
+    Pairs   [][]<a href="/pkg/builtin/#int">int</a>     <span class="comment">// randomly selected pairs from Indices</span>
+    Metrics *<a href="#Metrics">Metrics</a>    <span class="comment">// metrics</span>
 }</pre>
 			<p>
 Group holds a group of solutions
@@ -991,8 +1000,8 @@ Group holds a group of solutions
 
 			
 				
-				<h3 id="Group.Init">func (*Group) <a href="https://github.com/cpmech/goga/blob/master//group.go?s=823:911#L15">Init</a></h3>
-				<pre>func (o *<a href="#Group">Group</a>) Init(cpu, ncpu <a href="/pkg/builtin/#int">int</a>, solutions, futuresols []*<a href="#Solution">Solution</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
+				<h3 id="Group.Init">func (*Group) <a href="https://github.com/cpmech/goga/blob/master//group.go?s=608:684#L9">Init</a></h3>
+				<pre>func (o *<a href="#Group">Group</a>) Init(cpu, ncpu <a href="/pkg/builtin/#int">int</a>, solutions []*<a href="#Solution">Solution</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
 				<p>
 Init initialises group
 </p>
@@ -1078,28 +1087,7 @@ MinProb_t defines objective functon for specialised minimisation problem
 		
 			
 			
-			<h2 id="MtFlt_t">type <a href="https://github.com/cpmech/goga/blob/master//defs.go?s=880:928#L18">MtFlt_t</a></h2>
-			<pre>type MtFlt_t func(a []<a href="/pkg/builtin/#float64">float64</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
-			<p>
-MtFlt_t defines mutation function for floats
-</p>
-
-
-			
-
-			
-
-			
-			
-			
-
-			
-
-			
-		
-			
-			
-			<h2 id="MtInt_t">type <a href="https://github.com/cpmech/goga/blob/master//defs.go?s=976:1020#L21">MtInt_t</a></h2>
+			<h2 id="MtInt_t">type <a href="https://github.com/cpmech/goga/blob/master//defs.go?s=746:790#L15">MtInt_t</a></h2>
 			<pre>type MtInt_t func(a []<a href="/pkg/builtin/#int">int</a>, prms *<a href="#Parameters">Parameters</a>)</pre>
 			<p>
 MtInt_t defines mutation function for ints
@@ -1141,33 +1129,26 @@ ObjFunc_t defines the objective fluction
 		
 			
 			
-			<h2 id="Optimiser">type <a href="https://github.com/cpmech/goga/blob/master//optimiser.go?s=840:2037#L25">Optimiser</a></h2>
+			<h2 id="Optimiser">type <a href="https://github.com/cpmech/goga/blob/master//optimiser.go?s=840:1765#L25">Optimiser</a></h2>
 			<pre>type Optimiser struct {
 
     <span class="comment">// input</span>
     <a href="#Parameters">Parameters</a>           <span class="comment">// input parameters</span>
     ObjFunc    <a href="#ObjFunc_t">ObjFunc_t</a> <span class="comment">// objective function</span>
     MinProb    <a href="#MinProb_t">MinProb_t</a> <span class="comment">// minimisation problem function</span>
-    CxFlt      <a href="#CxFlt_t">CxFlt_t</a>   <span class="comment">// crossover function for floats</span>
     CxInt      <a href="#CxInt_t">CxInt_t</a>   <span class="comment">// crossover function for ints</span>
-    MtFlt      <a href="#MtFlt_t">MtFlt_t</a>   <span class="comment">// mutation function for floats</span>
     MtInt      <a href="#MtInt_t">MtInt_t</a>   <span class="comment">// mutation function for ints</span>
 
     <span class="comment">// essential</span>
-    Generator  <a href="#Generator_t">Generator_t</a> <span class="comment">// generate solutions</span>
-    Solutions  []*<a href="#Solution">Solution</a> <span class="comment">// current solutions</span>
-    FutureSols []*<a href="#Solution">Solution</a> <span class="comment">// future solutions</span>
-    Groups     []*<a href="#Group">Group</a>    <span class="comment">// [cpu] competitors per CPU. pointers to current and future solutions</span>
-    Metrics    *<a href="#Metrics">Metrics</a>    <span class="comment">// metrics</span>
+    Generator <a href="#Generator_t">Generator_t</a> <span class="comment">// generate solutions</span>
+    Solutions []*<a href="#Solution">Solution</a> <span class="comment">// current solutions</span>
+    Groups    []*<a href="#Group">Group</a>    <span class="comment">// [cpu] competitors per CPU. pointers to current and future solutions</span>
+    Metrics   *<a href="#Metrics">Metrics</a>    <span class="comment">// metrics</span>
 
     <span class="comment">// auxiliary</span>
+    <a href="#Stat">Stat</a>                   <span class="comment">// structure holding stat data</span>
     Nf, Ng, Nh <a href="/pkg/builtin/#int">int</a>         <span class="comment">// number of f, g, h functions</span>
     F, G, H    [][]<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// [cpu] temporary</span>
-
-    <span class="comment">// stat</span>
-    Nfeval   <a href="/pkg/builtin/#int">int</a>         <span class="comment">// number of function evaluations</span>
-    XfltBest [][]<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// best results after RunMany</span>
-    XintBest [][]<a href="/pkg/builtin/#int">int</a>     <span class="comment">// best results after RunMany</span>
     <span class="comment">// contains filtered or unexported fields</span>
 }</pre>
 			<p>
@@ -1205,7 +1186,18 @@ x = xFlt  or  x = xInt   or  x = {xFlt, Xint}
 
 			
 				
-				<h3 id="Optimiser.GetSolutionsCopy">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//optimiser.go?s=3831:3887#L126">GetSolutionsCopy</a></h3>
+				<h3 id="Optimiser.EvolveOneGroup">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//optimiser.go?s=5277:5333#L192">EvolveOneGroup</a></h3>
+				<pre>func (o *<a href="#Optimiser">Optimiser</a>) EvolveOneGroup(cpu <a href="/pkg/builtin/#int">int</a>) (nfeval <a href="/pkg/builtin/#int">int</a>)</pre>
+				<p>
+EvolveOneGroup evolves one group (CPU)
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="Optimiser.GetSolutionsCopy">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//optimiser.go?s=3330:3386#L108">GetSolutionsCopy</a></h3>
 				<pre>func (o *<a href="#Optimiser">Optimiser</a>) GetSolutionsCopy() (res []*<a href="#Solution">Solution</a>)</pre>
 				<p>
 GetSolutionsCopy returns a copy of Solutions
@@ -1216,7 +1208,7 @@ GetSolutionsCopy returns a copy of Solutions
 				
 			
 				
-				<h3 id="Optimiser.Init">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//optimiser.go?s=2143:2230#L59">Init</a></h3>
+				<h3 id="Optimiser.Init">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//optimiser.go?s=1871:1958#L52">Init</a></h3>
 				<pre>func (o *<a href="#Optimiser">Optimiser</a>) Init(gen <a href="#Generator_t">Generator_t</a>, obj <a href="#ObjFunc_t">ObjFunc_t</a>, fcn <a href="#MinProb_t">MinProb_t</a>, nf, ng, nh <a href="/pkg/builtin/#int">int</a>)</pre>
 				<p>
 Initialises continues initialisation by generating individuals
@@ -1229,7 +1221,7 @@ Initialises continues initialisation by generating individuals
 				
 			
 				
-				<h3 id="Optimiser.PlotAddFltFlt">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=2677:2775#L97">PlotAddFltFlt</a></h3>
+				<h3 id="Optimiser.PlotAddFltFlt">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=2686:2784#L99">PlotAddFltFlt</a></h3>
 				<pre>func (o *<a href="#Optimiser">Optimiser</a>) PlotAddFltFlt(iFlt, jFlt <a href="/pkg/builtin/#int">int</a>, sols []*<a href="#Solution">Solution</a>, fmt <a href="/pkg/github.com/cpmech/gosl/plt/">plt</a>.<a href="/pkg/github.com/cpmech/gosl/plt/#Fmt">Fmt</a>, emptyMarker <a href="/pkg/builtin/#bool">bool</a>)</pre>
 				<p>
 PlotAddFltFlt adds flt-flt points to existent plot
@@ -1240,7 +1232,7 @@ PlotAddFltFlt adds flt-flt points to existent plot
 				
 			
 				
-				<h3 id="Optimiser.PlotAddFltOva">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=3147:3262#L111">PlotAddFltOva</a></h3>
+				<h3 id="Optimiser.PlotAddFltOva">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=3156:3271#L113">PlotAddFltOva</a></h3>
 				<pre>func (o *<a href="#Optimiser">Optimiser</a>) PlotAddFltOva(iFlt, iOva <a href="/pkg/builtin/#int">int</a>, sols []*<a href="#Solution">Solution</a>, ovaMult <a href="/pkg/builtin/#float64">float64</a>, fmt <a href="/pkg/github.com/cpmech/gosl/plt/">plt</a>.<a href="/pkg/github.com/cpmech/gosl/plt/#Fmt">Fmt</a>, emptyMarker <a href="/pkg/builtin/#bool">bool</a>)</pre>
 				<p>
 PlotAddFltOva adds flt-ova points to existent plot
@@ -1251,8 +1243,8 @@ PlotAddFltOva adds flt-ova points to existent plot
 				
 			
 				
-				<h3 id="Optimiser.PlotAddOvaOva">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=3642:3740#L125">PlotAddOvaOva</a></h3>
-				<pre>func (o *<a href="#Optimiser">Optimiser</a>) PlotAddOvaOva(iOva, jOva <a href="/pkg/builtin/#int">int</a>, sols []*<a href="#Solution">Solution</a>, fmt <a href="/pkg/github.com/cpmech/gosl/plt/">plt</a>.<a href="/pkg/github.com/cpmech/gosl/plt/#Fmt">Fmt</a>, emptyMarker <a href="/pkg/builtin/#bool">bool</a>)</pre>
+				<h3 id="Optimiser.PlotAddOvaOva">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=3651:3751#L127">PlotAddOvaOva</a></h3>
+				<pre>func (o *<a href="#Optimiser">Optimiser</a>) PlotAddOvaOva(iOva, jOva <a href="/pkg/builtin/#int">int</a>, sols []*<a href="#Solution">Solution</a>, feasibleOnly <a href="/pkg/builtin/#bool">bool</a>, fmt *<a href="/pkg/github.com/cpmech/gosl/plt/">plt</a>.<a href="/pkg/github.com/cpmech/gosl/plt/#Fmt">Fmt</a>)</pre>
 				<p>
 PlotAddOvaOva adds ova-ova points to existent plot
 </p>
@@ -1262,8 +1254,8 @@ PlotAddOvaOva adds ova-ova points to existent plot
 				
 			
 				
-				<h3 id="Optimiser.PlotAddParetoFront">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=4104:4207#L139">PlotAddParetoFront</a></h3>
-				<pre>func (o *<a href="#Optimiser">Optimiser</a>) PlotAddParetoFront(iOva, jOva <a href="/pkg/builtin/#int">int</a>, sols []*<a href="#Solution">Solution</a>, fmt <a href="/pkg/github.com/cpmech/gosl/plt/">plt</a>.<a href="/pkg/github.com/cpmech/gosl/plt/#Fmt">Fmt</a>, emptyMarker <a href="/pkg/builtin/#bool">bool</a>)</pre>
+				<h3 id="Optimiser.PlotAddParetoFront">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=4033:4138#L140">PlotAddParetoFront</a></h3>
+				<pre>func (o *<a href="#Optimiser">Optimiser</a>) PlotAddParetoFront(iOva, jOva <a href="/pkg/builtin/#int">int</a>, sols []*<a href="#Solution">Solution</a>, feasibleOnly <a href="/pkg/builtin/#bool">bool</a>, fmt *<a href="/pkg/github.com/cpmech/gosl/plt/">plt</a>.<a href="/pkg/github.com/cpmech/gosl/plt/#Fmt">Fmt</a>)</pre>
 				<p>
 PlotAddParetoFront highlights Pareto front
 </p>
@@ -1273,7 +1265,7 @@ PlotAddParetoFront highlights Pareto front
 				
 			
 				
-				<h3 id="Optimiser.PlotContour">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=819:892#L18">PlotContour</a></h3>
+				<h3 id="Optimiser.PlotContour">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//plotting.go?s=828:901#L20">PlotContour</a></h3>
 				<pre>func (o *<a href="#Optimiser">Optimiser</a>) PlotContour(iFlt, jFlt, iOva <a href="/pkg/builtin/#int">int</a>, prms <a href="#ContourParams">ContourParams</a>)</pre>
 				<p>
 PlotContour plots contour
@@ -1284,10 +1276,10 @@ PlotContour plots contour
 				
 			
 				
-				<h3 id="Optimiser.RunMany">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//optimiser.go?s=5390:5419#L199">RunMany</a></h3>
-				<pre>func (o *<a href="#Optimiser">Optimiser</a>) RunMany()</pre>
+				<h3 id="Optimiser.RunMany">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//stat.go?s=2216:2265#L49">RunMany</a></h3>
+				<pre>func (o *<a href="#Optimiser">Optimiser</a>) RunMany(dirout, fnkey <a href="/pkg/builtin/#string">string</a>)</pre>
 				<p>
-RunMany runs many trials in order to produce statistics
+RunMany runs many trials in order to produce statistical data
 </p>
 
 				
@@ -1295,7 +1287,7 @@ RunMany runs many trials in order to produce statistics
 				
 			
 				
-				<h3 id="Optimiser.Solve">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//optimiser.go?s=4052:4079#L135">Solve</a></h3>
+				<h3 id="Optimiser.Solve">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//optimiser.go?s=3551:3578#L117">Solve</a></h3>
 				<pre>func (o *<a href="#Optimiser">Optimiser</a>) Solve()</pre>
 				<p>
 Solve solves optimisation problem
@@ -1306,10 +1298,10 @@ Solve solves optimisation problem
 				
 			
 				
-				<h3 id="Optimiser.StatMinProb">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//postproc.go?s=348:469#L4">StatMinProb</a></h3>
-				<pre>func (o *<a href="#Optimiser">Optimiser</a>) StatMinProb(idxF, hlen <a href="/pkg/builtin/#int">int</a>, Fref <a href="/pkg/builtin/#float64">float64</a>, verbose <a href="/pkg/builtin/#bool">bool</a>) (fmin, fave, fmax, fdev <a href="/pkg/builtin/#float64">float64</a>, F []<a href="/pkg/builtin/#float64">float64</a>)</pre>
+				<h3 id="Optimiser.Tournament">func (*Optimiser) <a href="https://github.com/cpmech/goga/blob/master//optimiser.go?s=6698:6762#L265">Tournament</a></h3>
+				<pre>func (o *<a href="#Optimiser">Optimiser</a>) Tournament(A, B, a, b *<a href="#Solution">Solution</a>, m *<a href="#Metrics">Metrics</a>)</pre>
 				<p>
-StatMinProb prints statistical analysis when using MinProb
+Tournament performs the tournament among 4 individuals
 </p>
 
 				
@@ -1319,7 +1311,7 @@ StatMinProb prints statistical analysis when using MinProb
 		
 			
 			
-			<h2 id="Parameters">type <a href="https://github.com/cpmech/goga/blob/master//params.go?s=352:2313#L6">Parameters</a></h2>
+			<h2 id="Parameters">type <a href="https://github.com/cpmech/goga/blob/master//params.go?s=352:2012#L6">Parameters</a></h2>
 			<pre>type Parameters struct {
 
     <span class="comment">// sizes</span>
@@ -1334,33 +1326,25 @@ StatMinProb prints statistical analysis when using MinProb
     DtOut <a href="/pkg/builtin/#int">int</a> <span class="comment">// delta time for output</span>
 
     <span class="comment">// options</span>
-    Pll        <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// parallel</span>
-    Seed       <a href="/pkg/builtin/#int">int</a>     <span class="comment">// seed for random numbers generator</span>
-    Latin      <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use Latin Hypercube</span>
-    LatinDup   <a href="/pkg/builtin/#int">int</a>     <span class="comment">// Latin Hypercube duplicates number</span>
-    EpsMinProb <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// minimum value for &#39;h&#39; constraints</span>
-    Verbose    <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// show messages</span>
-    Problem    <a href="/pkg/builtin/#int">int</a>     <span class="comment">// problem index</span>
-    GenAll     <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// generate all solutions together; i.e. not within each group/CPU</span>
-    Ntrials    <a href="/pkg/builtin/#int">int</a>     <span class="comment">// run many trials</span>
-    BinInt     <a href="/pkg/builtin/#int">int</a>     <span class="comment">// flag that integers represent binary numbers if BinInt &gt; 0; thus Nint=BinInt</span>
-    ClearFlt   <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// clear flt if corresponding int is 0</span>
-    ExcTour    <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use exchange via tournament</span>
-    ExcOne     <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use exchange one randomly</span>
-    ConvDova0  <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// Δova[0] to decide on convergence</span>
+    DEC      <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// C-coefficient for differential evolution</span>
+    Pll      <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// parallel</span>
+    Seed     <a href="/pkg/builtin/#int">int</a>     <span class="comment">// seed for random numbers generator</span>
+    GenType  <a href="/pkg/builtin/#string">string</a>  <span class="comment">// generation type: &#34;latin&#34;, &#34;halton&#34;, &#34;rnd&#34;</span>
+    LatinDup <a href="/pkg/builtin/#int">int</a>     <span class="comment">// Latin Hypercube duplicates number</span>
+    EpsH     <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// minimum value for &#39;h&#39; constraints</span>
+    Verbose  <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// show messages</span>
+    GenAll   <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// generate all solutions together; i.e. not within each group/CPU</span>
+    Nsamples <a href="/pkg/builtin/#int">int</a>     <span class="comment">// run many samples</span>
+    BinInt   <a href="/pkg/builtin/#int">int</a>     <span class="comment">// flag that integers represent binary numbers if BinInt &gt; 0; thus Nint=BinInt</span>
+    ClearFlt <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// clear flt if corresponding int is 0</span>
+    ExcTour  <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use exchange via tournament</span>
+    ExcOne   <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use exchange one randomly</span>
 
-    <span class="comment">// differential evolution</span>
-    DiffEvolC        <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// crossover probability</span>
-    DiffEvolF        <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// vector length multiplier</span>
-    DiffEvolPm       <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// mutation probability. use rotation otherwise</span>
-    DiffEvolUseCmult <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use C random multiplier</span>
-    DiffEvolUseFmult <a href="/pkg/builtin/#bool">bool</a>    <span class="comment">// use F random multiplier</span>
-
-    <span class="comment">// crossover and mutation</span>
-    DebEtam <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// Deb&#39;s mutation parameters</span>
-    PmFlt   <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// probability of mutation for floats</span>
-    PmInt   <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// probability of mutation for ints</span>
-    PcInt   <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// probability of crossover for ints</span>
+    <span class="comment">// crossover and mutation of integers</span>
+    IntPc       <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// probability of crossover for ints</span>
+    IntNcuts    <a href="/pkg/builtin/#int">int</a>     <span class="comment">// number of cuts in crossover of ints</span>
+    IntPm       <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// probability of mutation for ints</span>
+    IntNchanges <a href="/pkg/builtin/#int">int</a>     <span class="comment">// number of changes during mutation of ints</span>
 
     <span class="comment">// range</span>
     FltMin []<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// minimum float allowed</span>
@@ -1391,7 +1375,7 @@ Parameters hold all configuration parameters
 
 			
 				
-				<h3 id="Parameters.CalcDerived">func (*Parameters) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=3393:3427#L120">CalcDerived</a></h3>
+				<h3 id="Parameters.CalcDerived">func (*Parameters) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=2948:2982#L104">CalcDerived</a></h3>
 				<pre>func (o *<a href="#Parameters">Parameters</a>) CalcDerived()</pre>
 				<p>
 CalcDerived computes derived variables and checks consistency
@@ -1402,7 +1386,7 @@ CalcDerived computes derived variables and checks consistency
 				
 			
 				
-				<h3 id="Parameters.Default">func (*Parameters) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=2350:2380#L62">Default</a></h3>
+				<h3 id="Parameters.Default">func (*Parameters) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=2049:2079#L54">Default</a></h3>
 				<pre>func (o *<a href="#Parameters">Parameters</a>) Default()</pre>
 				<p>
 Default sets default parameters
@@ -1413,7 +1397,7 @@ Default sets default parameters
 				
 			
 				
-				<h3 id="Parameters.EnforceRange">func (*Parameters) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=4745:4804#L183">EnforceRange</a></h3>
+				<h3 id="Parameters.EnforceRange">func (*Parameters) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=4474:4533#L177">EnforceRange</a></h3>
 				<pre>func (o *<a href="#Parameters">Parameters</a>) EnforceRange(i <a href="/pkg/builtin/#int">int</a>, x <a href="/pkg/builtin/#float64">float64</a>) <a href="/pkg/builtin/#float64">float64</a></pre>
 				<p>
 EnforceRange makes sure x is within given range
@@ -1424,7 +1408,7 @@ EnforceRange makes sure x is within given range
 				
 			
 				
-				<h3 id="Parameters.LogParams">func (*Parameters) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=4963:5006#L194">LogParams</a></h3>
+				<h3 id="Parameters.LogParams">func (*Parameters) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=4692:4735#L188">LogParams</a></h3>
 				<pre>func (o *<a href="#Parameters">Parameters</a>) LogParams() (l <a href="/pkg/builtin/#string">string</a>)</pre>
 				<p>
 LogParams returns a log with current parameters
@@ -1435,7 +1419,7 @@ LogParams returns a log with current parameters
 				
 			
 				
-				<h3 id="Parameters.Read">func (*Parameters) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=3025:3071#L106">Read</a></h3>
+				<h3 id="Parameters.Read">func (*Parameters) <a href="https://github.com/cpmech/goga/blob/master//params.go?s=2580:2626#L90">Read</a></h3>
 				<pre>func (o *<a href="#Parameters">Parameters</a>) Read(filenamepath <a href="/pkg/builtin/#string">string</a>)</pre>
 				<p>
 Read reads configuration parameters from JSON file
@@ -1493,7 +1477,7 @@ NewSolution allocates new Solution
 
 			
 				
-				<h3 id="Solution.Compare">func (*Solution) <a href="https://github.com/cpmech/goga/blob/master//solution.go?s=2828:2899#L102">Compare</a></h3>
+				<h3 id="Solution.Compare">func (*Solution) <a href="https://github.com/cpmech/goga/blob/master//solution.go?s=2538:2609#L93">Compare</a></h3>
 				<pre>func (A *<a href="#Solution">Solution</a>) Compare(B *<a href="#Solution">Solution</a>) (A_dominates, B_dominates <a href="/pkg/builtin/#bool">bool</a>)</pre>
 				<p>
 Compare compares two solutions
@@ -1537,7 +1521,7 @@ Feasible tells whether this solution is feasible or not
 				
 			
 				
-				<h3 id="Solution.Fight">func (*Solution) <a href="https://github.com/cpmech/goga/blob/master//solution.go?s=3661:3712#L140">Fight</a></h3>
+				<h3 id="Solution.Fight">func (*Solution) <a href="https://github.com/cpmech/goga/blob/master//solution.go?s=3371:3422#L131">Fight</a></h3>
 				<pre>func (A *<a href="#Solution">Solution</a>) Fight(B *<a href="#Solution">Solution</a>) (A_wins <a href="/pkg/builtin/#bool">bool</a>)</pre>
 				<p>
 Fight implements the competition between A and B
@@ -1547,27 +1531,63 @@ Fight implements the competition between A and B
 				
 				
 			
-				
-				<h3 id="Solution.GetCopyResults">func (*Solution) <a href="https://github.com/cpmech/goga/blob/master//solution.go?s=4573:4637#L190">GetCopyResults</a></h3>
-				<pre>func (o *<a href="#Solution">Solution</a>) GetCopyResults() (xFlt []<a href="/pkg/builtin/#float64">float64</a>, xInt []<a href="/pkg/builtin/#int">int</a>)</pre>
-				<p>
-GetCopyResults returns a copy of results (x vectors)
-</p>
-
-				
-				
-				
+		
 			
-				
-				<h3 id="Solution.OvaDistance">func (*Solution) <a href="https://github.com/cpmech/goga/blob/master//solution.go?s=2565:2645#L93">OvaDistance</a></h3>
-				<pre>func (A *<a href="#Solution">Solution</a>) OvaDistance(B *<a href="#Solution">Solution</a>, omin, omax []<a href="/pkg/builtin/#float64">float64</a>) (dist <a href="/pkg/builtin/#float64">float64</a>)</pre>
-				<p>
-OvaDistance computes (phenotype) distance between A and B
-</p>
+			
+			<h2 id="Stat">type <a href="https://github.com/cpmech/goga/blob/master//stat.go?s=303:2149#L6">Stat</a></h2>
+			<pre>type Stat struct {
 
-				
-				
-				
+    <span class="comment">// stat</span>
+    Nfeval  <a href="/pkg/builtin/#int">int</a>           <span class="comment">// number of function evaluations</span>
+    SysTime <a href="/pkg/time/">time</a>.<a href="/pkg/time/#Duration">Duration</a> <span class="comment">// system (real/CPU) time</span>
+
+    <span class="comment">// formatting data for reports</span>
+    RptName    <a href="/pkg/builtin/#string">string</a>    <span class="comment">// problem name</span>
+    RptFref    []<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// reference OVAs</span>
+    RptXref    []<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// reference flts</span>
+    RptFmin    []<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// min OVAs for reports/graphs</span>
+    RptFmax    []<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// max OVAs for reports/graphs</span>
+    RptFmtF    <a href="/pkg/builtin/#string">string</a>    <span class="comment">// format for fmin, fave and fmax</span>
+    RptFmtFdev <a href="/pkg/builtin/#string">string</a>    <span class="comment">// format for fdev</span>
+    RptFmtE    <a href="/pkg/builtin/#string">string</a>    <span class="comment">// format for emin, eave and emax</span>
+    RptFmtEdev <a href="/pkg/builtin/#string">string</a>    <span class="comment">// format for edev</span>
+    RptFmtL    <a href="/pkg/builtin/#string">string</a>    <span class="comment">// format for lmin, lave and lmax</span>
+    RptFmtLdev <a href="/pkg/builtin/#string">string</a>    <span class="comment">// format for ldev</span>
+    RptFmtX    <a href="/pkg/builtin/#string">string</a>    <span class="comment">// format for x values</span>
+    HistFmt    <a href="/pkg/builtin/#string">string</a>    <span class="comment">// format in histogram</span>
+    HistNdig   <a href="/pkg/builtin/#int">int</a>       <span class="comment">// number of digits in histogram</span>
+    HistNsta   <a href="/pkg/builtin/#int">int</a>       <span class="comment">// number of stations in histogram</span>
+    HistLen    <a href="/pkg/builtin/#int">int</a>       <span class="comment">// number of characters (bar length) in histogram</span>
+
+    <span class="comment">// RunMany: best solutions</span>
+    BestOvas      [][]<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// best OVAs [nova][nsamples]</span>
+    BestFlts      [][]<a href="/pkg/builtin/#float64">float64</a> <span class="comment">// best flts [nflt][nsamples]</span>
+    BestInts      [][]<a href="/pkg/builtin/#int">int</a>     <span class="comment">// best ints [nint][nsamples]</span>
+    BestOfBestOva []<a href="/pkg/builtin/#float64">float64</a>   <span class="comment">// [nova]</span>
+    BestOfBestFlt []<a href="/pkg/builtin/#float64">float64</a>   <span class="comment">// [nflt]</span>
+    BestOfBestInt []<a href="/pkg/builtin/#int">int</a>       <span class="comment">// [nint]</span>
+
+    <span class="comment">// RunMany: checking multi-obj problems</span>
+    F1F0_func      func(f0 <a href="/pkg/builtin/#float64">float64</a>) <a href="/pkg/builtin/#float64">float64</a>  <span class="comment">// f1(f0) function</span>
+    F1F0_err       []<a href="/pkg/builtin/#float64">float64</a>                 <span class="comment">// max(error(f1))</span>
+    F1F0_arcLen    []<a href="/pkg/builtin/#float64">float64</a>                 <span class="comment">// arc-length: spreading on (f0,f1) space</span>
+    F1F0_arcLenRef <a href="/pkg/builtin/#float64">float64</a>                   <span class="comment">// reference arc-length along f1(f0) curve</span>
+    F1F0_f0ranges  [][]<a href="/pkg/builtin/#float64">float64</a>               <span class="comment">// ranges of f0 values to compute arc-length</span>
+    Multi_fcnErr   func(f []<a href="/pkg/builtin/#float64">float64</a>) <a href="/pkg/builtin/#float64">float64</a> <span class="comment">// computes Pareto-optimal front error with many OVAs</span>
+    Multi_err      []<a href="/pkg/builtin/#float64">float64</a>                 <span class="comment">// max(error(f[i]))</span>
+}</pre>
+			
+
+			
+
+			
+
+			
+			
+			
+
+			
+
 			
 		
 	
