@@ -1,0 +1,202 @@
+// Copyright 2012 Dorival de Moraes Pedroso. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// +build ignore
+
+package main
+
+import (
+	"bytes"
+	"math"
+
+	"github.com/cpmech/goga"
+	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/la"
+	"github.com/cpmech/gosl/plt"
+	"github.com/cpmech/gosl/rnd"
+	"github.com/cpmech/gosl/utl"
+)
+
+func main() {
+
+	// input filename
+	_, fnkey := io.ArgToFilename(0, "frame2d", ".sim", true)
+
+	// simple problems
+	var plotonly bool
+	var opts []*goga.Optimiser
+	if fnkey == "simple" {
+		io.Pf("\n\n\n")
+		//P := []int{6}
+		//P := []int{1, 2}
+		P := utl.IntRange2(1, 7)
+		opts = make([]*goga.Optimiser, len(P))
+		for i, problem := range P {
+			opts[i] = solve_problem(fnkey, problem)
+			if opts[i] == nil {
+				plotonly = true
+			}
+		}
+	} else {
+		opts = []*goga.Optimiser{solve_problem(fnkey, 0)}
+	}
+	if plotonly {
+		return
+	}
+
+	io.Pf("\n=================================== generating report ===================================\n")
+	nRowPerTab := 6
+	title := "FORM Reliability: " + fnkey
+	goga.TexReport("/tmp/goga", "tmp_rel-"+fnkey, title, "rel-"+fnkey, 1, nRowPerTab, true, opts)
+	goga.TexReport("/tmp/goga", "rel-"+fnkey, title, "rel-"+fnkey, 1, nRowPerTab, false, opts)
+}
+
+func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
+
+	// GA parameters
+	opt = new(goga.Optimiser)
+	opt.Default()
+
+	// options for report
+	opt.RptFmtF = "%f"
+	opt.RptFmtX = "%.5f"
+	opt.RptFmtFdev = "%.2e"
+
+	// FORM data
+	var lsft LSF_T
+	var vars rnd.Variables
+
+	// simple problem or FEM sim
+	if fnkey == "simple" {
+		opt.Read("ga-simple.json")
+		opt.ProbNum = problem
+		lsft, vars = get_simple_data(opt)
+		fnkey += io.Sf("-%d", opt.ProbNum)
+		io.Pf("\n----------------------------------- simple problem %d --------------------------------\n", opt.ProbNum)
+	} else {
+		opt.Read("ga-" + fnkey + ".json")
+		lsft, vars = get_femsim_data(opt, fnkey)
+		io.Pf("\n----------------------------------- femsim %s --------------------------------\n", opt.ProbNum)
+	}
+
+	// log input
+	var buf bytes.Buffer
+	io.Ff(&buf, "%s", opt.LogParams())
+	io.WriteFileVD("/tmp/gosl", fnkey+".log", &buf)
+
+	// initialise distributions
+	err := vars.Init()
+	if err != nil {
+		chk.Panic("cannot initialise distributions:\n%v", err)
+	}
+
+	// set limits
+	nx := len(vars)
+	opt.FltMin = make([]float64, nx)
+	opt.FltMax = make([]float64, nx)
+	for i, dat := range vars {
+		opt.FltMin[i] = dat.Min
+		opt.FltMax[i] = dat.Max
+	}
+
+	// plot distributions
+	if opt.PlotSet1 {
+		io.Pf(". . . . . . . .  plot distributions  . . . . . . . .\n")
+		np := 201
+		for i, dat := range vars {
+			plt.SetForEps(0.75, 250)
+			dat.PlotPdf(np, "'b-',lw=2,zorder=1000")
+			//plt.AxisXrange(dat.Min, dat.Max)
+			plt.SetXnticks(15)
+			plt.SaveD("/tmp/sims", io.Sf("distr-%s-%d.eps", fnkey, i))
+		}
+		return
+	}
+
+	// objective function
+	nf := 1
+	var ng, nh int
+	var fcn goga.MinProb_t
+	switch opt.Strategy {
+
+	// argmin_x{ β(y(x)) | lsf(x) ≤ 0 }
+	//  f ← sqrt(y dot y)
+	//  g ← -lsf(x) ≥ 0
+	//  h ← out-of-range in case Transform fails
+	case 0:
+		ng, nh = 1, 1
+		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
+
+			// original and normalised variables
+			h[0] = 0
+			y, invalid := vars.Transform(x)
+			if invalid {
+				h[0] = 1
+				return
+			}
+
+			// objective value
+			f[0] = math.Sqrt(la.VecDot(y, y)) // β
+
+			// inequality constraint
+			lsf, failed := lsft(x, cpu)
+			g[0] = -lsf
+			h[0] = failed
+		}
+
+	// argmin_x{ β(y(x)) | lsf(x) = 0 }
+	//  f  ← sqrt(y dot y)
+	//  h0 ← lsf(x)
+	//  h1 ← out-of-range in case Transform fails
+	case 1:
+		ng, nh = 0, 2
+		fcn = func(f, g, h, x []float64, ξ []int, cpu int) {
+
+			// original and normalised variables
+			h[0], h[1] = 0, 0
+			y, invalid := vars.Transform(x)
+			if invalid {
+				h[0], h[1] = 1, 1
+				return
+			}
+
+			// objective value
+			f[0] = math.Sqrt(la.VecDot(y, y)) // β
+
+			// equality constraint
+			lsf, failed := lsft(x, cpu)
+			h[0] = lsf
+			h[1] = failed
+
+			//f[0] += math.Abs(lsf)
+		}
+
+	default:
+		chk.Panic("strategy %d is not available", opt.Strategy)
+	}
+
+	// initialise optimiser
+	opt.Init(goga.GenTrialSolutions, nil, fcn, nf, ng, nh)
+
+	// solve
+	io.Pf(". . . . . . . .  running  . . . . . . . .\n")
+	opt.RunMany("", "")
+	goga.StatF(opt, 0, true)
+	io.Pfblue2("Tsys = %v\n", opt.SysTime)
+
+	// check
+	goga.CheckFront0(opt, true)
+
+	// results
+	sols := goga.GetFeasible(opt.Solutions)
+	if len(sols) > 0 {
+		goga.SortByOva(sols, 0)
+		best := sols[0]
+		io.Pforan("x    = %.6f\n", best.Flt)
+		io.Pforan("xref = %.6f\n", opt.RptXref)
+		io.Pforan("β = %v  (%v)\n", best.Ova[0], opt.RptFref[0])
+	}
+	return
+}
