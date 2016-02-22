@@ -49,7 +49,7 @@ func TexWrite(dirout, fnkey string, buf *bytes.Buffer, dorun bool) {
 	tex := fnkey + ".tex"
 	io.WriteFileVD(dirout, tex, buf)
 	if dorun {
-		_, err := io.RunCmd(true, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory=/tmp/goga/", tex)
+		_, err := io.RunCmd(false, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory=/tmp/goga/", tex)
 		if err != nil {
 			chk.Panic("%v", err)
 		}
