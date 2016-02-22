@@ -63,6 +63,7 @@ type Parameters struct {
 	Strategy int  // strategy
 	PlotSet1 bool // plot set of graphs 1
 	PlotSet2 bool // plot set of graphs 2
+	ProbNum  int  // problem number
 }
 
 // Default sets default parameters
@@ -258,6 +259,7 @@ func (o *Parameters) LogParams() (l string) {
 		"strategy", "Strategy", o.Strategy,
 		"plot set of graphs 1", "PlotSet1", o.PlotSet1,
 		"plot set of graphs 2", "PlotSet2", o.PlotSet2,
+		"problem number", "ProbNum", o.ProbNum,
 	)
 	return
 }
