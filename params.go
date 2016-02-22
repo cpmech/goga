@@ -58,6 +58,11 @@ type Parameters struct {
 	Nint   int       // number of integers
 	DelFlt []float64 // max float range
 	DelInt []int     // max int range
+
+	// extra variables not direclty related to GOGA (for convenience of having a reader already)
+	Strategy int  // strategy
+	PlotSet1 bool // plot set of graphs 1
+	PlotSet2 bool // plot set of graphs 2
 }
 
 // Default sets default parameters
@@ -245,6 +250,14 @@ func (o *Parameters) LogParams() (l string) {
 	l += io.ArgsTable("DERIVED",
 		"number of floats", "Nflt", o.Nflt,
 		"number of integers", "Nint", o.Nint,
+	)
+
+	// extra
+	l += "\n"
+	l += io.ArgsTable("EXTRA",
+		"strategy", "Strategy", o.Strategy,
+		"plot set of graphs 1", "PlotSet1", o.PlotSet1,
+		"plot set of graphs 2", "PlotSet2", o.PlotSet2,
 	)
 	return
 }
