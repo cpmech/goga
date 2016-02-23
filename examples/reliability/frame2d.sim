@@ -1,0 +1,44 @@
+{
+  "desc" : [
+    "Example from:",
+    " [1] Cheng J and Xiao RC. Serviceability reliability analysis of cabe-stayed bridges.",
+    "     Structural Engineering and Mechanics. 20(6):609-630; 2005",
+    " [2] Cheng J. Hybrid genetic algorithms for structural reliability analysis.",
+    "     Computers and Structures, 85:1525-1533; 2007",
+    "     doi:10.1016/j.compstruc.2007.01.018"
+  ],
+  "data" : {
+    "matfile" : "frame2d.mat",
+    "steady"  : true,
+    "showR"   : false
+  },
+  "linsol" : {
+    "symmetric" : true
+  },
+  "functions" : [
+    { "name":"P", "type":"cte", "prms":[
+      {"n":"c", "v":30, "s":7.5, "min":10, "max":80, "d":"gumbel", "adj":6}
+    ] }
+  ],
+  "regions" : [
+    {
+      "mshfile": "frame2d.msh",
+      "elemsdata" : [
+        { "tag":-1, "mat":"M1", "type":"beam" },
+        { "tag":-2, "mat":"M2", "type":"beam" },
+        { "tag":-3, "mat":"M3", "type":"beam" },
+        { "tag":-4, "mat":"M4", "type":"beam" },
+        { "tag":-5, "mat":"M5", "type":"beam" }
+      ]
+    }
+  ],
+  "stages" : [
+    {
+      "desc": "apply load",
+      "nodebcs": [
+        { "tag":-30, "keys":["ux","uy","rz"], "funcs":["zero","zero","zero"] },
+        { "tag":-10, "keys":["fx"], "funcs":["P"] }
+      ]
+    }
+  ]
+}

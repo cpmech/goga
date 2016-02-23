@@ -1,0 +1,9 @@
+{
+  "nsol"     : 60,
+  "ncpu"     : 2,
+  "tf"       : 100,
+  "nsamples" : 1,
+  "plotset1" : false,
+  "strategy" : 2,
+  "epsH"     : 1e-1
+}

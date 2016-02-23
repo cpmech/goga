@@ -17,6 +17,7 @@ import (
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/rnd"
+	"github.com/cpmech/gosl/utl"
 )
 
 func main() {
@@ -25,29 +26,25 @@ func main() {
 	_, fnkey := io.ArgToFilename(0, "frame2d", ".sim", true)
 
 	// simple problems
-	var plotonly bool
 	var opts []*goga.Optimiser
 	if fnkey == "simple" {
 		io.Pf("\n\n\n")
-		P := []int{19}
+		//P := []int{19}
 		//P := []int{1, 2}
-		//P := utl.IntRange2(1, 7)
+		P := utl.IntRange2(1, 20)
 		opts = make([]*goga.Optimiser, len(P))
 		for i, problem := range P {
 			opts[i] = solve_problem(fnkey, problem)
-			if opts[i].PlotSet1 {
-				plotonly = true
-			}
 		}
 	} else {
 		opts = []*goga.Optimiser{solve_problem(fnkey, 0)}
 	}
-	if plotonly {
+	if opts[0].PlotSet1 {
 		return
 	}
 
 	io.Pf("\n=================================== generating report ===================================\n")
-	nRowPerTab := 6
+	nRowPerTab := 8
 	title := "FORM Reliability: " + fnkey
 	goga.TexReport("/tmp/goga", "tmp_rel-"+fnkey, title, "rel-"+fnkey, 1, nRowPerTab, true, opts)
 	goga.TexReport("/tmp/goga", "rel-"+fnkey, title, "rel-"+fnkey, 1, nRowPerTab, false, opts)
@@ -78,7 +75,7 @@ func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
 	} else {
 		opt.Read("ga-" + fnkey + ".json")
 		lsft, vars = get_femsim_data(opt, fnkey)
-		io.Pf("\n----------------------------------- femsim %s --------------------------------\n", opt.ProbNum)
+		io.Pf("\n----------------------------------- femsim %s --------------------------------\n", fnkey)
 	}
 
 	// set limits
@@ -172,7 +169,7 @@ func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
 			h[1] = failed
 
 			// induce minmisation of h0
-			f[0] += math.Abs(lsf)
+			//f[0] += math.Abs(lsf)
 		}
 
 	case 2:

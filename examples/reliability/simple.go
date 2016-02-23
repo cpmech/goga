@@ -226,6 +226,8 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 			&rnd.VarData{D: rnd.D_Lognormal, M: 50, S: 15, Min: 5, Max: 150},
 			&rnd.VarData{D: rnd.D_Lognormal, M: 40, S: 12, Min: 5, Max: 120},
 		}
+		opt.Nsol = 60
+		opt.Ncpu = 2
 
 	case 15:
 		desc = "SMB16/KLH2"
@@ -245,6 +247,8 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 			&rnd.VarData{D: rnd.D_Lognormal, M: 50, S: 15, Min: 5, Max: 150},
 			&rnd.VarData{D: rnd.D_Lognormal, M: 40, S: 12, Min: 5, Max: 120},
 		}
+		opt.Nsol = 60
+		opt.Ncpu = 2
 
 	case 16:
 		desc = "SMB17/MS5"
@@ -258,6 +262,7 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 			&rnd.VarData{D: rnd.D_Lognormal, M: 20.0, S: 0.2, Min: 19, Max: 21},
 			&rnd.VarData{D: rnd.D_Lognormal, M: 9.2, S: 0.1, Min: 8, Max: 10},
 		}
+		opt.Nsol = 30
 
 	case 17:
 		desc = "SMB18/SSGK4a" // SSGK case 1
@@ -270,6 +275,7 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 			&rnd.VarData{D: rnd.D_Normal, M: 1e-4, S: 2e-5, Min: 1e-5, Max: 2e-4},
 			&rnd.VarData{D: rnd.D_Gumbel, M: 4, S: 1.0, Min: 1, Max: 15},
 		}
+		opt.Nsol = 30
 
 	case 18:
 		desc = "SMB19/SSGK4b" // SSGK case 2
@@ -282,6 +288,7 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 			&rnd.VarData{D: rnd.D_Lognormal, M: 1e-4, S: 2e-5, Min: 1e-5, Max: 3e-4},
 			&rnd.VarData{D: rnd.D_Gumbel, M: 4, S: 1.0, Min: 1, Max: 15},
 		}
+		opt.Nsol = 30
 
 	case 19:
 		desc = "SMB20/SSGK5"
@@ -298,6 +305,7 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 			&rnd.VarData{D: rnd.D_Normal, M: 0.8, S: 0.2, Min: 0.1, Max: 2.0},
 			&rnd.VarData{D: rnd.D_Lognormal, M: 0.0625, S: 0.0625, Min: 0.001, Max: 0.4},
 		}
+		opt.Nsol = 40
 
 	default:
 		chk.Panic("simple problem number %d is invalid", opt.ProbNum)

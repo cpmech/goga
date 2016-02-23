@@ -1,0 +1,59 @@
+{
+  "materials" : [
+    {
+      "name"  : "M1",
+      "type"  : "sld",
+      "model" : "oned-elast",
+      "prms"  : [
+        {"n":"E",   "v":2e7    },
+        {"n":"A",   "v":0.25   , "adj":1, "s":0.025, "min":0.15, "max":0.35, "d":"lognormal"},
+        {"n":"I22", "v":0.08333, "dep":1},
+        {"n":"rho", "v":7.8    }
+      ]
+    },
+    {
+      "name"  : "M2",
+      "type"  : "sld",
+      "model" : "oned-elast",
+      "prms"  : [
+        {"n":"E",   "v":2e7    },
+        {"n":"A",   "v":0.16   , "adj":2, "s":0.016, "min":0.1, "max":0.25, "d":"lognormal"},
+        {"n":"I22", "v":0.08333, "dep":2},
+        {"n":"rho", "v":7.8    }
+      ]
+    },
+    {
+      "name"  : "M3",
+      "type"  : "sld",
+      "model" : "oned-elast",
+      "prms"  : [
+        {"n":"E",   "v":2e7    },
+        {"n":"A",   "v":0.36   , "adj":3, "s":0.036, "min":0.25, "max":0.5, "d":"lognormal"},
+        {"n":"I22", "v":0.08333, "dep":3},
+        {"n":"rho", "v":7.8    }
+      ]
+    },
+    {
+      "name"  : "M4",
+      "type"  : "sld",
+      "model" : "oned-elast",
+      "prms"  : [
+        {"n":"E",   "v":2e7    },
+        {"n":"A",   "v":0.20   , "adj":4, "s":0.020, "min":0.1, "max":0.3, "d":"lognormal"},
+        {"n":"I22", "v":0.26670, "dep":4},
+        {"n":"rho", "v":7.8    }
+      ]
+    },
+    {
+      "name"  : "M5",
+      "type"  : "sld",
+      "model" : "oned-elast",
+      "prms"  : [
+        {"n":"E",   "v":2e7  },
+        {"n":"A",   "v":0.15 , "adj":5, "s":0.015, "min":0.1, "max":0.25, "d":"lognormal"},
+        {"n":"I22", "v":0.2  , "dep":5},
+        {"n":"rho", "v":7.8  }
+      ]
+    }
+  ]
+}
