@@ -58,7 +58,7 @@ type Optimiser struct {
 }
 
 // Initialises continues initialisation by generating individuals
-//  Optional: fcn XOR obj, nf, ng, nh
+//  Optional:  obj  XOR  fcn, nf, ng, nh
 func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, nh int) {
 
 	// generic or minimisation problem

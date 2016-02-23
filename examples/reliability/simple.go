@@ -134,8 +134,8 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 2.2260 // from SMB
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 5},
-			&rnd.VarData{D: rnd.D_Normal, M: 9.9, S: 5},
+			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 5, Min: -50, Max: 50},
+			&rnd.VarData{D: rnd.D_Normal, M: 9.9, S: 5, Min: -50, Max: 50},
 		}
 
 	case 8:
@@ -145,8 +145,8 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 2.5 // from SMB
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3},
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3},
+			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3, Min: -50, Max: 50},
+			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3, Min: -50, Max: 50},
 		}
 
 	case 9:
@@ -156,8 +156,8 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 1.9003 // from SMB
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 5},
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 5},
+			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 5, Min: -50, Max: 50},
+			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 5, Min: -50, Max: 50},
 		}
 
 	case 10:
@@ -167,8 +167,8 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 5.4280 // from SMB
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 78064.4, S: 11709.7},
-			&rnd.VarData{D: rnd.D_Normal, M: 0.0104, S: 0.00156},
+			&rnd.VarData{D: rnd.D_Normal, M: 78064.4, S: 11709.7, Min: 1000, Max: 150000},
+			&rnd.VarData{D: rnd.D_Normal, M: 0.0104, S: 0.00156, Min: -0.05, Max: 0.05},
 		}
 
 	case 11:
@@ -178,8 +178,8 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 2.2257 // from SMB
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3},
-			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3},
+			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3, Min: -50, Max: 50},
+			&rnd.VarData{D: rnd.D_Normal, M: 10, S: 3, Min: -50, Max: 50},
 		}
 
 	case 12:
@@ -189,8 +189,8 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 5.2127 // from SMB // from here: 5.210977819456551
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Lognormal, M: 38, S: 3.8},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 54, S: 2.7},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 38, S: 3.8, Min: 20, Max: 60},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 54, S: 2.7, Min: 40, Max: 70},
 		}
 
 	// more than 2 variables -----------------------------------------------------------------
@@ -207,8 +207,10 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		βref = 2.0 // from SMB
 		vars = make([]*rnd.VarData, 10)
 		for i := 0; i < 10; i++ {
-			vars[i] = &rnd.VarData{D: rnd.D_Normal, M: 0, S: 1}
+			vars[i] = &rnd.VarData{D: rnd.D_Normal, M: 0, S: 1, Min: -20, Max: 20}
 		}
+		opt.Nsol = 120
+		opt.Ncpu = 4
 
 	case 14:
 		desc = "KLH1/CX1"
@@ -217,12 +219,12 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 2.348 // from CX1
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 50, S: 15},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 40, S: 12},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12, Min: 50, Max: 200},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12, Min: 50, Max: 200},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12, Min: 50, Max: 200},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12, Min: 50, Max: 200},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 50, S: 15, Min: 5, Max: 150},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 40, S: 12, Min: 5, Max: 120},
 		}
 
 	case 15:
@@ -236,12 +238,12 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 2.3482 // from SMB
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 50, S: 15},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 40, S: 12},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12, Min: 50, Max: 200},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12, Min: 50, Max: 200},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12, Min: 50, Max: 200},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 120, S: 12, Min: 50, Max: 200},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 50, S: 15, Min: 5, Max: 150},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 40, S: 12, Min: 5, Max: 120},
 		}
 
 	case 16:
@@ -252,9 +254,9 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 0.8292 // from SMB
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Lognormal, M: 21.2, S: 0.1},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 20.0, S: 0.2},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 9.2, S: 0.1},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 21.2, S: 0.1, Min: 20, Max: 22},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 20.0, S: 0.2, Min: 19, Max: 21},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 9.2, S: 0.1, Min: 8, Max: 10},
 		}
 
 	case 17:
@@ -264,9 +266,9 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 3.3221 // from SMB or 3.31819 from SSGK
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Normal, M: 2e7, S: 5e6},
-			&rnd.VarData{D: rnd.D_Normal, M: 1e-4, S: 2e-5},
-			&rnd.VarData{D: rnd.D_Gumbel, M: 4, S: 1.0},
+			&rnd.VarData{D: rnd.D_Normal, M: 2e7, S: 5e6, Min: 1e6, Max: 4e7},
+			&rnd.VarData{D: rnd.D_Normal, M: 1e-4, S: 2e-5, Min: 1e-5, Max: 2e-4},
+			&rnd.VarData{D: rnd.D_Gumbel, M: 4, S: 1.0, Min: 1, Max: 15},
 		}
 
 	case 18:
@@ -276,9 +278,9 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 4.45272 // from SSGK
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Lognormal, M: 2e7, S: 5e6},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 1e-4, S: 2e-5},
-			&rnd.VarData{D: rnd.D_Gumbel, M: 4, S: 1.0},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 2e7, S: 5e6, Min: 1e6, Max: 5e7},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 1e-4, S: 2e-5, Min: 1e-5, Max: 3e-4},
+			&rnd.VarData{D: rnd.D_Gumbel, M: 4, S: 1.0, Min: 1, Max: 15},
 		}
 
 	case 19:
@@ -291,10 +293,10 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		}
 		βref = 2.42031 // from SSGK
 		vars = rnd.Variables{
-			&rnd.VarData{D: rnd.D_Frechet, L: 8.782275, A: 4.095645},
-			&rnd.VarData{D: rnd.D_Normal, M: 25, S: 5},
-			&rnd.VarData{D: rnd.D_Normal, M: 0.8, S: 0.2},
-			&rnd.VarData{D: rnd.D_Lognormal, M: 0.0625, S: 0.0625},
+			&rnd.VarData{D: rnd.D_Frechet, L: 8.782275, A: 4.095645, Min: 8, Max: 12},
+			&rnd.VarData{D: rnd.D_Normal, M: 25, S: 5, Min: 5, Max: 50},
+			&rnd.VarData{D: rnd.D_Normal, M: 0.8, S: 0.2, Min: 0.1, Max: 2.0},
+			&rnd.VarData{D: rnd.D_Lognormal, M: 0.0625, S: 0.0625, Min: 0.001, Max: 0.4},
 		}
 
 	default:

@@ -3,5 +3,7 @@
   "ncpu"     : 1,
   "tf"       : 100,
   "nsamples" : 10,
-  "plotset1" : false
+  "plotset1" : false,
+  "strategy" : 2,
+  "epsH"     : 1e-1
 }

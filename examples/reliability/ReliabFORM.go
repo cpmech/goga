@@ -12,11 +12,11 @@ import (
 
 	"github.com/cpmech/goga"
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/fun"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/rnd"
-	"github.com/cpmech/gosl/utl"
 )
 
 func main() {
@@ -29,13 +29,13 @@ func main() {
 	var opts []*goga.Optimiser
 	if fnkey == "simple" {
 		io.Pf("\n\n\n")
-		//P := []int{6}
+		P := []int{19}
 		//P := []int{1, 2}
-		P := utl.IntRange2(1, 7)
+		//P := utl.IntRange2(1, 7)
 		opts = make([]*goga.Optimiser, len(P))
 		for i, problem := range P {
 			opts[i] = solve_problem(fnkey, problem)
-			if opts[i] == nil {
+			if opts[i].PlotSet1 {
 				plotonly = true
 			}
 		}
@@ -81,6 +81,15 @@ func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
 		io.Pf("\n----------------------------------- femsim %s --------------------------------\n", opt.ProbNum)
 	}
 
+	// set limits
+	nx := len(vars)
+	opt.FltMin = make([]float64, nx)
+	opt.FltMax = make([]float64, nx)
+	for i, dat := range vars {
+		opt.FltMin[i] = dat.Min
+		opt.FltMax[i] = dat.Max
+	}
+
 	// log input
 	var buf bytes.Buffer
 	io.Ff(&buf, "%s", opt.LogParams())
@@ -90,15 +99,6 @@ func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
 	err := vars.Init()
 	if err != nil {
 		chk.Panic("cannot initialise distributions:\n%v", err)
-	}
-
-	// set limits
-	nx := len(vars)
-	opt.FltMin = make([]float64, nx)
-	opt.FltMax = make([]float64, nx)
-	for i, dat := range vars {
-		opt.FltMin[i] = dat.Min
-		opt.FltMax[i] = dat.Max
 	}
 
 	// plot distributions
@@ -119,6 +119,7 @@ func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
 	nf := 1
 	var ng, nh int
 	var fcn goga.MinProb_t
+	var obj goga.ObjFunc_t
 	switch opt.Strategy {
 
 	// argmin_x{ β(y(x)) | lsf(x) ≤ 0 }
@@ -170,7 +171,35 @@ func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
 			h[0] = lsf
 			h[1] = failed
 
-			//f[0] += math.Abs(lsf)
+			// induce minmisation of h0
+			f[0] += math.Abs(lsf)
+		}
+
+	case 2:
+		opt.Nova = 1
+		opt.Noor = 2
+		obj = func(sol *goga.Solution, cpu int) {
+
+			// clear out-of-range values
+			sol.Oor[0] = 0 // invalid transformation or FEM failed
+			sol.Oor[1] = 0 // g(x) ≤ 0 was violated
+
+			// original and normalised variables
+			x := sol.Flt
+			y, invalid := vars.Transform(x)
+			if invalid {
+				sol.Oor[0] = goga.INF
+				sol.Oor[1] = goga.INF
+				return
+			}
+
+			// objective value
+			sol.Ova[0] = math.Sqrt(la.VecDot(y, y)) // β
+
+			// inequality constraint
+			lsf, failed := lsft(x, cpu)
+			sol.Oor[0] = failed
+			sol.Oor[1] = fun.Ramp(lsf)
 		}
 
 	default:
@@ -178,7 +207,7 @@ func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
 	}
 
 	// initialise optimiser
-	opt.Init(goga.GenTrialSolutions, nil, fcn, nf, ng, nh)
+	opt.Init(goga.GenTrialSolutions, obj, fcn, nf, ng, nh)
 
 	// solve
 	io.Pf(". . . . . . . .  running  . . . . . . . .\n")
