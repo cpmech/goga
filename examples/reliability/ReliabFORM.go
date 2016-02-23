@@ -31,7 +31,7 @@ func main() {
 		io.Pf("\n\n\n")
 		//P := []int{19}
 		//P := []int{1, 2}
-		P := utl.IntRange2(1, 20)
+		P := utl.IntRange2(1, 19)
 		opts = make([]*goga.Optimiser, len(P))
 		for i, problem := range P {
 			opts[i] = solve_problem(fnkey, problem)
@@ -44,7 +44,7 @@ func main() {
 	}
 
 	io.Pf("\n=================================== generating report ===================================\n")
-	nRowPerTab := 8
+	nRowPerTab := 9
 	title := "FORM Reliability: " + fnkey
 	goga.TexReport("/tmp/goga", "tmp_rel-"+fnkey, title, "rel-"+fnkey, 1, nRowPerTab, true, opts)
 	goga.TexReport("/tmp/goga", "rel-"+fnkey, title, "rel-"+fnkey, 1, nRowPerTab, false, opts)

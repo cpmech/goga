@@ -11,6 +11,7 @@ import (
 
 	"github.com/cpmech/goga"
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/rnd"
 )
 
@@ -311,6 +312,7 @@ func get_simple_data(opt *goga.Optimiser) (lsf LSF_T, vars rnd.Variables) {
 		chk.Panic("simple problem number %d is invalid", opt.ProbNum)
 	}
 	opt.RptName = desc
+	opt.RptName = io.Sf("%d", opt.ProbNum)
 	opt.RptFref = []float64{βref}
 	opt.RptXref = xref
 	return
