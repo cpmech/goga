@@ -60,6 +60,9 @@ func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
 	opt.RptFmtF = "%f"
 	opt.RptFmtX = "%.5f"
 	opt.RptFmtFdev = "%.2e"
+	opt.RptWordF = "\\beta"
+	opt.HistFmt = "%.3f"
+	opt.HistNdig = 3
 
 	// FORM data
 	var lsft LSF_T
