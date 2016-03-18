@@ -29,8 +29,7 @@ func main() {
 	var opts []*goga.Optimiser
 	if fnkey == "simple" {
 		io.Pf("\n\n\n")
-		//P := []int{19}
-		//P := []int{1, 2}
+		//P := []int{1}
 		P := utl.IntRange2(1, 19)
 		opts = make([]*goga.Optimiser, len(P))
 		for i, problem := range P {
@@ -63,6 +62,8 @@ func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
 	opt.RptWordF = "\\beta"
 	opt.HistFmt = "%.3f"
 	opt.HistNdig = 3
+	opt.HistDelFmin = 0.005
+	opt.HistDelFmax = 0.005
 
 	// FORM data
 	var lsft LSF_T

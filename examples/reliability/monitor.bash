@@ -16,8 +16,8 @@ echo
 refresh(){
     echo
     echo
-    go run defs.go fesim.go ReliabFORM.go simple.go  simple
-    #go run defs.go fesim.go ReliabFORM.go simple.go  frame2d
+    #go run defs.go fesim.go ReliabFORM.go simple.go  simple
+    go run defs.go fesim.go ReliabFORM.go simple.go  frame2d
     #python draw-frame2d.py
 }
 
