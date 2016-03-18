@@ -156,33 +156,33 @@ func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer) {
 \end{aligned}$}
 &
 {$\!\begin{aligned}
-	f_{ref}  &= {\bf %s} \\
+	%s_{ref} &= {\bf %s} \\
 	C_{DE}   &= %g \\
 	N_{eval} &= %d \\
 	T_{sys}  &= %v
 \end{aligned}$}
 &
 {$\!\begin{aligned}
-    f_{min}  &= {\bf %s} \\
-    f_{ave}  &= %s \\
-    f_{max}  &= %s \\
-    f_{dev}  &= {\bf %s}
+    %s_{min} &= {\bf %s} \\
+    %s_{ave} &= %s \\
+    %s_{max} &= %s \\
+    %s_{dev} &= {\bf %s}
 \end{aligned}$}
 &
 \begin{minipage}{5cm} \tiny
 \begin{verbatim}
 %s \end{verbatim}
 \end{minipage} \\
-\multicolumn{5}{c}{{\scriptsize $X_{best}$=`+o.RptFmtX+`}} \\`,
+\multicolumn{5}{c}{{\scriptsize $x_{best}$=`+o.RptFmtX+`}} \\`,
 		o.RptName,
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
-		FrefTxt, o.DEC, o.Nfeval, dround(o.SysTime, 0.001e9),
-		FminTxt, FaveTxt, FmaxTxt, FdevTxt,
+		o.RptWordF, FrefTxt, o.DEC, o.Nfeval, dround(o.SysTime, 0.001e9),
+		o.RptWordF, FminTxt, o.RptWordF, FaveTxt, o.RptWordF, FmaxTxt, o.RptWordF, FdevTxt,
 		hist,
 		o.BestOfBestFlt)
 	if len(o.RptXref) == o.Nflt {
 		io.Ff(buf, `
-\multicolumn{5}{c}{{\scriptsize $X_{ref.}$=`+o.RptFmtX+`}} \\`, o.RptXref)
+\multicolumn{5}{c}{{\scriptsize $x_{ref.}$=`+o.RptFmtX+`}} \\`, o.RptXref)
 	}
 	io.Ff(buf, "\n")
 }

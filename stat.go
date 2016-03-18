@@ -32,6 +32,7 @@ type Stat struct {
 	RptFmtL    string    // format for lmin, lave and lmax
 	RptFmtLdev string    // format for ldev
 	RptFmtX    string    // format for x values
+	RptWordF   string    // word to use for 'f'; e.g. '\beta'
 	HistFmt    string    // format in histogram
 	HistNdig   int       // number of digits in histogram
 	HistNsta   int       // number of stations in histogram
@@ -339,6 +340,9 @@ func (o *Stat) fix_formatting_data() {
 	}
 	if o.RptFmtX == "" {
 		o.RptFmtX = "%g"
+	}
+	if o.RptWordF == "" {
+		o.RptWordF = "f"
 	}
 	if o.HistFmt == "" {
 		o.HistFmt = "%.2f"
