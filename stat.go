@@ -20,23 +20,31 @@ type Stat struct {
 	SysTime time.Duration // system (real/CPU) time
 
 	// formatting data for reports
-	RptName    string    // problem name
-	RptFref    []float64 // reference OVAs
-	RptXref    []float64 // reference flts
-	RptFmin    []float64 // min OVAs for reports/graphs
-	RptFmax    []float64 // max OVAs for reports/graphs
-	RptFmtF    string    // format for fmin, fave and fmax
-	RptFmtFdev string    // format for fdev
-	RptFmtE    string    // format for emin, eave and emax
-	RptFmtEdev string    // format for edev
-	RptFmtL    string    // format for lmin, lave and lmax
-	RptFmtLdev string    // format for ldev
-	RptFmtX    string    // format for x values
-	RptWordF   string    // word to use for 'f'; e.g. '\beta'
-	HistFmt    string    // format in histogram
-	HistNdig   int       // number of digits in histogram
-	HistNsta   int       // number of stations in histogram
-	HistLen    int       // number of characters (bar length) in histogram
+	RptName         string    // problem name
+	RptFref         []float64 // reference OVAs
+	RptXref         []float64 // reference flts
+	RptFmin         []float64 // min OVAs for reports/graphs
+	RptFmax         []float64 // max OVAs for reports/graphs
+	RptFmtF         string    // format for fmin, fave and fmax
+	RptFmtFdev      string    // format for fdev
+	RptFmtE         string    // format for emin, eave and emax
+	RptFmtEdev      string    // format for edev
+	RptFmtL         string    // format for lmin, lave and lmax
+	RptFmtLdev      string    // format for ldev
+	RptFmtX         string    // format for x values
+	RptWordF        string    // word to use for 'f'; e.g. '\beta'
+	HistFmt         string    // format in histogram
+	HistDelFmin     float64   // Δf for minimum f value in histogram
+	HistDelFmax     float64   // Δf for minimum f value in histogram
+	HistDelEmin     float64   // Δe for minimum e value in histogram
+	HistDelEmax     float64   // Δe for minimum e value in histogram
+	HistDelFminZero bool      // use zero for Δf (min)
+	HistDelFmaxZero bool      // use zero for Δf (max)
+	HistDelEminZero bool      // use zero for Δe (min)
+	HistDelEmaxZero bool      // use zero for Δe (max)
+	HistNdig        int       // number of digits in histogram
+	HistNsta        int       // number of stations in histogram
+	HistLen         int       // number of characters (bar length) in histogram
 
 	// RunMany: best solutions
 	BestOvas      [][]float64 // best OVAs [nova][nsamples]
@@ -242,7 +250,7 @@ func StatF(o *Optimiser, idxF int, verbose bool) (fmin, fave, fmax, fdev float64
 		io.Pf("fmax = %g\n", fmax)
 		io.Pf("fdev = %g\n", fdev)
 		o.fix_formatting_data()
-		io.Pf(rnd.BuildTextHist(nice(fmin-0.05, o.HistNdig), nice(fmax+0.05, o.HistNdig),
+		io.Pf(rnd.BuildTextHist(nice(fmin, o.HistNdig)-o.HistDelFmin, nice(fmax, o.HistNdig)+o.HistDelFmax,
 			o.HistNsta, F, o.HistFmt, o.HistLen))
 	}
 	return
@@ -267,7 +275,7 @@ func StatF1F0(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []f
 			io.Pf("eave = %g\n", eave)
 			io.Pf("emax = %g\n", emax)
 			io.Pf("edev = %g\n", edev)
-			io.Pf(rnd.BuildTextHist(nice(emin-0.05, o.HistNdig), nice(emax+0.05, o.HistNdig),
+			io.Pf(rnd.BuildTextHist(nice(emin, o.HistNdig)-o.HistDelEmin, nice(emax, o.HistNdig)+o.HistDelEmax,
 				o.HistNsta, E, o.HistFmt, o.HistLen))
 		}
 	}
@@ -287,7 +295,7 @@ func StatF1F0(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []f
 			io.Pf("lave = %g\n", lave)
 			io.Pf("lmax = %g\n", lmax)
 			io.Pf("ldev = %g\n", ldev)
-			io.Pf(rnd.BuildTextHist(nice(lmin-0.05, o.HistNdig), nice(lmax+0.05, o.HistNdig),
+			io.Pf(rnd.BuildTextHist(nice(lmin, o.HistNdig)-o.HistDelEmin, nice(lmax, o.HistNdig)+o.HistDelEmax,
 				o.HistNsta, L, o.HistFmt, o.HistLen))
 		}
 	}
@@ -312,7 +320,7 @@ func StatMulti(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []
 		io.Pf("eave = %g\n", eave)
 		io.Pf("emax = %g\n", emax)
 		io.Pf("edev = %g\n", edev)
-		io.Pf(rnd.BuildTextHist(nice(emin-0.05, o.HistNdig), nice(emax+0.05, o.HistNdig),
+		io.Pf(rnd.BuildTextHist(nice(emin, o.HistNdig)-o.HistDelEmin, nice(emax, o.HistNdig)+o.HistDelEmax,
 			o.HistNsta, E, o.HistFmt, o.HistLen))
 	}
 	return
@@ -346,6 +354,30 @@ func (o *Stat) fix_formatting_data() {
 	}
 	if o.HistFmt == "" {
 		o.HistFmt = "%.2f"
+	}
+	if math.Abs(o.HistDelFmin) < 1e-15 {
+		o.HistDelFmin = 0.05
+	}
+	if math.Abs(o.HistDelFmax) < 1e-15 {
+		o.HistDelFmax = 0.05
+	}
+	if math.Abs(o.HistDelEmin) < 1e-15 {
+		o.HistDelEmin = 0.05
+	}
+	if math.Abs(o.HistDelEmax) < 1e-15 {
+		o.HistDelEmax = 0.05
+	}
+	if o.HistDelFminZero {
+		o.HistDelFmin = 0
+	}
+	if o.HistDelFmaxZero {
+		o.HistDelFmax = 0
+	}
+	if o.HistDelEminZero {
+		o.HistDelEmin = 0
+	}
+	if o.HistDelEmaxZero {
+		o.HistDelEmax = 0
 	}
 	if o.HistNdig == 0 {
 		o.HistNdig = 3

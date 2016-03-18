@@ -144,7 +144,7 @@ func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer) {
 	}
 	Fmin, Fave, Fmax, Fdev, F := StatF(o, 0, false)
 	FminTxt, FaveTxt, FmaxTxt, FdevTxt := tex(o.RptFmtF, Fmin), tex(o.RptFmtF, Fave), tex(o.RptFmtF, Fmax), tex(o.RptFmtFdev, Fdev)
-	hist := rnd.BuildTextHist(nice(Fmin-0.05, o.HistNdig), nice(Fmax+0.05, o.HistNdig), o.HistNsta, F, o.HistFmt, o.HistLen)
+	hist := rnd.BuildTextHist(nice(Fmin, o.HistNdig)-o.HistDelFmin, nice(Fmax, o.HistNdig)+o.HistDelFmax, o.HistNsta, F, o.HistFmt, o.HistLen)
 	io.Ff(buf, `
 %s
 &
@@ -240,7 +240,7 @@ func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer) {
 	o.fix_formatting_data()
 	Emin, Eave, Emax, Edev, E := StatMulti(o, false)
 	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
-	hist := rnd.BuildTextHist(nice(Emin-0.05, o.HistNdig), nice(Emax+0.05, o.HistNdig), o.HistNsta, E, o.HistFmt, o.HistLen)
+	hist := rnd.BuildTextHist(nice(Emin, o.HistNdig)-o.HistDelEmin, nice(Emax, o.HistNdig)+o.HistDelEmax, o.HistNsta, E, o.HistFmt, o.HistLen)
 	io.Ff(buf, `
 %s
 &
