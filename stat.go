@@ -62,6 +62,8 @@ type Stat struct {
 	F1F0_f0ranges  [][]float64               // ranges of f0 values to compute arc-length
 	Multi_fcnErr   func(f []float64) float64 // computes Pareto-optimal front error with many OVAs
 	Multi_err      []float64                 // max(error(f[i]))
+	Multi_fStar    [][]float64               // reference points on Pareto front [npoints][nova]
+	Multi_IGD      []float64                 // IGD metric
 }
 
 // RunMany runs many trials in order to produce statistical data
@@ -209,6 +211,11 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 				}
 			}
 
+			// IGD metric
+			if o.Nova > 1 && len(o.Multi_fStar) > 0 {
+				o.Multi_IGD = append(o.Multi_IGD, StatIgd(o, o.Multi_fStar))
+			}
+
 			// save final solutions
 			if fnkey != "" {
 				f0min := best.Ova[0]
@@ -219,6 +226,28 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 			}
 		}
 	}
+}
+
+// StatIgd computes the IGD metric (smaller value means the Pareto front is wide and accurate).
+//  fStar is a matrix with reference points [npoints][nova]
+func StatIgd(o *Optimiser, fStar [][]float64) (igd float64) {
+	for _, point := range fStar {
+		dmin := INF
+		for _, sol := range o.Solutions {
+			if sol.Feasible() {
+				d := 0.0
+				for j := 0; j < o.Nova; j++ {
+					d += (point[j] - sol.Flt[j]) * (point[j] - sol.Flt[j])
+				}
+				if d < dmin {
+					dmin = d
+				}
+			}
+		}
+		igd += math.Sqrt(dmin)
+	}
+	igd /= float64(len(fStar))
+	return
 }
 
 // StatF computes statistical information corresponding to objective function idxF
