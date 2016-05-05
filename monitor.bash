@@ -12,7 +12,7 @@ refresh(){
     echo
     echo
     go install
-    go test -test.run="igd01"
+    go test -test.run="igd02"
 }
 
 while true; do
