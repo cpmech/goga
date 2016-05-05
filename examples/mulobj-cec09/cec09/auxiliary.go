@@ -4,11 +4,6 @@
 
 package cec09
 
-/*
-#include "IGD.h"
-*/
-import "C"
-
 import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
@@ -20,7 +15,4 @@ func PFdata(problem string) (dat [][]float64) {
 		chk.Panic("cannot load data for %q\n%v", problem, err)
 	}
 	return
-}
-
-func IGD() {
 }
