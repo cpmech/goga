@@ -1,3 +1,3 @@
 #!/bin/bash
 
-go run getfcn.go checkfcn.go
+go run auxplot.go mulobj-cec09.go

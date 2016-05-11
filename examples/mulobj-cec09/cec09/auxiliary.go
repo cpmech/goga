@@ -10,7 +10,7 @@ import (
 )
 
 func PFdata(problem string) (dat [][]float64) {
-	dat, err := io.ReadMatrix(io.Sf("pf_data/%s.dat", problem))
+	dat, err := io.ReadMatrix(io.Sf("$GOPATH/src/github.com/cpmech/goga/examples/mulobj-cec09/cec09/pf_data/%s.dat", problem))
 	if err != nil {
 		chk.Panic("cannot load data for %q\n%v", problem, err)
 	}
