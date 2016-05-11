@@ -25,11 +25,11 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 	opt.Ncpu = 1
 	opt.Tf = 500
 	opt.Verbose = false
-	opt.Nsamples = 1000
+	opt.Nsamples = 20
 	opt.GenType = "latin"
 
 	// options for report
-	opt.HistNsta = 7
+	opt.HistNsta = 6
 	opt.HistLen = 15
 	opt.RptFmtF = "%.5f"
 	opt.RptFmtFdev = "%.5f"
@@ -322,7 +322,7 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 
 func main() {
 	textSize := `\scriptsize  \setlength{\tabcolsep}{0.5em}`
-	miniPageSz, histTextSize := "3.6cm", `\tiny`
+	miniPageSz, histTextSize := "4.1cm", `\fontsize{5pt}{6pt}`
 	checkOnly := false
 	P := utl.IntRange2(1, 10)
 	//P := utl.IntRange2(1, 7)
