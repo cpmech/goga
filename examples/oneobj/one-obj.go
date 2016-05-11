@@ -25,15 +25,15 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 	opt.Ncpu = 1
 	opt.Tf = 500
 	opt.Verbose = false
-	opt.Nsamples = 10
+	opt.Nsamples = 1000
 	opt.GenType = "latin"
 
 	// options for report
-	opt.HistNsta = 8
-	opt.HistLen = 20
-	opt.RptFmtF = "%.7f"
-	opt.RptFmtFdev = "%.7f"
-	opt.RptFmtX = "%.7f"
+	opt.HistNsta = 7
+	opt.HistLen = 15
+	opt.RptFmtF = "%.5f"
+	opt.RptFmtFdev = "%.5f"
+	opt.RptFmtX = "%.5f"
 
 	// problem variables
 	var ng, nh int         // number of functions
@@ -55,7 +55,7 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 			g[0] = 4.84 - math.Pow(x[0]-0.05, 2.0) - math.Pow(x[1]-2.5, 2.0)
 			g[1] = x[0]*x[0] + math.Pow(x[1]-2.5, 2.0) - 4.84
 		}
-		opt.RptFmtFdev = "%.3e"
+		opt.RptFmtFdev = "%.2e"
 
 	// problem # 2 -- Deb's problem 3 -- Z. Michalewicz 1995
 	case 2:
@@ -93,7 +93,8 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 			g[7] = 2.0*x[5] + x[6] - x[10]
 			g[8] = 2.0*x[7] + x[8] - x[11]
 		}
-		opt.RptFmtFdev = "%.3e"
+		opt.RptFmtFdev = "%.2e"
+		opt.RptFmtX = "%.3f"
 
 	// problem # 3 -- Deb's problem 6 -- Z. Michalewicz 1996 -- D.M. Himmelblau 1972
 	case 3:
@@ -115,8 +116,9 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 			g[4] = c2 - 20.0
 			g[5] = 25.0 - c2
 		}
-		opt.RptFmtF = "%.3f"
-		opt.RptFmtFdev = "%.3e"
+		opt.RptFmtF = "%.2f"
+		opt.RptFmtFdev = "%.2e"
+		opt.HistLen = 5
 
 	// problem # 4 -- Deb's problem 2 -- D.M. Himmelblau 1972 -- W. Hock, K. Schittkowski 1981
 	case 4:
@@ -178,7 +180,7 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 			g[36] = 21.0 - 3496.0*y[1]/c[11]
 			g[37] = 62212.0/c[16] - 110.6 - y[0]
 		}
-		opt.RptFmtFdev = "%.3e"
+		opt.RptFmtFdev = "%.2e"
 
 	// problem # 5 -- A. Ravindran, K. M. Ragsdell, and G. V. Reklaitis (2007)
 	case 5:
@@ -201,7 +203,7 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 			g[3] = x[2]*math.Pow(x[3], 3.0)*(1.0-0.02823*x[2]) - 0.09267
 			g[4] = math.Pow(x[2], 3.0)*x[3] - 8.7808
 		}
-		opt.RptFmtFdev = "%.3e"
+		opt.RptFmtFdev = "%.2e"
 
 	// problem # 6 -- Deb's problem 5 -- Z. Michalewicz 1995
 	case 6:
@@ -272,6 +274,7 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 			g[4] = x[1]*x[6] - 1250.0*x[4] - x[1]*x[3] + 1250.0*x[3]
 			g[5] = x[2]*x[7] - x[2]*x[4] + 2500.0*x[4] - 1250000
 		}
+		opt.HistLen = 12
 
 	// problem # 9 -- Deb's problem 7 -- Z. Michalewicz 1995
 	case 9:
@@ -318,6 +321,8 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 }
 
 func main() {
+	textSize := `\scriptsize  \setlength{\tabcolsep}{0.5em}`
+	miniPageSz, histTextSize := "3.6cm", `\tiny`
 	checkOnly := false
 	P := utl.IntRange2(1, 10)
 	//P := utl.IntRange2(1, 7)
@@ -329,9 +334,9 @@ func main() {
 	if !checkOnly {
 		io.Pf("\n-------------------------- generating report --------------------------\nn")
 		nRowPerTab := 9
-		title := "Constrained single objective problems"
-		goga.TexReport("/tmp/goga", "tmp_one-obj", title, "one-obj", 1, nRowPerTab, true, opts)
-		goga.TexReport("/tmp/goga", "one-obj", title, "one-obj", 1, nRowPerTab, false, opts)
+		title := "Constrained single objective problems."
+		goga.TexReport("/tmp/goga", "tmp_one-obj", title, "one-obj", 1, nRowPerTab, true, false, textSize, miniPageSz, histTextSize, opts)
+		goga.TexReport("/tmp/goga", "one-obj", title, "one-obj", 1, nRowPerTab, false, false, textSize, miniPageSz, histTextSize, opts)
 	}
 }
 

@@ -333,22 +333,32 @@ func StatF1F0(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []f
 
 // StatMulti prints statistical analysis for multi-objective problems
 //  emin, eave, emax, edev -- errors on f1(f0)
-//  lmin, lave, lmax, ldev -- arc-lengths along f1(f0) curve
-func StatMulti(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []float64) {
-	if len(o.Multi_err) < 2 {
+//  key -- "IGD" if IGD values are available. In this case e{...} are IGD values
+func StatMulti(o *Optimiser, verbose bool) (key string, emin, eave, emax, edev float64, E []float64) {
+	if len(o.Multi_err) < 2 && len(o.Multi_IGD) < 2 {
 		io.Pfred("there are no samples for statistical analysis\n")
 		return
 	}
 	o.fix_formatting_data()
-	E = make([]float64, len(o.Multi_err))
-	copy(E, o.Multi_err)
+	n := len(o.Multi_err)
+	key = "E"
+	if n < 2 {
+		n = len(o.Multi_IGD)
+		key = "IGD"
+	}
+	E = make([]float64, n)
+	if key == "E" {
+		copy(E, o.Multi_err)
+	} else {
+		copy(E, o.Multi_IGD)
+	}
 	emin, eave, emax, edev = rnd.StatBasic(E, true)
 	if verbose {
 		io.Pf("\nerror on Pareto front (multi)\n")
-		io.Pf("emin = %g\n", emin)
-		io.Pf("eave = %g\n", eave)
-		io.Pf("emax = %g\n", emax)
-		io.Pf("edev = %g\n", edev)
+		io.Pf("%smin = %g\n", key, emin)
+		io.Pf("%save = %g\n", key, eave)
+		io.Pf("%smax = %g\n", key, emax)
+		io.Pf("%sdev = %g\n", key, edev)
 		io.Pf(rnd.BuildTextHist(nice(emin, o.HistNdig)-o.HistDelEmin, nice(emax, o.HistNdig)+o.HistDelEmax,
 			o.HistNsta, E, o.HistFmt, o.HistLen))
 	}

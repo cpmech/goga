@@ -21,20 +21,24 @@ const (
 // TeX document ////////////////////////////////////////////////////////////////////////////////////
 
 // TexDocumentStart starts TeX document
-func TexDocumentStart() (buf *bytes.Buffer) {
+func TexDocumentStart(useGeom bool) (buf *bytes.Buffer) {
+	str := ""
+	if useGeom {
+		str = `\usepackage[margin=1.5cm,footskip=0.5cm]{geometry}`
+	}
 	buf = new(bytes.Buffer)
 	io.Ff(buf, `\documentclass[a4paper]{article}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{booktabs}
-\usepackage[margin=1.5cm,footskip=0.5cm]{geometry}
+%s
 
 \title{GOGA Report}
 \author{Dorival Pedroso}
 
 \begin{document}
-`)
+`, str)
 	return
 }
 
@@ -58,14 +62,15 @@ func TexWrite(dirout, fnkey string, buf *bytes.Buffer, dorun bool) {
 }
 
 // TexTableStart starts table
-func TexTableStart(buf *bytes.Buffer, title, col4, col5 string) {
+func TexTableStart(buf *bytes.Buffer, title, col4, col5 string, textSize string) {
 	io.Ff(buf, `
 \begin{table*} [!t] \centering
-\caption{\textsc{%s.}}
+\caption{%s}
+%s
 
 \begin{tabular}[c]{ccccc} \toprule
 P & settings & settings/info & %s & %s \\ \hline
-`, title, col4, col5)
+`, title, textSize, col4, col5)
 }
 
 // TexTableEnd ends table
@@ -82,9 +87,9 @@ func TexTableEnd(buf *bytes.Buffer, label string) {
 //     1 -- one objective; with histogram of OVA
 //     2 -- two objective; no histogram; with E(error) and L(spread)
 //     3 -- multi objective; with histogram of error
-func TexReport(dirout, fnkey, title, label string, Type, nRowPerTab int, docHeader bool, opts []*Optimiser) {
+func TexReport(dirout, fnkey, title, label string, Type, nRowPerTab int, docHeader, useGeom bool, textSize, miniPageSz, histTextSize string, opts []*Optimiser) {
 	col4, col5 := "error", io.Sf("histogram ($N_{samples}=%d$)", opts[0].Nsamples)
-	var addrow func(opt *Optimiser, buf *bytes.Buffer)
+	var addrow func(opt *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize string)
 	switch Type {
 	case 1:
 		col4 = "objective"
@@ -100,7 +105,7 @@ func TexReport(dirout, fnkey, title, label string, Type, nRowPerTab int, docHead
 	}
 	var buf *bytes.Buffer
 	if docHeader {
-		buf = TexDocumentStart()
+		buf = TexDocumentStart(useGeom)
 	} else {
 		buf = new(bytes.Buffer)
 	}
@@ -115,14 +120,14 @@ func TexReport(dirout, fnkey, title, label string, Type, nRowPerTab int, docHead
 				contd = " (contd.)"
 				idxtab++
 			}
-			TexTableStart(buf, title+contd, col4, col5) // begin new table
+			TexTableStart(buf, title+contd, col4, col5, textSize) // begin new table
 		} else {
 			if i > 0 {
 				io.Ff(buf, "\n\\hline\n")
 				io.Ff(buf, "\n\n")
 			}
 		}
-		addrow(opt, buf)
+		addrow(opt, buf, miniPageSz, histTextSize)
 	}
 	io.Ff(buf, "\n\\bottomrule\n\n")
 	TexTableEnd(buf, lbl(idxtab, label)) // end previous table
@@ -136,7 +141,7 @@ func TexReport(dirout, fnkey, title, label string, Type, nRowPerTab int, docHead
 // one-obj table ///////////////////////////////////////////////////////////////////////////////////
 
 // TexOneObjTableItem adds item to one-obj table
-func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer) {
+func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize string) {
 	o.fix_formatting_data()
 	FrefTxt := "N/A"
 	if len(o.RptFref) > 0 {
@@ -169,7 +174,7 @@ func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer) {
     %s_{dev} &= {\bf %s}
 \end{aligned}$}
 &
-\begin{minipage}{5cm} \tiny
+\begin{minipage}{%s} %s
 \begin{verbatim}
 %s \end{verbatim}
 \end{minipage} \\
@@ -178,7 +183,7 @@ func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer) {
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
 		o.RptWordF, FrefTxt, o.DEC, o.Nfeval, dround(o.SysTime, 0.001e9),
 		o.RptWordF, FminTxt, o.RptWordF, FaveTxt, o.RptWordF, FmaxTxt, o.RptWordF, FdevTxt,
-		hist,
+		miniPageSz, histTextSize, hist,
 		o.BestOfBestFlt)
 	if len(o.RptXref) == o.Nflt {
 		io.Ff(buf, `
@@ -190,7 +195,7 @@ func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer) {
 // two-obj table ///////////////////////////////////////////////////////////////////////////////////
 
 // TexTwoObjTableItem adds item to two-obj table
-func TexTwoObjTableItem(o *Optimiser, buf *bytes.Buffer) {
+func TexTwoObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize string) {
 	o.fix_formatting_data()
 	Emin, Eave, Emax, Edev, E, Lmin, Lave, Lmax, Ldev, _ := StatF1F0(o, false)
 	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
@@ -236,9 +241,9 @@ func TexTwoObjTableItem(o *Optimiser, buf *bytes.Buffer) {
 // multi-obj table //////////////////////////////////////////////////////////////////////////////////
 
 // TexMultiTableItem adds item to multi-obj table
-func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer) {
+func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize string) {
 	o.fix_formatting_data()
-	Emin, Eave, Emax, Edev, E := StatMulti(o, false)
+	Ekey, Emin, Eave, Emax, Edev, E := StatMulti(o, false)
 	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
 	hist := rnd.BuildTextHist(nice(Emin, o.HistNdig)-o.HistDelEmin, nice(Emax, o.HistNdig)+o.HistDelEmax, o.HistNsta, E, o.HistFmt, o.HistLen)
 	io.Ff(buf, `
@@ -259,13 +264,13 @@ func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer) {
 \end{aligned}$}
 &
 {$\!\begin{aligned}
-    E_{min} &= %s \\
-    E_{ave} &= %s \\
-    E_{max} &= %s \\
-    E_{dev} &= {\bf %s}
+    %s_{min} &= %s \\
+    %s_{ave} &= %s \\
+    %s_{max} &= %s \\
+    %s_{dev} &= {\bf %s}
 \end{aligned}$}
 &
-\begin{minipage}{5cm} \tiny
+\begin{minipage}{%s} %s
 \begin{verbatim}
 %s \end{verbatim}
 \end{minipage} \\
@@ -273,8 +278,8 @@ func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer) {
 		o.RptName,
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
 		o.Nova, o.DEC, o.Nfeval, dround(o.SysTime, 0.001e9),
-		EminTxt, EaveTxt, EmaxTxt, EdevTxt,
-		hist)
+		Ekey, EminTxt, Ekey, EaveTxt, Ekey, EmaxTxt, Ekey, EdevTxt,
+		miniPageSz, histTextSize, hist)
 }
 
 // write all values ////////////////////////////////////////////////////////////////////////////////
