@@ -30,7 +30,7 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 
 	// options for report
 	opt.HistNsta = 6
-	opt.HistLen = 15
+	opt.HistLen = 13
 	opt.RptFmtF = "%.5f"
 	opt.RptFmtFdev = "%.5f"
 	opt.RptFmtX = "%.5f"

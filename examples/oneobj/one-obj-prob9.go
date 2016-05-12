@@ -20,17 +20,18 @@ func main() {
 	opt.Default()
 	opt.Nsol = 50
 	opt.Ncpu = 1
-	opt.Tf = 7000
-	opt.Nsamples = 1000
+	opt.Tf = 1000
+	opt.Nsamples = 10
 	opt.EpsH = 1e-3
 	opt.Verbose = false
 	opt.GenType = "latin"
+	opt.NormFlt = false
 
 	// options for report
 	opt.HistNsta = 8
-	opt.RptFmtF = "%.7f"
-	opt.RptFmtFdev = "%.7f"
-	opt.RptFmtX = "%.5f"
+	opt.RptFmtF = "%.5f"
+	opt.RptFmtFdev = "%.2e"
+	opt.RptFmtX = "%.3f"
 
 	opt.RptName = "9"
 	opt.RptFref = []float64{0.0539498478}
@@ -66,8 +67,10 @@ func main() {
 	opt.RunMany("", "")
 	goga.StatF(opt, 0, true)
 	opts := []*goga.Optimiser{opt}
+	textSize := `\scriptsize  \setlength{\tabcolsep}{0.5em}`
+	miniPageSz, histTextSize := "4.1cm", `\fontsize{5pt}{6pt}`
 	nRowPerTab := 9
 	title := "Constrained single objective problem 9"
-	goga.TexReport("/tmp/goga", "tmp_one-obj-prob9", title, "one-ob-prob9", 1, nRowPerTab, true, opts)
-	goga.TexReport("/tmp/goga", "one-obj-prob9", title, "one-obj-prob9", 1, nRowPerTab, false, opts)
+	goga.TexReport("/tmp/goga", "tmp_one-obj-prob9", title, "one-ob-prob9", 1, nRowPerTab, true, false, textSize, miniPageSz, histTextSize, opts)
+	goga.TexReport("/tmp/goga", "one-obj-prob9", title, "one-obj-prob9", 1, nRowPerTab, false, false, textSize, miniPageSz, histTextSize, opts)
 }

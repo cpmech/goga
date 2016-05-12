@@ -22,9 +22,10 @@ func main() {
 	strategy2 := true
 
 	// options for report
-	opt.HistNsta = 8
-	opt.RptFmtF = "%.7f"
-	opt.RptFmtFdev = "%.3e"
+	opt.HistNsta = 6
+	opt.HistLen = 13
+	opt.RptFmtF = "%.5f"
+	opt.RptFmtFdev = "%.2e"
 	opt.RptFmtX = "%.3f"
 
 	opt.Ncpu = 4
@@ -96,8 +97,10 @@ func main() {
 	opt.RunMany("", "")
 	goga.StatF(opt, 0, true)
 	opts := []*goga.Optimiser{opt}
+	textSize := `\scriptsize  \setlength{\tabcolsep}{0.5em}`
+	miniPageSz, histTextSize := "4.1cm", `\fontsize{5pt}{6pt}`
 	nRowPerTab := 9
 	title := "Constrained single objective problem 2"
-	goga.TexReport("/tmp/goga", "tmp_one-obj-prob2", title, "one-ob-prob2", 1, nRowPerTab, true, opts)
-	goga.TexReport("/tmp/goga", "one-obj-prob2", title, "one-obj-prob2", 1, nRowPerTab, false, opts)
+	goga.TexReport("/tmp/goga", "tmp_one-obj-prob2", title, "one-ob-prob2", 1, nRowPerTab, true, false, textSize, miniPageSz, histTextSize, opts)
+	goga.TexReport("/tmp/goga", "one-obj-prob2", title, "one-obj-prob2", 1, nRowPerTab, false, false, textSize, miniPageSz, histTextSize, opts)
 }
