@@ -40,6 +40,7 @@ type Parameters struct {
 	ClearFlt bool    // clear flt if corresponding int is 0
 	ExcTour  bool    // use exchange via tournament
 	ExcOne   bool    // use exchange one randomly
+	NormFlt  bool    // normalise float values
 
 	// crossover and mutation of integers
 	IntPc       float64 // probability of crossover for ints
@@ -94,6 +95,7 @@ func (o *Parameters) Default() {
 	o.ClearFlt = false
 	o.ExcTour = true
 	o.ExcOne = true
+	o.NormFlt = false
 
 	// crossover and mutation of integers
 	o.IntPc = 0.8
@@ -200,6 +202,38 @@ func (o *Parameters) EnforceRange(i int, x float64) float64 {
 	return x
 }
 
+// Normalise4 normalises x ∈ [xmin,xmax] values into r ∈ [0,1]
+func (o *Parameters) Normalise4(x, x0, x1, x2 []float64) (r, r0, r1, r2 []float64) {
+	if o.Nflt < 1 {
+		return
+	}
+	r, r0, r1, r2 = make([]float64, o.Nflt), make([]float64, o.Nflt), make([]float64, o.Nflt), make([]float64, o.Nflt)
+	if o.NormFlt {
+		for i := 0; i < o.Nflt; i++ {
+			r[i] = (x[i] - o.FltMin[i]) / o.DelFlt[i]
+			r0[i] = (x0[i] - o.FltMin[i]) / o.DelFlt[i]
+			r1[i] = (x1[i] - o.FltMin[i]) / o.DelFlt[i]
+			r2[i] = (x2[i] - o.FltMin[i]) / o.DelFlt[i]
+		}
+	} else {
+		for i := 0; i < o.Nflt; i++ {
+			r[i], r0[i], r1[i], r2[i] = x[i], x0[i], x1[i], x2[i]
+		}
+	}
+	return
+}
+
+// DeNormalise1 de-normalises r ∈ [0,1] values into x ∈ [xmin,xmax]
+//  Output: r becomes x
+func (o *Parameters) DeNormalise1(r []float64) {
+	if !o.NormFlt {
+		return
+	}
+	for i := 0; i < o.Nflt; i++ {
+		r[i] = o.FltMin[i] + r[i]*o.DelFlt[i]
+	}
+}
+
 // LogParams returns a log with current parameters
 func (o *Parameters) LogParams() (l string) {
 
@@ -235,6 +269,7 @@ func (o *Parameters) LogParams() (l string) {
 		"clear flt if corresponding int is 0", "ClearFlt", o.ClearFlt,
 		"use exchange via tournament", "ExcTour", o.ExcTour,
 		"use exchange one randomly", "ExcOne", o.ExcOne,
+		"normalise float values", "NormFlt", o.NormFlt,
 	)
 
 	// crossover and mutation of integers
