@@ -328,10 +328,26 @@ func tex(fmt string, num float64) (l string) {
 		s := strings.Split(l, "e-")
 		if len(s) == 2 {
 			e := s[1]
+			if e == "00" {
+				l = s[0]
+				return
+			}
 			if e[0] == '0' {
 				e = string(e[1])
 			}
 			l = s[0] + "\\cdot 10^{-" + e + "}"
+		}
+		s = strings.Split(l, "e+")
+		if len(s) == 2 {
+			e := s[1]
+			if e == "00" {
+				l = s[0]
+				return
+			}
+			if e[0] == '0' {
+				e = string(e[1])
+			}
+			l = s[0] + "\\cdot 10^{+" + e + "}"
 		}
 	}
 	return
