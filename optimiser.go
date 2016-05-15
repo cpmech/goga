@@ -36,16 +36,20 @@ type Optimiser struct {
 
 	// input
 	Parameters           // input parameters
-	ObjFunc    ObjFunc_t // objective function
-	MinProb    MinProb_t // minimisation problem function
-	CxInt      CxInt_t   // crossover function for ints
-	MtInt      MtInt_t   // mutation function for ints
+	ObjFunc    ObjFunc_t // [optional] objective function
+	MinProb    MinProb_t // [optional] minimisation problem function
+	CxInt      CxInt_t   // [optional] crossover function for ints
+	MtInt      MtInt_t   // [optional] mutation function for ints
+	Output     Output_t  // [optional] output function
 
 	// essential
 	Generator Generator_t // generate solutions
 	Solutions []*Solution // current solutions
 	Groups    []*Group    // [cpu] competitors per CPU. pointers to current and future solutions
 	Metrics   *Metrics    // metrics
+
+	// meshes
+	Meshes []*Mesh // meshes
 
 	// auxiliary
 	Stat                   // structure holding stat data
@@ -135,6 +139,11 @@ func (o *Optimiser) Solve() {
 		}()
 	}
 
+	// output
+	if o.Output != nil {
+		o.Output(0, o.Solutions)
+	}
+
 	// perform evolution
 	done := make(chan int, o.Ncpu)
 	time := 0
@@ -195,6 +204,11 @@ func (o *Optimiser) Solve() {
 		texc += o.DtExc
 		time = utl.Imin(time, o.Tf)
 		texc = utl.Imin(texc, o.Tf)
+
+		// output
+		if o.Output != nil {
+			o.Output(time, o.Solutions)
+		}
 	}
 }
 

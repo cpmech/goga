@@ -12,7 +12,7 @@ const (
 // Generator_t defines callback function to generate trial solutions
 type Generator_t func(sols []*Solution, prms *Parameters)
 
-// ObjFunc_t defines the objective fluction
+// ObjFunc_t defines the objective fuction
 type ObjFunc_t func(sol *Solution, cpu int)
 
 // MinProb_t defines objective functon for specialised minimisation problem
@@ -23,3 +23,6 @@ type CxInt_t func(a, b, A, B []int, prms *Parameters)
 
 // MtInt_t defines mutation function for ints
 type MtInt_t func(a []int, prms *Parameters)
+
+// Output_t defines a function to perform output of data during the evolution
+type Output_t func(time int, sols []*Solution)
