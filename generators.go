@@ -13,7 +13,7 @@ import (
 func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 
 	// floats
-	n := prms.Nsol - prms.NumExtraSols
+	n := len(sols) // cannot use Nsol here because subsets of Solutions may be provided; e.g. parallel code
 	if prms.Nflt > 0 {
 
 		// interior points
@@ -47,7 +47,7 @@ func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 					sols[isol].Flt[k] = (prms.FltMin[k] + prms.FltMax[k]) / 2.0
 				}
 			}
-			isol := n
+			isol := prms.Nsol - prms.NumExtraSols
 			for i := 0; i < prms.Nflt-1; i++ {
 				for j := i + 1; j < prms.Nflt; j++ {
 					// (min,min) corner
