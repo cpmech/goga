@@ -28,7 +28,8 @@ func main() {
 	opt.NormFlt = false
 
 	// options for report
-	opt.HistNsta = 8
+	opt.HistNsta = 6
+	opt.HistLen = 13
 	opt.RptFmtF = "%.5f"
 	opt.RptFmtFdev = "%.2e"
 	opt.RptFmtX = "%.3f"
