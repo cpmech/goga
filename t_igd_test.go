@@ -32,8 +32,8 @@ func Test_igd01(tst *testing.T) {
 	opt.Default()
 	opt.Nsol = npts
 	opt.Ncpu = 1
-	opt.FltMin = []float64{0, 0} // used to store fStar
-	opt.FltMax = []float64{1, 1} // used to store fStar
+	opt.Xmin = []float64{0, 0} // used to store fStar
+	opt.Xmax = []float64{1, 1} // used to store fStar
 	nf, ng, nh := 2, 0, 0
 
 	// generator (store fStar into Flt)
@@ -96,8 +96,8 @@ func Test_igd02(tst *testing.T) {
 	opt.Default()
 	opt.Nsol = nNum
 	opt.Ncpu = 1
-	opt.FltMin = []float64{0, 0} // used to store fStar
-	opt.FltMax = []float64{1, 1} // used to store fStar
+	opt.Xmin = []float64{0, 0} // used to store fStar
+	opt.Xmax = []float64{1, 1} // used to store fStar
 	nf, ng, nh := 2, 0, 0
 
 	// generator (store fNum into Flt)

@@ -74,16 +74,16 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 			chk.Panic("either ObjFunc or MinProb must be provided")
 		}
 		o.Nf, o.Ng, o.Nh, o.MinProb = nf, ng, nh, fcn
-		o.ObjFunc = func(sol *Solution, cpu int) {
-			o.MinProb(o.F[cpu], o.G[cpu], o.H[cpu], sol.Flt, sol.Int, cpu)
+		o.ObjFunc = func(ova, oor, x []float64, ξ []int, cpu int) {
+			o.MinProb(o.F[cpu], o.G[cpu], o.H[cpu], x, ξ, cpu)
 			for i, f := range o.F[cpu] {
-				sol.Ova[i] = f
+				ova[i] = f
 			}
 			for i, g := range o.G[cpu] {
-				sol.Oor[i] = utl.GtePenalty(g, 0.0, 1) // g[i] ≥ 0
+				oor[i] = utl.GtePenalty(g, 0.0, 1) // g[i] ≥ 0
 			}
 			for i, h := range o.H[cpu] {
-				sol.Oor[o.Ng+i] = utl.GtePenalty(o.EpsH, math.Abs(h), 1) // ϵ ≥ |h[i]|
+				oor[o.Ng+i] = utl.GtePenalty(o.EpsH, math.Abs(h), 1) // ϵ ≥ |h[i]|
 			}
 		}
 		o.F = la.MatAlloc(o.Ncpu, o.Nf)
@@ -245,19 +245,19 @@ func (o *Optimiser) EvolveOneGroup(cpu int) (nfeval int) {
 		a := G[z+P[k][0]]
 		b := G[z+P[k][1]]
 
-		if o.Nflt > 0 {
+		if o.Nx > 0 {
 			DiffEvol(a.Flt, A.Flt, A0.Flt, A1.Flt, A2.Flt, &o.Parameters)
 			DiffEvol(b.Flt, B.Flt, B0.Flt, B1.Flt, B2.Flt, &o.Parameters)
 		}
 
-		if o.Nint > 0 {
+		if o.Nk > 0 {
 			o.CxInt(a.Int, b.Int, A.Int, B.Int, &o.Parameters)
 			o.MtInt(a.Int, &o.Parameters)
 			o.MtInt(b.Int, &o.Parameters)
 		}
 
 		if o.BinInt > 0 && o.ClearFlt {
-			for i := 0; i < o.Nint; i++ {
+			for i := 0; i < o.Nk; i++ {
 				if a.Int[i] == 0 {
 					a.Flt[i] = 0
 				}
@@ -267,8 +267,8 @@ func (o *Optimiser) EvolveOneGroup(cpu int) (nfeval int) {
 			}
 		}
 
-		o.ObjFunc(a, cpu)
-		o.ObjFunc(b, cpu)
+		o.ObjFunc(a.Ova, a.Oor, a.GetX(), a.Int, cpu)
+		o.ObjFunc(b.Ova, b.Oor, b.GetX(), b.Int, cpu)
 		nfeval += 2
 	}
 
@@ -288,10 +288,10 @@ func (o *Optimiser) EvolveOneGroup(cpu int) (nfeval int) {
 
 // Tournament performs the tournament among 4 individuals
 func (o *Optimiser) Tournament(A, B, a, b *Solution, m *Metrics) {
-	dAa := A.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
-	dAb := A.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
-	dBa := B.Distance(a, m.Fmin, m.Fmax, m.Imin, m.Imax)
-	dBb := B.Distance(b, m.Fmin, m.Fmax, m.Imin, m.Imax)
+	dAa := A.Distance(a)
+	dAb := A.Distance(b)
+	dBa := B.Distance(a)
+	dBb := B.Distance(b)
 	if dAa+dBb < dAb+dBa {
 		if !A.Fight(a) {
 			a.CopyInto(A)
@@ -329,7 +329,7 @@ func (o *Optimiser) generate_solutions(itrial int) {
 	if o.GenAll {
 		o.Generator(o.Solutions, &o.Parameters)
 		for _, sol := range o.Solutions {
-			o.ObjFunc(sol, 0)
+			o.ObjFunc(sol.Ova, sol.Oor, sol.GetX(), sol.Int, 0)
 		}
 	} else {
 		done := make(chan int, o.Ncpu)
@@ -339,7 +339,7 @@ func (o *Optimiser) generate_solutions(itrial int) {
 				sols := o.Solutions[start:endp1]
 				o.Generator(sols, &o.Parameters)
 				for _, sol := range sols {
-					o.ObjFunc(sol, cpu)
+					o.ObjFunc(sol.Ova, sol.Oor, sol.GetX(), sol.Int, cpu)
 				}
 				done <- 1
 			}(icpu)
@@ -356,16 +356,16 @@ func (o *Optimiser) generate_solutions(itrial int) {
 	o.Metrics.Compute(o.Solutions)
 
 	// meshes
-	if o.Nflt > 1 && o.UseMesh {
+	if o.Nx > 1 && o.UseMesh {
 		var err error
 		Xi, Xj := make([]float64, o.Nsol), make([]float64, o.Nsol)
-		o.Meshes = make([][]*msh.Mesh, o.Nflt-1)
-		for i := 0; i < o.Nflt-1; i++ {
-			o.Meshes[i] = make([]*msh.Mesh, o.Nflt)
+		o.Meshes = make([][]*msh.Mesh, o.Nx-1)
+		for i := 0; i < o.Nx-1; i++ {
+			o.Meshes[i] = make([]*msh.Mesh, o.Nx)
 			for k, s := range o.Solutions {
 				Xi[k] = s.Flt[i]
 			}
-			for j := i + 1; j < o.Nflt; j++ {
+			for j := i + 1; j < o.Nx; j++ {
 				for k, s := range o.Solutions {
 					Xj[k] = s.Flt[j]
 				}

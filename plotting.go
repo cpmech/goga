@@ -41,8 +41,8 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 	}
 
 	// limits and meshgrid
-	xmin, xmax := o.FltMin[iFlt], o.FltMax[iFlt]
-	ymin, ymax := o.FltMin[jFlt], o.FltMax[jFlt]
+	xmin, xmax := o.Xmin[iFlt], o.Xmax[iFlt]
+	ymin, ymax := o.Xmin[jFlt], o.Xmax[jFlt]
 	if prms.Xrange != nil {
 		xmin, xmax = prms.Xrange[0], prms.Xrange[1]
 	}
@@ -106,11 +106,18 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 }
 
 // PlotAddFltFlt adds flt-flt points to existent plot
-func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, fmt plt.Fmt, emptyMarker bool) {
+func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, denormalise bool, fmt plt.Fmt, emptyMarker bool) {
 	nsol := len(sols)
 	x, y := make([]float64, nsol), make([]float64, nsol)
-	for i, sol := range sols {
-		x[i], y[i] = sol.Flt[iFlt], sol.Flt[jFlt]
+	if denormalise {
+		for i, sol := range sols {
+			x[i] = o.Xmin[iFlt] + sol.Flt[iFlt]*o.Dx[iFlt]
+			y[i] = o.Xmin[jFlt] + sol.Flt[jFlt]*o.Dx[jFlt]
+		}
+	} else {
+		for i, sol := range sols {
+			x[i], y[i] = sol.Flt[iFlt], sol.Flt[jFlt]
+		}
 	}
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
 	if emptyMarker {
@@ -156,7 +163,7 @@ func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, feasibl
 // PlotFltOva plots flt-ova points
 func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np int, ovaMult float64, fcn func(x float64) float64, extra func(), equalAxes bool) {
 	if fcn != nil {
-		X := utl.LinSpace(opt.FltMin[0], opt.FltMax[0], np)
+		X := utl.LinSpace(0, 1, np)
 		Y := make([]float64, np)
 		for i := 0; i < np; i++ {
 			Y[i] = fcn(X[i])
@@ -181,7 +188,7 @@ func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np 
 }
 
 // PlotFltFlt plots flt-flt contour
-func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jFlt, iOva int, cprms ContourParams, extra func(), equalAxes bool) {
+func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jFlt, iOva int, denormalise bool, cprms ContourParams, extra func(), equalAxes bool) {
 	clr1 := "green"
 	clr2 := "magenta"
 	if cprms.Csimple {
@@ -190,12 +197,17 @@ func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jF
 	}
 	opt.PlotContour(iFlt, jFlt, iOva, cprms)
 	if sols0 != nil {
-		opt.PlotAddFltFlt(iFlt, jFlt, sols0, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
+		opt.PlotAddFltFlt(iFlt, jFlt, sols0, denormalise, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
 	}
 	SortByOva(opt.Solutions, iOva)
 	best := opt.Solutions[0]
-	opt.PlotAddFltFlt(iFlt, jFlt, opt.Solutions, plt.Fmt{L: "final", M: "o", C: clr2, Ls: "none", Ms: 7}, true)
-	plt.PlotOne(best.Flt[iFlt], best.Flt[jFlt], io.Sf("'k*', markersize=6, color='%s', markeredgecolor='%s', label='best', clip_on=0, zorder=20", clr1, clr1))
+	opt.PlotAddFltFlt(iFlt, jFlt, opt.Solutions, denormalise, plt.Fmt{L: "final", M: "o", C: clr2, Ls: "none", Ms: 7}, true)
+	xs, ys := best.Flt[iFlt], best.Flt[jFlt]
+	if denormalise {
+		xs = opt.Xmin[iFlt] + best.Flt[iFlt]*opt.Dx[iFlt]
+		ys = opt.Xmin[jFlt] + best.Flt[jFlt]*opt.Dx[jFlt]
+	}
+	plt.PlotOne(xs, ys, io.Sf("'k*', markersize=6, color='%s', markeredgecolor='%s', label='best', clip_on=0, zorder=20", clr1, clr1))
 	if extra != nil {
 		extra()
 	}

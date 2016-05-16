@@ -23,8 +23,8 @@ func Test_flt01(tst *testing.T) {
 	opt.Default()
 	opt.Nsol = 20
 	opt.Ncpu = 1
-	opt.FltMin = []float64{0}
-	opt.FltMax = []float64{1}
+	opt.Xmin = []float64{0}
+	opt.Xmax = []float64{1}
 	nf, ng, nh := 1, 0, 0
 
 	// initialise optimiser
@@ -47,7 +47,7 @@ func Test_flt01(tst *testing.T) {
 
 func Test_flt02(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("flt02. quadratic function with inequalities")
 
 	// parameters
@@ -55,8 +55,8 @@ func Test_flt02(tst *testing.T) {
 	opt.Default()
 	opt.Nsol = 20
 	opt.Ncpu = 1
-	opt.FltMin = []float64{-2, -2}
-	opt.FltMax = []float64{2, 2}
+	opt.Xmin = []float64{-2, -2}
+	opt.Xmax = []float64{2, 2}
 	nf, ng, nh := 1, 5, 0
 
 	// initialise optimiser
@@ -80,13 +80,13 @@ func Test_flt02(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, ContourParams{}, nil, false)
+		PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, true, ContourParams{}, nil, false)
 	}
 }
 
 func Test_flt03(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("flt03. circle with equality constraint")
 
 	// geometry
@@ -102,8 +102,8 @@ func Test_flt03(tst *testing.T) {
 	opt.Nsol = 20
 	opt.Ncpu = 1
 	opt.Verbose = false
-	opt.FltMin = []float64{-1, -1}
-	opt.FltMax = []float64{3, 3}
+	opt.Xmin = []float64{-1, -1}
+	opt.Xmax = []float64{3, 3}
 	nf, ng, nh := 1, 0, 1
 
 	// initialise optimiser
@@ -124,7 +124,7 @@ func Test_flt03(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		PlotFltFltContour("fig_flt03", &opt, sols0, 0, 1, 0, ContourParams{}, nil, false)
+		PlotFltFltContour("fig_flt03", &opt, sols0, 0, 1, 0, true, ContourParams{}, nil, false)
 	}
 }
 
@@ -147,8 +147,8 @@ func Test_flt04(tst *testing.T) {
 	opt.Ncpu = 1
 	opt.Tf = 100
 	opt.LatinDup = 5
-	opt.FltMin = []float64{0.1, 0.5}
-	opt.FltMax = []float64{2.25, 2.5}
+	opt.Xmin = []float64{0.1, 0.5}
+	opt.Xmax = []float64{2.25, 2.5}
 	nf, ng, nh := 2, 2, 0
 
 	// initialise optimiser

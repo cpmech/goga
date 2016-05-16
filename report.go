@@ -185,7 +185,7 @@ func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSiz
 		o.RptWordF, FminTxt, o.RptWordF, FaveTxt, o.RptWordF, FmaxTxt, o.RptWordF, FdevTxt,
 		miniPageSz, histTextSize, hist,
 		o.BestOfBestFlt)
-	if len(o.RptXref) == o.Nflt {
+	if len(o.RptXref) == o.Nx {
 		io.Ff(buf, `
 \multicolumn{5}{c}{{\scriptsize $x_{ref.}$=`+o.RptFmtX+`}} \\`, o.RptXref)
 	}
@@ -293,10 +293,10 @@ func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
 	for i := 0; i < opt.Noor; i++ {
 		io.Ff(&buf, "%24s", io.Sf("u%d", i))
 	}
-	for i := 0; i < opt.Nflt; i++ {
+	for i := 0; i < opt.Nx; i++ {
 		io.Ff(&buf, "%24s", io.Sf("x%d", i))
 	}
-	for i := 0; i < opt.Nint; i++ {
+	for i := 0; i < opt.Nk; i++ {
 		io.Ff(&buf, "%24s", io.Sf("y%d", i))
 	}
 	io.Ff(&buf, "\n")
@@ -308,10 +308,10 @@ func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
 		for i := 0; i < opt.Noor; i++ {
 			io.Ff(&buf, "%24g", sol.Oor[i])
 		}
-		for i := 0; i < opt.Nflt; i++ {
+		for i := 0; i < opt.Nx; i++ {
 			io.Ff(&buf, "%24g", sol.Flt[i])
 		}
-		for i := 0; i < opt.Nint; i++ {
+		for i := 0; i < opt.Nk; i++ {
 			io.Ff(&buf, "%24g", sol.Int[i])
 		}
 		io.Ff(&buf, "\n")

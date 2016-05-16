@@ -16,10 +16,6 @@ type Metrics struct {
 	prms   *Parameters   // parameters
 	Omin   []float64     // current min ova
 	Omax   []float64     // current max ova
-	Fmin   []float64     // current min float
-	Fmax   []float64     // current max float
-	Imin   []int         // current min int
-	Imax   []int         // current max int
 	Fsizes []int         // front sizes
 	Fronts [][]*Solution // non-dominated fronts
 }
@@ -29,10 +25,6 @@ func (o *Metrics) Init(nsol int, prms *Parameters) {
 	o.prms = prms
 	o.Omin = make([]float64, prms.Nova)
 	o.Omax = make([]float64, prms.Nova)
-	o.Fmin = make([]float64, prms.Nflt)
-	o.Fmax = make([]float64, prms.Nflt)
-	o.Imin = make([]int, prms.Nint)
-	o.Imax = make([]int, prms.Nint)
 	o.Fsizes = make([]int, nsol)
 	o.Fronts = make([][]*Solution, nsol)
 	for i := 0; i < nsol; i++ {
@@ -43,7 +35,7 @@ func (o *Metrics) Init(nsol int, prms *Parameters) {
 // Compute computes limits, find non-dominated Pareto fronts, and compute crowd distances
 func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 
-	// reset variables and find limits
+	// reset variables
 	z := o.Fsizes
 	nsol := len(sols)
 	for i, sol := range sols {
@@ -75,30 +67,6 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 			} else {
 				o.Omin[j] = utl.Min(o.Omin[j], x)
 				o.Omax[j] = utl.Max(o.Omax[j], x)
-			}
-		}
-
-		// floats range
-		for j := 0; j < o.prms.Nflt; j++ {
-			x := sol.Flt[j]
-			if i == 0 {
-				o.Fmin[j] = x
-				o.Fmax[j] = x
-			} else {
-				o.Fmin[j] = utl.Min(o.Fmin[j], x)
-				o.Fmax[j] = utl.Max(o.Fmax[j], x)
-			}
-		}
-
-		// ints range
-		for j := 0; j < o.prms.Nint; j++ {
-			x := sol.Int[j]
-			if i == 0 {
-				o.Imin[j] = x
-				o.Imax[j] = x
-			} else {
-				o.Imin[j] = utl.Imin(o.Imin[j], x)
-				o.Imax[j] = utl.Imax(o.Imax[j], x)
 			}
 		}
 	}
@@ -188,7 +156,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 
 // closest computes distance and set closest neighbours
 func (o *Metrics) closest(A, B *Solution) {
-	dist := A.Distance(B, o.Fmin, o.Fmax, o.Imin, o.Imax)
+	dist := A.Distance(B)
 	if dist < A.DistNeigh {
 		A.DistNeigh = dist
 		A.Closest = B

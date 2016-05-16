@@ -6,6 +6,7 @@ package goga
 
 import (
 	"encoding/json"
+	"math"
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
@@ -36,11 +37,10 @@ type Parameters struct {
 	Verbose  bool    // show messages
 	GenAll   bool    // generate all solutions together; i.e. not within each group/CPU
 	Nsamples int     // run many samples
-	BinInt   int     // flag that integers represent binary numbers if BinInt > 0; thus Nint=BinInt
+	BinInt   int     // flag that integers represent binary numbers if BinInt > 0; thus Nk=BinInt
 	ClearFlt bool    // clear flt if corresponding int is 0
 	ExcTour  bool    // use exchange via tournament
 	ExcOne   bool    // use exchange one randomly
-	NormFlt  bool    // normalise float values
 	UseMesh  bool    // use meshes to control points movement
 	Nbry     int     // number of points along boundary / per iFlt (only if UseMesh==true)
 
@@ -51,16 +51,16 @@ type Parameters struct {
 	IntNchanges int     // number of changes during mutation of ints
 
 	// range
-	FltMin []float64 // minimum float allowed
-	FltMax []float64 // maximum float allowed
-	IntMin []int     // minimum int allowed
-	IntMax []int     // maximum int allowed
+	Xmin []float64 // minimum float allowed
+	Xmax []float64 // maximum float allowed
+	Kmin []int     // minimum int allowed
+	Kmax []int     // maximum int allowed
 
 	// derived
-	Nflt   int       // number of floats
-	Nint   int       // number of integers
-	DelFlt []float64 // max float range
-	DelInt []int     // max int range
+	Nx int       // number of floats
+	Nk int       // number of integers
+	Dx []float64 // max float range
+	Dk []int     // max int range
 
 	// extra variables not directly related to GOGA (for convenience of having a reader already)
 	Strategy int  // strategy
@@ -102,7 +102,6 @@ func (o *Parameters) Default() {
 	o.ClearFlt = false
 	o.ExcTour = true
 	o.ExcOne = true
-	o.NormFlt = false
 	o.UseMesh = false
 	o.Nbry = 3
 
@@ -156,33 +155,36 @@ func (o *Parameters) CalcDerived() {
 	}
 
 	// derived
-	o.Nflt = len(o.FltMin)
-	o.Nint = len(o.IntMin)
+	o.Nx = len(o.Xmin)
+	o.Nk = len(o.Kmin)
 	if o.BinInt > 0 {
-		o.Nint = o.BinInt
+		o.Nk = o.BinInt
 	}
-	if o.Nflt == 0 && o.Nint == 0 {
-		chk.Panic("either floats and ints must be set (via FltMin/Max or IntMin/Max)")
+	if o.Nx == 0 && o.Nk == 0 {
+		chk.Panic("limits of floats and/or ints must be set; in X{min,max} and/or K{min,max}")
 	}
 
 	// floats
-	if o.Nflt > 0 {
-		chk.IntAssert(len(o.FltMax), o.Nflt)
-		o.DelFlt = make([]float64, o.Nflt)
-		for i := 0; i < o.Nflt; i++ {
-			o.DelFlt[i] = o.FltMax[i] - o.FltMin[i]
+	if o.Nx > 0 {
+		chk.IntAssert(len(o.Xmax), o.Nx)
+		o.Dx = make([]float64, o.Nx)
+		for i := 0; i < o.Nx; i++ {
+			o.Dx[i] = o.Xmax[i] - o.Xmin[i]
+			if math.Abs(o.Dx[i]) < 1e-14 {
+				chk.Panic("range of float numbers must be non zero: Dx%d = %g", i, o.Dx[i])
+			}
 		}
 	}
 
 	// mesh
-	if o.Nflt < 2 {
+	if o.Nx < 2 {
 		o.UseMesh = false
 	}
 	if o.UseMesh {
 		if o.Nbry < 2 {
 			o.Nbry = 2
 		}
-		o.NumXiXjPairs = (o.Nflt*o.Nflt - o.Nflt) / 2
+		o.NumXiXjPairs = (o.Nx*o.Nx - o.Nx) / 2
 		o.NumXiXjBryPts = (o.Nbry-2)*4 + 4
 		o.NumExtraSols = o.NumXiXjPairs * o.NumXiXjBryPts
 		io.PfYel("NumXiXjPairs=%d NumXiXjBryPts=%d NumExtraSols=%d\n", o.NumXiXjPairs, o.NumXiXjBryPts, o.NumExtraSols)
@@ -190,72 +192,32 @@ func (o *Parameters) CalcDerived() {
 	}
 
 	// generic ints
-	if o.BinInt == 0 && o.Nint > 0 {
-		chk.IntAssert(len(o.IntMax), o.Nint)
-		o.DelInt = make([]int, o.Nint)
-		for i := 0; i < o.Nint; i++ {
-			o.DelInt[i] = o.IntMax[i] - o.IntMin[i]
+	if o.BinInt == 0 && o.Nk > 0 {
+		chk.IntAssert(len(o.Kmax), o.Nk)
+		o.Dk = make([]int, o.Nk)
+		for i := 0; i < o.Nk; i++ {
+			o.Dk[i] = o.Kmax[i] - o.Kmin[i]
+			if o.Dk[i] < 1 {
+				chk.Panic("range of integers must be greater than zero: Dk%d = %g", i, o.Dk[i])
+			}
 		}
 	}
-	if o.Nint != o.Nflt {
+	if o.Nk != o.Nx {
 		o.ClearFlt = false
 	}
 
 	// number of cuts and changes in ints
-	if o.Nint > 0 {
-		if o.IntNcuts > o.Nint {
-			o.IntNcuts = o.Nint
+	if o.Nk > 0 {
+		if o.IntNcuts > o.Nk {
+			o.IntNcuts = o.Nk
 		}
-		if o.IntNchanges > o.Nint {
-			o.IntNchanges = o.Nint
+		if o.IntNchanges > o.Nk {
+			o.IntNchanges = o.Nk
 		}
 	}
 
 	// initialise random numbers generator
 	rnd.Init(o.Seed)
-}
-
-// EnforceRange makes sure x is within given range
-func (o *Parameters) EnforceRange(i int, x float64) float64 {
-	if x < o.FltMin[i] {
-		return o.FltMin[i]
-	}
-	if x > o.FltMax[i] {
-		return o.FltMax[i]
-	}
-	return x
-}
-
-// Normalise4 normalises x ∈ [xmin,xmax] values into r ∈ [0,1]
-func (o *Parameters) Normalise4(x, x0, x1, x2 []float64) (r, r0, r1, r2 []float64) {
-	if o.Nflt < 1 {
-		return
-	}
-	r, r0, r1, r2 = make([]float64, o.Nflt), make([]float64, o.Nflt), make([]float64, o.Nflt), make([]float64, o.Nflt)
-	if o.NormFlt {
-		for i := 0; i < o.Nflt; i++ {
-			r[i] = (x[i] - o.FltMin[i]) / o.DelFlt[i]
-			r0[i] = (x0[i] - o.FltMin[i]) / o.DelFlt[i]
-			r1[i] = (x1[i] - o.FltMin[i]) / o.DelFlt[i]
-			r2[i] = (x2[i] - o.FltMin[i]) / o.DelFlt[i]
-		}
-	} else {
-		for i := 0; i < o.Nflt; i++ {
-			r[i], r0[i], r1[i], r2[i] = x[i], x0[i], x1[i], x2[i]
-		}
-	}
-	return
-}
-
-// DeNormalise1 de-normalises r ∈ [0,1] values into x ∈ [xmin,xmax]
-//  Output: r becomes x
-func (o *Parameters) DeNormalise1(r []float64) {
-	if !o.NormFlt {
-		return
-	}
-	for i := 0; i < o.Nflt; i++ {
-		r[i] = o.FltMin[i] + r[i]*o.DelFlt[i]
-	}
 }
 
 // LogParams returns a log with current parameters
@@ -293,7 +255,6 @@ func (o *Parameters) LogParams() (l string) {
 		"clear flt if corresponding int is 0", "ClearFlt", o.ClearFlt,
 		"use exchange via tournament", "ExcTour", o.ExcTour,
 		"use exchange one randomly", "ExcOne", o.ExcOne,
-		"normalise float values", "NormFlt", o.NormFlt,
 		"use meshes to control points movement", "UseMesh", o.UseMesh,
 		"number of points along boundary / per iFlt (only if UseMesh==true)", "Nbry", o.Nbry,
 	)
@@ -310,8 +271,8 @@ func (o *Parameters) LogParams() (l string) {
 	// derived
 	l += "\n"
 	l += io.ArgsTable("DERIVED",
-		"number of floats", "Nflt", o.Nflt,
-		"number of integers", "Nint", o.Nint,
+		"number of floats", "Nx", o.Nx,
+		"number of integers", "Nk", o.Nk,
 		"number of (Xi,Xj) pairs", "NumXiXjPairs", o.NumXiXjPairs,
 		"number of points along the boundaries of one (Xi,Xj) plane", "NumXiXjBryPts", o.NumXiXjBryPts,
 		"total number of extra solutions due to all (Xi,Xj) boundaries", "NumExtraSols", o.NumExtraSols,

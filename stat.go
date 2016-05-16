@@ -90,11 +90,11 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 
 	// allocate variables
 	o.BestOvas = make([][]float64, o.Nova)
-	o.BestFlts = make([][]float64, o.Nflt)
-	o.BestInts = make([][]int, o.Nint)
+	o.BestFlts = make([][]float64, o.Nx)
+	o.BestInts = make([][]int, o.Nk)
 	o.BestOfBestOva = make([]float64, o.Nova)
-	o.BestOfBestFlt = make([]float64, o.Nflt)
-	o.BestOfBestInt = make([]int, o.Nint)
+	o.BestOfBestFlt = make([]float64, o.Nx)
+	o.BestOfBestInt = make([]int, o.Nk)
 
 	// perform trials
 	for itrial := 0; itrial < o.Nsamples; itrial++ {
@@ -128,10 +128,10 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 			for i := 0; i < o.Nova; i++ {
 				o.BestOvas[i] = append(o.BestOvas[i], best.Ova[i])
 			}
-			for i := 0; i < o.Nflt; i++ {
+			for i := 0; i < o.Nx; i++ {
 				o.BestFlts[i] = append(o.BestFlts[i], best.Flt[i])
 			}
-			for i := 0; i < o.Nint; i++ {
+			for i := 0; i < o.Nk; i++ {
 				o.BestInts[i] = append(o.BestInts[i], best.Int[i])
 			}
 

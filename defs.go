@@ -13,10 +13,10 @@ const (
 type Generator_t func(sols []*Solution, prms *Parameters)
 
 // ObjFunc_t defines the objective fuction
-type ObjFunc_t func(sol *Solution, cpu int)
+type ObjFunc_t func(ova, oor, x []float64, ξ []int, cpu int) // ova and oor are output
 
 // MinProb_t defines objective functon for specialised minimisation problem
-type MinProb_t func(f, g, h, x []float64, ξ []int, cpu int)
+type MinProb_t func(f, g, h, x []float64, ξ []int, cpu int) // f, g and h are output
 
 // CxInt_t defines crossover function for ints
 type CxInt_t func(a, b, A, B []int, prms *Parameters)

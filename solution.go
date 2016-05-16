@@ -22,7 +22,7 @@ type Solution struct {
 	Fixed bool        // cannot be changed
 	Ova   []float64   // objective values
 	Oor   []float64   // out-of-range values
-	Flt   []float64   // floats
+	Flt   []float64   // floats (normalised in [0,1])
 	Int   []int       // ints
 
 	// metrics
@@ -42,8 +42,8 @@ func NewSolution(id, nsol int, prms *Parameters) (o *Solution) {
 	o.Id = id
 	o.Ova = make([]float64, prms.Nova)
 	o.Oor = make([]float64, prms.Noor)
-	o.Flt = make([]float64, prms.Nflt)
-	o.Int = make([]int, prms.Nint)
+	o.Flt = make([]float64, prms.Nx)
+	o.Int = make([]int, prms.Nk)
 	o.WinOver = make([]*Solution, nsol*2)
 	return o
 }
@@ -53,6 +53,17 @@ func NewSolutions(nsol int, prms *Parameters) (res []*Solution) {
 	res = make([]*Solution, nsol)
 	for i := 0; i < nsol; i++ {
 		res[i] = NewSolution(i, nsol, prms)
+	}
+	return
+}
+
+// GetX returns de-normalised X
+func (o *Solution) GetX() (x []float64) {
+	if len(o.Flt) > 0 {
+		x = make([]float64, len(o.Flt))
+		for i, r := range o.Flt {
+			x[i] = o.prms.Xmin[i] + r*o.prms.Dx[i]
+		}
 	}
 	return
 }
@@ -77,24 +88,24 @@ func (A *Solution) CopyInto(B *Solution) {
 }
 
 // Distance computes (genotype) distance between A and B
-func (A *Solution) Distance(B *Solution, fmin, fmax []float64, imin, imax []int) (dist float64) {
+func (A *Solution) Distance(B *Solution) (dist float64) {
 	nflt := len(A.Flt)
 	if nflt > 0 {
 		dflt := 0.0
 		for i := 0; i < nflt; i++ {
-			dflt += math.Abs(A.Flt[i]-B.Flt[i]) / (fmax[i] - fmin[i] + 1e-15)
+			dflt += math.Pow(A.Flt[i]-B.Flt[i], 2.0)
 		}
-		dist += dflt / float64(nflt)
+		dist = math.Sqrt(dflt)
 	}
 	nint := len(A.Int)
 	if nint > 0 {
 		dint := 0.0
 		for i := 0; i < nint; i++ {
-			dint += math.Abs(float64(A.Int[i]-B.Int[i])) / (float64(imax[i]-imin[i]) + 1e-15)
+			dint += math.Pow(float64(A.Int[i]-B.Int[i])/float64(A.prms.Dk[i]), 2.0)
 		}
-		dist += dint / float64(nint)
+		dist += math.Sqrt(dint)
 	}
-	if nflt > 0 && nint > 0 {
+	if nflt > 0 && nint > 0 && A.prms.BinInt == 0 {
 		dist /= 2.0
 	}
 	return
