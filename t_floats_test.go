@@ -41,13 +41,15 @@ func Test_flt01(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		PlotFltOva("fig_flt01", &opt, sols0, 0, 0, 201, -1, yfcn, nil, false)
+		plt.SetForEps(0.8, 400)
+		opt.PlotXvsF(sols0, 0, 0, true, -1.0, yfcn, 201)
+		plt.SaveD("/tmp/goga", "fig_flt01.eps")
 	}
 }
 
 func Test_flt02(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt02. quadratic function with inequalities")
 
 	// parameters
@@ -75,18 +77,17 @@ func Test_flt02(tst *testing.T) {
 	// solve
 	opt.Solve()
 
-	// log
-	io.Pforan("%v\n", opt.LogParams())
-
 	// plot
 	if chk.Verbose {
-		PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, true, ContourParams{}, nil, false)
+		plt.SetForEps(0.8, 400)
+		opt.PlotContour(sols0, 0, 1, 0, true, nil)
+		plt.SaveD("/tmp/goga", "fig_flt02.eps")
 	}
 }
 
 func Test_flt03(tst *testing.T) {
 
-	verbose()
+	//verbose()
 	chk.PrintTitle("flt03. circle with equality constraint")
 
 	// geometry
@@ -124,7 +125,9 @@ func Test_flt03(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		PlotFltFltContour("fig_flt03", &opt, sols0, 0, 1, 0, true, ContourParams{}, nil, false)
+		plt.SetForEps(0.8, 400)
+		opt.PlotContour(sols0, 0, 1, 0, true, nil)
+		plt.SaveD("/tmp/goga", "fig_flt03.eps")
 	}
 }
 
@@ -176,7 +179,8 @@ func Test_flt04(tst *testing.T) {
 		feasibleOnly := false
 		fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
 		fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
-		PlotOvaOvaPareto(&opt, sols0, 0, 1, feasibleOnly, fmtAll, fmtFront)
+		plt.SetForEps(0.75, 300)
+		opt.PlotFront(sols0, 0, 1, feasibleOnly, fmtAll, fmtFront)
 		plt.Plot(dat["f1"], dat["f2"], "'b-',ms=3,markeredgecolor='b'")
 		plt.AxisRange(0, 250, 0, 0.15)
 		plt.SaveD("/tmp/goga", "fig_flt04.eps")

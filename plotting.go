@@ -26,10 +26,13 @@ type ContourParams struct {
 	Yrange  []float64 // to override y-range
 }
 
-// PlotContour plots contour
-func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
+// PlotFunctionsContour plots contour of f, g, and h functions
+func (o *Optimiser) PlotFcnContour(iFlt, jFlt, iOva int, prms *ContourParams) {
 
 	// fix parameters
+	if prms == nil {
+		prms = new(ContourParams)
+	}
 	if prms.Npts < 3 {
 		prms.Npts = 41
 	}
@@ -105,138 +108,154 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 	}
 }
 
-// PlotAddFltFlt adds flt-flt points to existent plot
-func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, denormalise bool, fmt plt.Fmt, emptyMarker bool) {
+// PlotAddXvsX adds X versus X points to existent plot
+func (o *Optimiser) PlotAddXvsX(iFlt, jFlt int, sols []*Solution, denormalise bool, fmt plt.Fmt, emptyMarker bool) {
 	nsol := len(sols)
-	x, y := make([]float64, nsol), make([]float64, nsol)
+	X, Y := make([]float64, nsol), make([]float64, nsol)
 	if denormalise {
 		for i, sol := range sols {
-			x[i] = o.Xmin[iFlt] + sol.Flt[iFlt]*o.Dx[iFlt]
-			y[i] = o.Xmin[jFlt] + sol.Flt[jFlt]*o.Dx[jFlt]
+			X[i] = o.Xmin[iFlt] + sol.Flt[iFlt]*o.Dx[iFlt]
+			Y[i] = o.Xmin[jFlt] + sol.Flt[jFlt]*o.Dx[jFlt]
 		}
 	} else {
 		for i, sol := range sols {
-			x[i], y[i] = sol.Flt[iFlt], sol.Flt[jFlt]
+			X[i] = sol.Flt[iFlt]
+			Y[i] = sol.Flt[jFlt]
 		}
 	}
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
 	if emptyMarker {
 		args += io.Sf(",markeredgecolor='%s',markerfacecolor='none'", fmt.C)
 	}
-	plt.Plot(x, y, args)
+	plt.Plot(X, Y, args)
 }
 
-// PlotAddFltOva adds flt-ova points to existent plot
-func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult float64, fmt plt.Fmt, emptyMarker bool) {
+// PlotAddXvsF adds X versus F points to existent plot
+func (o *Optimiser) PlotAddXvsF(iFlt, iOva int, sols []*Solution, denormalise bool, ovaMult float64, fmt plt.Fmt, emptyMarker bool) {
 	nsol := len(sols)
-	x, y := make([]float64, nsol), make([]float64, nsol)
-	for i, sol := range sols {
-		x[i], y[i] = sol.Flt[iFlt], sol.Ova[iOva]*ovaMult
+	X, Y := make([]float64, nsol), make([]float64, nsol)
+	if denormalise {
+		for i, sol := range sols {
+			X[i] = o.Xmin[iFlt] + sol.Flt[iFlt]*o.Dx[iFlt]
+			Y[i] = sol.Ova[iOva] * ovaMult
+		}
+	} else {
+		for i, sol := range sols {
+			X[i] = sol.Flt[iFlt]
+			Y[i] = sol.Ova[iOva] * ovaMult
+		}
 	}
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
 	if emptyMarker {
 		args += io.Sf(",markeredgecolor='%s',markerfacecolor='none'", fmt.C)
 	}
-	plt.Plot(x, y, args)
+	plt.Plot(X, Y, args)
 }
 
-// PlotAddOvaOva adds ova-ova points to existent plot
-func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.Fmt) {
-	var x, y []float64
+// PlotAddFvsF adds F versus F points to existent plot
+func (o *Optimiser) PlotAddFvsF(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.Fmt) {
+	var X, Y []float64
 	for _, sol := range sols {
 		if sol.Feasible() || !feasibleOnly {
-			x = append(x, sol.Ova[iOva])
-			y = append(y, sol.Ova[jOva])
+			X = append(X, sol.Ova[iOva])
+			Y = append(Y, sol.Ova[jOva])
 		}
 	}
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
-	plt.Plot(x, y, args)
+	plt.Plot(X, Y, args)
 }
 
-// PlotAddParetoFront highlights Pareto front
-func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.Fmt) {
+// PlotAddFront add points on Pareto front
+func (o *Optimiser) PlotAddFront(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.Fmt) {
 	args := fmt.GetArgs("") + ",clip_on=0,zorder=10"
-	x, y, _ := GetParetoFront(iOva, jOva, sols, feasibleOnly)
-	plt.Plot(x, y, args)
+	X, Y, _ := GetParetoFront(iOva, jOva, sols, feasibleOnly)
+	plt.Plot(X, Y, args)
 }
 
-// PlotFltOva plots flt-ova points
-func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np int, ovaMult float64, fcn func(x float64) float64, extra func(), equalAxes bool) {
+// PlotXvsF plots X versus F points
+//  If fcn is not nil, a curve with nptsFcn is added
+func (o *Optimiser) PlotXvsF(sols0 []*Solution, iFlt, iOva int, denormalise bool, ovaMult float64, fcn func(x float64) float64, nptsFcn int) {
 	if fcn != nil {
-		X := utl.LinSpace(0, 1, np)
-		Y := make([]float64, np)
-		for i := 0; i < np; i++ {
+		var X []float64
+		if denormalise {
+			X = utl.LinSpace(o.Xmin[iFlt], o.Xmax[iFlt], nptsFcn)
+		} else {
+			X = utl.LinSpace(0, 1, nptsFcn)
+		}
+		Y := make([]float64, nptsFcn)
+		for i := 0; i < nptsFcn; i++ {
 			Y[i] = fcn(X[i])
 		}
 		plt.Plot(X, Y, "'b-'")
 	}
 	if sols0 != nil {
-		opt.PlotAddFltOva(iFlt, iOva, sols0, ovaMult, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
+		o.PlotAddXvsF(iFlt, iOva, sols0, denormalise, ovaMult, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
 	}
-	SortByOva(opt.Solutions, iOva)
-	best := opt.Solutions[0]
-	opt.PlotAddFltOva(iFlt, iOva, opt.Solutions, ovaMult, plt.Fmt{L: "final", M: "o", C: "r", Ls: "none", Ms: 6}, true)
-	plt.PlotOne(best.Flt[iFlt], best.Ova[iOva]*ovaMult, "'g*', markeredgecolor='g', label='best', clip_on=0, zorder=20")
-	if extra != nil {
-		extra()
+	o.PlotAddXvsF(iFlt, iOva, o.Solutions, denormalise, ovaMult, plt.Fmt{L: "final", M: "o", C: "r", Ls: "none", Ms: 6}, true)
+	SortByOva(o.Solutions, iOva)
+	best := o.Solutions[0]
+	xs := best.Flt[iFlt]
+	ys := best.Ova[iOva] * ovaMult
+	xl := io.Sf("$\\bar{x}_%d$", iFlt)
+	if denormalise {
+		xl = io.Sf("$x_%d$", iFlt)
+		xs = o.Xmin[iFlt] + best.Flt[iFlt]*o.Dx[iFlt]
 	}
-	if equalAxes {
-		plt.Equal()
-	}
-	plt.Gll(io.Sf("$x_%d$", iFlt), io.Sf("$f_%d$", iOva), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
-	plt.SaveD("/tmp/goga", fnkey+".eps")
+	plt.PlotOne(xs, ys, "'g*', markeredgecolor='g', label='best', clip_on=0, zorder=20")
+	plt.Gll(xl, io.Sf("$f_%d$", iOva), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
 }
 
-// PlotFltFlt plots flt-flt contour
-func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jFlt, iOva int, denormalise bool, cprms ContourParams, extra func(), equalAxes bool) {
+// PlotContour plots contour
+func (o *Optimiser) PlotContour(sols0 []*Solution, iFlt, jFlt, iOva int, denormalise bool, cprms *ContourParams) {
 	clr1 := "green"
 	clr2 := "magenta"
+	if cprms == nil {
+		cprms = new(ContourParams)
+	}
 	if cprms.Csimple {
 		clr1 = "red"
 		clr2 = "green"
 	}
-	opt.PlotContour(iFlt, jFlt, iOva, cprms)
+	o.PlotFcnContour(iFlt, jFlt, iOva, cprms)
 	if sols0 != nil {
-		opt.PlotAddFltFlt(iFlt, jFlt, sols0, denormalise, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
+		o.PlotAddXvsX(iFlt, jFlt, sols0, denormalise, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
 	}
-	SortByOva(opt.Solutions, iOva)
-	best := opt.Solutions[0]
-	opt.PlotAddFltFlt(iFlt, jFlt, opt.Solutions, denormalise, plt.Fmt{L: "final", M: "o", C: clr2, Ls: "none", Ms: 7}, true)
-	xs, ys := best.Flt[iFlt], best.Flt[jFlt]
+	o.PlotAddXvsX(iFlt, jFlt, o.Solutions, denormalise, plt.Fmt{L: "final", M: "o", C: clr2, Ls: "none", Ms: 7}, true)
+	SortByOva(o.Solutions, iOva)
+	best := o.Solutions[0]
+	xs := best.Flt[iFlt]
+	ys := best.Flt[jFlt]
+	xl := io.Sf("$\\bar{x}_%d$", iFlt)
+	yl := io.Sf("$\\bar{x}_%d$", jFlt)
 	if denormalise {
-		xs = opt.Xmin[iFlt] + best.Flt[iFlt]*opt.Dx[iFlt]
-		ys = opt.Xmin[jFlt] + best.Flt[jFlt]*opt.Dx[jFlt]
+		xs = o.Xmin[iFlt] + best.Flt[iFlt]*o.Dx[iFlt]
+		ys = o.Xmin[jFlt] + best.Flt[jFlt]*o.Dx[jFlt]
+		xl = io.Sf("$x_%d$", iFlt)
+		yl = io.Sf("$x_%d$", jFlt)
 	}
 	plt.PlotOne(xs, ys, io.Sf("'k*', markersize=6, color='%s', markeredgecolor='%s', label='best', clip_on=0, zorder=20", clr1, clr1))
-	if extra != nil {
-		extra()
-	}
-	if equalAxes {
-		plt.Equal()
-	}
-	plt.Gll(io.Sf("$x_%d$", iFlt), io.Sf("$x_%d$", jFlt), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
-	plt.SaveD("/tmp/goga", fnkey+".eps")
+	plt.Gll(xl, yl, "leg_out=1, leg_ncol=4, leg_hlen=1.5")
 }
 
-// PlotOvaOvaPareto plots ova-ova Pareto values
+// PlotFront plots Pareto front (F versus F values)
 //  fmtAll   -- format for all points; use nil if not requested
 //  fmtFront -- format for Pareto front; use nil if not requested
-func PlotOvaOvaPareto(opt *Optimiser, sols0 []*Solution, iOva, jOva int, feasibleOnly bool, fmtAll, fmtFront *plt.Fmt) {
+func (o *Optimiser) PlotFront(sols0 []*Solution, iOva, jOva int, feasibleOnly bool, fmtAll, fmtFront *plt.Fmt) {
 	if sols0 != nil {
-		opt.PlotAddOvaOva(iOva, jOva, sols0, feasibleOnly, &plt.Fmt{L: "initial", M: "+", C: "g", Ls: "none", Ms: 4})
+		o.PlotAddFvsF(iOva, jOva, sols0, feasibleOnly, &plt.Fmt{L: "initial", M: "+", C: "g", Ls: "none", Ms: 4})
 	}
 	if fmtAll != nil {
-		opt.PlotAddOvaOva(iOva, jOva, opt.Solutions, feasibleOnly, fmtAll)
+		o.PlotAddFvsF(iOva, jOva, o.Solutions, feasibleOnly, fmtAll)
 	}
 	if fmtFront != nil {
-		opt.PlotAddParetoFront(iOva, jOva, opt.Solutions, feasibleOnly, fmtFront)
+		o.PlotAddFront(iOva, jOva, o.Solutions, feasibleOnly, fmtFront)
 	}
 	plt.Gll(io.Sf("$f_%d$", iOva), io.Sf("$f_%d$", jOva), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
 }
 
 // PlotStar plots star with normalised OVAs
-func PlotStar(opt *Optimiser) {
-	nf := opt.Nf
+func (o *Optimiser) PlotStar() {
+	nf := o.Nf
 	dθ := 2.0 * math.Pi / float64(nf)
 	θ0 := 0.0
 	if nf == 3 {
@@ -262,13 +281,13 @@ func PlotStar(opt *Optimiser) {
 	count := 0
 	colors := []string{"m", "orange", "g", "r", "b", "k"}
 	var ρ float64
-	for i, sol := range opt.Solutions {
+	for i, sol := range o.Solutions {
 		if sol.Feasible() && sol.FrontId == 0 && i%step == 0 {
 			for j := 0; j < nf; j++ {
 				if neg {
-					ρ = 1.0 - sol.Ova[j]/(opt.RptFmax[j]-opt.RptFmin[j])
+					ρ = 1.0 - sol.Ova[j]/(o.RptFmax[j]-o.RptFmin[j])
 				} else {
-					ρ = sol.Ova[j] / (opt.RptFmax[j] - opt.RptFmin[j])
+					ρ = sol.Ova[j] / (o.RptFmax[j] - o.RptFmin[j])
 				}
 				θ := θ0 + float64(j)*dθ
 				X[j], Y[j] = ρ*math.Cos(θ), ρ*math.Sin(θ)
