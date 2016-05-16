@@ -26,15 +26,17 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	opt.Ncpu = 1
 	opt.Tf = 500
 	opt.Verbose = false
-	opt.Nsamples = 10
+	opt.Nsamples = 1000
 	opt.GenType = "latin"
 	opt.DEC = 0.1
 
 	// options for report
-	opt.RptFmtE = "%.5e"
-	opt.RptFmtL = "%.6f"
-	opt.RptFmtEdev = "%.4e"
-	opt.RptFmtLdev = "%.4e"
+	opt.HistNsta = 6
+	opt.HistLen = 13
+	opt.RptFmtE = "%.4e"
+	opt.RptFmtL = "%.4e"
+	opt.RptFmtEdev = "%.3e"
+	opt.RptFmtLdev = "%.3e"
 
 	// problem variables
 	var fmin, fmax []float64
@@ -144,10 +146,6 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	case 4:
 		opt.Ncpu = 2
 		opt.RptName = "ZDT4"
-		opt.RptFmtE = "%.4e"
-		opt.RptFmtL = "%.4e"
-		opt.RptFmtEdev = "%.4e"
-		opt.RptFmtLdev = "%.4e"
 		n := 10
 		opt.FltMin = make([]float64, n)
 		opt.FltMax = make([]float64, n)
@@ -182,10 +180,6 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 		opt.DEC = 0.8
 		opt.Ncpu = 2
 		opt.RptName = "FON"
-		opt.RptFmtE = "%.8f"
-		opt.RptFmtL = "%.8f"
-		opt.RptFmtEdev = "%.8f"
-		opt.RptFmtLdev = "%.8f"
 		n := 10
 		opt.FltMin = make([]float64, n)
 		opt.FltMax = make([]float64, n)
@@ -215,10 +209,6 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	case 6:
 		opt.Ncpu = 2
 		opt.RptName = "ZDT6"
-		opt.RptFmtE = "%g"
-		opt.RptFmtL = "%g"
-		opt.RptFmtEdev = "%.8f"
-		opt.RptFmtLdev = "%.8f"
 		n := 10
 		opt.FltMin = make([]float64, n)
 		opt.FltMax = make([]float64, n)
@@ -302,6 +292,8 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 }
 
 func main() {
+	textSize := `\scriptsize  \setlength{\tabcolsep}{0.5em}`
+	miniPageSz, histTextSize := "4.1cm", `\fontsize{5pt}{6pt}`
 	P := utl.IntRange2(1, 7)
 	//P := []int{1, 2, 4, 6}
 	//P := []int{4, 5, 6}
@@ -313,6 +305,6 @@ func main() {
 	io.Pf("\n-------------------------- generating report --------------------------\nn")
 	nRowPerTab := 9
 	title := "Unconstrained two objective problems"
-	goga.TexReport("/tmp/goga", "tmp_two-obj", title, "two-obj", 2, nRowPerTab, true, opts)
-	goga.TexReport("/tmp/goga", "two-obj", title, "two-obj", 2, nRowPerTab, false, opts)
+	goga.TexReport("/tmp/goga", "tmp_two-obj", title, "two-obj", 2, nRowPerTab, true, false, textSize, miniPageSz, histTextSize, opts)
+	goga.TexReport("/tmp/goga", "two-obj", title, "two-obj", 2, nRowPerTab, false, false, textSize, miniPageSz, histTextSize, opts)
 }
