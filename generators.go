@@ -22,20 +22,20 @@ func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 			K := rnd.LatinIHS(prms.Nx, n, prms.LatinDup)
 			for i := 0; i < n; i++ {
 				for j := 0; j < prms.Nx; j++ {
-					sols[i].Flt[j] = float64(K[j][i]-1) / float64(n-1)
+					sols[i].Flt[j] = prms.GapX + (1.0-2.0*prms.GapX)*float64(K[j][i]-1)/float64(n-1)
 				}
 			}
 		case "halton":
 			H := rnd.HaltonPoints(prms.Nx, n)
 			for i := 0; i < n; i++ {
 				for j := 0; j < prms.Nx; j++ {
-					sols[i].Flt[j] = H[j][i]
+					sols[i].Flt[j] = prms.GapX + (1.0-2.0*prms.GapX)*H[j][i]
 				}
 			}
 		default:
 			for i := 0; i < n; i++ {
 				for j := 0; j < prms.Nx; j++ {
-					sols[i].Flt[j] = rnd.Float64(0, 1)
+					sols[i].Flt[j] = rnd.Float64(prms.GapX, 1.0-prms.GapX)
 				}
 			}
 		}

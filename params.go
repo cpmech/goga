@@ -43,6 +43,7 @@ type Parameters struct {
 	ExcOne   bool    // use exchange one randomly
 	UseMesh  bool    // use meshes to control points movement
 	Nbry     int     // number of points along boundary / per iFlt (only if UseMesh==true)
+	GapX     float64 // gap in normalised x such that x ∈ [gap, 1-gap]
 
 	// crossover and mutation of integers
 	IntPc       float64 // probability of crossover for ints
@@ -104,6 +105,7 @@ func (o *Parameters) Default() {
 	o.ExcOne = true
 	o.UseMesh = false
 	o.Nbry = 3
+	o.GapX = 0.01
 
 	// crossover and mutation of integers
 	o.IntPc = 0.8
@@ -257,6 +259,7 @@ func (o *Parameters) LogParams() (l string) {
 		"use exchange one randomly", "ExcOne", o.ExcOne,
 		"use meshes to control points movement", "UseMesh", o.UseMesh,
 		"number of points along boundary / per iFlt (only if UseMesh==true)", "Nbry", o.Nbry,
+		"gap in normalised x such that x ∈ [gap, 1-gap]", "GapX", o.GapX,
 	)
 
 	// crossover and mutation of integers

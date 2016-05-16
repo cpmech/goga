@@ -305,3 +305,36 @@ func (o *Optimiser) PlotStar() {
 	plt.Equal()
 	plt.AxisOff()
 }
+
+// PlotAllXvsX plots al combinations of Xi with Xj
+func (o *Optimiser) PlotAllXvsX(denormalise bool) {
+	if o.UseMesh {
+		denormalise = false
+	}
+	ncol := o.Nx - 1
+	for i := 0; i < o.Nx-1; i++ {
+		for j := i + 1; j < o.Nx; j++ {
+			plt.Subplot(ncol, ncol, i*ncol+j)
+			if o.UseMesh {
+				o.Meshes[i][j].CalcDerived(0)
+				o.Meshes[i][j].Draw2d(false, false, nil, 0)
+			}
+			for _, s := range o.Solutions {
+				x := s.Flt[i]
+				y := s.Flt[j]
+				if denormalise {
+					x = o.Xmin[i] + s.Flt[i]*o.Dx[i]
+					y = o.Xmin[j] + s.Flt[j]*o.Dx[j]
+				}
+				plt.PlotOne(x, y, "marker='.'")
+			}
+			xl := io.Sf("$\\bar{x}_%d$", i)
+			yl := io.Sf("$\\bar{x}_%d$", j)
+			if denormalise {
+				xl = io.Sf("$x_%d$", i)
+				yl = io.Sf("$x_%d$", j)
+			}
+			plt.Gll(xl, yl, "")
+		}
+	}
+}

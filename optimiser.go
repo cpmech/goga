@@ -373,6 +373,9 @@ func (o *Optimiser) generate_solutions(itrial int) {
 				if err != nil {
 					chk.Panic("Delaunay2d failed:%v\n", err)
 				}
+				for k, s := range o.Solutions {
+					o.Meshes[i][j].Verts[k].Entity = s
+				}
 			}
 		}
 	}

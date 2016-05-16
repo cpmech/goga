@@ -49,7 +49,7 @@ func Test_flt01(tst *testing.T) {
 
 func Test_flt02(tst *testing.T) {
 
-	//verbose()
+	verbose()
 	chk.PrintTitle("flt02. quadratic function with inequalities")
 
 	// parameters
@@ -57,8 +57,10 @@ func Test_flt02(tst *testing.T) {
 	opt.Default()
 	opt.Nsol = 20
 	opt.Ncpu = 1
+	opt.GenType = "latin"
 	opt.Xmin = []float64{-2, -2}
 	opt.Xmax = []float64{2, 2}
+	opt.UseMesh = true
 	nf, ng, nh := 1, 5, 0
 
 	// initialise optimiser
@@ -74,14 +76,28 @@ func Test_flt02(tst *testing.T) {
 	// initial solutions
 	sols0 := opt.GetSolutionsCopy()
 
+	// plot
+	if chk.Verbose {
+		if true {
+			plt.SetForEps(0.8, 400)
+			opt.PlotAllXvsX(false)
+		}
+	}
+
 	// solve
-	opt.Solve()
+	//opt.Solve()
 
 	// plot
 	if chk.Verbose {
-		plt.SetForEps(0.8, 400)
-		opt.PlotContour(sols0, 0, 1, 0, true, nil)
-		plt.SaveD("/tmp/goga", "fig_flt02.eps")
+		if true {
+			//opt.PlotAllXvsX(false)
+			plt.SaveD("/tmp/goga", "fig_flt02-x.eps")
+		}
+		if false {
+			plt.SetForEps(0.8, 400)
+			opt.PlotContour(sols0, 0, 1, 0, true, nil)
+			plt.SaveD("/tmp/goga", "fig_flt02.eps")
+		}
 	}
 }
 
