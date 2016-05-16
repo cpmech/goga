@@ -181,10 +181,10 @@ func (o *Optimiser) Solve() {
 			if o.ExcTour {
 				for i := 0; i < o.Ncpu; i++ {
 					j := (i + 1) % o.Ncpu
-					I := rnd.IntGetUnique(o.Groups[i].Indices, 2)
-					J := rnd.IntGetUnique(o.Groups[j].Indices, 2)
-					A, B := o.Groups[i].All[I[0]], o.Groups[i].All[I[1]]
-					a, b := o.Groups[j].All[J[0]], o.Groups[j].All[J[1]]
+					I := rnd.IntGetUnique(o.Groups[i].IndNonFix, 2)
+					J := rnd.IntGetUnique(o.Groups[j].IndNonFix, 2)
+					A, B := o.Groups[i].Cur[I[0]], o.Groups[i].Cur[I[1]]
+					a, b := o.Groups[j].Cur[J[0]], o.Groups[j].Cur[J[1]]
 					o.Tournament(A, B, a, b, o.Metrics)
 				}
 			}
@@ -194,7 +194,7 @@ func (o *Optimiser) Solve() {
 				rnd.IntGetGroups(o.cpupairs, utl.IntRange(o.Ncpu))
 				for _, pair := range o.cpupairs {
 					i, j := pair[0], pair[1]
-					n := utl.Imin(o.Groups[i].Ncur, o.Groups[j].Ncur)
+					n := utl.Imin(o.Groups[i].Ncur-o.NumExtraSols-1, o.Groups[j].Ncur-o.NumExtraSols-1)
 					k := rnd.Int(0, n)
 					A := o.Groups[i].All[k]
 					B := o.Groups[j].All[k]
@@ -220,6 +220,13 @@ func (o *Optimiser) Solve() {
 
 // EvolveOneGroupMesh evolves one group (CPU) using mesh
 func (o *Optimiser) EvolveOneGroupMesh(cpu int) (nfeval int) {
+	for i := 0; i < o.Nx-1; i++ {
+		for j := i + 1; j < o.Nx; j++ {
+			for _, e := range o.Meshes[cpu][i][j].Edges {
+				io.Pforan("edge = %v\n", e)
+			}
+		}
+	}
 	return
 }
 
@@ -325,8 +332,8 @@ func (o *Optimiser) UpdateMesh(cpu int) {
 		for j := i + 1; j < o.Nx; j++ {
 			for _, vert := range o.Meshes[cpu][i][j].Verts {
 				sol := vert.Entity.(*Solution)
-				vert.C[0] = sol.Flt[i]
-				vert.C[1] = sol.Flt[j]
+				vert.X[0] = sol.Flt[i]
+				vert.X[1] = sol.Flt[j]
 			}
 		}
 	}

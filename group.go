@@ -8,12 +8,13 @@ import "github.com/cpmech/gosl/utl"
 
 // Group holds a group of solutions
 type Group struct {
-	Ncur    int         // number of current solutions == len(All) / 2
-	Cur     []*Solution // current solutions. view to Solutions
-	All     []*Solution // current and future solutions. half part is a view to Solutions
-	Indices []int       // indices of current solutions
-	Pairs   [][]int     // randomly selected pairs from Indices
-	Metrics *Metrics    // metrics
+	Ncur      int         // number of current solutions == len(All) / 2
+	Cur       []*Solution // current solutions. view to Solutions
+	All       []*Solution // current and future solutions. half part is a view to Solutions
+	Indices   []int       // indices of current solutions
+	IndNonFix []int       // indices of non-fixed current solutions
+	Pairs     [][]int     // randomly selected pairs from Indices
+	Metrics   *Metrics    // metrics
 }
 
 // Init initialises group
@@ -24,11 +25,15 @@ func (o *Group) Init(cpu, ncpu int, solutions []*Solution, prms *Parameters) {
 	o.Cur = solutions[start:endp1]
 	o.All = make([]*Solution, o.Ncur*2)
 	o.Indices = make([]int, o.Ncur)
+	o.IndNonFix = make([]int, o.Ncur-prms.NumExtraSols)
 	o.Pairs = utl.IntsAlloc(o.Ncur/2, 2)
 	for i := 0; i < o.Ncur; i++ {
 		o.All[i] = solutions[start+i]
 		o.All[o.Ncur+i] = NewSolution(-i, nsol, prms)
 		o.Indices[i] = i
+		if i < o.Ncur-prms.NumExtraSols {
+			o.IndNonFix[i] = i
+		}
 	}
 	o.Metrics = new(Metrics)
 	o.Metrics.Init(len(o.All), prms)
