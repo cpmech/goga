@@ -307,7 +307,7 @@ func (o *Optimiser) PlotStar() {
 }
 
 // PlotAllXvsX plots al combinations of Xi with Xj
-func (o *Optimiser) PlotAllXvsX(denormalise bool, fmtMsh, fmtPts *plt.Fmt) {
+func (o *Optimiser) PlotAllXvsX(denormalise bool, cpu int, fmtMsh, fmtPts *plt.Fmt) {
 	if o.UseMesh {
 		denormalise = false
 	}
@@ -319,10 +319,10 @@ func (o *Optimiser) PlotAllXvsX(denormalise bool, fmtMsh, fmtPts *plt.Fmt) {
 		for j := i + 1; j < o.Nx; j++ {
 			plt.Subplot(ncol, ncol, i*ncol+j)
 			if o.UseMesh {
-				o.Meshes[i][j].CalcDerived(0)
-				o.Meshes[i][j].Draw2d(false, false, nil, fmtMsh)
+				o.Meshes[cpu][i][j].CalcDerived(0)
+				o.Meshes[cpu][i][j].Draw2d(false, false, nil, fmtMsh)
 			}
-			for _, s := range o.Solutions {
+			for _, s := range o.Groups[cpu].Cur {
 				x := s.Flt[i]
 				y := s.Flt[j]
 				if denormalise {

@@ -9,6 +9,7 @@ import "github.com/cpmech/gosl/utl"
 // Group holds a group of solutions
 type Group struct {
 	Ncur    int         // number of current solutions == len(All) / 2
+	Cur     []*Solution // current solutions. view to Solutions
 	All     []*Solution // current and future solutions. half part is a view to Solutions
 	Indices []int       // indices of current solutions
 	Pairs   [][]int     // randomly selected pairs from Indices
@@ -20,6 +21,7 @@ func (o *Group) Init(cpu, ncpu int, solutions []*Solution, prms *Parameters) {
 	nsol := len(solutions)
 	start, endp1 := (cpu*nsol)/ncpu, ((cpu+1)*nsol)/ncpu
 	o.Ncur = endp1 - start
+	o.Cur = solutions[start:endp1]
 	o.All = make([]*Solution, o.Ncur*2)
 	o.Indices = make([]int, o.Ncur)
 	o.Pairs = utl.IntsAlloc(o.Ncur/2, 2)

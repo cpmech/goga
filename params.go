@@ -189,8 +189,7 @@ func (o *Parameters) CalcDerived() {
 		o.NumXiXjPairs = (o.Nx*o.Nx - o.Nx) / 2
 		o.NumXiXjBryPts = (o.Nbry-2)*4 + 4
 		o.NumExtraSols = o.NumXiXjPairs * o.NumXiXjBryPts
-		io.PfYel("NumXiXjPairs=%d NumXiXjBryPts=%d NumExtraSols=%d\n", o.NumXiXjPairs, o.NumXiXjBryPts, o.NumExtraSols)
-		o.Nsol += o.NumExtraSols
+		o.Nsol += o.NumExtraSols * o.Ncpu
 	}
 
 	// generic ints

@@ -13,27 +13,27 @@ import (
 func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 
 	// floats
-	n := len(sols) // cannot use Nsol here because subsets of Solutions may be provided; e.g. parallel code
+	nsol := len(sols) - prms.NumExtraSols // may be smaller than Nsol when using multiple CPUs
 	if prms.Nx > 0 {
 
 		// interior points
 		switch prms.GenType {
 		case "latin":
-			K := rnd.LatinIHS(prms.Nx, n, prms.LatinDup)
-			for i := 0; i < n; i++ {
+			K := rnd.LatinIHS(prms.Nx, nsol, prms.LatinDup)
+			for i := 0; i < nsol; i++ {
 				for j := 0; j < prms.Nx; j++ {
-					sols[i].Flt[j] = prms.GapX + (1.0-2.0*prms.GapX)*float64(K[j][i]-1)/float64(n-1)
+					sols[i].Flt[j] = prms.GapX + (1.0-2.0*prms.GapX)*float64(K[j][i]-1)/float64(nsol-1)
 				}
 			}
 		case "halton":
-			H := rnd.HaltonPoints(prms.Nx, n)
-			for i := 0; i < n; i++ {
+			H := rnd.HaltonPoints(prms.Nx, nsol)
+			for i := 0; i < nsol; i++ {
 				for j := 0; j < prms.Nx; j++ {
 					sols[i].Flt[j] = prms.GapX + (1.0-2.0*prms.GapX)*H[j][i]
 				}
 			}
 		default:
-			for i := 0; i < n; i++ {
+			for i := 0; i < nsol; i++ {
 				for j := 0; j < prms.Nx; j++ {
 					sols[i].Flt[j] = rnd.Float64(prms.GapX, 1.0-prms.GapX)
 				}
@@ -47,7 +47,7 @@ func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 					sols[isol].Flt[k] = 0.5
 				}
 			}
-			isol := prms.Nsol - prms.NumExtraSols
+			isol := nsol
 			for i := 0; i < prms.Nx-1; i++ {
 				for j := i + 1; j < prms.Nx; j++ {
 					// (min,min) corner
@@ -109,7 +109,7 @@ func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 					}
 				}
 			}
-			chk.IntAssert(isol, prms.Nsol)
+			chk.IntAssert(isol, len(sols))
 		}
 	}
 
@@ -120,7 +120,7 @@ func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 
 	// binary numbers
 	if prms.BinInt > 0 {
-		for i := 0; i < n; i++ {
+		for i := 0; i < nsol; i++ {
 			for j := 0; j < prms.Nk; j++ {
 				if rnd.FlipCoin(0.5) {
 					sols[i].Int[j] = 1
@@ -133,10 +133,10 @@ func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 	}
 
 	// general integers
-	L := rnd.LatinIHS(prms.Nk, n, prms.LatinDup)
-	for i := 0; i < n; i++ {
+	L := rnd.LatinIHS(prms.Nk, nsol, prms.LatinDup)
+	for i := 0; i < nsol; i++ {
 		for j := 0; j < prms.Nk; j++ {
-			sols[i].Int[j] = prms.Kmin[j] + (L[j][i]-1)*prms.Dk[j]/(n-1)
+			sols[i].Int[j] = prms.Kmin[j] + (L[j][i]-1)*prms.Dk[j]/(nsol-1)
 		}
 	}
 }

@@ -50,7 +50,7 @@ type Optimiser struct {
 	Metrics   *Metrics    // metrics
 
 	// meshes
-	Meshes [][]*msh.Mesh // meshes for (xi,xj) points. [nflt-1][nflt] only upper diagonal entries
+	Meshes [][][]*msh.Mesh // meshes for (xi,xj) points. [ncpu][nflt-1][nflt] only upper diagonal entries
 
 	// auxiliary
 	Stat                   // structure holding stat data
@@ -323,9 +323,8 @@ func (o *Optimiser) Tournament(A, B, a, b *Solution, m *Metrics) {
 func (o *Optimiser) UpdateMesh(cpu int) {
 	for i := 0; i < o.Nx-1; i++ {
 		for j := i + 1; j < o.Nx; j++ {
-			for _, vert := range o.Meshes[i][j].Verts {
+			for _, vert := range o.Meshes[cpu][i][j].Verts {
 				sol := vert.Entity.(*Solution)
-				io.Pforan("xnew = %v\n", sol.Flt)
 				vert.C[0] = sol.Flt[i]
 				vert.C[1] = sol.Flt[j]
 			}
@@ -336,12 +335,12 @@ func (o *Optimiser) UpdateMesh(cpu int) {
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////
 
 // generate_solutions generate solutions
-func (o *Optimiser) generate_solutions(itrial int) {
+func (o *Optimiser) generate_solutions(isample int) {
 
 	// benchmark
 	t0 := gotime.Now()
 	var tgen, tmsh gotime.Time
-	if o.Verbose && itrial == 0 {
+	if o.Verbose && isample == 0 {
 		defer func() {
 			io.Pfblue2("time spent in generation of solutions = %v\n", tgen.Sub(t0))
 			io.Pfblue2("time spent in Delaunay triangulations = %v\n", tmsh.Sub(tgen))
@@ -359,10 +358,8 @@ func (o *Optimiser) generate_solutions(itrial int) {
 		done := make(chan int, o.Ncpu)
 		for icpu := 0; icpu < o.Ncpu; icpu++ {
 			go func(cpu int) {
-				start, endp1 := (cpu*o.Nsol)/o.Ncpu, ((cpu+1)*o.Nsol)/o.Ncpu
-				sols := o.Solutions[start:endp1]
-				o.Generator(sols, &o.Parameters)
-				for _, sol := range sols {
+				o.Generator(o.Groups[cpu].Cur, &o.Parameters)
+				for _, sol := range o.Groups[cpu].Cur {
 					o.ObjFunc(sol.Ova, sol.Oor, sol.GetX(), sol.Int, cpu)
 				}
 				done <- 1
@@ -381,27 +378,43 @@ func (o *Optimiser) generate_solutions(itrial int) {
 
 	// meshes
 	if o.Nx > 1 && o.UseMesh {
-		var err error
-		Xi, Xj := make([]float64, o.Nsol), make([]float64, o.Nsol)
-		o.Meshes = make([][]*msh.Mesh, o.Nx-1)
-		for i := 0; i < o.Nx-1; i++ {
-			o.Meshes[i] = make([]*msh.Mesh, o.Nx)
-			for k, s := range o.Solutions {
-				Xi[k] = s.Flt[i]
-			}
-			for j := i + 1; j < o.Nx; j++ {
-				for k, s := range o.Solutions {
-					Xj[k] = s.Flt[j]
-				}
-				o.Meshes[i][j], err = msh.Delaunay2d(Xi, Xj, false)
-				if err != nil {
-					chk.Panic("Delaunay2d failed:%v\n", err)
-				}
-				for k, s := range o.Solutions {
-					o.Meshes[i][j].Verts[k].Entity = s
-				}
-			}
+		o.Meshes = make([][][]*msh.Mesh, o.Ncpu)
+		done := make(chan int, o.Ncpu)
+		for icpu := 0; icpu < o.Ncpu; icpu++ {
+			go func(cpu int) {
+				o.create_meshes(o.Groups[cpu].Cur, cpu)
+				done <- 1
+			}(icpu)
+		}
+		for cpu := 0; cpu < o.Ncpu; cpu++ {
+			<-done
 		}
 	}
 	tmsh = gotime.Now()
+}
+
+// create_mesh creates meshes of (Xi,Xj) points in one CPU
+func (o *Optimiser) create_meshes(sols []*Solution, cpu int) {
+	var err error
+	nsol := len(sols) // may be smaller than Nsol when using multiple CPUs
+	Xi, Xj := make([]float64, nsol), make([]float64, nsol)
+	o.Meshes[cpu] = make([][]*msh.Mesh, o.Nx-1)
+	for i := 0; i < o.Nx-1; i++ {
+		o.Meshes[cpu][i] = make([]*msh.Mesh, o.Nx)
+		for k, s := range sols {
+			Xi[k] = s.Flt[i]
+		}
+		for j := i + 1; j < o.Nx; j++ {
+			for k, s := range sols {
+				Xj[k] = s.Flt[j]
+			}
+			o.Meshes[cpu][i][j], err = msh.Delaunay2d(Xi, Xj, false)
+			if err != nil {
+				chk.Panic("Delaunay2d failed:%v\n", err)
+			}
+			for k, s := range sols {
+				o.Meshes[cpu][i][j].Verts[k].Entity = s
+			}
+		}
+	}
 }

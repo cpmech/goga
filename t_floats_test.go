@@ -55,13 +55,17 @@ func Test_flt02(tst *testing.T) {
 	// parameters
 	var opt Optimiser
 	opt.Default()
-	opt.Nsol = 20
-	opt.Ncpu = 1
+	opt.Nsol = 7
+	opt.Ncpu = 2
 	opt.Tf = 10
 	opt.GenType = "latin"
 	opt.Xmin = []float64{-2, -2}
 	opt.Xmax = []float64{2, 2}
 	opt.UseMesh = true
+	opt.Nbry = 2
+	opt.GapX = 0.2
+	opt.ExcTour = false
+	opt.ExcOne = false
 	nf, ng, nh := 1, 5, 0
 
 	// initialise optimiser
@@ -85,9 +89,11 @@ func Test_flt02(tst *testing.T) {
 			io.Pf(">>> output @ time = %v <<<\n", time)
 			tout += dtout
 			if chk.Verbose {
-				plt.SetForEps(1.0, 400)
-				opt.PlotAllXvsX(false, &plt.Fmt{C: "b", Ls: "-"}, nil)
-				plt.SaveD("/tmp/goga", io.Sf("fig_flt02-x_t%003d.eps", time))
+				for cpu := 0; cpu < opt.Ncpu; cpu++ {
+					plt.SetForEps(1.0, 400)
+					opt.PlotAllXvsX(false, cpu, &plt.Fmt{C: "b", Ls: "-"}, nil)
+					plt.SaveD("/tmp/goga", io.Sf("flt02-x-cpu%d-t%003d.eps", cpu, time))
+				}
 			}
 		}
 	}
