@@ -17,12 +17,13 @@ import (
 type Solution struct {
 
 	// essential
-	prms *Parameters // pointer to parameters
-	Id   int         // identifier
-	Ova  []float64   // objective values
-	Oor  []float64   // out-of-range values
-	Flt  []float64   // floats
-	Int  []int       // ints
+	prms  *Parameters // pointer to parameters
+	Id    int         // identifier
+	Fixed bool        // cannot be changed
+	Ova   []float64   // objective values
+	Oor   []float64   // out-of-range values
+	Flt   []float64   // floats
+	Int   []int       // ints
 
 	// metrics
 	WinOver   []*Solution // solutions dominated by this solution

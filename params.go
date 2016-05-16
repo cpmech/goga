@@ -41,6 +41,7 @@ type Parameters struct {
 	ExcTour  bool    // use exchange via tournament
 	ExcOne   bool    // use exchange one randomly
 	NormFlt  bool    // normalise float values
+	UseMesh  bool    // use meshes
 
 	// crossover and mutation of integers
 	IntPc       float64 // probability of crossover for ints
@@ -96,6 +97,7 @@ func (o *Parameters) Default() {
 	o.ExcTour = true
 	o.ExcOne = true
 	o.NormFlt = false
+	o.UseMesh = false
 
 	// crossover and mutation of integers
 	o.IntPc = 0.8

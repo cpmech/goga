@@ -9,6 +9,7 @@ import (
 	gotime "time"
 
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/gm/msh"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
@@ -49,7 +50,7 @@ type Optimiser struct {
 	Metrics   *Metrics    // metrics
 
 	// meshes
-	Meshes []*Mesh // meshes
+	Meshes [][]*msh.Mesh // meshes for (xi,xj) points. [nflt-1][nflt] only upper diagonal entries
 
 	// auxiliary
 	Stat                   // structure holding stat data
@@ -314,10 +315,13 @@ func (o *Optimiser) Tournament(A, B, a, b *Solution, m *Metrics) {
 func (o *Optimiser) generate_solutions(itrial int) {
 
 	// benchmark
+	t0 := gotime.Now()
+	var tgen, tmsh gotime.Time
 	if o.Verbose && itrial == 0 {
-		t0 := gotime.Now()
 		defer func() {
-			io.Pfblue2("trial solutions generated in %v\n", gotime.Now().Sub(t0))
+			io.Pfblue2("time spent in generation of solutions = %v\n", tgen.Sub(t0))
+			io.Pfblue2("time spent in Delaunay triangulations = %v\n", tmsh.Sub(tgen))
+			io.Pfblue2("total time in generate_solutions      = %v\n", gotime.Now().Sub(t0))
 		}()
 	}
 
@@ -344,9 +348,33 @@ func (o *Optimiser) generate_solutions(itrial int) {
 			<-done
 		}
 	}
+	tgen = gotime.Now()
 
 	// metrics
 	o.iova0 = -1
 	o.Nfeval = o.Nsol
 	o.Metrics.Compute(o.Solutions)
+
+	// meshes
+	if o.Nflt > 1 && o.UseMesh {
+		var err error
+		Xi, Xj := make([]float64, o.Nsol), make([]float64, o.Nsol)
+		o.Meshes = make([][]*msh.Mesh, o.Nflt-1)
+		for i := 0; i < o.Nflt-1; i++ {
+			o.Meshes[i] = make([]*msh.Mesh, o.Nflt)
+			for k, s := range o.Solutions {
+				Xi[k] = s.Flt[i]
+			}
+			for j := i + 1; j < o.Nflt; j++ {
+				for k, s := range o.Solutions {
+					Xj[k] = s.Flt[j]
+				}
+				o.Meshes[i][j], err = msh.Delaunay2d(Xi, Xj, false)
+				if err != nil {
+					chk.Panic("Delaunay2d failed:%v\n", err)
+				}
+			}
+		}
+	}
+	tmsh = gotime.Now()
 }
