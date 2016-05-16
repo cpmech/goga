@@ -152,6 +152,11 @@ func (A *Solution) Compare(B *Solution) (A_dominates, B_dominates bool) {
 // Fight implements the competition between A and B
 func (A *Solution) Fight(B *Solution) (A_wins bool) {
 
+	// A must not change
+	if A.Fixed {
+		return true
+	}
+
 	// compare solutions
 	A_dom, B_dom := A.Compare(B)
 	if A_dom {

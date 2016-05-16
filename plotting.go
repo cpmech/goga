@@ -307,9 +307,12 @@ func (o *Optimiser) PlotStar() {
 }
 
 // PlotAllXvsX plots al combinations of Xi with Xj
-func (o *Optimiser) PlotAllXvsX(denormalise bool) {
+func (o *Optimiser) PlotAllXvsX(denormalise bool, fmtMsh, fmtPts *plt.Fmt) {
 	if o.UseMesh {
 		denormalise = false
+	}
+	if fmtPts == nil {
+		fmtPts = &plt.Fmt{M: "."}
 	}
 	ncol := o.Nx - 1
 	for i := 0; i < o.Nx-1; i++ {
@@ -317,7 +320,7 @@ func (o *Optimiser) PlotAllXvsX(denormalise bool) {
 			plt.Subplot(ncol, ncol, i*ncol+j)
 			if o.UseMesh {
 				o.Meshes[i][j].CalcDerived(0)
-				o.Meshes[i][j].Draw2d(false, false, nil, 0)
+				o.Meshes[i][j].Draw2d(false, false, nil, fmtMsh)
 			}
 			for _, s := range o.Solutions {
 				x := s.Flt[i]
@@ -326,7 +329,8 @@ func (o *Optimiser) PlotAllXvsX(denormalise bool) {
 					x = o.Xmin[i] + s.Flt[i]*o.Dx[i]
 					y = o.Xmin[j] + s.Flt[j]*o.Dx[j]
 				}
-				plt.PlotOne(x, y, "marker='.'")
+				args := fmtPts.GetArgs("") + ",clip_on=0"
+				plt.PlotOne(x, y, args)
 			}
 			xl := io.Sf("$\\bar{x}_%d$", i)
 			yl := io.Sf("$\\bar{x}_%d$", j)

@@ -159,7 +159,12 @@ func (o *Optimiser) Solve() {
 					if cpu == 0 && o.Verbose {
 						io.Pf("time = %10d\r", t+1)
 					}
-					nfeval += o.EvolveOneGroup(cpu)
+					if o.UseMesh {
+						nfeval += o.EvolveOneGroupMesh(cpu)
+						o.UpdateMesh(cpu)
+					} else {
+						nfeval += o.EvolveOneGroupDE(cpu)
+					}
 				}
 				done <- nfeval
 			}(icpu)
@@ -213,8 +218,13 @@ func (o *Optimiser) Solve() {
 	}
 }
 
-// EvolveOneGroup evolves one group (CPU)
-func (o *Optimiser) EvolveOneGroup(cpu int) (nfeval int) {
+// EvolveOneGroupMesh evolves one group (CPU) using mesh
+func (o *Optimiser) EvolveOneGroupMesh(cpu int) (nfeval int) {
+	return
+}
+
+// EvolveOneGroupDE evolves one group (CPU) using differential evolution
+func (o *Optimiser) EvolveOneGroupDE(cpu int) (nfeval int) {
 
 	// auxiliary
 	G := o.Groups[cpu].All // competitors (old and new)
@@ -306,6 +316,20 @@ func (o *Optimiser) Tournament(A, B, a, b *Solution, m *Metrics) {
 	}
 	if !B.Fight(a) {
 		a.CopyInto(B)
+	}
+}
+
+// UpdateMesh updates mesh after trial solutions have been updated
+func (o *Optimiser) UpdateMesh(cpu int) {
+	for i := 0; i < o.Nx-1; i++ {
+		for j := i + 1; j < o.Nx; j++ {
+			for _, vert := range o.Meshes[i][j].Verts {
+				sol := vert.Entity.(*Solution)
+				io.Pforan("xnew = %v\n", sol.Flt)
+				vert.C[0] = sol.Flt[i]
+				vert.C[1] = sol.Flt[j]
+			}
+		}
 	}
 }
 
