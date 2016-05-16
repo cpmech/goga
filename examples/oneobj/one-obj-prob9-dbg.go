@@ -20,7 +20,7 @@ func main() {
 	// GA parameters
 	opt := new(goga.Optimiser)
 	opt.Default()
-	opt.Nsol = 20
+	opt.Nsol = 6
 	opt.Ncpu = 1
 	opt.Tf = 10
 	opt.EpsH = 1e-3
@@ -29,6 +29,8 @@ func main() {
 	//opt.GenType = "halton"
 	//opt.GenType = "rnd"
 	opt.NormFlt = false
+	opt.UseMesh = true
+	opt.Nbry = 3
 
 	// define problem
 	opt.RptName = "9"
@@ -45,13 +47,15 @@ func main() {
 	}
 
 	// check
-	f := make([]float64, 1)
-	h := make([]float64, 3)
-	fcn(f, nil, h, opt.RptXref, nil, 0)
-	io.Pforan("f(xref)  = %g  (%g)\n", f[0], opt.RptFref[0])
-	io.Pforan("h0(xref) = %g\n", h[0])
-	io.Pforan("h1(xref) = %g\n", h[1])
-	io.Pforan("h2(xref) = %g\n", h[2])
+	if false {
+		f := make([]float64, 1)
+		h := make([]float64, 3)
+		fcn(f, nil, h, opt.RptXref, nil, 0)
+		io.Pforan("f(xref)  = %g  (%g)\n", f[0], opt.RptFref[0])
+		io.Pforan("h0(xref) = %g\n", h[0])
+		io.Pforan("h1(xref) = %g\n", h[1])
+		io.Pforan("h2(xref) = %g\n", h[2])
+	}
 
 	// initialise optimiser
 	nf := 1
@@ -84,9 +88,13 @@ func main() {
 
 	// solve
 	opt.Solve()
-	io.Pf("%13s%13s%13s%13s%10s\n", "f0", "u0", "u1", "u2", "feasible")
-	for _, s := range opt.Solutions {
-		io.Pf("%13.5e%13.5e%13.5e%13.5e%10v\n", s.Ova[0], s.Oor[0], s.Oor[1], s.Oor[2], s.Feasible())
+
+	// print
+	if false {
+		io.Pf("%13s%13s%13s%13s%10s\n", "f0", "u0", "u1", "u2", "feasible")
+		for _, s := range opt.Solutions {
+			io.Pf("%13.5e%13.5e%13.5e%13.5e%10v\n", s.Ova[0], s.Oor[0], s.Oor[1], s.Oor[2], s.Feasible())
+		}
 	}
 
 	// plot: time series

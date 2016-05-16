@@ -4,14 +4,19 @@
 
 package goga
 
-import "github.com/cpmech/gosl/rnd"
+import (
+	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/rnd"
+)
 
 // GenTrialSolutions generates (initial) trial solutions
 func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 
 	// floats
-	n := len(sols)
+	n := prms.Nsol - prms.NumExtraSols
 	if prms.Nflt > 0 {
+
+		// interior points
 		switch prms.GenType {
 		case "latin":
 			K := rnd.LatinIHS(prms.Nflt, n, prms.LatinDup)
@@ -33,6 +38,78 @@ func GenTrialSolutions(sols []*Solution, prms *Parameters) {
 					sols[i].Flt[j] = rnd.Float64(prms.FltMin[j], prms.FltMax[j])
 				}
 			}
+		}
+
+		// extra points
+		if prms.UseMesh {
+			initX := func(isol int) {
+				for k := 0; k < prms.Nflt; k++ {
+					sols[isol].Flt[k] = (prms.FltMin[k] + prms.FltMax[k]) / 2.0
+				}
+			}
+			isol := n
+			for i := 0; i < prms.Nflt-1; i++ {
+				for j := i + 1; j < prms.Nflt; j++ {
+					// (min,min) corner
+					initX(isol)
+					sols[isol].Flt[i] = prms.FltMin[i]
+					sols[isol].Flt[j] = prms.FltMin[j]
+					sols[isol].Fixed = true
+					isol++
+					// (min,max) corner
+					initX(isol)
+					sols[isol].Flt[i] = prms.FltMin[i]
+					sols[isol].Flt[j] = prms.FltMax[j]
+					sols[isol].Fixed = true
+					isol++
+					// (max,max) corner
+					initX(isol)
+					sols[isol].Flt[i] = prms.FltMax[i]
+					sols[isol].Flt[j] = prms.FltMax[j]
+					sols[isol].Fixed = true
+					isol++
+					// (max,min) corner
+					initX(isol)
+					sols[isol].Flt[i] = prms.FltMax[i]
+					sols[isol].Flt[j] = prms.FltMin[j]
+					sols[isol].Fixed = true
+					isol++
+					// Xi-min middle points
+					ndelta := float64(prms.Nbry - 1)
+					for m := 0; m < prms.Nbry-2; m++ {
+						initX(isol)
+						sols[isol].Flt[i] = prms.FltMin[i]
+						sols[isol].Flt[j] = prms.FltMin[j] + float64(m+1)*prms.DelFlt[j]/ndelta
+						sols[isol].Fixed = true
+						isol++
+					}
+					// Xi-max middle points
+					for m := 0; m < prms.Nbry-2; m++ {
+						initX(isol)
+						sols[isol].Flt[i] = prms.FltMax[i]
+						sols[isol].Flt[j] = prms.FltMin[j] + float64(m+1)*prms.DelFlt[j]/ndelta
+						sols[isol].Fixed = true
+						isol++
+					}
+					// Xj-min middle points
+					for m := 0; m < prms.Nbry-2; m++ {
+						initX(isol)
+						sols[isol].Flt[i] = prms.FltMin[i] + float64(m+1)*prms.DelFlt[i]/ndelta
+						sols[isol].Flt[j] = prms.FltMin[j]
+						sols[isol].Fixed = true
+						isol++
+					}
+					// Xj-max middle points
+					for m := 0; m < prms.Nbry-2; m++ {
+						initX(isol)
+						sols[isol].Flt[i] = prms.FltMin[i] + float64(m+1)*prms.DelFlt[i]/ndelta
+						sols[isol].Flt[j] = prms.FltMax[j]
+						sols[isol].Fixed = true
+						isol++
+					}
+				}
+			}
+			chk.IntAssert(isol, prms.Nsol)
 		}
 	}
 

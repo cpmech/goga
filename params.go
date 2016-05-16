@@ -41,7 +41,8 @@ type Parameters struct {
 	ExcTour  bool    // use exchange via tournament
 	ExcOne   bool    // use exchange one randomly
 	NormFlt  bool    // normalise float values
-	UseMesh  bool    // use meshes
+	UseMesh  bool    // use meshes to control points movement
+	Nbry     int     // number of points along boundary / per iFlt (only if UseMesh==true)
 
 	// crossover and mutation of integers
 	IntPc       float64 // probability of crossover for ints
@@ -61,11 +62,16 @@ type Parameters struct {
 	DelFlt []float64 // max float range
 	DelInt []int     // max int range
 
-	// extra variables not direclty related to GOGA (for convenience of having a reader already)
+	// extra variables not directly related to GOGA (for convenience of having a reader already)
 	Strategy int  // strategy
 	PlotSet1 bool // plot set of graphs 1
 	PlotSet2 bool // plot set of graphs 2
 	ProbNum  int  // problem number
+
+	// for mesh method
+	NumXiXjPairs  int // number of (Xi,Xj) pairs
+	NumXiXjBryPts int // number of points along the boundaries of one (Xi,Xj) plane
+	NumExtraSols  int // total number of extra solutions due to all (Xi,Xj) boundaries
 }
 
 // Default sets default parameters
@@ -98,6 +104,7 @@ func (o *Parameters) Default() {
 	o.ExcOne = true
 	o.NormFlt = false
 	o.UseMesh = false
+	o.Nbry = 3
 
 	// crossover and mutation of integers
 	o.IntPc = 0.8
@@ -165,6 +172,21 @@ func (o *Parameters) CalcDerived() {
 		for i := 0; i < o.Nflt; i++ {
 			o.DelFlt[i] = o.FltMax[i] - o.FltMin[i]
 		}
+	}
+
+	// mesh
+	if o.Nflt < 2 {
+		o.UseMesh = false
+	}
+	if o.UseMesh {
+		if o.Nbry < 2 {
+			o.Nbry = 2
+		}
+		o.NumXiXjPairs = (o.Nflt*o.Nflt - o.Nflt) / 2
+		o.NumXiXjBryPts = (o.Nbry-2)*4 + 4
+		o.NumExtraSols = o.NumXiXjPairs * o.NumXiXjBryPts
+		io.PfYel("NumXiXjPairs=%d NumXiXjBryPts=%d NumExtraSols=%d\n", o.NumXiXjPairs, o.NumXiXjBryPts, o.NumExtraSols)
+		o.Nsol += o.NumExtraSols
 	}
 
 	// generic ints
@@ -272,6 +294,8 @@ func (o *Parameters) LogParams() (l string) {
 		"use exchange via tournament", "ExcTour", o.ExcTour,
 		"use exchange one randomly", "ExcOne", o.ExcOne,
 		"normalise float values", "NormFlt", o.NormFlt,
+		"use meshes to control points movement", "UseMesh", o.UseMesh,
+		"number of points along boundary / per iFlt (only if UseMesh==true)", "Nbry", o.Nbry,
 	)
 
 	// crossover and mutation of integers
@@ -288,6 +312,9 @@ func (o *Parameters) LogParams() (l string) {
 	l += io.ArgsTable("DERIVED",
 		"number of floats", "Nflt", o.Nflt,
 		"number of integers", "Nint", o.Nint,
+		"number of (Xi,Xj) pairs", "NumXiXjPairs", o.NumXiXjPairs,
+		"number of points along the boundaries of one (Xi,Xj) plane", "NumXiXjBryPts", o.NumXiXjBryPts,
+		"total number of extra solutions due to all (Xi,Xj) boundaries", "NumExtraSols", o.NumExtraSols,
 	)
 
 	// extra
