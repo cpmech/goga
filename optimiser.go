@@ -83,7 +83,9 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 				sol.Oor[i] = utl.GtePenalty(g, 0.0, 1) // g[i] ≥ 0
 			}
 			for i, h := range o.H[cpu] {
-				sol.Oor[o.Ng+i] = utl.GtePenalty(o.EpsH, math.Abs(h), 1) // ϵ ≥ |h[i]|
+				h = math.Abs(h)
+				sol.Ova[0] += h
+				sol.Oor[o.Ng+i] = utl.GtePenalty(o.EpsH, h, 1) // ϵ ≥ |h[i]|
 			}
 		}
 		o.F = la.MatAlloc(o.Ncpu, o.Nf)
