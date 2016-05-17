@@ -80,10 +80,12 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	opt.DEC = 0.1
 
 	// options for report
-	opt.RptFmtE = "%.5e"
-	opt.RptFmtL = "%.6f"
-	opt.RptFmtEdev = "%.4e"
-	opt.RptFmtLdev = "%.4e"
+	opt.HistNsta = 6
+	opt.HistLen = 13
+	opt.RptFmtE = "%.4e"
+	opt.RptFmtL = "%.4e"
+	opt.RptFmtEdev = "%.3e"
+	opt.RptFmtLdev = "%.3e"
 
 	// problem variables
 	nx := 10
@@ -388,6 +390,8 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 }
 
 func main() {
+	textSize := `\scriptsize  \setlength{\tabcolsep}{0.5em}`
+	miniPageSz, histTextSize := "4.1cm", `\fontsize{5pt}{6pt}`
 	P := utl.IntRange2(0, 9)
 	//P := []int{0}
 	opts := make([]*goga.Optimiser, len(P))
@@ -397,6 +401,6 @@ func main() {
 	io.Pf("\n-------------------------- generating report --------------------------\nn")
 	nRowPerTab := 10
 	title := "Constrained two objective problems"
-	goga.TexReport("/tmp/goga", "tmp_ct-two-obj", title, "ct-two-obj", 3, nRowPerTab, true, opts)
-	goga.TexReport("/tmp/goga", "ct-two-obj", title, "ct-two-obj", 3, nRowPerTab, false, opts)
+	goga.TexReport("/tmp/goga", "tmp_ct-two-obj", title, "ct-two-obj", 3, nRowPerTab, true, false, textSize, miniPageSz, histTextSize, opts)
+	goga.TexReport("/tmp/goga", "ct-two-obj", title, "ct-two-obj", 3, nRowPerTab, false, false, textSize, miniPageSz, histTextSize, opts)
 }
