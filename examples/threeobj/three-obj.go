@@ -26,13 +26,16 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	opt.Nsol = 200
 	opt.Ncpu = 5
 	opt.Tf = 500
-	opt.Nsamples = 1
+	opt.Nsamples = 10
 	opt.DEC = 0.01
 
 	// options for report
-	opt.HistNsta = 8
+	opt.HistNsta = 6
+	opt.HistLen = 13
 	opt.RptFmtE = "%.4e"
-	opt.RptFmtEdev = "%.4e"
+	opt.RptFmtL = "%.4e"
+	opt.RptFmtEdev = "%.3e"
+	opt.RptFmtLdev = "%.3e"
 	opt.RptFmin = make([]float64, 3)
 	opt.RptFmax = make([]float64, 3)
 	for i := 0; i < 3; i++ {
@@ -303,6 +306,8 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 }
 
 func main() {
+	textSize := `\scriptsize  \setlength{\tabcolsep}{0.5em}`
+	miniPageSz, histTextSize := "4.1cm", `\fontsize{5pt}{6pt}`
 	P := utl.IntRange2(1, 9)
 	//P := []int{2}
 	opts := make([]*goga.Optimiser, len(P))
@@ -311,7 +316,7 @@ func main() {
 	}
 	io.Pf("\n-------------------------- generating report --------------------------\nn")
 	nRowPerTab := 10
-	title := "Unconstrained and constrained three objective problems"
-	goga.TexReport("/tmp/goga", "tmp_three-obj", title, "three-obj", 3, nRowPerTab, true, opts)
-	goga.TexReport("/tmp/goga", "three-obj", title, "three-obj", 3, nRowPerTab, false, opts)
+	title := "Unconstrained and constrained three objective problems."
+	goga.TexReport("/tmp/goga", "tmp_three-obj", title, "three-obj", 3, nRowPerTab, true, false, textSize, miniPageSz, histTextSize, opts)
+	goga.TexReport("/tmp/goga", "three-obj", title, "three-obj", 3, nRowPerTab, false, false, textSize, miniPageSz, histTextSize, opts)
 }

@@ -304,7 +304,7 @@ func main() {
 	}
 	io.Pf("\n-------------------------- generating report --------------------------\nn")
 	nRowPerTab := 9
-	title := "Unconstrained two objective problems"
+	title := "Unconstrained two objective problems."
 	goga.TexReport("/tmp/goga", "tmp_two-obj", title, "two-obj", 2, nRowPerTab, true, false, textSize, miniPageSz, histTextSize, opts)
 	goga.TexReport("/tmp/goga", "two-obj", title, "two-obj", 2, nRowPerTab, false, false, textSize, miniPageSz, histTextSize, opts)
 }
