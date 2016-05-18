@@ -20,7 +20,7 @@ import (
 func main() {
 
 	// flags
-	benchmark := false
+	benchmark := true
 	ncpuMax := 16
 
 	// benchmarking
@@ -142,7 +142,7 @@ func runone(ncpu int) (nsol, tf int, elaspsedTime time.Duration) {
 
 	// plot Pareto-optimal front
 	feasibleOnly := true
-	plt.SetForEps(0.8, 355)
+	plt.SetForEps(0.8, 300)
 	if strings.HasPrefix(fnkey, "ground10") {
 		_, ref, _ := io.ReadTable("p460_fig300.dat")
 		plt.Plot(ref["w"], ref["u"], "'b-'")
@@ -162,13 +162,13 @@ func runone(ncpu int) (nsol, tf int, elaspsedTime time.Duration) {
 		l := nfront0 - 1
 		io.Pforan("nfront0=%d m=%d l=%v\n", nfront0, m, l)
 		_, _, weight, umax, _, _, _ := data[0].RunFEM(front0[0].Int, front0[0].Flt, 0, false)
-		plt.Text(weight, umax, "1", "size=7")
+		plt.Text(weight, umax+0.1, "1", "size=8")
 		plt.PlotOne(weight, umax, "'g*', zorder=100")
 		_, _, weight, umax, _, _, _ = data[0].RunFEM(front0[m].Int, front0[m].Flt, 0, false)
-		plt.Text(weight, umax, "2", "size=7")
+		plt.Text(weight, umax+0.1, "2", "size=8")
 		plt.PlotOne(weight, umax, "'g*', zorder=100")
 		_, _, weight, umax, _, _, _ = data[0].RunFEM(front0[l].Int, front0[l].Flt, 0, false)
-		plt.Text(weight, umax, "3", "size=7")
+		plt.Text(weight, umax+0.1, "3", "size=8")
 		plt.PlotOne(weight, umax, "'g*', zorder=100")
 		plt.PyCmds(`
 from pylab import axes, setp

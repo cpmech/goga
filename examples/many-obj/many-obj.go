@@ -81,7 +81,7 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	opt.Nsol = 300
 	opt.Ncpu = 6
 	opt.Tf = 500
-	opt.Nsamples = 1000
+	opt.Nsamples = 2
 	opt.DEC = 0.01
 
 	// options for report
