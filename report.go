@@ -6,16 +6,12 @@ package goga
 
 import (
 	"bytes"
-	"strings"
 	"time"
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/rnd"
-)
-
-const (
-	SCIENTIFIC_NOTATION_TEX = true // convert scientific notation to tex
+	"github.com/cpmech/gosl/utl"
 )
 
 // TeX document ////////////////////////////////////////////////////////////////////////////////////
@@ -142,6 +138,7 @@ func TexReport(dirout, fnkey, title, label string, Type, nRowPerTab int, docHead
 
 // TexOneObjTableItem adds item to one-obj table
 func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize string) {
+	tex := func(fmt string, num float64) string { return utl.TexNum(fmt, num, true) }
 	o.fix_formatting_data()
 	FrefTxt := "N/A"
 	if len(o.RptFref) > 0 {
@@ -196,6 +193,7 @@ func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSiz
 
 // TexTwoObjTableItem adds item to two-obj table
 func TexTwoObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize string) {
+	tex := func(fmt string, num float64) string { return utl.TexNum(fmt, num, true) }
 	o.fix_formatting_data()
 	Emin, Eave, Emax, Edev, E, Lmin, Lave, Lmax, Ldev, _ := StatF1F0(o, false)
 	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
@@ -242,6 +240,7 @@ func TexTwoObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSiz
 
 // TexMultiTableItem adds item to multi-obj table
 func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize string) {
+	tex := func(fmt string, num float64) string { return utl.TexNum(fmt, num, true) }
 	o.fix_formatting_data()
 	Ekey, Emin, Eave, Emax, Edev, E := StatMulti(o, false)
 	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
@@ -317,40 +316,6 @@ func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
 		io.Ff(&buf, "\n")
 	}
 	io.WriteFileVD(dirout, fnkey+".res", &buf)
-}
-
-func tex(fmt string, num float64) (l string) {
-	if fmt == "" {
-		fmt = "%g"
-	}
-	l = io.Sf(fmt, num)
-	if SCIENTIFIC_NOTATION_TEX {
-		s := strings.Split(l, "e-")
-		if len(s) == 2 {
-			e := s[1]
-			if e == "00" {
-				l = s[0]
-				return
-			}
-			if e[0] == '0' {
-				e = string(e[1])
-			}
-			l = s[0] + "\\cdot 10^{-" + e + "}"
-		}
-		s = strings.Split(l, "e+")
-		if len(s) == 2 {
-			e := s[1]
-			if e == "00" {
-				l = s[0]
-				return
-			}
-			if e[0] == '0' {
-				e = string(e[1])
-			}
-			l = s[0] + "\\cdot 10^{+" + e + "}"
-		}
-	}
-	return
 }
 
 func lbl(i int, label string) string {
