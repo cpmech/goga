@@ -14,6 +14,7 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
+	"github.com/cpmech/gosl/utl"
 )
 
 func main() {
@@ -155,8 +156,12 @@ func main() {
 		plt.Text(A.Ova[0]+1, A.Ova[1], "A", "")
 		plt.Text(B.Ova[0]+1, B.Ova[1], "B", "")
 		plt.Text(C.Ova[0]+1, C.Ova[1], "C", "")
+		title := "Economic emission dispatch. Results: Lossy case."
+		label := "eedLossy"
 		var dat map[string][]float64
 		if problem == 3 {
+			title = "Economic emission dispatch. Results: Lossless case."
+			label = "eedLossless"
 			_, dat, _ = io.ReadTable("abido2006-fig6.dat")
 		} else {
 			_, dat, _ = io.ReadTable("abido2006-fig8.dat")
@@ -168,6 +173,13 @@ func main() {
 		}
 		fnkey := io.Sf("ecoemission_prob%d", problem)
 		plt.SaveD("/tmp/goga", fnkey+".eps")
+
+		// tex file
+		document := true
+		compact := true
+		tex_results("/tmp/goga", "tmp_"+fnkey, title, label, &sys, A, B, C, document, compact)
+		document = false
+		tex_results("/tmp/goga", fnkey, title, label, &sys, A, B, C, document, compact)
 	}
 }
 
@@ -188,9 +200,10 @@ func print_results(sys *System, A, B, C *goga.Solution, Pref []float64, costRef,
 	io.Pf("%s", io.StrThickLine(n))
 }
 
-func tex_results(dirout, fnkey string, sys *System, A, B, C *goga.Solution, dorun bool) {
+func tex_results(dirout, fnkey, title, label string, sys *System, A, B, C *goga.Solution, document, compact bool) {
 	buf := new(bytes.Buffer)
-	io.Ff(buf, `\documentclass[a4paper]{article}
+	if document {
+		io.Ff(buf, `\documentclass[a4paper]{article}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -202,14 +215,30 @@ func tex_results(dirout, fnkey string, sys *System, A, B, C *goga.Solution, doru
 
 \begin{document}
 
-\begin{table} \centering
-\caption{goga: Parameters}
-\begin{tabular}[c]{cccccccccc} \toprule
+`)
+	}
+	io.Ff(buf, `\begin{table} \centering
+\caption{%s}
+`, title)
+	if compact {
+		io.Ff(buf, `\begin{tabular}[c]{ccccccc} \toprule
+point & cost & emission & $h_0$  &  $P_0$ & $P_1$ & $P_2$ \\
+      &      &          &        &  $P_3$ & $P_4$ & $P_5$ \\ \hline
+`)
+	} else {
+		io.Ff(buf, `\begin{tabular}[c]{cccccccccc} \toprule
 point & cost & emission & $P_0$ & $P_1$ & $P_2$ & $P_3$ & $P_4$ & $P_5$ & $h_0$ \\ \hline
 `)
+	}
 
 	writeline := func(pt string, P []float64) {
-		io.Ff(buf, "%s & $%.4f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.4e$ \\\\\n", pt, sys.FuelCost(P), sys.Emission(P), P[0], P[1], P[2], P[3], P[4], P[5], sys.Balance(P))
+		strh0 := utl.TexNum("%.2e", sys.Balance(P), true)
+		if compact {
+			io.Ff(buf, "%s & $%.4f$ & $%.6f$ & $%s$  &  $%.6f$ & $%.6f$ & $%.6f$ \\\\\n", pt, sys.FuelCost(P), sys.Emission(P), strh0, P[0], P[1], P[2])
+			io.Ff(buf, "   &        &        &       &  $%.6f$ & $%.6f$ & $%.6f$ \\\\\n", P[3], P[4], P[5])
+		} else {
+			io.Ff(buf, "%s & $%.4f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%s$ \\\\\n", pt, sys.FuelCost(P), sys.Emission(P), P[0], P[1], P[2], P[3], P[4], P[5], strh0)
+		}
 	}
 
 	writeline("A", A.Flt)
@@ -219,18 +248,23 @@ point & cost & emission & $P_0$ & $P_1$ & $P_2$ & $P_3$ & $P_4$ & $P_5$ & $h_0$ 
 	io.Ff(buf, `
 \bottomrule
 \end{tabular}
-\label{tab:ecoemission}
+\label{tab:%s}
 \end{table}
-\end{document}`)
+`, label)
+	if document {
+		io.Ff(buf, ` \end{document}`)
+	}
 
 	tex := fnkey + ".tex"
-	io.WriteFileVD(dirout, tex, buf)
-	if dorun {
+	if document {
+		io.WriteFileD(dirout, tex, buf)
 		_, err := io.RunCmd(true, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory=/tmp/goga/", tex)
 		if err != nil {
 			chk.Panic("%v", err)
 		}
 		io.PfBlue("file <%s/%s.pdf> generated\n", dirout, fnkey)
+	} else {
+		io.WriteFileVD(dirout, tex, buf)
 	}
 }
 
