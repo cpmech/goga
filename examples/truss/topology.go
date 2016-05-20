@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/cpmech/goga"
+	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
 )
@@ -20,7 +21,7 @@ import (
 func main() {
 
 	// flags
-	benchmark := true
+	benchmark := false
 	ncpuMax := 16
 
 	// benchmarking
@@ -142,60 +143,52 @@ func runone(ncpu int) (nsol, tf int, elaspsedTime time.Duration) {
 
 	// plot Pareto-optimal front
 	feasibleOnly := true
-	plt.SetForEps(0.8, 300)
+	plt.SetForEps(0.8, 350)
 	if strings.HasPrefix(fnkey, "ground10") {
 		_, ref, _ := io.ReadTable("p460_fig300.dat")
-		plt.Plot(ref["w"], ref["u"], "'b-'")
+		plt.Plot(ref["w"], ref["u"], "'b-', label='reference'")
 	}
 	fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
 	fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
 	goga.PlotOvaOvaPareto(&opt, sols0, 0, 1, feasibleOnly, fmtAll, fmtFront)
-	plt.Gll("weight ($f_0$)", "deflection ($f_1)$", "leg_out=1, leg_ncol=4, leg_hlen=1.5")
+	plt.Gll("weight ($f_0$)", "deflection ($f_1)$", "") //, "leg_out=1, leg_ncol=4, leg_hlen=1.5")
 	if strings.HasPrefix(fnkey, "ground10") {
 		plt.AxisRange(1800, 14000, 1, 6)
 	}
 
 	// plot selected results
+	ia, ib, ic, id, ie := 0, 0, 0, 0, 0
 	nfront0 := len(front0)
-	if nfront0 > 2 {
-		m := nfront0 / 4
-		l := nfront0 - 1
-		io.Pforan("nfront0=%d m=%d l=%v\n", nfront0, m, l)
-		_, _, weight, umax, _, _, _ := data[0].RunFEM(front0[0].Int, front0[0].Flt, 0, false)
-		plt.Text(weight, umax+0.1, "1", "size=8")
-		plt.PlotOne(weight, umax, "'g*', zorder=100")
-		_, _, weight, umax, _, _, _ = data[0].RunFEM(front0[m].Int, front0[m].Flt, 0, false)
-		plt.Text(weight, umax+0.1, "2", "size=8")
-		plt.PlotOne(weight, umax, "'g*', zorder=100")
-		_, _, weight, umax, _, _, _ = data[0].RunFEM(front0[l].Int, front0[l].Flt, 0, false)
-		plt.Text(weight, umax+0.1, "3", "size=8")
-		plt.PlotOne(weight, umax, "'g*', zorder=100")
-		plt.PyCmds(`
-from pylab import axes, setp
-a = axes([0.2, 0.75, 0.20, 0.10], axisbg='#dcdcdc')
-setp(a, xticks=[0,720], yticks=[0,360])
-axis('equal')
-axis('off')
-`)
-		data[0].RunFEM(front0[0].Int, front0[0].Flt, 1, false)
-		plt.PyCmds(`
-a = axes([0.40, 0.28, 0.20, 0.10], axisbg='#dcdcdc')
-setp(a, xticks=[0,720], yticks=[0,360])
-axis('equal')
-axis('off')
-`)
-		data[0].RunFEM(front0[m].Int, front0[m].Flt, 2, false)
-		plt.PyCmds(`
-a = axes([0.7, 0.18, 0.20, 0.10], axisbg='#dcdcdc')
-setp(a, xticks=[0,720], yticks=[0,360])
-axis('equal')
-axis('off')
-`)
-		data[0].RunFEM(front0[l].Int, front0[l].Flt, 3, false)
+	io.Pforan("nfront0 = %v\n", nfront0)
+	if nfront0 > 4 {
+		ib = nfront0 / 10
+		ic = nfront0 / 5
+		id = nfront0 / 2
+		ie = nfront0 - 1
 	}
+	A := front0[ia]
+	B := front0[ib]
+	C := front0[ic]
+	D := front0[id]
+	E := front0[ie]
+	wid, hei := 0.20, 0.10
+	draw_truss(data[0], "A", A, 0.17, 0.75, wid, hei)
+	draw_truss(data[0], "B", B, 0.20, 0.55, wid, hei)
+	draw_truss(data[0], "C", C, 0.28, 0.33, wid, hei)
+	draw_truss(data[0], "D", D, 0.47, 0.22, wid, hei)
+	draw_truss(data[0], "E", E, 0.70, 0.18, wid, hei)
 
-	// save
+	// save figure
 	plt.SaveD("/tmp/goga", fnkey+".eps")
+
+	// tex file
+	title := "Shape and topology optimisation. Results."
+	label := "topoFront"
+	document := true
+	compact := true
+	tex_results("/tmp/goga", "tmp_"+fnkey, title, label, data[0], A, B, C, D, E, document, compact)
+	document = false
+	tex_results("/tmp/goga", fnkey, title, label, data[0], A, B, C, D, E, document, compact)
 	return
 }
 
@@ -224,4 +217,95 @@ func PrintSolutions(fed *FemData, sols []*goga.Solution) (l string) {
 		l += io.Sf("%8.1f%6.2f%6.2f |%s\n", weight, umax, smax, FltFormatter(sol.Flt))
 	}
 	return
+}
+
+func draw_truss(dat *FemData, key string, A *goga.Solution, lef, bot, wid, hei float64) (weight, deflection float64) {
+	gap := 0.1
+	plt.PyCmds(io.Sf(`
+from pylab import axes, setp, sca
+ax_current = gca()
+ax_new = axes([%g, %g, %g, %g], axisbg='#dcdcdc')
+setp(ax_new, xticks=[0,720], yticks=[0,360])
+axis('equal')
+axis('off')
+`, lef, bot, wid, hei))
+	_, _, weight, deflection, _, _, _ = dat.RunFEM(A.Int, A.Flt, 1, false)
+	plt.PyCmds("sca(ax_current)\n")
+	plt.PlotOne(weight, deflection, "'g*', zorder=1000, clip_on=0")
+	plt.Text(weight, deflection+gap, key, "")
+	return
+}
+
+func tex_results(dirout, fnkey, title, label string, dat *FemData, A, B, C, D, E *goga.Solution, document, compact bool) {
+	if len(A.Flt) != 10 {
+		chk.Panic("tex_results works with len(Areas)==10 only\n")
+		return
+	}
+	buf := new(bytes.Buffer)
+	if document {
+		io.Ff(buf, `\documentclass[a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage[margin=1.5cm,footskip=0.5cm]{geometry}
+
+\title{GOGA Report}
+\author{Dorival Pedroso}
+
+\begin{document}
+
+`)
+	}
+	io.Ff(buf, `\begin{table} \centering
+\caption{%s}
+`, title)
+	if compact {
+		io.Ff(buf, `\begin{tabular}[c]{cccccccc} \toprule
+point & weight & deflection &  $A_0$ & $A_1$ & $A_2$ & $A_3$ & $A_4$   \\
+      &        &            &  $A_5$ & $A_6$ & $A_7$ & $A_8$ & $A_9$   \\ \hline
+`)
+	} else {
+		io.Ff(buf, `\begin{tabular}[c]{ccccccccccccc} \toprule
+point & weight & deflection & $A_0$ & $A_1$ & $A_2$ & $A_3$ & $A_4$ & $A_5$ & $A_6$ & $A_7$ & $A_8$ & $A_9$ \\ \hline
+`)
+	}
+
+	writeline := func(pt string, E []int, A []float64) {
+		_, _, weight, deflection, _, _, _ := dat.RunFEM(E, A, 0, false)
+		if compact {
+			io.Ff(buf, "%s & $%.2f$ & $%.6f$ &  $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ \\\\\n", pt, weight, deflection, A[0], A[1], A[2], A[3], A[4])
+			io.Ff(buf, "   &        &        &  $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ \\\\\n", A[5], A[6], A[7], A[8], A[9])
+		} else {
+			io.Ff(buf, "%s & $%.2f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ \\\\\n", pt, weight, deflection, A[0], A[1], A[2], A[3], A[4], A[5], A[6], A[7], A[8], A[9])
+		}
+	}
+
+	writeline("A", A.Int, A.Flt)
+	writeline("B", B.Int, B.Flt)
+	writeline("C", C.Int, C.Flt)
+	writeline("D", D.Int, D.Flt)
+	writeline("E", E.Int, E.Flt)
+
+	io.Ff(buf, `
+\bottomrule
+\end{tabular}
+\label{tab:%s}
+\end{table}
+`, label)
+	if document {
+		io.Ff(buf, ` \end{document}`)
+	}
+
+	tex := fnkey + ".tex"
+	if document {
+		io.WriteFileD(dirout, tex, buf)
+		_, err := io.RunCmd(true, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory=/tmp/goga/", tex)
+		if err != nil {
+			chk.Panic("%v", err)
+		}
+		io.PfBlue("file <%s/%s.pdf> generated\n", dirout, fnkey)
+	} else {
+		io.WriteFileVD(dirout, tex, buf)
+	}
 }
