@@ -33,16 +33,21 @@ def header(title):
 <style type=\\"text/css\\"></style>
 </head>
 <body>
-<div id=\\"page\\">""" % title
+<div id=\\"page\\" class=\\wide\\">
+<div class=\\"container\\">
+""" % title
 
 def footer():
-    return """</div><!-- page -->
+    return """
 <div id=\\"footer\\">
 <br /><br />
 <hr>
 <pre class=\\"copyright\\">
 %s</pre><!-- copyright -->
 </div><!-- footer -->
+
+</div><!-- container -->
+</div><!-- page -->
 </body>
 </html>""" % licen
 
