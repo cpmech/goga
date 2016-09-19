@@ -9,12 +9,17 @@ import (
 	gotime "time"
 
 	"github.com/cpmech/gosl/chk"
-	"github.com/cpmech/gosl/gm/msh"
+	"github.com/cpmech/gosl/gm/tri"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
+
+type Mesh struct {
+	V [][]float64 // vertices
+	C [][]int     // cells
+}
 
 // Optimiser solves optimisation problems:
 //  Solve:
@@ -50,7 +55,7 @@ type Optimiser struct {
 	Metrics   *Metrics    // metrics
 
 	// meshes
-	Meshes [][]*msh.Mesh // meshes for (xi,xj) points. [nflt-1][nflt] only upper diagonal entries
+	Meshes [][]*Mesh // meshes for (xi,xj) points. [nflt-1][nflt] only upper diagonal entries
 
 	// auxiliary
 	Stat                   // structure holding stat data
@@ -361,9 +366,9 @@ func (o *Optimiser) generate_solutions(itrial int) {
 	if o.Nflt > 1 && o.UseMesh {
 		var err error
 		Xi, Xj := make([]float64, o.Nsol), make([]float64, o.Nsol)
-		o.Meshes = make([][]*msh.Mesh, o.Nflt-1)
+		o.Meshes = make([][]*Mesh, o.Nflt-1)
 		for i := 0; i < o.Nflt-1; i++ {
-			o.Meshes[i] = make([]*msh.Mesh, o.Nflt)
+			o.Meshes[i] = make([]*Mesh, o.Nflt)
 			for k, s := range o.Solutions {
 				Xi[k] = s.Flt[i]
 			}
@@ -371,7 +376,7 @@ func (o *Optimiser) generate_solutions(itrial int) {
 				for k, s := range o.Solutions {
 					Xj[k] = s.Flt[j]
 				}
-				o.Meshes[i][j], err = msh.Delaunay2d(Xi, Xj, false)
+				o.Meshes[i][j].V, o.Meshes[i][j].C, err = tri.Delaunay(Xi, Xj, false)
 				if err != nil {
 					chk.Panic("Delaunay2d failed:%v\n", err)
 				}
