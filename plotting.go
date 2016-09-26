@@ -181,7 +181,7 @@ func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np 
 }
 
 // PlotFltFlt plots flt-flt contour
-func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jFlt, iOva int, cprms ContourParams, extra func(), equalAxes bool) {
+func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jFlt, iOva int, cprms ContourParams) {
 	clr1 := "green"
 	clr2 := "magenta"
 	if cprms.Csimple {
@@ -196,10 +196,10 @@ func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jF
 	best := opt.Solutions[0]
 	opt.PlotAddFltFlt(iFlt, jFlt, opt.Solutions, plt.Fmt{L: "final", M: "o", C: clr2, Ls: "none", Ms: 7}, true)
 	plt.PlotOne(best.Flt[iFlt], best.Flt[jFlt], io.Sf("'k*', markersize=6, color='%s', markeredgecolor='%s', label='best', clip_on=0, zorder=20", clr1, clr1))
-	if extra != nil {
-		extra()
+	if cprms.Extra != nil {
+		cprms.Extra()
 	}
-	if equalAxes {
+	if cprms.AxEqual {
 		plt.Equal()
 	}
 	plt.Gll(io.Sf("$x_%d$", iFlt), io.Sf("$x_%d$", jFlt), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
