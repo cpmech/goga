@@ -135,16 +135,6 @@ func (o *Optimiser) GetSolutionsCopy() (res []*Solution) {
 	return
 }
 
-// GetBest returns the best candidate. Note: performs sorting
-func (o *Optimiser) GetBest() (best *Solution) {
-	if o.Nova > 1 { // multi-objective
-		SortByFrontThenOva(o.Solutions, 0)
-	} else { // single-objective
-		SortByOva(o.Solutions, 0)
-	}
-	return o.Solutions[0]
-}
-
 // Solve solves optimisation problem
 func (o *Optimiser) Solve() {
 

@@ -22,6 +22,22 @@ func GetFeasible(sols []*Solution) (feasible []*Solution) {
 	return
 }
 
+// GetBestFeasible returns the best and list of feasible candidates
+// Note: feasible array is sorted by iOva
+func GetBestFeasible(opt *Optimiser, iOvaSort int) (best *Solution, feasible []*Solution) {
+	feasible = GetFeasible(opt.Solutions)
+	if len(feasible) == 0 {
+		return
+	}
+	if opt.Nova > 1 { // multi-objective
+		SortByFrontThenOva(feasible, iOvaSort)
+	} else { // single-objective
+		SortByOva(feasible, iOvaSort)
+	}
+	best = feasible[0]
+	return
+}
+
 // GetResults returns all ovas and oors
 //  Output:
 //   ova -- [nsol][nova] objective values
