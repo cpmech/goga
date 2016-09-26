@@ -80,7 +80,7 @@ func Test_flt02(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, ContourParams{}, nil, false)
+		PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, ContourParams{})
 	}
 }
 
@@ -124,7 +124,7 @@ func Test_flt03(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		PlotFltFltContour("fig_flt03", &opt, sols0, 0, 1, 0, ContourParams{}, nil, false)
+		PlotFltFltContour("fig_flt03", &opt, sols0, 0, 1, 0, ContourParams{})
 	}
 }
 

@@ -5,6 +5,9 @@
 package goga
 
 import (
+	"math"
+
+	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/utl"
 )
@@ -100,6 +103,53 @@ func CheckFront0(opt *Optimiser, verbose bool) (nfailed int, front0 []*Solution)
 			io.PfGreen("N success = %d out of %d\n", nsuccess, opt.Nsol)
 		}
 		io.PfYel("N front 0 = %d\n", len(front0))
+	}
+	return
+}
+
+// FormatXFGH formats x, f, g and h to a string
+// Note: (1) only CPU=0 must call this function
+//       (2) use fmtX=="" to prevent output of X values
+func FormatXFGH(opt *Optimiser, fmtX, fmtFGH string) (l string) {
+	if opt.MinProb == nil {
+		chk.Panic("FormatXFGH needs the definition of a MinProb")
+	}
+	fmtFGHok := fmtFGH + " "
+	fmtFGHwrong := fmtFGH + "!"
+	cpu := 0
+	var infeasible bool
+	for _, sol := range opt.Solutions {
+		if fmtX != "" {
+			for j := 0; j < opt.Nflt; j++ {
+				l += io.Sf(fmtX, sol.Flt[j])
+			}
+		}
+		infeasible = false
+		opt.MinProb(opt.F[cpu], opt.G[cpu], opt.H[cpu], sol.Flt, sol.Int, cpu)
+		for j := 0; j < opt.Nf; j++ {
+			l += io.Sf(fmtFGH, opt.F[cpu][j])
+		}
+		for j := 0; j < opt.Ng; j++ {
+			if opt.G[cpu][j] < 0 {
+				l += io.Sf(fmtFGHwrong, opt.G[cpu][j])
+				infeasible = true
+			} else {
+				l += io.Sf(fmtFGHok, opt.G[cpu][j])
+			}
+		}
+		for j := 0; j < opt.Nh; j++ {
+			if math.Abs(opt.H[cpu][j]) > opt.EpsH {
+				l += io.Sf(fmtFGHwrong, opt.H[cpu][j])
+				infeasible = true
+			} else {
+				l += io.Sf(fmtFGHok, opt.H[cpu][j])
+			}
+		}
+		if infeasible {
+			l += io.Sf(" !!\n")
+		} else {
+			l += io.Sf(" ok\n")
+		}
 	}
 	return
 }
