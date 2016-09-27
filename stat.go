@@ -16,8 +16,10 @@ import (
 type Stat struct {
 
 	// stat
-	Nfeval  int           // number of function evaluations
-	SysTime time.Duration // system (real/CPU) time
+	Nfeval     int             // number of function evaluations
+	SysTime    time.Duration   // total system (real/CPU) time
+	SysTimes   []time.Duration // all system times for each run
+	SysTimeAve time.Duration   // average of all system times
 
 	// formatting data for reports
 	RptName         string    // problem name
@@ -73,6 +75,12 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 	t0 := time.Now()
 	defer func() {
 		o.SysTime = time.Now().Sub(t0)
+		var tmp int64
+		for _, dur := range o.SysTimes {
+			tmp += dur.Nanoseconds()
+		}
+		tmp /= int64(o.Nsamples)
+		o.SysTimeAve = time.Duration(tmp)
 	}()
 
 	// disable verbose flag temporarily
@@ -89,6 +97,7 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 	}
 
 	// allocate variables
+	o.SysTimes = make([]time.Duration, o.Nsamples)
 	o.BestOvas = make([][]float64, o.Nova)
 	o.BestFlts = make([][]float64, o.Nflt)
 	o.BestInts = make([][]int, o.Nint)
@@ -111,7 +120,9 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 		}
 
 		// solve
+		timeIni := time.Now()
 		o.Solve()
+		o.SysTimes[itrial] = time.Now().Sub(timeIni)
 
 		// sort
 		if o.Nova > 1 { // multi-objective
