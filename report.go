@@ -178,7 +178,7 @@ func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSiz
 \multicolumn{5}{c}{{\scriptsize $x_{best}$=`+o.RptFmtX+`}} \\`,
 		o.RptName,
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
-		o.RptWordF, FrefTxt, o.DEC, o.Nfeval, dround(o.SysTime, 0.001e9),
+		o.RptWordF, FrefTxt, o.DEC, o.Nfeval, dround(o.SysTimeAve, 0.001e9),
 		o.RptWordF, FminTxt, o.RptWordF, FaveTxt, o.RptWordF, FmaxTxt, o.RptWordF, FdevTxt,
 		miniPageSz, histTextSize, hist,
 		o.BestOfBestFlt)
@@ -231,7 +231,7 @@ func TexTwoObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSiz
 `,
 		o.RptName,
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
-		len(E), o.DEC, o.Nfeval, dround(o.SysTime, 0.001e9),
+		len(E), o.DEC, o.Nfeval, dround(o.SysTimeAve, 0.001e9),
 		EminTxt, EaveTxt, EmaxTxt, EdevTxt,
 		LminTxt, LaveTxt, LmaxTxt, LdevTxt)
 }
@@ -276,7 +276,7 @@ func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize
 `,
 		o.RptName,
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
-		o.Nova, o.DEC, o.Nfeval, dround(o.SysTime, 0.001e9),
+		o.Nova, o.DEC, o.Nfeval, dround(o.SysTimeAve, 0.001e9),
 		Ekey, EminTxt, Ekey, EaveTxt, Ekey, EmaxTxt, Ekey, EdevTxt,
 		miniPageSz, histTextSize, hist)
 }

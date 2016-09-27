@@ -17,9 +17,9 @@ type Stat struct {
 
 	// stat
 	Nfeval     int             // number of function evaluations
-	SysTime    time.Duration   // total system (real/CPU) time
 	SysTimes   []time.Duration // all system times for each run
 	SysTimeAve time.Duration   // average of all system times
+	SysTimeTot time.Duration   // total system (real/CPU) time
 
 	// formatting data for reports
 	RptName         string    // problem name
@@ -74,7 +74,7 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 	// benchmark
 	t0 := time.Now()
 	defer func() {
-		o.SysTime = time.Now().Sub(t0)
+		o.SysTimeTot = time.Now().Sub(t0)
 		var tmp int64
 		for _, dur := range o.SysTimes {
 			tmp += dur.Nanoseconds()
