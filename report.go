@@ -14,6 +14,8 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
+const DROUNDCTE = 0.0001e9 // 0.001e9
+
 // TeX document ////////////////////////////////////////////////////////////////////////////////////
 
 // TexDocumentStart starts TeX document
@@ -178,7 +180,7 @@ func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSiz
 \multicolumn{5}{c}{{\scriptsize $x_{best}$=`+o.RptFmtX+`}} \\`,
 		o.RptName,
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
-		o.RptWordF, FrefTxt, o.DEC, o.Nfeval, dround(o.SysTimeAve, 0.001e9),
+		o.RptWordF, FrefTxt, o.DEC, o.Nfeval, dround(o.SysTimeAve, DROUNDCTE),
 		o.RptWordF, FminTxt, o.RptWordF, FaveTxt, o.RptWordF, FmaxTxt, o.RptWordF, FdevTxt,
 		miniPageSz, histTextSize, hist,
 		o.BestOfBestFlt)
@@ -231,7 +233,7 @@ func TexTwoObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSiz
 `,
 		o.RptName,
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
-		len(E), o.DEC, o.Nfeval, dround(o.SysTimeAve, 0.001e9),
+		len(E), o.DEC, o.Nfeval, dround(o.SysTimeAve, DROUNDCTE),
 		EminTxt, EaveTxt, EmaxTxt, EdevTxt,
 		LminTxt, LaveTxt, LmaxTxt, LdevTxt)
 }
@@ -276,7 +278,7 @@ func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize
 `,
 		o.RptName,
 		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
-		o.Nova, o.DEC, o.Nfeval, dround(o.SysTimeAve, 0.001e9),
+		o.Nova, o.DEC, o.Nfeval, dround(o.SysTimeAve, DROUNDCTE),
 		Ekey, EminTxt, Ekey, EaveTxt, Ekey, EmaxTxt, Ekey, EdevTxt,
 		miniPageSz, histTextSize, hist)
 }
