@@ -14,18 +14,262 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-const DROUNDCTE = 0.0001e9 // 0.001e9
+// TexReport produces TeX table report
+//  Type:
+//     1 -- one objective. with histogram of OVA
+//     2 -- two objective. no histogram. with E(error) and L(spread)
+//     3 -- multi objective. with histogram of error
+//     4 -- one objective. no histogram. compact table
+type TexReport struct {
 
-// TeX document ////////////////////////////////////////////////////////////////////////////////////
+	// options
+	DirOut       string // output directory
+	Fnkey        string // filename key
+	Title        string // title of table
+	RefLabel     string // lable of table for referencing
+	TextSize     string // formatting string for size of text
+	MiniPageSz   string // string for minipage size
+	HistTextSize string // formatting string for histogram size
+	Type         int    // type of table (see above)
+	NRowPerTab   int    // number of rows per table. -1 means all rows
+	UseGeom      bool   // use TeX geometry package
+	RunPDF       bool   // generate PDF
+	ShowDEC      bool   // show DE coefficient
 
-// TexDocumentStart starts TeX document
-func TexDocumentStart(useGeom bool) (buf *bytes.Buffer) {
-	str := ""
-	if useGeom {
-		str = `\usepackage[margin=1.5cm,footskip=0.5cm]{geometry}`
+	// constants
+	DroundCte time.Duration // constant for dround(duration) function
+
+	// input
+	Opts []*Optimiser // all optimisers
+
+	// derived
+	symbF     string
+	col4      string
+	col5      string
+	buf       *bytes.Buffer
+	bxres     *bytes.Buffer // buffer for x results
+	singleObj bool
+}
+
+// SetDefault sets default options for report
+func NewTexReport(opts []*Optimiser) (o *TexReport) {
+
+	// new struct
+	o = new(TexReport)
+
+	// options
+	o.DirOut = "/tmp/goga"
+	o.Fnkey = "texreport"
+	o.Title = "Goga Report"
+	o.RefLabel = ""
+	o.TextSize = `\scriptsize  \setlength{\tabcolsep}{0.5em}`
+	o.MiniPageSz = "4.1cm"
+	o.HistTextSize = `\fontsize{5pt}{6pt}`
+	o.Type = 4
+	o.NRowPerTab = -1
+	o.UseGeom = true
+	o.RunPDF = true
+	o.ShowDEC = true
+
+	// constants
+	o.DroundCte = 0.0001e9 // 0.001e9
+
+	// input
+	o.Opts = opts
+
+	// buffers
+	o.buf = new(bytes.Buffer)
+	o.bxres = new(bytes.Buffer)
+
+	// check
+	if len(o.Opts) < 1 {
+		chk.Panic("slice Opts must be set with at least one item")
 	}
-	buf = new(bytes.Buffer)
-	io.Ff(buf, `\documentclass[a4paper]{article}
+	if o.Type < 1 || o.Type > 4 {
+		chk.Panic("type of table must be in [1,4]")
+	}
+
+	// symbol for f
+	o.symbF = o.Opts[0].RptWordF
+	if o.symbF == "" {
+		o.symbF = "f"
+	}
+
+	// flag
+	o.singleObj = o.Opts[0].Nova == 1
+	return
+}
+
+// xResHeader adds table header for X results
+func (o *TexReport) xResHeader() {
+	if !o.singleObj {
+		return
+	}
+	io.Ff(o.bxres, `
+\begin{table*} [!t] \centering
+\caption{%s}
+%s
+
+\begin{tabular}[c]{cl} \toprule
+P &
+x \\ \hline
+`, o.Title+": x values", o.TextSize)
+}
+
+// xResRow adds row to table with X results
+func (o *TexReport) xResRow(opt *Optimiser) {
+	if !o.singleObj {
+		return
+	}
+	io.Ff(o.bxres, "%s &\n", opt.RptName)
+	io.Ff(o.bxres, "  $x_{best} = $"+opt.RptFmtX+" \\\\ \n", opt.BestOfBestFlt)
+	if len(opt.RptXref) == opt.Nflt {
+		io.Ff(o.bxres, "& $x_{ref.} = $"+opt.RptFmtX+" \\\\ \n", opt.RptXref)
+	}
+}
+
+// xResFooter adds footer
+func (o *TexReport) xResFooter() {
+	if !o.singleObj {
+		return
+	}
+	io.Ff(o.bxres, `
+\bottomrule
+\end{tabular}
+\label{tab:%s}
+\end{table*}
+`, o.RefLabel+"Xres")
+}
+
+// compactTableHeader adds table header for compact table
+func (o *TexReport) compactTableHeader(contd string) {
+	if o.ShowDEC {
+		io.Ff(o.buf, `
+\begin{table*} [!t] \centering
+\caption{%s}
+%s
+
+\begin{tabular}[c]{ccccccccccccc} \toprule
+P &
+$N_{sol}$ & $N_{cpu}$ & $t_{max}$ & $\Delta t_{exc}$ &
+$C_{DE}$ & $N_{eval}$ & $T_{sys}$ & $%s_{ref}$ &
+$%s_{min}$ & $%s_{ave}$ & $%s_{max}$ & $%s_{dev}$ 
+\\ \hline
+`, o.Title+contd, o.TextSize, o.symbF, o.symbF, o.symbF, o.symbF, o.symbF)
+	} else {
+		io.Ff(o.buf, `
+\begin{table*} [!t] \centering
+\caption{%s}
+%s
+
+\begin{tabular}[c]{cccccccccccc} \toprule
+P &
+$N_{sol}$ & $N_{cpu}$ & $t_{max}$ & $\Delta t_{exc}$ &
+$N_{eval}$ & $T_{sys}$ & $%s_{ref}$ &
+$%s_{min}$ & $%s_{ave}$ & $%s_{max}$ & $%s_{dev}$ 
+\\ \hline
+`, o.Title+contd, o.TextSize, o.symbF, o.symbF, o.symbF, o.symbF, o.symbF)
+	}
+}
+
+// normalTableHeader adds table header for normal table
+func (o *TexReport) normalTableHeader(contd string) {
+	io.Ff(o.buf, `
+\begin{table*} [!t] \centering
+\caption{%s}
+%s
+
+\begin{tabular}[c]{ccccc} \toprule
+P & settings & settings/info & %s & %s \\ \hline
+`, o.Title+contd, o.TextSize, o.col4, o.col5)
+}
+
+// tableFooter add table footer
+func (o *TexReport) tableFooter(idxtab int) {
+	io.Ff(o.buf, `
+\bottomrule
+\end{tabular}
+\label{tab:%s}
+\end{table*}
+`, io.Sf("%s%d", o.RefLabel, idxtab))
+}
+
+// Generate generates report
+func (o *TexReport) Generate() {
+
+	// functions
+	o.col4 = "error"
+	o.col5 = io.Sf("histogram ($N_{samples}=%d$)", o.Opts[0].Nsamples)
+	addHeader := o.normalTableHeader
+	addRow := o.oneNormalAddRow
+	switch o.Type {
+	case 1:
+		o.col4 = "objective"
+	case 2:
+		o.col5 = "spread"
+		addRow = o.twoAddRow
+	case 3:
+		addRow = o.multiAddRow
+	case 4:
+		addHeader = o.compactTableHeader
+		addRow = o.oneCompactAddRow
+	}
+
+	// number of rows per table
+	nRowPerTab := o.NRowPerTab
+	if nRowPerTab < 1 {
+		nRowPerTab = len(o.Opts)
+	}
+	if o.RefLabel == "" {
+		o.RefLabel = o.Fnkey
+	}
+
+	// xres table
+	o.xResHeader()
+
+	// add rows
+	idxtab := 0
+	contd := ""
+	for i, opt := range o.Opts {
+		if i%nRowPerTab == 0 {
+			if i > 0 {
+				o.tableFooter(idxtab) // end previous table
+				io.Ff(o.buf, "\n\n\n\n\n\n")
+				contd = " (contd.)"
+				idxtab++
+			}
+			addHeader(contd) // begin new table
+		} else {
+			if i > 0 {
+				if o.Type != 4 {
+					io.Ff(o.buf, "\n\\hline\n")
+				}
+				//io.Ff(o.bxres, "\n\\hline\n")
+				io.Ff(o.buf, "\n\n")
+			}
+		}
+		addRow(opt)
+		o.xResRow(opt)
+	}
+
+	// close tables
+	o.xResFooter()
+	o.tableFooter(idxtab) // end previous table
+	io.Ff(o.buf, "\n\n\n\n\n\n")
+
+	// write table
+	tex := o.Fnkey + ".tex"
+	io.WriteFileVD(o.DirOut, tex, o.buf, o.bxres)
+
+	// generate PDF
+	if o.RunPDF {
+		header := new(bytes.Buffer)
+		footer := new(bytes.Buffer)
+		str := ""
+		if o.UseGeom {
+			str = `\usepackage[margin=1.5cm,footskip=0.5cm]{geometry}`
+		}
+		io.Ff(header, `\documentclass[a4paper]{article}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -37,119 +281,70 @@ func TexDocumentStart(useGeom bool) (buf *bytes.Buffer) {
 
 \begin{document}
 `, str)
-	return
-}
-
-// TexDocumentEnd ends TeX document
-func TexDocumentEnd(buf *bytes.Buffer) {
-	io.Ff(buf, `
+		io.Ff(footer, `
 \end{document}`)
-}
 
-// TexWrite writes and compiles TeX document
-func TexWrite(dirout, fnkey string, buf *bytes.Buffer, dorun bool) {
-	tex := fnkey + ".tex"
-	io.WriteFileVD(dirout, tex, buf)
-	if dorun {
-		_, err := io.RunCmd(false, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory="+dirout, tex)
+		// write temporary TeX file
+		tex = "tmp_" + tex
+		io.WriteFileD(o.DirOut, tex, header, o.buf, o.bxres, footer)
+
+		// run pdflatex
+		_, err := io.RunCmd(false, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory="+o.DirOut, tex)
 		if err != nil {
-			chk.Panic("%v", err)
+			io.PfRed("pdflatex failed: %v\n", err)
+			return
 		}
-		io.PfBlue("file <%s/%s.pdf> generated\n", dirout, fnkey)
+		io.PfBlue("file <%s/tmp_%s.pdf> generated\n", o.DirOut, o.Fnkey)
 	}
-}
-
-// TexTableStart starts table
-func TexTableStart(buf *bytes.Buffer, title, col4, col5 string, textSize string) {
-	io.Ff(buf, `
-\begin{table*} [!t] \centering
-\caption{%s}
-%s
-
-\begin{tabular}[c]{ccccc} \toprule
-P & settings & settings/info & %s & %s \\ \hline
-`, title, textSize, col4, col5)
-}
-
-// TexTableEnd ends table
-func TexTableEnd(buf *bytes.Buffer, label string) {
-	io.Ff(buf, `
-\end{tabular}
-\label{tab:%s}
-\end{table*}
-`, label)
-}
-
-// TexReport produces table TeX report
-//  Type:
-//     1 -- one objective; with histogram of OVA
-//     2 -- two objective; no histogram; with E(error) and L(spread)
-//     3 -- multi objective; with histogram of error
-func TexReport(dirout, fnkey, title, label string, Type, nRowPerTab int, docHeader, useGeom bool, textSize, miniPageSz, histTextSize string, opts []*Optimiser) {
-	col4, col5 := "error", io.Sf("histogram ($N_{samples}=%d$)", opts[0].Nsamples)
-	var addrow func(opt *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize string)
-	switch Type {
-	case 1:
-		col4 = "objective"
-		addrow = TexOneObjTableItem
-	case 2:
-		col5 = "spread"
-		addrow = TexTwoObjTableItem
-	default:
-		addrow = TexMultiTableItem
-	}
-	if nRowPerTab < 1 {
-		nRowPerTab = len(opts)
-	}
-	var buf *bytes.Buffer
-	if docHeader {
-		buf = TexDocumentStart(useGeom)
-	} else {
-		buf = new(bytes.Buffer)
-	}
-	idxtab := 0
-	contd := ""
-	for i, opt := range opts {
-		if i%nRowPerTab == 0 {
-			if i > 0 {
-				io.Ff(buf, "\n\\bottomrule\n\n")
-				TexTableEnd(buf, lbl(idxtab, label)) // end previous table
-				io.Ff(buf, "\n\n\n\n\n\n")
-				contd = " (contd.)"
-				idxtab++
-			}
-			TexTableStart(buf, title+contd, col4, col5, textSize) // begin new table
-		} else {
-			if i > 0 {
-				io.Ff(buf, "\n\\hline\n")
-				io.Ff(buf, "\n\n")
-			}
-		}
-		addrow(opt, buf, miniPageSz, histTextSize)
-	}
-	io.Ff(buf, "\n\\bottomrule\n\n")
-	TexTableEnd(buf, lbl(idxtab, label)) // end previous table
-	io.Ff(buf, "\n\n\n\n\n\n")
-	if docHeader {
-		TexDocumentEnd(buf)
-	}
-	TexWrite(dirout, fnkey, buf, docHeader)
 }
 
 // one-obj table ///////////////////////////////////////////////////////////////////////////////////
 
-// TexOneObjTableItem adds item to one-obj table
-func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize string) {
-	tex := func(fmt string, num float64) string { return utl.TexNum(fmt, num, true) }
-	o.fix_formatting_data()
+// oneCompactAddRow adds row to compact one-obj table
+func (o *TexReport) oneCompactAddRow(opt *Optimiser) {
+	opt.fix_formatting_data()
 	FrefTxt := "N/A"
-	if len(o.RptFref) > 0 {
-		FrefTxt = tex(o.RptFmtF, o.RptFref[0])
+	if len(opt.RptFref) > 0 {
+		FrefTxt = tx(opt.RptFmtF, opt.RptFref[0])
 	}
-	Fmin, Fave, Fmax, Fdev, F := StatF(o, 0, false)
-	FminTxt, FaveTxt, FmaxTxt, FdevTxt := tex(o.RptFmtF, Fmin), tex(o.RptFmtF, Fave), tex(o.RptFmtF, Fmax), tex(o.RptFmtFdev, Fdev)
-	hist := rnd.BuildTextHist(nice(Fmin, o.HistNdig)-o.HistDelFmin, nice(Fmax, o.HistNdig)+o.HistDelFmax, o.HistNsta, F, o.HistFmt, o.HistLen)
-	io.Ff(buf, `
+	Fmin, Fave, Fmax, Fdev, _ := StatF(opt, 0, false)
+	FminTxt, FaveTxt, FmaxTxt, FdevTxt := tx(opt.RptFmtF, Fmin), tx(opt.RptFmtF, Fave), tx(opt.RptFmtF, Fmax), tx(opt.RptFmtFdev, Fdev)
+	if o.ShowDEC {
+		io.Ff(o.buf, `
+%s &
+%d & %d & %d & %d &
+%g & %d & %v & %s &
+%s & %s & %s & $%s$ \\
+`,
+			opt.RptName,
+			opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc,
+			opt.DEC, opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte), FrefTxt,
+			FminTxt, FaveTxt, FmaxTxt, FdevTxt)
+	} else {
+		io.Ff(o.buf, `
+%s &
+%d & %d & %d & %d &
+%d & %v & %s &
+%s & %s & %s & $%s$ \\
+`,
+			opt.RptName,
+			opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc,
+			opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte), FrefTxt,
+			FminTxt, FaveTxt, FmaxTxt, FdevTxt)
+	}
+}
+
+// oneNormalAddRow adds row to normal one-obj table
+func (o *TexReport) oneNormalAddRow(opt *Optimiser) {
+	opt.fix_formatting_data()
+	FrefTxt := "N/A"
+	if len(opt.RptFref) > 0 {
+		FrefTxt = tx(opt.RptFmtF, opt.RptFref[0])
+	}
+	Fmin, Fave, Fmax, Fdev, F := StatF(opt, 0, false)
+	FminTxt, FaveTxt, FmaxTxt, FdevTxt := tx(opt.RptFmtF, Fmin), tx(opt.RptFmtF, Fave), tx(opt.RptFmtF, Fmax), tx(opt.RptFmtFdev, Fdev)
+	hist := rnd.BuildTextHist(nice(Fmin, opt.HistNdig)-opt.HistDelFmin, nice(Fmax, opt.HistNdig)+opt.HistDelFmax, opt.HistNsta, F, opt.HistFmt, opt.HistLen)
+	io.Ff(o.buf, `
 %s
 &
 {$\!\begin{aligned}
@@ -177,30 +372,24 @@ func TexOneObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSiz
 \begin{verbatim}
 %s \end{verbatim}
 \end{minipage} \\
-\multicolumn{5}{c}{{\scriptsize $x_{best}$=`+o.RptFmtX+`}} \\`,
-		o.RptName,
-		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
-		o.RptWordF, FrefTxt, o.DEC, o.Nfeval, dround(o.SysTimeAve, DROUNDCTE),
-		o.RptWordF, FminTxt, o.RptWordF, FaveTxt, o.RptWordF, FmaxTxt, o.RptWordF, FdevTxt,
-		miniPageSz, histTextSize, hist,
-		o.BestOfBestFlt)
-	if len(o.RptXref) == o.Nflt {
-		io.Ff(buf, `
-\multicolumn{5}{c}{{\scriptsize $x_{ref.}$=`+o.RptFmtX+`}} \\`, o.RptXref)
-	}
-	io.Ff(buf, "\n")
+`,
+		opt.RptName,
+		opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc,
+		opt.RptWordF, FrefTxt, opt.DEC, opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte),
+		opt.RptWordF, FminTxt, opt.RptWordF, FaveTxt, opt.RptWordF, FmaxTxt, opt.RptWordF, FdevTxt,
+		o.MiniPageSz, o.HistTextSize, hist)
+	io.Ff(o.buf, "\n")
 }
 
 // two-obj table ///////////////////////////////////////////////////////////////////////////////////
 
-// TexTwoObjTableItem adds item to two-obj table
-func TexTwoObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize string) {
-	tex := func(fmt string, num float64) string { return utl.TexNum(fmt, num, true) }
-	o.fix_formatting_data()
-	Emin, Eave, Emax, Edev, E, Lmin, Lave, Lmax, Ldev, _ := StatF1F0(o, false)
-	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
-	LminTxt, LaveTxt, LmaxTxt, LdevTxt := tex(o.RptFmtL, Lmin), tex(o.RptFmtL, Lave), tex(o.RptFmtL, Lmax), tex(o.RptFmtLdev, Ldev)
-	io.Ff(buf, `
+// twoAddRow adds row to two-obj table
+func (o *TexReport) twoAddRow(opt *Optimiser) {
+	opt.fix_formatting_data()
+	Emin, Eave, Emax, Edev, E, Lmin, Lave, Lmax, Ldev, _ := StatF1F0(opt, false)
+	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tx(opt.RptFmtE, Emin), tx(opt.RptFmtE, Eave), tx(opt.RptFmtE, Emax), tx(opt.RptFmtEdev, Edev)
+	LminTxt, LaveTxt, LmaxTxt, LdevTxt := tx(opt.RptFmtL, Lmin), tx(opt.RptFmtL, Lave), tx(opt.RptFmtL, Lmax), tx(opt.RptFmtLdev, Ldev)
+	io.Ff(o.buf, `
 %s
 &
 {$\!\begin{aligned}
@@ -231,23 +420,22 @@ func TexTwoObjTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSiz
     L_{dev} &= {\bf %s}
 \end{aligned}$} \\
 `,
-		o.RptName,
-		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
-		len(E), o.DEC, o.Nfeval, dround(o.SysTimeAve, DROUNDCTE),
+		opt.RptName,
+		opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc,
+		len(E), opt.DEC, opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte),
 		EminTxt, EaveTxt, EmaxTxt, EdevTxt,
 		LminTxt, LaveTxt, LmaxTxt, LdevTxt)
 }
 
 // multi-obj table //////////////////////////////////////////////////////////////////////////////////
 
-// TexMultiTableItem adds item to multi-obj table
-func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize string) {
-	tex := func(fmt string, num float64) string { return utl.TexNum(fmt, num, true) }
-	o.fix_formatting_data()
-	Ekey, Emin, Eave, Emax, Edev, E := StatMulti(o, false)
-	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tex(o.RptFmtE, Emin), tex(o.RptFmtE, Eave), tex(o.RptFmtE, Emax), tex(o.RptFmtEdev, Edev)
-	hist := rnd.BuildTextHist(nice(Emin, o.HistNdig)-o.HistDelEmin, nice(Emax, o.HistNdig)+o.HistDelEmax, o.HistNsta, E, o.HistFmt, o.HistLen)
-	io.Ff(buf, `
+// multiAddRow adds row to multi-obj table
+func (o *TexReport) multiAddRow(opt *Optimiser) {
+	opt.fix_formatting_data()
+	Ekey, Emin, Eave, Emax, Edev, E := StatMulti(opt, false)
+	EminTxt, EaveTxt, EmaxTxt, EdevTxt := tx(opt.RptFmtE, Emin), tx(opt.RptFmtE, Eave), tx(opt.RptFmtE, Emax), tx(opt.RptFmtEdev, Edev)
+	hist := rnd.BuildTextHist(nice(Emin, opt.HistNdig)-opt.HistDelEmin, nice(Emax, opt.HistNdig)+opt.HistDelEmax, opt.HistNsta, E, opt.HistFmt, opt.HistLen)
+	io.Ff(o.buf, `
 %s
 &
 {$\!\begin{aligned}
@@ -276,14 +464,14 @@ func TexMultiTableItem(o *Optimiser, buf *bytes.Buffer, miniPageSz, histTextSize
 %s \end{verbatim}
 \end{minipage} \\
 `,
-		o.RptName,
-		o.Nsol, o.Ncpu, o.Tf, o.DtExc,
-		o.Nova, o.DEC, o.Nfeval, dround(o.SysTimeAve, DROUNDCTE),
+		opt.RptName,
+		opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc,
+		opt.Nova, opt.DEC, opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte),
 		Ekey, EminTxt, Ekey, EaveTxt, Ekey, EmaxTxt, Ekey, EdevTxt,
-		miniPageSz, histTextSize, hist)
+		o.MiniPageSz, o.HistTextSize, hist)
 }
 
-// write all values ////////////////////////////////////////////////////////////////////////////////
+// other reporting functions ///////////////////////////////////////////////////////////////////////
 
 func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
 	var buf bytes.Buffer
@@ -318,6 +506,12 @@ func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
 		io.Ff(&buf, "\n")
 	}
 	io.WriteFileVD(dirout, fnkey+".res", &buf)
+}
+
+// auxiliary ///////////////////////////////////////////////////////////////////////////////////////
+
+func tx(fmt string, num float64) string {
+	return utl.TexNum(fmt, num, true)
 }
 
 func lbl(i int, label string) string {

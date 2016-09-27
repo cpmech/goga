@@ -25,7 +25,7 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 	opt.Ncpu = 1
 	opt.Tf = 500
 	opt.Verbose = false
-	opt.Nsamples = 20
+	opt.Nsamples = 2
 	opt.GenType = "latin"
 
 	// options for report
@@ -313,7 +313,7 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 	//opt.RunMany("/tmp/goga", "functions")
 	opt.RunMany("", "")
 	goga.StatF(opt, 0, true)
-	io.PfYel("Tsys = %v\n", opt.SysTime)
+	io.PfYel("Tsys = %v\n", opt.SysTimeAve)
 
 	// check
 	goga.CheckFront0(opt, true)
@@ -321,8 +321,6 @@ func solve_problem(problem int, checkOnly bool) (opt *goga.Optimiser) {
 }
 
 func main() {
-	textSize := `\scriptsize  \setlength{\tabcolsep}{0.5em}`
-	miniPageSz, histTextSize := "4.1cm", `\fontsize{5pt}{6pt}`
 	checkOnly := false
 	P := utl.IntRange2(1, 10)
 	//P := utl.IntRange2(1, 7)
@@ -333,10 +331,12 @@ func main() {
 	}
 	if !checkOnly {
 		io.Pf("\n-------------------------- generating report --------------------------\nn")
-		nRowPerTab := 9
-		title := "Constrained single objective problems."
-		goga.TexReport("/tmp/goga", "tmp_one-obj", title, "one-obj", 1, nRowPerTab, true, false, textSize, miniPageSz, histTextSize, opts)
-		goga.TexReport("/tmp/goga", "one-obj", title, "one-obj", 1, nRowPerTab, false, false, textSize, miniPageSz, histTextSize, opts)
+		rpt := goga.NewTexReport(opts)
+		rpt.NRowPerTab = 9
+		rpt.Type = 1
+		rpt.Title = "Constrained single objective problems."
+		rpt.Fnkey = "one-obj"
+		rpt.Generate()
 	}
 }
 

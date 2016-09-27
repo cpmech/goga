@@ -152,8 +152,6 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 }
 
 func main() {
-	textSize := `\scriptsize  \setlength{\tabcolsep}{0.5em}`
-	miniPageSz, histTextSize := "4.1cm", `\fontsize{5pt}{6pt}`
 	P := utl.IntRange2(1, 7)
 	//P := []int{4}
 	opts := make([]*goga.Optimiser, len(P))
@@ -161,8 +159,10 @@ func main() {
 		opts[i] = solve_problem(problem)
 	}
 	io.Pf("\n-------------------------- generating report --------------------------\nn")
-	nRowPerTab := 9
-	title := "Unconstrained many objective problems"
-	goga.TexReport("/tmp/goga", "tmp_many-obj", title, "many-obj", 3, nRowPerTab, true, false, textSize, miniPageSz, histTextSize, opts)
-	goga.TexReport("/tmp/goga", "many-obj", title, "many-obj", 3, nRowPerTab, false, false, textSize, miniPageSz, histTextSize, opts)
+	rpt := goga.NewTexReport(opts)
+	rpt.NRowPerTab = 9
+	rpt.Type = 1
+	rpt.Title = "Unconstrained many objective problems"
+	rpt.Fnkey = "many-obj"
+	rpt.Generate()
 }
