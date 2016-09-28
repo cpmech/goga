@@ -42,7 +42,16 @@ func main() {
 		return
 	}
 
-	//title := "FORM Reliability: " + fnkey
+	if opts[0].Nsamples > 1 {
+		io.Pf("\n")
+		rpt := goga.NewTexReport(opts)
+		rpt.ShowDEC = false
+		rpt.Type = 4
+		rpt.TextSize = ""
+		rpt.Title = "FORM Reliability: " + fnkey
+		rpt.Fnkey = "rel-" + fnkey
+		rpt.Generate()
+	}
 }
 
 func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
@@ -52,11 +61,11 @@ func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
 	opt.Default()
 
 	// options for report
-	opt.RptFmtF = "%f"
-	opt.RptFmtX = "%.5f"
-	opt.RptFmtFdev = "%.2e"
+	opt.RptFmtF = "%.4f"
+	opt.RptFmtX = "%.3f"
+	opt.RptFmtFdev = "%.1e"
 	opt.RptWordF = "\\beta"
-	opt.HistFmt = "%.3f"
+	opt.HistFmt = "%.2f"
 	opt.HistNdig = 3
 	opt.HistDelFmin = 0.005
 	opt.HistDelFmax = 0.005
