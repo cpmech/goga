@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GOGA="$HOME/10.go/pkg/linux_amd64/github.com/cpmech/goga.a"
+GOGA="$GOPATH/pkg/linux_amd64/github.com/cpmech/goga.a"
 FILES="*.go *.json *.py"
 
 if [ -f $GOGA ]; then

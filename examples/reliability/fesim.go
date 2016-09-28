@@ -49,7 +49,7 @@ type FemData struct {
 	BetRef float64 // reference reliability index
 
 	// derived
-	Analysis *fem.FEM        // fem structure
+	Analysis *fem.Main       // fem structure
 	Dom      *fem.Domain     // domain
 	Sim      *inp.Simulation // simulation
 	Vars     rnd.Variables   // random variables
@@ -71,7 +71,7 @@ func NewData(fnkey string, cpu int) *FemData {
 	}
 
 	// load FEM data
-	o.Analysis = fem.NewFEM(fnkey+".sim", io.Sf("cpu%d", cpu), false, false, false, false, false, cpu)
+	o.Analysis = fem.NewMain(fnkey+".sim", io.Sf("cpu%d", cpu), false, false, false, false, false, cpu)
 	o.Dom = o.Analysis.Domains[0]
 	o.Sim = o.Dom.Sim
 	o.Vars = o.Dom.Sim.AdjRandom

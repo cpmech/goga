@@ -42,11 +42,7 @@ func main() {
 		return
 	}
 
-	io.Pf("\n=================================== generating report ===================================\n")
-	nRowPerTab := 9
-	title := "FORM Reliability: " + fnkey
-	goga.TexReport("/tmp/goga", "tmp_rel-"+fnkey, title, "rel-"+fnkey, 1, nRowPerTab, true, opts)
-	goga.TexReport("/tmp/goga", "rel-"+fnkey, title, "rel-"+fnkey, 1, nRowPerTab, false, opts)
+	//title := "FORM Reliability: " + fnkey
 }
 
 func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
@@ -214,7 +210,7 @@ func solve_problem(fnkey string, problem int) (opt *goga.Optimiser) {
 	io.Pf(". . . . . . . .  running  . . . . . . . .\n")
 	opt.RunMany("", "")
 	goga.StatF(opt, 0, true)
-	io.Pfblue2("Tsys = %v\n", opt.SysTime)
+	io.Pfblue2("Tsys = %v\n", opt.SysTimeAve)
 
 	// check
 	goga.CheckFront0(opt, true)
