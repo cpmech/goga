@@ -333,9 +333,13 @@ func main() {
 		io.Pf("\n-------------------------- generating report --------------------------\nn")
 		rpt := goga.NewTexReport(opts)
 		rpt.NRowPerTab = 9
-		rpt.Type = 1
-		rpt.Title = "Constrained single objective problems."
+		rpt.Type = 4
+		rpt.Title = "Constrained single objective problems"
 		rpt.Fnkey = "one-obj"
+		rpt.Generate()
+		rpt.Clear()
+		rpt.Fnkey = "hist-one-obj"
+		rpt.Type = 1
 		rpt.Generate()
 	}
 }

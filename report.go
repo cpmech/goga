@@ -34,7 +34,12 @@ type TexReport struct {
 	NRowPerTab   int    // number of rows per table. -1 means all rows
 	UseGeom      bool   // use TeX geometry package
 	RunPDF       bool   // generate PDF
+	ShowNsol     bool   // show Nsol
+	ShowNcpu     bool   // show Ncpu
+	ShowTmax     bool   // show Tf
+	ShowDtExc    bool   // show Dtexc
 	ShowDEC      bool   // show DE coefficient
+	ShowX01      bool   // show x[0] and x[1] in table
 
 	// constants
 	DroundCte time.Duration // constant for dround(duration) function
@@ -47,6 +52,7 @@ type TexReport struct {
 	col4      string
 	col5      string
 	buf       *bytes.Buffer
+	binp      *bytes.Buffer // buffer for input data
 	bxres     *bytes.Buffer // buffer for x results
 	singleObj bool
 }
@@ -69,16 +75,22 @@ func NewTexReport(opts []*Optimiser) (o *TexReport) {
 	o.NRowPerTab = -1
 	o.UseGeom = true
 	o.RunPDF = true
-	o.ShowDEC = true
+	o.ShowNsol = false
+	o.ShowNcpu = false
+	o.ShowTmax = false
+	o.ShowDtExc = false
+	o.ShowDEC = false
+	o.ShowX01 = true
 
 	// constants
-	o.DroundCte = 0.0001e9 // 0.001e9
+	o.DroundCte = 0.001e9 // 0.0001e9
 
 	// input
 	o.Opts = opts
 
 	// buffers
 	o.buf = new(bytes.Buffer)
+	o.binp = new(bytes.Buffer)
 	o.bxres = new(bytes.Buffer)
 
 	// check
@@ -100,6 +112,37 @@ func NewTexReport(opts []*Optimiser) (o *TexReport) {
 	return
 }
 
+// input data table //////////////////////////////////////////////////////////////////////////
+
+// inputHeader adds table header for input data table
+func (o *TexReport) inputHeader() {
+	io.Ff(o.binp, `
+\begin{table*} [!t] \centering
+\caption{%s.}
+%s
+
+\begin{tabular}[c]{cccccc} \toprule
+P & $N_{sol}$ & $N_{cpu}$ & $t_{max}$ & $\Delta t_{exc}$ & $C_{DE}$ \\ \hline
+`, o.Title+": input parameters", o.TextSize)
+}
+
+// inputRow adds row to input data table
+func (o *TexReport) inputRow(opt *Optimiser) {
+	io.Ff(o.binp, "%s & %d & %d & %d & %d & %g \\\\ \n", opt.RptName, opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc, opt.DEC)
+}
+
+// inputFooter adds foote to input data table
+func (o *TexReport) inputFooter() {
+	io.Ff(o.binp, `
+\bottomrule
+\end{tabular}
+\label{tab:%s}
+\end{table*}
+`, o.RefLabel+"Inp")
+}
+
+// x-results table ///////////////////////////////////////////////////////////////////////////
+
 // xResHeader adds table header for X results
 func (o *TexReport) xResHeader() {
 	if !o.singleObj {
@@ -107,7 +150,7 @@ func (o *TexReport) xResHeader() {
 	}
 	io.Ff(o.bxres, `
 \begin{table*} [!t] \centering
-\caption{%s}
+\caption{%s.}
 %s
 
 \begin{tabular}[c]{cl} \toprule
@@ -128,7 +171,7 @@ func (o *TexReport) xResRow(opt *Optimiser) {
 	}
 }
 
-// xResFooter adds footer
+// xResFooter adds footer to rable with X results
 func (o *TexReport) xResFooter() {
 	if !o.singleObj {
 		return
@@ -141,42 +184,65 @@ func (o *TexReport) xResFooter() {
 `, o.RefLabel+"Xres")
 }
 
+// compact and normal tables /////////////////////////////////////////////////////////////////
+
 // compactTableHeader adds table header for compact table
 func (o *TexReport) compactTableHeader(contd string) {
-	if o.ShowDEC {
-		io.Ff(o.buf, `
-\begin{table*} [!t] \centering
-\caption{%s}
-%s
-
-\begin{tabular}[c]{ccccccccccccc} \toprule
-P &
-$N_{sol}$ & $N_{cpu}$ & $t_{max}$ & $\Delta t_{exc}$ &
-$C_{DE}$ & $N_{eval}$ & $T_{sys}$ & $%s_{ref}$ &
-$%s_{min}$ & $%s_{ave}$ & $%s_{max}$ & $%s_{dev}$ 
-\\ \hline
-`, o.Title+contd, o.TextSize, o.symbF, o.symbF, o.symbF, o.symbF, o.symbF)
-	} else {
-		io.Ff(o.buf, `
-\begin{table*} [!t] \centering
-\caption{%s}
-%s
-
-\begin{tabular}[c]{cccccccccccc} \toprule
-P &
-$N_{sol}$ & $N_{cpu}$ & $t_{max}$ & $\Delta t_{exc}$ &
-$N_{eval}$ & $T_{sys}$ & $%s_{ref}$ &
-$%s_{min}$ & $%s_{ave}$ & $%s_{max}$ & $%s_{dev}$ 
-\\ \hline
-`, o.Title+contd, o.TextSize, o.symbF, o.symbF, o.symbF, o.symbF, o.symbF)
+	txtCols := "cccccccc"
+	txtNsol := ""
+	if o.ShowNsol {
+		txtCols += "c"
+		txtNsol = "& $N_{sol}$"
 	}
+	txtNcpu := ""
+	if o.ShowNcpu {
+		txtCols += "c"
+		txtNcpu = "& $N_{cpu}$"
+	}
+	txtTmax := ""
+	if o.ShowTmax {
+		txtCols += "c"
+		txtTmax = "& $t_{max}$"
+	}
+	txtDtExc := ""
+	if o.ShowDtExc {
+		txtCols += "c"
+		txtDtExc = "& $\\Delta t_{exc}$"
+	}
+	txtDEC := ""
+	if o.ShowDEC {
+		txtCols += "c"
+		txtDEC = "& $C_{DE}$"
+	}
+	txtX01 := ""
+	if o.ShowX01 {
+		txtCols += "cccc"
+		txtX01 = "& $x_0$ & $x_0^{ref.}$ & $x_1$ & $x_1^{ref.}$"
+	}
+	io.Ff(o.buf, `
+\begin{table*} [!t] \centering
+\caption{%s.}
+%s
+
+\begin{tabular}[c]{%s} \toprule
+P
+%s  %s  %s  %s
+%s & $N_{eval}$ & $T_{sys}$ & $%s_{ref}$ &
+$%s_{min}$ & $%s_{ave}$ & $%s_{max}$ & $%s_{dev}$ 
+%s
+\\ \hline
+`, o.Title+contd, o.TextSize, txtCols,
+		txtNsol, txtNcpu, txtTmax, txtDtExc,
+		txtDEC,
+		o.symbF, o.symbF, o.symbF, o.symbF, o.symbF,
+		txtX01)
 }
 
 // normalTableHeader adds table header for normal table
 func (o *TexReport) normalTableHeader(contd string) {
 	io.Ff(o.buf, `
 \begin{table*} [!t] \centering
-\caption{%s}
+\caption{%s.}
 %s
 
 \begin{tabular}[c]{ccccc} \toprule
@@ -192,6 +258,20 @@ func (o *TexReport) tableFooter(idxtab int) {
 \label{tab:%s}
 \end{table*}
 `, io.Sf("%s%d", o.RefLabel, idxtab))
+}
+
+// generate report ///////////////////////////////////////////////////////////////////////////////////
+
+func (o *TexReport) Clear() {
+	if o.binp != nil {
+		o.binp.Reset()
+	}
+	if o.buf != nil {
+		o.buf.Reset()
+	}
+	if o.bxres != nil {
+		o.bxres.Reset()
+	}
 }
 
 // Generate generates report
@@ -224,7 +304,8 @@ func (o *TexReport) Generate() {
 		o.RefLabel = o.Fnkey
 	}
 
-	// xres table
+	// input and xres tables
+	o.inputHeader()
 	o.xResHeader()
 
 	// add rows
@@ -234,7 +315,7 @@ func (o *TexReport) Generate() {
 		if i%nRowPerTab == 0 {
 			if i > 0 {
 				o.tableFooter(idxtab) // end previous table
-				io.Ff(o.buf, "\n\n\n\n\n\n")
+				io.Ff(o.buf, "\n\n\n")
 				contd = " (contd.)"
 				idxtab++
 			}
@@ -242,24 +323,27 @@ func (o *TexReport) Generate() {
 		} else {
 			if i > 0 {
 				if o.Type != 4 {
-					io.Ff(o.buf, "\n\\hline\n")
+					io.Ff(o.buf, "\\hline\n")
 				}
 				//io.Ff(o.bxres, "\n\\hline\n")
-				io.Ff(o.buf, "\n\n")
+				io.Ff(o.buf, "\n")
 			}
 		}
 		addRow(opt)
+		o.inputRow(opt)
 		o.xResRow(opt)
 	}
 
 	// close tables
+	o.inputFooter()
+	io.Ff(o.binp, "\n\n\n")
 	o.xResFooter()
 	o.tableFooter(idxtab) // end previous table
-	io.Ff(o.buf, "\n\n\n\n\n\n")
+	io.Ff(o.buf, "\n\n\n")
 
 	// write table
 	tex := o.Fnkey + ".tex"
-	io.WriteFileVD(o.DirOut, tex, o.buf, o.bxres)
+	io.WriteFileVD(o.DirOut, tex, o.buf, o.binp, o.bxres)
 
 	// generate PDF
 	if o.RunPDF {
@@ -286,7 +370,7 @@ func (o *TexReport) Generate() {
 
 		// write temporary TeX file
 		tex = "tmp_" + tex
-		io.WriteFileD(o.DirOut, tex, header, o.buf, o.bxres, footer)
+		io.WriteFileD(o.DirOut, tex, header, o.buf, o.binp, o.bxres, footer)
 
 		// run pdflatex
 		_, err := io.RunCmd(false, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory="+o.DirOut, tex)
@@ -309,29 +393,38 @@ func (o *TexReport) oneCompactAddRow(opt *Optimiser) {
 	}
 	Fmin, Fave, Fmax, Fdev, _ := StatF(opt, 0, false)
 	FminTxt, FaveTxt, FmaxTxt, FdevTxt := tx(opt.RptFmtF, Fmin), tx(opt.RptFmtF, Fave), tx(opt.RptFmtF, Fmax), tx(opt.RptFmtFdev, Fdev)
-	if o.ShowDEC {
-		io.Ff(o.buf, `
-%s &
-%d & %d & %d & %d &
-%g & %d & %v & %s &
-%s & %s & %s & $%s$ \\
-`,
-			opt.RptName,
-			opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc,
-			opt.DEC, opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte), FrefTxt,
-			FminTxt, FaveTxt, FmaxTxt, FdevTxt)
-	} else {
-		io.Ff(o.buf, `
-%s &
-%d & %d & %d & %d &
-%d & %v & %s &
-%s & %s & %s & $%s$ \\
-`,
-			opt.RptName,
-			opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc,
-			opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte), FrefTxt,
-			FminTxt, FaveTxt, FmaxTxt, FdevTxt)
+	txtNsol := ""
+	if o.ShowNsol {
+		txtNsol = io.Sf("& %d", opt.Nsol)
 	}
+	txtNcpu := ""
+	if o.ShowNcpu {
+		txtNcpu = io.Sf("& %d", opt.Ncpu)
+	}
+	txtTmax := ""
+	if o.ShowTmax {
+		txtTmax = io.Sf("& %d", opt.Tf)
+	}
+	txtDtExc := ""
+	if o.ShowDtExc {
+		txtDtExc = io.Sf("& %d", opt.DtExc)
+	}
+	txtDEC := ""
+	if o.ShowDEC {
+		txtDEC = io.Sf("& %g", opt.DEC)
+	}
+	txtX01 := ""
+	if o.ShowX01 {
+		txtX01 = io.Sf("& "+opt.RptFmtX+" & ("+opt.RptFmtX+") & "+opt.RptFmtX+" & ("+opt.RptFmtX+")",
+			opt.BestOfBestFlt[0], opt.RptXref[0], opt.BestOfBestFlt[1], opt.RptXref[1])
+	}
+	io.Ff(o.buf, `%s  %s %s %s %s   %s   & %d & %v & (%s) &   %s & %s & %s & $%s$   %s \\`,
+		opt.RptName,
+		txtNsol, txtNcpu, txtTmax, txtDtExc,
+		txtDEC,
+		opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte), FrefTxt,
+		FminTxt, FaveTxt, FmaxTxt, FdevTxt,
+		txtX01)
 }
 
 // oneNormalAddRow adds row to normal one-obj table
