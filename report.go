@@ -11,7 +11,6 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/rnd"
-	"github.com/cpmech/gosl/utl"
 )
 
 // TexReport produces TeX table report
@@ -616,7 +615,7 @@ func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
 // auxiliary ///////////////////////////////////////////////////////////////////////////////////////
 
 func tx(fmt string, num float64) string {
-	return utl.TexNum(fmt, num, true)
+	return io.TexNum(fmt, num, true)
 }
 
 func lbl(i int, label string) string {
