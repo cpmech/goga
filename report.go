@@ -48,6 +48,7 @@ type TexReport struct {
 	Opts []*Optimiser // all optimisers
 
 	// derived
+	nsamples  int
 	symbF     string
 	col4      string
 	col5      string
@@ -100,6 +101,9 @@ func NewTexReport(opts []*Optimiser) (o *TexReport) {
 	if o.Type < 1 || o.Type > 4 {
 		chk.Panic("type of table must be in [1,4]")
 	}
+
+	// number of samples
+	o.nsamples = o.Opts[0].Nsamples
 
 	// symbol for f
 	o.symbF = o.Opts[0].RptWordF
@@ -221,7 +225,7 @@ func (o *TexReport) compactTableHeader(contd string) {
 	}
 	io.Ff(o.buf, `
 \begin{table*} [!t] \centering
-\caption{%s: results.}
+\caption{%s: results ($N_{samples}=%d$).}
 %s
 
 \begin{tabular}[c]{%s} \toprule
@@ -231,7 +235,7 @@ P
 $%s_{min}$ & $%s_{ave}$ & $%s_{max}$ & $%s_{dev}$ 
 %s
 \\ \hline
-`, o.Title+contd, o.TextSize, txtCols,
+`, o.Title+contd, o.nsamples, o.TextSize, txtCols,
 		txtNsol, txtNcpu, txtTmax, txtDtExc,
 		txtDEC,
 		o.symbF, o.symbF, o.symbF, o.symbF, o.symbF,
@@ -279,7 +283,7 @@ func (o *TexReport) Generate() {
 
 	// functions
 	o.col4 = "error"
-	o.col5 = io.Sf("histogram ($N_{samples}=%d$)", o.Opts[0].Nsamples)
+	o.col5 = io.Sf("histogram ($N_{samples}=%d$)", o.nsamples)
 	addHeader := o.normalTableHeader
 	addRow := o.oneNormalAddRow
 	switch o.Type {
