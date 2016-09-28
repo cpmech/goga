@@ -221,7 +221,7 @@ func (o *TexReport) compactTableHeader(contd string) {
 	}
 	io.Ff(o.buf, `
 \begin{table*} [!t] \centering
-\caption{%s.}
+\caption{%s: results.}
 %s
 
 \begin{tabular}[c]{%s} \toprule
@@ -415,8 +415,16 @@ func (o *TexReport) oneCompactAddRow(opt *Optimiser) {
 	}
 	txtX01 := ""
 	if o.ShowX01 {
-		txtX01 = io.Sf("& "+opt.RptFmtX+" & ("+opt.RptFmtX+") & "+opt.RptFmtX+" & ("+opt.RptFmtX+")",
-			opt.BestOfBestFlt[0], opt.RptXref[0], opt.BestOfBestFlt[1], opt.RptXref[1])
+		x0, x1, x0ref, x1ref := "N/A", "N/A", "N/A", "N/A"
+		if len(opt.BestOfBestFlt) > 1 {
+			x0 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[0])
+			x1 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
+		}
+		if len(opt.RptXref) > 1 {
+			x0ref = io.Sf(opt.RptFmtX, opt.RptXref[0])
+			x1ref = io.Sf(opt.RptFmtX, opt.RptXref[1])
+		}
+		txtX01 = io.Sf("& %s & (%s) & %s & (%s)", x0, x0ref, x1, x1ref)
 	}
 	io.Ff(o.buf, `%s  %s %s %s %s   %s   & %d & %v & (%s) &   %s & %s & %s & $%s$   %s \\`,
 		opt.RptName,
