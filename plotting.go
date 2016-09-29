@@ -32,6 +32,7 @@ type ContourParams struct {
 	NoF     bool      // without f(x)
 	NoG     bool      // without g(x)
 	NoH     bool      // without h(x)
+	WithAux bool      // plot Solution.Aux (with the same colors as g(x))
 }
 
 // PlotContour plots contour
@@ -70,11 +71,24 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 		ymin, ymax = prms.Yrange[0], prms.Yrange[1]
 	}
 
+	// check objective function
+	var sol *Solution // copy of solution for objective function
+	if o.MinProb == nil {
+		prms.NoG = true
+		prms.NoH = true
+		sol = NewSolution(o.Nsol, 0, &o.Parameters)
+		o.Solutions[0].CopyInto(sol)
+		if prms.Refx != nil {
+			copy(sol.Flt, prms.Refx)
+		}
+	}
+
 	// auxiliary variables
 	X, Y := utl.MeshGrid2D(xmin, xmax, ymin, ymax, prms.Npts, prms.Npts)
 	var Zf [][]float64
 	var Zg [][][]float64
 	var Zh [][][]float64
+	var Za [][]float64
 	if !prms.NoF {
 		Zf = utl.DblsAlloc(prms.Npts, prms.Npts)
 	}
@@ -84,24 +98,38 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 	if o.Nh > 0 && !prms.NoH {
 		Zh = utl.Deep3alloc(o.Nh, prms.Npts, prms.Npts)
 	}
+	if prms.WithAux {
+		Za = utl.DblsAlloc(prms.Npts, prms.Npts)
+	}
 
 	// compute values
 	grp := 0
 	for i := 0; i < prms.Npts; i++ {
 		for j := 0; j < prms.Npts; j++ {
 			x[iFlt], x[jFlt] = X[i][j], Y[i][j]
-			o.MinProb(o.F[grp], o.G[grp], o.H[grp], x, nil, grp)
-			if !prms.NoF {
-				Zf[i][j] = o.F[grp][iOva]
-			}
-			if !prms.NoG {
-				for k, g := range o.G[grp] {
-					Zg[k][i][j] = g
+			if o.MinProb == nil {
+				copy(sol.Flt, x)
+				o.ObjFunc(sol, grp)
+				if !prms.NoF {
+					Zf[i][j] = sol.Ova[iOva]
 				}
-			}
-			if !prms.NoH {
-				for k, h := range o.H[grp] {
-					Zh[k][i][j] = h
+				if prms.WithAux {
+					Za[i][j] = sol.Aux
+				}
+			} else {
+				o.MinProb(o.F[grp], o.G[grp], o.H[grp], x, nil, grp)
+				if !prms.NoF {
+					Zf[i][j] = o.F[grp][iOva]
+				}
+				if !prms.NoG {
+					for k, g := range o.G[grp] {
+						Zg[k][i][j] = g
+					}
+				}
+				if !prms.NoH {
+					for k, h := range o.H[grp] {
+						Zh[k][i][j] = h
+					}
 				}
 			}
 		}
@@ -138,6 +166,15 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 				plt.ContourSimple(X, Y, h, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", clr, prms.Lwh))
 			}
 		}
+	}
+
+	// plot aux
+	clr = "yellow"
+	if prms.Csimple {
+		clr = "blue"
+	}
+	if prms.WithAux {
+		plt.ContourSimple(X, Y, Za, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", clr, prms.Lwg))
 	}
 }
 

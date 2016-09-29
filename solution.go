@@ -33,6 +33,9 @@ type Solution struct {
 	DistCrowd float64     // crowd distance
 	DistNeigh float64     // closest neighbour distance
 	Closest   *Solution   // closest neighbour
+
+	// auxiliary
+	Aux float64 // auxiliary data to be stored at each solution; e.g. limit state function value
 }
 
 // NewSolution allocates new Solution
