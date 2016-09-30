@@ -124,7 +124,10 @@ func Test_flt03(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		PlotFltFltContour("fig_flt03", &opt, sols0, 0, 1, 0, ContourParams{})
+		var cprms ContourParams
+		cprms.AxEqual = true
+		plt.SetForEps(1, 400)
+		PlotFltFltContour("fig_flt03", &opt, sols0, -1, 1, 0, cprms)
 	}
 }
 

@@ -17,6 +17,7 @@ import (
 type ContourParams struct {
 	Npts    int       // number of points for contour
 	CmapIdx int       // colormap index
+	Cbar    bool      // with color bar
 	Csimple bool      // simple contour
 	AxEqual bool      // axes-equal
 	Lwg     float64   // linewidth for g functions
@@ -59,6 +60,9 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, prms ContourParams) {
 	}
 	if prms.Lwh < 0.1 {
 		prms.Lwh = 1.5
+	}
+	if !prms.Cbar {
+		prms.Args += "cbar=0"
 	}
 
 	// limits and meshgrid
@@ -255,6 +259,7 @@ func PlotFltOva(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, iOva, np 
 }
 
 // PlotFltFlt plots flt-flt contour
+// use iFlt==-1 || jFlt==-1 to plot all combinations
 func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jFlt, iOva int, cprms ContourParams) {
 	clr1a := "#00b30d" // star
 	clr1b := "white"   // star border
@@ -264,28 +269,48 @@ func PlotFltFltContour(fnkey string, opt *Optimiser, sols0 []*Solution, iFlt, jF
 		clr1b = "black"
 		clr2 = "#00b30d"
 	}
-	opt.PlotContour(iFlt, jFlt, iOva, cprms)
-	if sols0 != nil {
-		opt.PlotAddFltFlt(iFlt, jFlt, sols0, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
-	}
-	opt.PlotAddFltFlt(iFlt, jFlt, opt.Solutions, plt.Fmt{L: "final", M: "o", C: clr2, Ls: "none", Ms: 7}, true)
 	best, _ := GetBestFeasible(opt, iOva)
-	if best != nil {
-		plt.PlotOne(best.Flt[iFlt], best.Flt[jFlt], io.Sf("'k*', markersize=6, color='%s', markeredgecolor='%s', mew=0.3, label='best', clip_on=0, zorder=20", clr1a, clr1b))
+	plotAll := iFlt < 0 || jFlt < 0
+	plotCommands := func(i, j int) {
+		opt.PlotContour(i, j, iOva, cprms)
+		if sols0 != nil {
+			opt.PlotAddFltFlt(i, j, sols0, plt.Fmt{L: "initial", M: "o", C: "k", Ls: "none", Ms: 3}, false)
+		}
+		opt.PlotAddFltFlt(i, j, opt.Solutions, plt.Fmt{L: "final", M: "o", C: clr2, Ls: "none", Ms: 7}, true)
+		if best != nil {
+			plt.PlotOne(best.Flt[i], best.Flt[j], io.Sf("'k*', markersize=6, color='%s', markeredgecolor='%s', mew=0.3, label='best', clip_on=0, zorder=20", clr1a, clr1b))
+		}
+		if cprms.Extra != nil {
+			cprms.Extra()
+		}
+		if cprms.AxEqual {
+			plt.Equal()
+		}
 	}
-	if cprms.Extra != nil {
-		cprms.Extra()
+	if plotAll {
+		wid := 1.0 / float64(opt.Nflt-1)
+		w0 := wid / 2.0
+		for i := 0; i < opt.Nflt; i++ {
+			for j := i + 1; j < opt.Nflt; j++ {
+				plt.Subplot(opt.Nflt, opt.Nflt, (i+j*opt.Nflt)+1)
+				plotCommands(i, j)
+			}
+			if i > 0 {
+				pos := w0 + float64(i-1)*wid
+				plt.Annotate(pos, 0.02, io.Sf("$x_{%d}$", i-1), "xycoords='figure fraction'")
+				plt.Annotate(0.02, pos, io.Sf("$x_{%d}$", i), "xycoords='figure fraction'")
+			}
+		}
+	} else {
+		plotCommands(iFlt, jFlt)
+		if cprms.Xlabel == "" {
+			io.Sf("$x_{%d}$", iFlt)
+		}
+		if cprms.Ylabel == "" {
+			io.Sf("$x_{%d}$", jFlt)
+		}
+		plt.Gll(cprms.Xlabel, cprms.Ylabel, "leg_out=1, leg_ncol=4, leg_hlen=1.5")
 	}
-	if cprms.AxEqual {
-		plt.Equal()
-	}
-	if cprms.Xlabel == "" {
-		io.Sf("$x_{%d}$", iFlt)
-	}
-	if cprms.Ylabel == "" {
-		io.Sf("$x_{%d}$", jFlt)
-	}
-	plt.Gll(cprms.Xlabel, cprms.Ylabel, "leg_out=1, leg_ncol=4, leg_hlen=1.5")
 	plt.SaveD("/tmp/goga", fnkey+".eps")
 }
 
