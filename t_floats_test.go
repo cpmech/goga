@@ -41,7 +41,10 @@ func Test_flt01(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		PlotFltOva("fig_flt01", &opt, sols0, 0, 0, 201, -1, yfcn, nil, false)
+		pp := NewPlotParams(false)
+		pp.FnKey = "fig-flt01"
+		pp.YfuncX = yfcn
+		opt.PlotFltOva(sols0, 0, 0, -1, pp)
 	}
 }
 
@@ -80,7 +83,9 @@ func Test_flt02(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		PlotFltFltContour("fig_flt02", &opt, sols0, 0, 1, 0, ContourParams{})
+		pp := NewPlotParams(false)
+		pp.FnKey = "fig-flt02"
+		opt.PlotFltFltContour(sols0, 0, 1, 0, pp)
 	}
 }
 
@@ -124,10 +129,11 @@ func Test_flt03(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		var cprms ContourParams
-		cprms.AxEqual = true
+		pp := NewPlotParams(false)
+		pp.FnKey = "fig-flt03"
+		pp.AxEqual = true
 		plt.SetForEps(1, 400)
-		PlotFltFltContour("fig_flt03", &opt, sols0, -1, 1, 0, cprms)
+		opt.PlotFltFltContour(sols0, 0, 1, 0, pp)
 	}
 }
 
@@ -171,17 +177,15 @@ func Test_flt04(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-
-		// reference data
 		_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
-
-		// doplot
-		feasibleOnly := false
-		fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
-		fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
-		PlotOvaOvaPareto(&opt, sols0, 0, 1, feasibleOnly, fmtAll, fmtFront)
-		plt.Plot(dat["f1"], dat["f2"], "'b-',ms=3,markeredgecolor='b'")
-		plt.AxisRange(0, 250, 0, 0.15)
-		plt.SaveD("/tmp/goga", "fig_flt04.eps")
+		pp := NewPlotParams(false)
+		pp.FnKey = "fig-flt04"
+		pp.FmtSols.C = "gray"
+		pp.WithAll = true
+		pp.Extra = func() {
+			plt.Plot(dat["f1"], dat["f2"], "'b-',ms=3,markeredgecolor='b'")
+			plt.AxisRange(0, 250, 0, 0.15)
+		}
+		opt.PlotOvaOvaPareto(sols0, 0, 1, pp)
 	}
 }

@@ -26,3 +26,6 @@ type MtInt_t func(a []int, prms *Parameters)
 
 // Output_t defines a function to perform output of data during the evolution
 type Output_t func(time int, sols []*Solution)
+
+// YfuncX_t defines the folowing simple function: y(x), usually used in plots
+type YfuncX_t func(x float64) float64
