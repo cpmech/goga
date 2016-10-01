@@ -13,63 +13,42 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-// ContourParams holds parameters to plot contours
-type ContourParams struct {
-	Npts    int       // number of points for contour
-	CmapIdx int       // colormap index
-	Cbar    bool      // with color bar
-	Simple  bool      // simple contour
-	FmtF    plt.Fmt   // format for f(x) function
-	FmtG    plt.Fmt   // format for g(x) function
-	FmtH    plt.Fmt   // format for h(x) function
-	FmtA    plt.Fmt   // format for auxiliary field
-	Xrange  []float64 // to override x-range
-	Yrange  []float64 // to override y-range
-	IdxH    int       // index of h function to plot. -1 means all
-	Refx    []float64 // reference x vector with the other values in case Nflt > 2
-	NoF     bool      // without f(x)
-	NoG     bool      // without g(x)
-	NoH     bool      // without h(x)
-	WithAux bool      // plot Solution.Aux (with the same colors as g(x))
-}
-
-// NewContourParams allocates and sets default ContourParams
-func NewContourParams(simple bool) (o *ContourParams) {
-	o = new(ContourParams)
-	o.Npts = 41
-	o.FmtF.C = "black"
-	o.FmtF.Lw = 1
-	o.FmtG.C = "yellow"
-	o.FmtG.Lw = 1.5
-	o.FmtH.C = "yellow"
-	o.FmtH.Lw = 1.5
-	o.FmtA.C = "yellow"
-	o.FmtA.Lw = 1.5
-	o.Simple = simple
-	return
-}
-
 // PlotParams holds parameters to customize plots
 type PlotParams struct {
-	DirOut       string         // output directory; default = "/tmp/goga"
-	FnKey        string         // filename key
-	FnExt        string         // filename extension; default = ".eps" IMPORTANT: "." is required
-	FmtSols0     plt.Fmt        // format for points indicating initial solutions
-	FmtSols      plt.Fmt        // format for points indicating final solutions
-	FmtBest      plt.Fmt        // format for points indicating best solution
-	FmtFront     plt.Fmt        // format for points on Pareto front
-	YfuncX       YfuncX_t       // y(x) function to plot from FltMin[iFlt] to FltMax[iFlt]
-	FmtYfX       plt.Fmt        // format for y(x) function
-	NptsYfX      int            // number of points for y(x) function
-	Extra        func()         // extra plotting commands
-	AxEqual      bool           // make axes equal
-	Xlabel       string         // xlabel. "" means use default
-	Ylabel       string         // xlabel. "" means use default
-	LegPrms      string         // legend parameters
-	Cprms        *ContourParams // contour parameters
-	FeasibleOnly bool           // plot feasible solutions only
-	WithAll      bool           // with all points
-	NoFront      bool           // do not show Pareto front
+	DirOut       string    // output directory; default = "/tmp/goga"
+	FnKey        string    // filename key
+	FnExt        string    // filename extension; default = ".eps" IMPORTANT: "." is required
+	FmtSols0     plt.Fmt   // format for points indicating initial solutions
+	FmtSols      plt.Fmt   // format for points indicating final solutions
+	FmtBest      plt.Fmt   // format for points indicating best solution
+	FmtFront     plt.Fmt   // format for points on Pareto front
+	YfuncX       YfuncX_t  // y(x) function to plot from FltMin[iFlt] to FltMax[iFlt]
+	FmtYfX       plt.Fmt   // format for y(x) function
+	NptsYfX      int       // number of points for y(x) function
+	Extra        func()    // extra plotting commands
+	AxEqual      bool      // make axes equal
+	Xlabel       string    // xlabel. "" means use default
+	Ylabel       string    // xlabel. "" means use default
+	LegPrms      string    // legend parameters
+	FeasibleOnly bool      // plot feasible solutions only
+	WithAll      bool      // with all points
+	NoFront      bool      // do not show Pareto front
+	Npts         int       // number of points for contour
+	CmapIdx      int       // colormap index
+	Cbar         bool      // with color bar
+	Simple       bool      // simple contour
+	FmtF         plt.Fmt   // format for f(x) function
+	FmtG         plt.Fmt   // format for g(x) function
+	FmtH         plt.Fmt   // format for h(x) function
+	FmtA         plt.Fmt   // format for auxiliary field
+	Xrange       []float64 // to override x-range
+	Yrange       []float64 // to override y-range
+	IdxH         int       // index of h function to plot. -1 means all
+	Refx         []float64 // reference x vector with the other values in case Nflt > 2
+	NoF          bool      // without f(x)
+	NoG          bool      // without g(x)
+	NoH          bool      // without h(x)
+	WithAux      bool      // plot Solution.Aux (with the same colors as g(x))
 }
 
 // NewPlotParams allocates and sets default PlotParams
@@ -122,91 +101,101 @@ func NewPlotParams(simple bool) (o *PlotParams) {
 	}
 
 	o.LegPrms = "leg_out=1, leg_ncol=4, leg_hlen=1.5"
-	o.Cprms = NewContourParams(simple)
+
+	o.Npts = 41
+	o.FmtF.C = "black"
+	o.FmtF.Lw = 1
+	o.FmtG.C = "yellow"
+	o.FmtG.Lw = 1.5
+	o.FmtH.C = "yellow"
+	o.FmtH.Lw = 1.5
+	o.FmtA.C = "yellow"
+	o.FmtA.Lw = 1.5
+	o.Simple = simple
 	return
 }
 
 // PlotContour plots contour
-func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, cp *ContourParams) {
+func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 
 	// check
 	var x []float64
-	if cp.Refx == nil {
+	if pp.Refx == nil {
 		if iFlt > 1 || jFlt > 1 {
 			chk.Panic("Refx vector must be given to PlotContour when iFlt or jFlt > 1")
 		}
 		x = make([]float64, 2)
 	} else {
-		x = make([]float64, len(cp.Refx))
-		copy(x, cp.Refx)
+		x = make([]float64, len(pp.Refx))
+		copy(x, pp.Refx)
 	}
 
 	// limits and meshgrid
 	xmin, xmax := o.FltMin[iFlt], o.FltMax[iFlt]
 	ymin, ymax := o.FltMin[jFlt], o.FltMax[jFlt]
-	if cp.Xrange != nil {
-		xmin, xmax = cp.Xrange[0], cp.Xrange[1]
+	if pp.Xrange != nil {
+		xmin, xmax = pp.Xrange[0], pp.Xrange[1]
 	}
-	if cp.Yrange != nil {
-		ymin, ymax = cp.Yrange[0], cp.Yrange[1]
+	if pp.Yrange != nil {
+		ymin, ymax = pp.Yrange[0], pp.Yrange[1]
 	}
 
 	// check objective function
 	var sol *Solution // copy of solution for objective function
 	if o.MinProb == nil {
-		cp.NoG = true
-		cp.NoH = true
+		pp.NoG = true
+		pp.NoH = true
 		sol = NewSolution(o.Nsol, 0, &o.Parameters)
 		o.Solutions[0].CopyInto(sol)
-		if cp.Refx != nil {
-			copy(sol.Flt, cp.Refx)
+		if pp.Refx != nil {
+			copy(sol.Flt, pp.Refx)
 		}
 	}
 
 	// auxiliary variables
-	X, Y := utl.MeshGrid2D(xmin, xmax, ymin, ymax, cp.Npts, cp.Npts)
+	X, Y := utl.MeshGrid2D(xmin, xmax, ymin, ymax, pp.Npts, pp.Npts)
 	var Zf [][]float64
 	var Zg [][][]float64
 	var Zh [][][]float64
 	var Za [][]float64
-	if !cp.NoF {
-		Zf = utl.DblsAlloc(cp.Npts, cp.Npts)
+	if !pp.NoF {
+		Zf = utl.DblsAlloc(pp.Npts, pp.Npts)
 	}
-	if o.Ng > 0 && !cp.NoG {
-		Zg = utl.Deep3alloc(o.Ng, cp.Npts, cp.Npts)
+	if o.Ng > 0 && !pp.NoG {
+		Zg = utl.Deep3alloc(o.Ng, pp.Npts, pp.Npts)
 	}
-	if o.Nh > 0 && !cp.NoH {
-		Zh = utl.Deep3alloc(o.Nh, cp.Npts, cp.Npts)
+	if o.Nh > 0 && !pp.NoH {
+		Zh = utl.Deep3alloc(o.Nh, pp.Npts, pp.Npts)
 	}
-	if cp.WithAux {
-		Za = utl.DblsAlloc(cp.Npts, cp.Npts)
+	if pp.WithAux {
+		Za = utl.DblsAlloc(pp.Npts, pp.Npts)
 	}
 
 	// compute values
 	grp := 0
-	for i := 0; i < cp.Npts; i++ {
-		for j := 0; j < cp.Npts; j++ {
+	for i := 0; i < pp.Npts; i++ {
+		for j := 0; j < pp.Npts; j++ {
 			x[iFlt], x[jFlt] = X[i][j], Y[i][j]
 			if o.MinProb == nil {
 				copy(sol.Flt, x)
 				o.ObjFunc(sol, grp)
-				if !cp.NoF {
+				if !pp.NoF {
 					Zf[i][j] = sol.Ova[iOva]
 				}
-				if cp.WithAux {
+				if pp.WithAux {
 					Za[i][j] = sol.Aux
 				}
 			} else {
 				o.MinProb(o.F[grp], o.G[grp], o.H[grp], x, nil, grp)
-				if !cp.NoF {
+				if !pp.NoF {
 					Zf[i][j] = o.F[grp][iOva]
 				}
-				if !cp.NoG {
+				if !pp.NoG {
 					for k, g := range o.G[grp] {
 						Zg[k][i][j] = g
 					}
 				}
-				if !cp.NoH {
+				if !pp.NoH {
 					for k, h := range o.H[grp] {
 						Zh[k][i][j] = h
 					}
@@ -216,37 +205,37 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, cp *ContourParams) {
 	}
 
 	// plot f
-	if !cp.NoF {
+	if !pp.NoF {
 		txt := "cbar=0"
-		if cp.Cbar {
+		if pp.Cbar {
 			txt = ""
 		}
-		if cp.Simple {
-			plt.ContourSimple(X, Y, Zf, true, 7, io.Sf("colors=['%s'], fsz=7, %s", cp.FmtF.C, txt))
+		if pp.Simple {
+			plt.ContourSimple(X, Y, Zf, true, 7, io.Sf("colors=['%s'], fsz=7, %s", pp.FmtF.C, txt))
 		} else {
-			plt.Contour(X, Y, Zf, io.Sf("fsz=7, cmapidx=%d, %s", cp.CmapIdx, txt))
+			plt.Contour(X, Y, Zf, io.Sf("fsz=7, cmapidx=%d, %s", pp.CmapIdx, txt))
 		}
 	}
 
 	// plot g
-	if !cp.NoG {
+	if !pp.NoG {
 		for _, g := range Zg {
-			plt.ContourSimple(X, Y, g, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", cp.FmtG.C, cp.FmtG.Lw))
+			plt.ContourSimple(X, Y, g, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", pp.FmtG.C, pp.FmtG.Lw))
 		}
 	}
 
 	// plot h
-	if !cp.NoH {
+	if !pp.NoH {
 		for i, h := range Zh {
-			if i == cp.IdxH || cp.IdxH < 0 {
-				plt.ContourSimple(X, Y, h, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", cp.FmtH.C, cp.FmtH.Lw))
+			if i == pp.IdxH || pp.IdxH < 0 {
+				plt.ContourSimple(X, Y, h, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", pp.FmtH.C, pp.FmtH.Lw))
 			}
 		}
 	}
 
 	// plot aux
-	if cp.WithAux {
-		plt.ContourSimple(X, Y, Za, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", cp.FmtA.C, cp.FmtA.Lw))
+	if pp.WithAux {
+		plt.ContourSimple(X, Y, Za, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", pp.FmtA.C, pp.FmtA.Lw))
 	}
 }
 
@@ -322,7 +311,7 @@ func (o *Optimiser) PlotFltFltContour(sols0 []*Solution, iFlt, jFlt, iOva int, p
 	best, _ := GetBestFeasible(o, iOva)
 	plotAll := iFlt < 0 || jFlt < 0
 	plotCommands := func(i, j int) {
-		o.PlotContour(i, j, iOva, pp.Cprms)
+		o.PlotContour(i, j, iOva, pp)
 		if sols0 != nil {
 			o.PlotAddFltFlt(i, j, sols0, &pp.FmtSols0)
 		}
