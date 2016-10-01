@@ -74,6 +74,7 @@ func NewPlotParams(simple bool) (o *PlotParams) {
 
 	o.FmtBest.L = "best"
 	o.FmtBest.M = "*"
+	o.FmtBest.Ls = "none"
 	o.FmtBest.C = "#00b30d"
 	o.FmtBest.Mec = "white"
 	o.FmtBest.Ms = 6
