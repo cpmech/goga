@@ -34,6 +34,7 @@ type Parameters struct {
 	LatinDup int     // Latin Hypercube duplicates number
 	EpsH     float64 // minimum value for 'h' constraints
 	Verbose  bool    // show messages
+	VerbStat bool    // show messages in Stat
 	GenAll   bool    // generate all solutions together; i.e. not within each group/CPU
 	Nsamples int     // run many samples
 	BinInt   int     // flag that integers represent binary numbers if BinInt > 0; thus Nint=BinInt
@@ -96,6 +97,7 @@ func (o *Parameters) Default() {
 	o.LatinDup = 2
 	o.EpsH = 0.1
 	o.Verbose = true
+	o.VerbStat = true
 	o.GenAll = false
 	o.Nsamples = 10
 	o.BinInt = 0
@@ -287,6 +289,7 @@ func (o *Parameters) LogParams() (l string) {
 		"Latin Hypercube duplicates number", "LatinDup", o.LatinDup,
 		"minimum value for 'h' constraints", "EpsH", o.EpsH,
 		"show messages", "Verbose", o.Verbose,
+		"show messages in Stat", "VerbStat", o.VerbStat,
 		"generate all solutions together", "GenAll", o.GenAll,
 		"run many trials", "Nsamples", o.Nsamples,
 		"integers represent binary numbers", "BinInt", o.BinInt,

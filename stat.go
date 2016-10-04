@@ -119,6 +119,11 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 			WriteAllValues(dirout, io.Sf("%s-%04d_ini", fnkey, itrial), o)
 		}
 
+		// message
+		if o.VerbStat {
+			io.Pf(". . . running trial # %d\n", itrial)
+		}
+
 		// solve
 		timeIni := time.Now()
 		o.Solve()
