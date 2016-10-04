@@ -324,7 +324,7 @@ func (o *Optimiser) generate_solutions(itrial int) {
 	// benchmark
 	t0 := gotime.Now()
 	var tgen, tmsh gotime.Time
-	if o.Verbose && itrial == 0 {
+	if o.VerbTime && itrial == 0 {
 		defer func() {
 			io.Pfblue2("time spent in generation of solutions = %v\n", tgen.Sub(t0))
 			io.Pfblue2("time spent in Delaunay triangulations = %v\n", tmsh.Sub(tgen))
