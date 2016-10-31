@@ -8,7 +8,9 @@ goal of this library is to handle integer- float-point- and mixed-type represent
 Unless otherwise noted, the Goga source files are distributed
 under the BSD-style license found in the LICENSE file.
 
-## Examples
+## Report and examples
+
+The code and algorithms are fully explained in [this scientific paper](https://github.com/cpmech/goga/blob/master/doc/report/goga-report-01.pdf).
 
 See examples here: https://github.com/cpmech/goga/blob/master/examples/README.md
 
@@ -27,4 +29,5 @@ The documentation of Goga, automatically generated with `go doc`,
 [is available here](http://rawgit.com/cpmech/goga/master/doc/index.html).
 
 ## Acknowledgements
+
 Funding from the Australian Research Council is gratefully acknowledged.
