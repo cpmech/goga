@@ -1,0 +1,159 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{eqs-ct-two-obj}[2015/01/06 Constrained two-objective problems - Dorival Pedroso]
+
+% TNK, Deb 2001, p366, fig 224 ======================================================================
+
+\newcommand{\TNK}{
+\begin{align}
+f_{0} &= x_{0}                                                               \ACR
+f_{1} &= x_{1}                                                               \ACR
+g_{0} &= x_{0}^2 + x_{1}^2 - 1 - 0.1 \, \cos{[16 \, \atan{(x_{0} / x_{1})}]} \ACR
+g_{1} &= 0.5 - (x_{0}-0.5)^2 - (x_{1}-0.5)^2
+\end{align}
+}
+
+\newcommand{\TNKx}{
+\begin{equation}
+0 \leq x_i \leq \pi \quad (i \in [0,1])
+\end{equation}
+}
+
+% CTP1, Deb 2001, p367, fig 225 =====================================================================
+
+\newcommand{\CTPx}{
+\begin{equation}
+0 \leq x_i \leq 1 \quad (i \in [0,N_x-1])
+\end{equation}
+}
+
+\newcommand{\CTPone}{
+\begin{align}
+c_0   &= 1 + \textstyle{\sum_{i=1}^{N_x-1} x_{i}} \ACR
+f_{0} &= x_{0}                                    \ACR
+f_{1} &= c_0  \,  \exp{(-x_{0}/c_0)}              \ACR
+g_{0} &= f_{1} - a_0 \, \exp{(-b_0 \, f_{0})}     \ACR
+g_{1} &= f_{1} - a_1 \, \exp{(-b_1 \, f_{0})}
+\end{align}
+}
+
+\newcommand{\CTPoneC}{
+\begin{equation}
+a_0 = 0.858 \quad
+b_0 = 0.541 \quad
+a_1 = 0.728 \quad
+b_1 = 0.295
+\end{equation}
+}
+
+% CTPi, Deb 2001, p368 ===============================================================================
+
+\newcommand{\CTPi}{
+\begin{align}
+c_0 &= 1 + \textstyle{\sum_{i=1}^{N_x-1} x_{i}}          \ACR
+f_0 &= x_0                                               \ACR
+f_1 &= c_0  \,  (1 - f_0/c_0)                            \ACR
+c_1 &= \cos{(\theta)} \, (f_1-e) - \sin{(\theta)} \, f_0 \ACR
+c_2 &= \sin{(\theta)} \, (f_1-e) + \cos{(\theta)} \, f_0 \ACR
+c_3 &= \sin{(b \, \pi \, (c_2)^c)}                       \ACR
+g_0 &= c_1 - a \, (\left| c_3 \right|)^d
+\label{eqn:CTPi}
+\end{align}
+}
+
+% CTP2-CTP7, Deb 2001, p368/369, fig 226 =============================================================
+
+\newcommand{\CTPtwoSeven}{
+\begin{table} [!t] \centering
+\caption{Coefficients for CTP2 to CTP7.}
+\begin{tabular}[c]{ccccccc} \toprule
+   P & $\theta$ & $a$ & $b$ & $c$ & $d$ & $e$ \\ \hline
+
+CTP2          &
+$-0.2\,\pi$   &
+$\Szn0.2\Szn$ &
+$10.0$        &
+$1.0$         &
+$6.0$         &
+$\Szm1.0$     \\
+               
+CTP3          &         
+$-0.2\,\pi$   &
+$\Szn0.1\Szn$ &
+$10.0$        &
+$1.0$         &
+$0.5$         &
+$\Szm1.0$     \\
+               
+CTP4        &         
+$-0.2\,\pi$ &
+$\Szn0.75$  &
+$10.0$      &
+$1.0$       &
+$0.5$       &
+$\Szm1.0$   \\
+               
+CTP5          &         
+$-0.2\,\pi$   &
+$\Szn0.1\Szn$ &
+$10.0$        &
+$2.0$         &
+$0.5$         &
+$\Szm1.0$     \\
+                  
+CTP6           &         
+$\Szm0.1\,\pi$ &
+$40.0\Szn$     &
+$\Szn0.5$      &
+$1.0$          &
+$2.0$          &
+$-2.0$        \\
+
+CTP7         &
+$-0.05\,\pi$ &
+$40.0\Szn$   &
+$\Szn5.0$    &
+$1.0$        &
+$6.0$        &
+$\Szm0.0$    \\
+\bottomrule
+\end{tabular}
+\label{tab:CTP2-7}
+\end{table}
+}
+
+% CTP8, Deb 2001, p368/373, fig 232 ==================================================================
+
+\newcommand{\CTPeight}{
+\begin{align}
+c_1      &= \cos{(\theta_1)} \, (f_{1}-e) - \sin{(\theta_1)} \, f_{0} \ACR
+c_2      &= \sin{(\theta_1)} \, (f_{1}-e) + \cos{(\theta_1)} \, f_{0} \ACR
+c_3      &= \sin{(b \, \pi \, (c_2)^c)}                               \ACR
+g_{0}    &= c_1 - a \, (\left|c_3\right|)^d                           \ACR
+d_1      &= \cos{(\theta_2)} \, (f_{1}-E) - \sin{(\theta_2)} \, f_{0} \ACR
+d_2      &= \sin{(\theta_2)} \, (f_{1}-E) + \cos{(\theta_2)} \, f_{0} \ACR
+d_3      &= \sin{(B  \, \pi \, (d_2)^C)}                              \ACR
+g_{1}    &= d_1 - A \, (\left|d_3\right|)^D
+\end{align}
+}
+
+\newcommand{\CTPeightC}{
+\begin{align}
+a &= 40   & \quad
+b &= 0.5  & \quad
+c &= 1    & \quad
+d &= 2    & \quad
+e &= -2   & \ACR
+A &= 40   & \quad
+B &= 2.0  & \quad
+C &= 1    & \quad
+D &= 6    & \quad
+E &= \Szm0
+\end{align}
+}
+
+\newcommand{\CTPeightCx}{
+\begin{equation}
+\theta_1 = 0.1 \, \pi  \qquad
+\theta_2 = -0.05 \, \pi
+\end{equation}
+}

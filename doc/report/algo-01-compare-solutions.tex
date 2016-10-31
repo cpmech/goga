@@ -1,0 +1,41 @@
+\begin{Algo} [t] \ALGOSIZE
+    \DontPrintSemicolon
+    \KwIn{trial solutions $A$ and $B$}
+    \KwOut{$A_{dom}$ (A dominates) and $B_{dom}$ (B dominates)}
+    $A_{dom}, B_{dom} \gets \KwFalse, \KwFalse$\;
+    $N_{viol}^A, N_{viol}^B \gets 0, 0$\;
+    \For{OOR indices $0 \leq i < N_u$}{
+        \lIf{$u_i^A>0$}{$N_{viol}^A \pluseq 1$}
+        \lIf{$u_i^B>0$}{$N_{viol}^B \pluseq 1$}
+    }
+    \If{$N_{viol}^{A} > 0$}{
+        \If{$N_{viol}^{B} > 0$}{
+            \If{$N_{viol}^{A} < N_{viol}^{B}$}{
+                $A_{dom} \gets \KwTrue$\;
+				\KwRet\;
+			}
+            \If{$N_{viol}^{B} < N_{viol}^{A}$}{
+                $B_{dom} \gets \KwTrue$\;
+				\KwRet\;
+			}
+            $A_{dom},B_{dom} \gets \text{\FnParetoComparison}(\vu_A,\vu_B)$\;
+            \If{\KwNot $A_{dom}$ \KwAnd \KwNot $B_{dom}$}{
+                $A_{dom},B_{dom} \gets \text{\FnParetoComparison}(\vf_A,\vf_B)$\;
+			}
+			\KwRet\;
+		}
+        $B_{dom} \gets \KwTrue$\;
+		\KwRet\;
+	}
+    \If{$N_{viol}^{B} > 0$}{
+        $A_{dom} \gets \KwTrue$\;
+		\KwRet\;
+	}
+    $A_{dom}$, $B_{dom} \gets \text{\FnParetoComparison}(\vf_A,\vf_B)$\;
+\caption{
+    \FnCompareSolutions($A$,$B$)
+    performs the comparison between trial solutions considering the objective values $f_i$ and the
+    handling of constraints via the out-of-range values $u_i$.
+}
+\label{alg:solComp}
+\end{Algo}

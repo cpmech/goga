@@ -1,0 +1,24 @@
+\begin{Algo} [t] \ALGOSIZE
+    \DontPrintSemicolon
+    \KwIn{output data from \FnParetoFronts($\Omega$)}
+    \KwOut{crowding distances $w_i$}
+    zero all $w_i$ values\;
+    \For{each Pareto front $F_{r,\KwAll}$ with rank $r$}{
+        \If{size of front $z_r=1$}{
+            \KwContinue\;
+        }
+        \For{OVA indices $0 \leq j < N_f$}{
+            $K \gets \text{\FnSorted}(F_{r,\KwAll}, \text{``by obj value $j$''})$\;
+            $\delta \gets f^{max}_j - f^{min}_j + \epsilon$\;
+            $w_{K_0},\, w_{K_m} \gets \KwINF,\,\KwINF$\;
+            \For{indices $i$ in $K$, except first and last}{
+                $w_i \pluseq \frac{f^i_j - f^{i-1}_j}{\delta} \times \frac{f^{i+1}_j - f^i_j}{\delta}$ \;
+            }
+        }
+    }
+\caption{
+    \FnCrowdingDistances($\Omega$)
+    computes the crowding distance of solutions in $\Omega$.
+}
+\label{alg:crowdDist}
+\end{Algo}

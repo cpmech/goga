@@ -1,0 +1,150 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{eqs-three-obj}[2015/01/06 Two-objective problems - Dorival Pedroso]
+
+\newcommand{\THREEOBJSIZE}{small}
+
+\newcommand{\DTLZx}{
+\begin{\THREEOBJSIZE}
+\begin{equation}
+0 \leq x_i \leq 1 \quad (i \in [0,N_x-1])
+\end{equation}
+\end{\THREEOBJSIZE}
+}
+
+% DTLZ1 ===========================================================================================
+
+\newcommand{\DTLZone}{
+\begin{\THREEOBJSIZE}
+\begin{align}
+c     &= 100 \, \left\{ 5 + \sum_{i=2}^6 \left[ (x_{i}-0.5)^2 - \cos{(20 \, \pi \, (x_{i}-0.5))} \right]  \right\} \ACR
+f_{0} &= x_{0} \, x_{1} \, (1 + c) / 2      \ACR
+f_{1} &= x_{0} \, (1 - x_{1}) \, (1 + c) / 2\ACR
+f_{2} &= (1 - x_{0})  \,  (1 + c) / 2
+\end{align}
+\end{\THREEOBJSIZE}
+}
+
+\newcommand{\DTLZoneAna}{
+\begin{\THREEOBJSIZE}
+\begin{equation}
+\psi(f_0,f_1,f_2) = f_0 + f_1 + f_2 - 0.5
+\end{equation}
+\end{\THREEOBJSIZE}
+}
+
+% DTLZ2 ===========================================================================================
+
+\newcommand{\DTLZtwo}{
+\begin{\THREEOBJSIZE}
+\begin{align}
+c     &= \textstyle{\sum_{i=2}^{11}} (x_{i} - 0.5)^2               \ACR
+f_{0} &= (1 + c) \, \cos{(0.5 x_{0} \pi)} \, \cos{(0.5 x_{1} \pi)} \ACR
+f_{1} &= (1 + c) \, \cos{(0.5 x_{0} \pi)} \, \sin{(0.5 x_{1} \pi)} \ACR
+f_{2} &= (1 + c) \, \sin{(0.5 x_{0} \pi)}
+\label{eqn:DTLZ2}
+\end{align}
+\end{\THREEOBJSIZE}
+}
+
+\newcommand{\DTLZtwoAna}{
+\begin{\THREEOBJSIZE}
+\begin{equation}
+\psi(f_0,f_1,f_2) = f_0^2 + f_1^2 + f_2^2 - 1
+\end{equation}
+\end{\THREEOBJSIZE}
+}
+
+% SUQi ============================================================================================
+
+\newcommand{\SUQi}{
+\begin{\THREEOBJSIZE}
+\begin{align}
+c     &= \textstyle{\sum_{i=2}^{11}} (x_{i} - 0.5)^2                           \ACR
+f_{0} &= (1 + c) \, \cosX{(0.5 x_{0} \pi; 2/a)} \, \cosX{(0.5 x_{1} \pi; 2/a)} \ACR
+f_{1} &= (1 + c) \, \cosX{(0.5 x_{0} \pi; 2/b)} \, \sinX{(0.5 x_{1} \pi; 2/b)} \ACR
+f_{2} &= (1 + c) \, \sinX{(0.5 x_{0} \pi; 2/c)}
+\label{eqn:SUQi}
+\end{align}
+\end{\THREEOBJSIZE}
+}
+
+\newcommand{\SUQiAna}{
+\begin{\THREEOBJSIZE}
+\begin{equation}
+\psi(f_0,f_1,f_2) = |f_0|^a + |f_1|^b + |f_2|^c - 1
+\end{equation}
+\end{\THREEOBJSIZE}
+}
+
+% DTLZ3 ===========================================================================================
+
+\newcommand{\DTLZthree}{
+\begin{\THREEOBJSIZE}
+\begin{align}
+c     &= 100 \, \left\{ 10 + \sum_{i=2}^{11} \left[ (x_{i}-0.5))^2 - \cos{(20 \, \pi \, (x_{i}-0.5))} \right] \right\} \ACR
+f_{0} &= (1 + c) \, \cos{(0.5 x_{0} \pi)} \, \cos{(0.5 x_{1} \pi)}                                                     \ACR
+f_{1} &= (1 + c) \, \cos{(0.5 x_{0} \pi)} \, \sin{(0.5 x_{1} \pi)}                                                     \ACR
+f_{2} &= (1 + c) \, \sin{(0.5 x_{0} \pi)}
+\end{align}
+\end{\THREEOBJSIZE}
+}
+
+\newcommand{\DTLZthreeAna}{
+\begin{\THREEOBJSIZE}
+\begin{equation}
+\psi(f_0,f_1,f_2) = f_0^2 + f_1^2 + f_2^2 - 1
+\end{equation}
+\end{\THREEOBJSIZE}
+}
+
+% DTLZ4 ===========================================================================================
+
+\newcommand{\DTLZfour}{
+\begin{\THREEOBJSIZE}
+\begin{align}
+c     &= \textstyle{\sum_{i=2}^{11}} (x_{i} - 0.5)^2                                 \ACR
+f_{0} &= (1 + c) \, \cos{(0.5 x_{0}^{\alpha} \pi)} \, \cos{(0.5 x_{1}^{\alpha} \pi)} \ACR
+f_{1} &= (1 + c) \, \cos{(0.5 x_{0}^{\alpha} \pi)} \, \sin{(0.5 x_{1}^{\alpha} \pi)} \ACR
+f_{2} &= (1 + c) \, \sin{(0.5 x_{0}^{\alpha} \pi)}
+\end{align}
+\end{\THREEOBJSIZE}
+}
+
+\newcommand{\DTLZfourAna}{
+\begin{\THREEOBJSIZE}
+\begin{equation}
+\psi(f_0,f_1,f_2) = f_0^2 + f_1^2 + f_2^2 - 1
+\end{equation}
+\end{\THREEOBJSIZE}
+}
+
+% DTLZ2x (convex) =================================================================================
+
+\newcommand{\DTLZtwox}{
+\begin{\THREEOBJSIZE}
+\begin{align}
+c     = \textstyle{\sum_{i=2}^{11}} (x_{i} - 0.5)^2                                \ACR
+f_{0} = \left[ (1 + c) \, \cos{(0.5 x_{0} \pi)} \, \cos{(0.5 x_{1} \pi)} \right]^4 \ACR
+f_{1} = \left[ (1 + c) \, \cos{(0.5 x_{0} \pi)} \, \sin{(0.5 x_{1} \pi)} \right]^4 \ACR
+f_{2} = \left[ (1 + c) \, \sin{(0.5 x_{0} \pi)} \right]^2
+\end{align}
+\end{\THREEOBJSIZE}
+}
+
+\newcommand{\DTLZtwoxAna}{
+\begin{\THREEOBJSIZE}
+\begin{equation}
+\psi(f_0,f_1,f_2) = \|f_0\|^{0.5} + \|f_1\|^{0.5} + f_2 - 1
+\end{equation}
+\end{\THREEOBJSIZE}
+}
+
+% DTLZ2c (constrained) ============================================================================
+
+\newcommand{\DTLZtwoc}{
+\begin{\THREEOBJSIZE}
+\begin{equation}
+g_{0} = \tan{\alpha} - \frac{\sqrt{(f_0-f_1)^2+(f_1-f_2)^2+(f_2-f_0)^2}}{f_0+f_1+f_2}
+\end{equation}
+\end{\THREEOBJSIZE}
+}

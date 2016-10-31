@@ -1,0 +1,58 @@
+\begin{Algo} [t] \ALGOSIZE
+    \DontPrintSemicolon
+    \KwIn{$G$ and backup set of solutions $\Gamma$ with the same size as $G$}
+    \KwOut{evolved group $G$}
+
+    \BlankLine
+    \Lcom{find random pairs}
+    generate table $P$ with $N_p$ pairs\;
+
+    \BlankLine
+    \Lcom{create new solutions}
+    \For{$k \gets 0$ \KwTo $k<N_p$}{
+		$l\;\;    \gets (k + 1) \,\%\, N_p$\;
+		$m        \gets (k + 2) \,\%\, N_p$\;
+		$n\;      \gets (k + 3) \,\%\, N_p$\;
+        \BlankLine
+        $\vx_A\,\;\gets \text{\FnRealPart}(G[P_{k,0}])$\;
+        $\vx_{A0} \gets \text{\FnRealPart}(G[P_{l,0}])$\;
+        $\vx_{A1} \gets \text{\FnRealPart}(G[P_{m,0}])$\;
+        $\vx_{A2} \gets \text{\FnRealPart}(G[P_{n,0}])$\;
+        \BlankLine
+        $\vx_B\,\;\gets \text{\FnRealPart}(G[P_{k,1}])$\;
+        $\vx_{B0} \gets \text{\FnRealPart}(G[P_{l,1}])$\;
+        $\vx_{B1} \gets \text{\FnRealPart}(G[P_{m,1}])$\;
+        $\vx_{B2} \gets \text{\FnRealPart}(G[P_{n,1}])$\;
+        \BlankLine
+        $\vx_a \gets \text{\FnDiffEvol}(\vx_A,\vx_{A0},\vx_{A1},\vx_{A2})$\;
+        $\vx_b \gets \text{\FnDiffEvol}(\vx_B,\vx_{B0},\vx_{B1},\vx_{B2})$\;
+        \BlankLine
+        $\vksi_A \gets \text{\FnIntPart}(G[P_{k,0}])$\;
+        $\vksi_B \gets \text{\FnIntPart}(G[P_{k,1}])$\;
+        $\vksi_a, \vksi_b \gets \text{\FnCrossover}(\vksi_A,\vksi_B)$\;
+        $\vksi_a \gets \text{\FnMutation}(\vksi_a)$\;
+        $\vksi_b \gets \text{\FnMutation}(\vksi_b)$\;
+        \BlankLine
+        store $\{\vx_a$,$\vx_b$,$\vksi_a$,$\vksi_b\}$ in $\Gamma$\;
+    }
+
+    \BlankLine
+    \Lcom{metrics}
+    \FnMetrics($G \cup \Gamma$)\;
+
+    \BlankLine
+    \Lcom{tournaments}
+    \For{$k \gets 0$ \KwTo $k<N_p$}{
+        $A   \gets G[P_{k,0}]$\;
+        $B   \gets G[P_{k,1}]$\;
+        $a\; \gets \Gamma[P_{k,0}]$\;
+        $b\; \gets \Gamma[P_{k,1}]$\;
+        \FnTournament($G$, \, $A,B,a,b$)\;
+    }
+\caption{
+    \FnEvolveOneGroup($G$) evolves group.
+    \FnRealPart($G[\alpha]$) returns the float-point part of solution $\alpha$ in $G$ and
+    \FnIntPart($G[\alpha]$) returns its integer part (if any).
+}
+\label{alg:evolve}
+\end{Algo}

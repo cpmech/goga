@@ -1,0 +1,91 @@
+\begin{table*} [!t] \centering
+\caption{Constrained single objective problems: Problems 2 and 9}
+\scriptsize  \setlength{\tabcolsep}{0.5em}
+
+\begin{tabular}[c]{ccccc} \toprule
+P & settings & settings/info & objective & histogram ($N_{samples}=1000$) \\ \hline
+
+2
+&
+{$\!\begin{aligned}
+    N_{sol}        &= 130 \\
+	N_{cpu}        &= 4 \\
+	t_{max}        &= 500 \\
+	\Delta t_{exc} &= 50
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+	f_{ref} &= {\bf -15.00000} \\
+	C_{DE}   &= 0.8 \\
+	N_{eval} &= 64130 \\
+	T_{sys}  &= 3m17.206s
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+    f_{min} &= {\bf -14.99966} \\
+    f_{ave} &= -14.99907 \\
+    f_{max} &= -14.99795 \\
+    f_{dev} &= {\bf 2.67\cdot 10^{-4}}
+\end{aligned}$}
+&
+\begin{minipage}{4.1cm} \fontsize{5pt}{6pt}
+\begin{verbatim}
+ [-15.05,-15.03) |     0 
+ [-15.03,-15.01) |     0 
+ [-15.01,-14.99) |  1000 ##############
+ [-14.99,-14.97) |     0 
+ [-14.97,-14.95) |     0 
+           count =  1000
+ \end{verbatim}
+\end{minipage} \\
+\multicolumn{5}{c}{{\scriptsize $x_{best}$=[1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 3.000 3.000 3.000 1.000]}} \\
+\multicolumn{5}{c}{{\scriptsize $x_{ref.}$=[1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 1.000 3.000 3.000 3.000 1.000]}} \\
+
+
+\hline
+
+
+9
+&
+{$\!\begin{aligned}
+    N_{sol}        &= 50 \\
+	N_{cpu}        &= 1 \\
+	t_{max}        &= 7000 \\
+	\Delta t_{exc} &= 1
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+	f_{ref}  &= {\bf 0.0539498} \\
+	C_{DE}   &= 0.8 \\
+	N_{eval} &= 350050 \\
+	T_{sys}  &= 42m13.971s
+\end{aligned}$}
+&
+{$\!\begin{aligned}
+    f_{min}  &= {\bf 0.0538666} \\
+    f_{ave}  &= 0.0854687 \\
+    f_{max}  &= 1.0000000 \\
+    f_{dev}  &= {\bf 0.1273616}
+\end{aligned}$}
+&
+\begin{minipage}{4.1cm} \fontsize{5pt}{6pt}
+\begin{verbatim}
+ [0.00,0.15) |  931 ###################
+ [0.15,0.30) |    0 
+ [0.30,0.45) |   58 ##
+ [0.45,0.60) |    0 
+ [0.60,0.75) |    0 
+ [0.75,0.90) |    0 
+ [0.90,1.05) |   10 #
+       count =  999
+ \end{verbatim}
+\end{minipage} \\
+\multicolumn{5}{c}{{\scriptsize $X_{best}$=[-1.71713 1.59583 1.82729 -0.76381 -0.76381]}} \\
+\multicolumn{5}{c}{{\scriptsize $X_{ref.}$=[-1.71714 1.59571 1.82725 -0.76364 -0.76365]}} \\
+
+
+
+\bottomrule
+\end{tabular}
+\label{tab:prob2and9}
+\end{table*}

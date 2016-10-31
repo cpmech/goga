@@ -1,0 +1,224 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{eqs-two-obj}[2015/01/06 Two-objective problems - Dorival Pedroso]
+
+\newcommand{\TWOOBJSIZE}{small}
+
+% ZDT1, Deb 2001, p356 ==============================================================================
+
+\newcommand{\ZDTone}{
+\begin{\TWOOBJSIZE}
+\begin{align}
+f_{0} &= x_{0}                                                       \ACR
+c_0   &= 1 + \frac{9}{N_x-1} \, \textstyle{\sum_{i=1}^{N_x-1} x_{i}} \ACR
+c_1   &= 1 - \sqrt{f_{0}/c_0}                                        \ACR
+f_{1} &= c_0  \,  c_1
+\end{align}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDToneX}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+0 \leq x_i \leq 1 \quad (i \in [0,N_x-1])
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDToneFront}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+f_1^{ana}(f_0) = 1 - \sqrt{f_0}
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDToneArcLen}{
+L_{ref} = \sqrt{5}/2 + \log{(\sqrt{5}+2)}/4 \approx 1.478943
+}
+
+% ZDT2, Deb 2001, p356 ==============================================================================
+
+\newcommand{\ZDTtwo}{
+\begin{\TWOOBJSIZE}
+\begin{align}
+f_{0} &= x_{0}                                                      \ACR
+c_0   &= 1 + \frac{9}{N_x-1} \,\textstyle{\sum_{i=1}^{N_x-1} x_{i}} \ACR
+c_1   &= 1 - (f_{0}/c_0)^2                                          \ACR
+f_{1} &= c_0  \,  c_1
+\end{align}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTtwoX}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+0 \leq x_i \leq 1 \quad (i \in [0,N_x-1])
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTtwoFront}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+f_1^{ana}(f_0) = 1 - f_0^2
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTtwoArcLen}{
+L_{ref} = \sqrt{5}/2 + \log{(\sqrt{5}+2)}/4 \approx 1.478943
+}
+
+% ZDT3, Deb 2001, p356 ==============================================================================
+
+\newcommand{\ZDTthree}{
+\begin{\TWOOBJSIZE}
+\begin{align}
+f_{0} &= x_{0}                                                       \ACR
+c_0   &= 1 + \frac{9}{N_x-1} \, \textstyle{\sum_{i=1}^{N_x-1} x_{i}} \ACR
+c_1   &= 1 - \sqrt{f_{0}/c_0} - \sin{(10\,\pi\,f_{0})} \, f_{0}/c_0  \ACR
+f_{1} &= c_0  \,  c_1
+\end{align}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTthreeX}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+0 \leq x_i \leq 1 \quad (i \in [0,N_x-1])
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTthreeFront}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+f_1^{ana}(f_0) = 1 - \sqrt{f_0} - \sin{(10\,\pi\,f_0)} \, f_0
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTthreeFrontRanges}{
+\begin{\TWOOBJSIZE}
+\begin{align}
+f_0^a \in [0.000000100000000, 0.083001534925223] \ACR
+f_0^b \in [0.182228728029413, 0.257762363387862] \ACR
+f_0^c \in [0.409313674808657, 0.453882104088830] \ACR
+f_0^d \in [0.618396794416602, 0.652511703804663] \ACR
+f_0^e \in [0.823331798326633, 0.851832865436414]
+\label{eqn:ZDT3:ranges}
+\end{align}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTthreeArcLen}{
+L_{ref} \approx 1.811
+}
+
+% ZDT4, Deb 2001, p358 ==============================================================================
+
+\newcommand{\ZDTfour}{
+\begin{\TWOOBJSIZE}
+\begin{align}
+f_{0} &= x_{0}                                                                                       \ACR
+c_0   &= 1 + 10 \,(N_x-1) + \sum_{i=1}^{N_x-1} \left[x_{i}^2 - 10 \, \cos{(4\,\pi \, x_{i})} \right] \ACR
+c_1   &= 1 - \sqrt{f_{0}/c_0}                                                                        \ACR
+f_{1} &= c_0  \,  c_1
+\end{align}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTfourX}{
+\begin{\TWOOBJSIZE}
+\begin{align}
+ 0 \leq x_0 \leq 1 & \ACR
+-5 \leq x_i \leq 5 & \qquad (i \in [1,N_x-1])
+\end{align}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTfourFront}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+f_1^{ana}(f_0) = 1 - \sqrt{f_0}
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTfourArcLen}{
+L_{ref} = \sqrt{5}/2 + \log{(\sqrt{5}+2)}/4 \approx 1.478943
+}
+
+% ZDT6, Deb 2001, p360 ==============================================================================
+
+\newcommand{\ZDTsix}{
+\begin{\TWOOBJSIZE}
+\begin{align}
+f_{0} &= 1 - \exp{(-4 \, x_{0})} \, \left[\sin{(6\,\pi \, x_{0})}\right]^6      \ACR
+c_0   &= 1 + 9 \, \left(\frac{1}{N_x-1}\,\sum_{i=1}^{N_x-1} x_{i}\right)^{0.25} \ACR
+c_1   &= 1 - (f_{0}/c_0)^2                                                      \ACR
+f_{1} &= c_0  \,  c_1
+\label{eqn:ZDTsix}
+\end{align}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTsixX}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+0 \leq x_i \leq 1 \quad (i \in [0,N_x-1])
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTsixFront}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+f_1^{ana}(f_0) = 1 - f_0^2
+\label{eqn:ZDTsix:front}
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTsixXstar}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+x_0^{\star} = \frac{\atan(9\,\pi)}{6\,\pi}
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\ZDTsixArcLen}{
+L_{ref} \approx 1.184
+}
+
+% FON (Fonseca and Fleming 1995), Deb 2001, p339 ====================================================
+
+\newcommand{\FON}{
+\begin{\TWOOBJSIZE}
+\begin{align}
+f_{0} &= 1 - \exp{\left[- \sum_{i=0}^{N_x-1} \left(x_{i}-\frac{1}{N_x}\right)^2 \right]} \ACR
+f_{1} &= 1 - \exp{\left[- \sum_{i=0}^{N_x-1} \left(x_{i}+\frac{1}{N_x}\right)^2 \right]}
+\end{align}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\FONx}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+0 \leq x_i \leq 1 \qquad (i \in [0,N_x-1])
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\FONfront}{
+\begin{\TWOOBJSIZE}
+\begin{equation}
+f_1^{ana}(f_0) = 1 - \exp{\left\{ -\left[2-\sqrt{-\log{(1-f_0)}}\right]^2 \right\}}
+\end{equation}
+\end{\TWOOBJSIZE}
+}
+
+\newcommand{\FONarcLen}{
+L_{ref} \approx 1.458
+}
