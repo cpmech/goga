@@ -49,6 +49,7 @@ type PlotParams struct {
 	NoG          bool      // without g(x)
 	NoH          bool      // without h(x)
 	WithAux      bool      // plot Solution.Aux (with the same colors as g(x))
+	OnlyAux      bool      // plot only Solution.Aux
 }
 
 // NewPlotParams allocates and sets default PlotParams
@@ -206,7 +207,7 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 	}
 
 	// plot f
-	if !pp.NoF {
+	if !pp.NoF && !pp.OnlyAux {
 		txt := "cbar=0"
 		if pp.Cbar {
 			txt = ""
@@ -219,14 +220,14 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 	}
 
 	// plot g
-	if !pp.NoG {
+	if !pp.NoG && !pp.OnlyAux {
 		for _, g := range Zg {
 			plt.ContourSimple(X, Y, g, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", pp.FmtG.C, pp.FmtG.Lw))
 		}
 	}
 
 	// plot h
-	if !pp.NoH {
+	if !pp.NoH && !pp.OnlyAux {
 		for i, h := range Zh {
 			if i == pp.IdxH || pp.IdxH < 0 {
 				plt.ContourSimple(X, Y, h, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", pp.FmtH.C, pp.FmtH.Lw))
@@ -236,7 +237,19 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 
 	// plot aux
 	if pp.WithAux {
-		plt.ContourSimple(X, Y, Za, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", pp.FmtA.C, pp.FmtA.Lw))
+		if pp.OnlyAux {
+			txt := "cbar=0"
+			if pp.Cbar {
+				txt = ""
+			}
+			if pp.Simple {
+				plt.ContourSimple(X, Y, Za, true, 7, io.Sf("colors=['%s'], fsz=7, %s", pp.FmtF.C, txt))
+			} else {
+				plt.Contour(X, Y, Za, io.Sf("fsz=7, markZero='red', cmapidx=%d, %s", pp.CmapIdx, txt))
+			}
+		} else {
+			plt.ContourSimple(X, Y, Za, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", pp.FmtA.C, pp.FmtA.Lw))
+		}
 	}
 }
 
