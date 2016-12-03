@@ -50,6 +50,7 @@ type PlotParams struct {
 	NoH          bool      // without h(x)
 	WithAux      bool      // plot Solution.Aux (with the same colors as g(x))
 	OnlyAux      bool      // plot only Solution.Aux
+	Limits       bool      // plot limits of variables in contour
 }
 
 // NewPlotParams allocates and sets default PlotParams
@@ -250,6 +251,15 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 		} else {
 			plt.ContourSimple(X, Y, Za, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", pp.FmtA.C, pp.FmtA.Lw))
 		}
+	}
+
+	// limits
+	if pp.Limits {
+		plt.Plot(
+			[]float64{o.FltMin[iFlt], o.FltMax[iFlt], o.FltMax[iFlt], o.FltMin[iFlt], o.FltMin[iFlt]},
+			[]float64{o.FltMin[jFlt], o.FltMin[jFlt], o.FltMax[jFlt], o.FltMax[jFlt], o.FltMin[jFlt]},
+			"'y--', color='yellow', zorder=10",
+		)
 	}
 }
 
