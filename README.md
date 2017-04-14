@@ -38,11 +38,9 @@ An allocated structure is called here an **object** and functions attached to th
 like `self` or `this`).
 
 Some objects need to be initialised before usage. In this case, functions named `Init` have to be
-called (e.g. like `constructors`). Some structures require an explicit call to a function to release
-allocated memory. This function is named `Free`. Functions that allocate a pointer to a structure
-are prefixed with `New`; for instance: `NewIsoSurf`.
+called (e.g. like `constructors`).
 
-Goga has several functions and _structures_. Check the **[developer's
+Goga has several functions and _structures_. Checkout the **[developer's
 documentation](http://rawgit.com/cpmech/goga/master/doc/index.html)** to see what's available and
 how to call functions and methods.
 
