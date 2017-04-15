@@ -27,6 +27,7 @@ type TexReport struct {
 	TextSize   string // formatting string for size of text
 	NrowPerTab int    // number of rows per table. -1 means all rows
 	UseGeom    bool   // use TeX geometry package
+	Landscape  bool   // landscape paper
 	RunPDF     bool   // generate PDF
 
 	// options for histogram
@@ -98,6 +99,7 @@ func NewTexReport(opts []*Optimiser) (o *TexReport) {
 	o.TextSize = `\scriptsize  \setlength{\tabcolsep}{0.5em}`
 	o.NrowPerTab = 10
 	o.UseGeom = true
+	o.Landscape = false
 	o.RunPDF = true
 
 	// options for histogram
@@ -294,7 +296,11 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 	// generate PDF
 	if o.RunPDF {
 		pdf := new(bytes.Buffer)
-		io.Ff(pdf, "\\documentclass[a4paper,landscape]{article}\n")
+		if o.Landscape {
+			io.Ff(pdf, "\\documentclass[a4paper,landscape]{article}\n")
+		} else {
+			io.Ff(pdf, "\\documentclass[a4paper]{article}\n")
+		}
 		io.Ff(pdf, "\\usepackage{amsmath}\n")
 		io.Ff(pdf, "\\usepackage{amssymb}\n")
 		io.Ff(pdf, "\\usepackage{booktabs}\n")
@@ -560,18 +566,18 @@ func (o *TexReport) addRow(opt *Optimiser, inpDatTable, xvalsTable bool) {
 	if o.ShowX01 && !o.ShowAllX {
 		if o.ShowXref {
 			x0, x1, x0ref, x1ref := "N/A", "N/A", "N/A", "N/A"
-			if len(opt.BestOfBestFlt) > 1 {
+			if len(opt.BestOfBestFlt) == opt.Nflt {
 				x0 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[0])
 				x1 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
 			}
-			if len(opt.RptXref) > 1 {
+			if len(opt.RptXref) == opt.Nflt {
 				x0ref = io.Sf(opt.RptFmtX, opt.RptXref[0])
 				x1ref = io.Sf(opt.RptFmtX, opt.RptXref[1])
 			}
 			tex += io.Sf(` & %s & (%s) & %s & (%s)`, x0, x0ref, x1, x1ref)
 		} else {
 			x0, x1 := "N/A", "N/A"
-			if len(opt.BestOfBestFlt) > 1 {
+			if len(opt.BestOfBestFlt) == opt.Nflt {
 				x0 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[0])
 				x1 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
 			}
@@ -583,8 +589,23 @@ func (o *TexReport) addRow(opt *Optimiser, inpDatTable, xvalsTable bool) {
 			if i >= opt.Nflt {
 				tex += " & "
 			} else {
-				str := io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
+				str := io.Sf(opt.RptFmtX, opt.BestOfBestFlt[i])
 				tex += io.Sf(` & %s`, str)
+			}
+		}
+		if xvalsTable {
+			tex += " \\\\\n ref"
+			for i := 0; i < o.nfltMax; i++ {
+				if i >= opt.Nflt {
+					tex += " & "
+				} else {
+					if len(opt.RptXref) == opt.Nflt {
+						str := io.Sf(opt.RptFmtX, opt.RptXref[i])
+						tex += io.Sf(` & %s`, str)
+					} else {
+						tex += " & N/A"
+					}
+				}
 			}
 		}
 	}
