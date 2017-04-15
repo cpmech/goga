@@ -29,7 +29,7 @@ func Test_flt01(tst *testing.T) {
 
 	// initialise optimiser
 	yfcn := func(x float64) float64 { return math.Pow(math.Sin(5.0*math.Pi*x), 6.0) }
-	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, cpu int) {
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, y []int, cpu int) {
 		f[0] = -yfcn(x[0])
 	}, nf, ng, nh)
 
@@ -63,7 +63,7 @@ func Test_flt02(tst *testing.T) {
 	nf, ng, nh := 1, 5, 0
 
 	// initialise optimiser
-	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, cpu int) {
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, y []int, cpu int) {
 		f[0] = x[0]*x[0]/2.0 + x[1]*x[1] - x[0]*x[1] - 2.0*x[0] - 6.0*x[1]
 		g[0] = 2.0 - x[0] - x[1]     // ≥ 0
 		g[1] = 2.0 + x[0] - 2.0*x[1] // ≥ 0
@@ -112,7 +112,7 @@ func Test_flt03(tst *testing.T) {
 	nf, ng, nh := 1, 0, 1
 
 	// initialise optimiser
-	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, cpu int) {
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, y []int, cpu int) {
 		res := 0.0
 		for i := 0; i < len(x); i++ {
 			res += (x[i] - xc[i]) * (x[i] - xc[i])
@@ -162,7 +162,7 @@ func Test_flt04(tst *testing.T) {
 
 	// initialise optimiser
 	TSQ2 := 2.0 * math.Sqrt2
-	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, ξ []int, cpu int) {
+	opt.Init(GenTrialSolutions, nil, func(f, g, h, x []float64, y []int, cpu int) {
 		f[0] = 2.0 * ρ * H * x[1] * math.Sqrt(1.0+x[0]*x[0])
 		f[1] = P * H * math.Pow(1.0+x[0]*x[0], 1.5) * math.Sqrt(1.0+math.Pow(x[0], 4.0)) / (TSQ2 * E * x[0] * x[0] * x[1])
 		g[0] = σ0 - P*(1.0+x[0])*math.Sqrt(1.0+x[0]*x[0])/(TSQ2*x[0]*x[1])

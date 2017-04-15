@@ -16,7 +16,7 @@ type Generator_t func(sols []*Solution, prms *Parameters)
 type ObjFunc_t func(sol *Solution, cpu int)
 
 // MinProb_t defines objective functon for specialised minimisation problem
-type MinProb_t func(f, g, h, x []float64, ξ []int, cpu int)
+type MinProb_t func(f, g, h, x []float64, y []int, cpu int)
 
 // CxInt_t defines crossover function for ints
 type CxInt_t func(a, b, A, B []int, prms *Parameters)

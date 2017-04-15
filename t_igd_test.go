@@ -44,7 +44,7 @@ func Test_igd01(tst *testing.T) {
 	}
 
 	// objective function (copy fStar from Flt into Ova)
-	obj := func(f, g, h, x []float64, ξ []int, cpu int) {
+	obj := func(f, g, h, x []float64, y []int, cpu int) {
 		f[0], f[1] = x[0], x[1]
 	}
 
@@ -108,7 +108,7 @@ func Test_igd02(tst *testing.T) {
 	}
 
 	// objective function (copy fStar from Flt into Ova)
-	obj := func(f, g, h, x []float64, ξ []int, cpu int) {
+	obj := func(f, g, h, x []float64, y []int, cpu int) {
 		f[0], f[1] = x[0], x[1]
 	}
 
