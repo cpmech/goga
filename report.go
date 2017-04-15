@@ -29,13 +29,15 @@ type TexReport struct {
 	UseGeom    bool   // use TeX geometry package
 	Landscape  bool   // landscape paper
 	RunPDF     bool   // generate PDF
+	DescHeader string // description header
 
 	// options for histogram
 	MiniPageSz   string // string for minipage size
 	HistTextSize string // formatting string for histogram size
 
-	// data for preparing the title of table
-	ShowNsamples bool // show Nsamples
+	// title and description
+	ShowNsamples    bool // show Nsamples
+	ShowDescription bool // show description
 
 	// input data columns
 	ShowNsol  bool // show Nsol
@@ -101,6 +103,7 @@ func NewTexReport(opts []*Optimiser) (o *TexReport) {
 	o.UseGeom = true
 	o.Landscape = false
 	o.RunPDF = true
+	o.DescHeader = "desc"
 
 	// options for histogram
 	o.MiniPageSz = "4.1cm"
@@ -163,6 +166,7 @@ func (o *TexReport) SetColumnsXvalues() {
 func (o *TexReport) SetColumnsSingleObj(showX01, showAllX bool) {
 	o.SetColumnsAll(false)
 	o.ShowNsamples = true
+	o.ShowDescription = true
 	o.ShowSysTimeAve = true
 	o.ShowFref = true
 	o.ShowFmin = true
@@ -178,6 +182,7 @@ func (o *TexReport) SetColumnsSingleObj(showX01, showAllX bool) {
 func (o *TexReport) SetColumnsMultiObj(usingIGD bool) {
 	o.SetColumnsAll(false)
 	o.ShowNsamples = true
+	o.ShowDescription = true
 	o.ShowSysTimeAve = true
 	if usingIGD {
 		o.ShowIGDmin = true
@@ -201,6 +206,7 @@ func (o *TexReport) SetColumnsAll(flag bool) {
 
 	// data for preparing the title of table
 	o.ShowNsamples = flag
+	o.ShowDescription = flag
 
 	// input data columns
 	o.ShowNsol = flag
@@ -471,6 +477,12 @@ func (o *TexReport) addHeader(titleExtra string) {
 		tex2 += io.Sf(` & ${IGD}_{dev}$`)
 	}
 
+	// description
+	if o.ShowDescription {
+		txtc += "c"
+		tex2 += io.Sf(` & %s`, o.DescHeader)
+	}
+
 	// new line
 	tex2 += ` \\ \hline` + "\n"
 
@@ -646,6 +658,11 @@ func (o *TexReport) addRow(opt *Optimiser, inpDatTable, xvalsTable bool) {
 	}
 	if o.ShowIGDdev {
 		tex += io.Sf(` & %s`, tx(opt.RptFmtE, IGDdev))
+	}
+
+	// description
+	if o.ShowDescription {
+		tex += io.Sf(` & %s`, opt.RptDesc)
 	}
 
 	// new line

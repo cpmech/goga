@@ -35,6 +35,7 @@ type Stat struct {
 	RptFmtLdev      string    // format for ldev
 	RptFmtX         string    // format for x values
 	RptWordF        string    // word to use for 'f'; e.g. '\beta'
+	RptDesc         string    // description text
 	HistFmt         string    // format in histogram
 	HistDelFmin     float64   // Δf for minimum f value in histogram
 	HistDelFmax     float64   // Δf for minimum f value in histogram
