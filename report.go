@@ -10,6 +10,7 @@ import (
 
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/utl"
 )
 
 // TexReport produces TeX table report
@@ -72,9 +73,9 @@ type TexReport struct {
 	ShowIGDdev bool // show IGDdev
 
 	// derived
-	nsamples  int           // number of samples from first opt problem
-	nflt      int           // number of floats from first opt problem
-	nint      int           // number of integers from first opt problem
+	nsamples  int           // number of samples
+	nfltMax   int           // max number of floats from all opt problems
+	nintMax   int           // max number of integers from fall opt problems
 	singleObj bool          // is single obj problem
 	symbF     string        // symbol for F function
 	buf       *bytes.Buffer // buffer with text to be written
@@ -110,8 +111,12 @@ func NewTexReport(opts []*Optimiser) (o *TexReport) {
 
 	// derived
 	o.nsamples = o.Opts[0].Nsamples
-	o.nflt = o.Opts[0].Nflt
-	o.nint = o.Opts[0].Nint
+	o.nfltMax = o.Opts[0].Nflt
+	o.nintMax = o.Opts[0].Nint
+	for _, opt := range o.Opts {
+		o.nfltMax = utl.Imax(o.nfltMax, opt.Nflt)
+		o.nintMax = utl.Imax(o.nintMax, opt.Nint)
+	}
 	o.singleObj = o.Opts[0].Nova == 1
 	o.buf = new(bytes.Buffer)
 
@@ -260,7 +265,7 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 				io.Ff(o.buf, "\n")
 			}
 		}
-		o.addRow(opt)
+		o.addRow(opt, false, false)
 	}
 	o.addFooter(fnkey, idxtab)
 
@@ -269,7 +274,7 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 	o.SetColumnsInputData()
 	o.addHeader(". Input data")
 	for _, opt := range o.Opts {
-		o.addRow(opt)
+		o.addRow(opt, true, false)
 	}
 	o.addFooter(fnkey+"-inp", 0)
 
@@ -278,7 +283,7 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 	o.SetColumnsXvalues()
 	o.addHeader(". X values")
 	for _, opt := range o.Opts {
-		o.addRow(opt)
+		o.addRow(opt, false, true)
 	}
 	o.addFooter(fnkey+"-xvals", 0)
 
@@ -404,7 +409,7 @@ func (o *TexReport) addHeader(titleExtra string) {
 		}
 	}
 	if o.ShowAllX {
-		for i := 0; i < o.nflt; i++ {
+		for i := 0; i < o.nfltMax; i++ {
 			txtc += "c"
 			tex2 += io.Sf(` & $x_{%d}$`, i)
 		}
@@ -471,29 +476,33 @@ func (o *TexReport) addHeader(titleExtra string) {
 }
 
 // addRow adds row to table
-func (o *TexReport) addRow(opt *Optimiser) {
+func (o *TexReport) addRow(opt *Optimiser, inpDatTable, xvalsTable bool) {
 
-	// compute F stat values
+	// results
 	var Fmin, Fave, Fmax, Fdev float64
-	if o.ShowFmin || o.ShowFave || o.ShowFmax || o.ShowFdev {
-		Fmin, Fave, Fmax, Fdev, _ = StatF(opt, 0, false)
-	}
-
-	// compute E and L stat values
 	var Emin, Eave, Emax, Edev float64
 	var Lmin, Lave, Lmax, Ldev float64
-	if o.ShowLmin || o.ShowLave || o.ShowLmax || o.ShowLdev {
-		Emin, Eave, Emax, Edev, _, Lmin, Lave, Lmax, Ldev, _ = StatF1F0(opt, false)
-	} else {
-		if o.ShowEmin || o.ShowEave || o.ShowEmax || o.ShowEdev {
-			Emin, Eave, Emax, Edev, _ = StatMultiE(opt, false)
-		}
-	}
-
-	// compute IGD stat values
 	var IGDmin, IGDave, IGDmax, IGDdev float64
-	if o.ShowIGDmin || o.ShowIGDave || o.ShowIGDmax || o.ShowIGDdev {
-		IGDmin, IGDave, IGDmax, IGDdev, _ = StatMultiIGD(opt, false)
+	if !inpDatTable && !xvalsTable {
+
+		// compute F stat values
+		if o.ShowFmin || o.ShowFave || o.ShowFmax || o.ShowFdev {
+			Fmin, Fave, Fmax, Fdev, _ = StatF(opt, 0, false)
+		}
+
+		// compute E and L stat values
+		if o.ShowLmin || o.ShowLave || o.ShowLmax || o.ShowLdev {
+			Emin, Eave, Emax, Edev, _, Lmin, Lave, Lmax, Ldev, _ = StatF1F0(opt, false)
+		} else {
+			if o.ShowEmin || o.ShowEave || o.ShowEmax || o.ShowEdev {
+				Emin, Eave, Emax, Edev, _ = StatMultiE(opt, false)
+			}
+		}
+
+		// compute IGD stat values
+		if o.ShowIGDmin || o.ShowIGDave || o.ShowIGDmax || o.ShowIGDdev {
+			IGDmin, IGDave, IGDmax, IGDdev, _ = StatMultiIGD(opt, false)
+		}
 	}
 
 	// fix formatting strings
@@ -570,9 +579,13 @@ func (o *TexReport) addRow(opt *Optimiser) {
 		}
 	}
 	if o.ShowAllX {
-		for i := 0; i < o.nflt; i++ {
-			str := io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
-			tex += io.Sf(` & %s`, str)
+		for i := 0; i < o.nfltMax; i++ {
+			if i >= opt.Nflt {
+				tex += " & "
+			} else {
+				str := io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
+				tex += io.Sf(` & %s`, str)
+			}
 		}
 	}
 
@@ -614,8 +627,11 @@ func (o *TexReport) addRow(opt *Optimiser) {
 		tex += io.Sf(` & %s`, tx(opt.RptFmtE, IGDdev))
 	}
 
+	// new line
+	tex += " \\\\\n"
+
 	// write to buffer
-	io.Ff(o.buf, `%s \\`, tex)
+	io.Ff(o.buf, "%s", tex)
 }
 
 // addFooter add table footer
