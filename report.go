@@ -33,12 +33,29 @@ type TexReport struct {
 	NRowPerTab   int    // number of rows per table. -1 means all rows
 	UseGeom      bool   // use TeX geometry package
 	RunPDF       bool   // generate PDF
-	ShowNsol     bool   // show Nsol
-	ShowNcpu     bool   // show Ncpu
-	ShowTmax     bool   // show Tf
-	ShowDtExc    bool   // show Dtexc
-	ShowDEC      bool   // show DE coefficient
-	ShowX01      bool   // show x[0] and x[1] in table
+
+	// input data columns
+	ShowNsol  bool // show Nsol
+	ShowNcpu  bool // show Ncpu
+	ShowTmax  bool // show Tmax
+	ShowDtExc bool // show Dtexc
+	ShowDEC   bool // show DE coefficient
+
+	// stat columns
+	ShowNfeval     bool // show Nfeval
+	ShowSysTimeAve bool // show SysTimeAve
+	ShowSysTimeTot bool // show SysTimeTot
+
+	// results columns
+	ShowFref     bool // show Fref
+	ShowFmin     bool // show Fmin
+	ShowFave     bool // show Fave
+	ShowFmax     bool // show Fmax
+	ShowFdev     bool // show Fdev
+	ShowNsamples bool // show Nsamples
+	ShowX01      bool // show x[0] and x[1] in table
+	ShowAllX     bool // show all x values in table
+	ShowXref     bool // show X references as well as X values
 
 	// constants
 	DroundCte time.Duration // constant for dround(duration) function
@@ -47,8 +64,10 @@ type TexReport struct {
 	Opts []*Optimiser // all optimisers
 
 	// derived
-	nsamples  int
-	symbF     string
+	nsamples  int    // number of samples from first opt problem
+	nflt      int    // number of floats from first opt problem
+	nint      int    // number of integers from first opt problem
+	symbF     string // symbol for F function
 	col4      string
 	col5      string
 	buf       *bytes.Buffer
@@ -57,7 +76,7 @@ type TexReport struct {
 	singleObj bool
 }
 
-// SetDefault sets default options for report
+// NewTexReport allocates new TexReport object
 func NewTexReport(opts []*Optimiser) (o *TexReport) {
 
 	// new struct
@@ -75,12 +94,9 @@ func NewTexReport(opts []*Optimiser) (o *TexReport) {
 	o.NRowPerTab = -1
 	o.UseGeom = true
 	o.RunPDF = true
-	o.ShowNsol = false
-	o.ShowNcpu = false
-	o.ShowTmax = false
-	o.ShowDtExc = false
-	o.ShowDEC = false
-	o.ShowX01 = true
+
+	// set default columns
+	o.SetDefaultColumns()
 
 	// constants
 	o.DroundCte = 0.001e9 // 0.0001e9
@@ -103,6 +119,8 @@ func NewTexReport(opts []*Optimiser) (o *TexReport) {
 
 	// number of samples
 	o.nsamples = o.Opts[0].Nsamples
+	o.nflt = o.Opts[0].Nflt
+	o.nint = o.Opts[0].Nint
 
 	// symbol for f
 	o.symbF = o.Opts[0].RptWordF
@@ -113,6 +131,50 @@ func NewTexReport(opts []*Optimiser) (o *TexReport) {
 	// flag
 	o.singleObj = o.Opts[0].Nova == 1
 	return
+}
+
+func (o *TexReport) SetDefaultColumns() {
+	o.ShowNfeval = false
+	o.ShowNsol = false
+	o.ShowNcpu = false
+	o.ShowTmax = false
+	o.ShowDtExc = false
+	o.ShowDEC = false
+
+	o.ShowNsamples = true
+	o.ShowX01 = false
+}
+
+func (o *TexReport) SetAllColumns(withXvalues bool) {
+	o.ShowNfeval = true
+	o.ShowNsol = true
+	o.ShowNcpu = true
+	o.ShowTmax = true
+	o.ShowDtExc = true
+	o.ShowDEC = true
+
+	o.ShowNsamples = true
+	o.ShowSysTimeAve = true
+	o.ShowSysTimeTot = true
+
+	o.ShowFref = true
+	o.ShowFmin = true
+	o.ShowFave = true
+	o.ShowFmax = true
+	o.ShowFdev = true
+	o.ShowNsamples = true
+
+	o.ShowX01 = true
+	o.ShowAllX = false
+	o.ShowXref = true
+}
+
+func (o *TexReport) SetInputDataColumns() {
+	o.ShowNsol = true
+	o.ShowNcpu = true
+	o.ShowTmax = true
+	o.ShowDtExc = true
+	o.ShowDEC = true
 }
 
 // input data table //////////////////////////////////////////////////////////////////////////
@@ -131,7 +193,7 @@ P & $N_{sol}$ & $N_{cpu}$ & $t_{max}$ & $\Delta t_{exc}$ & $C_{DE}$ \\ \hline
 
 // inputRow adds row to input data table
 func (o *TexReport) inputRow(opt *Optimiser) {
-	io.Ff(o.binp, "%s & %d & %d & %d & %d & %g \\\\ \n", opt.RptName, opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc, opt.DEC)
+	io.Ff(o.binp, "%s & %d & %d & %d & %d & %g \\\\ \n", opt.RptName, opt.Nsol, opt.Ncpu, opt.Tmax, opt.DtExc, opt.DEC)
 }
 
 // inputFooter adds foote to input data table
@@ -189,56 +251,107 @@ func (o *TexReport) xResFooter() {
 
 // compact and normal tables /////////////////////////////////////////////////////////////////
 
-// compactTableHeader adds table header for compact table
-func (o *TexReport) compactTableHeader(contd string) {
-	txtCols := "cccccccc"
-	txtNsol := ""
-	if o.ShowNsol {
-		txtCols += "c"
-		txtNsol = "& $N_{sol}$"
-	}
-	txtNcpu := ""
-	if o.ShowNcpu {
-		txtCols += "c"
-		txtNcpu = "& $N_{cpu}$"
-	}
-	txtTmax := ""
-	if o.ShowTmax {
-		txtCols += "c"
-		txtTmax = "& $t_{max}$"
-	}
-	txtDtExc := ""
-	if o.ShowDtExc {
-		txtCols += "c"
-		txtDtExc = "& $\\Delta t_{exc}$"
-	}
-	txtDEC := ""
-	if o.ShowDEC {
-		txtCols += "c"
-		txtDEC = "& $C_{DE}$"
-	}
-	txtX01 := ""
-	if o.ShowX01 {
-		txtCols += "cccc"
-		txtX01 = "& $x_0$ & $x_0^{ref.}$ & $x_1$ & $x_1^{ref.}$"
-	}
-	io.Ff(o.buf, `
-\begin{table*} [!t] \centering
-\caption{%s: results ($N_{samples}=%d$).}
-%s
+// tableHeader adds table header
+func (o *TexReport) tableHeader(strContinued string) {
 
-\begin{tabular}[c]{%s} \toprule
-P
-%s  %s  %s  %s
-%s & $N_{eval}$ & $T_{sys}$ & $%s_{ref}$ &
-$%s_{min}$ & $%s_{ave}$ & $%s_{max}$ & $%s_{dev}$ 
-%s
-\\ \hline
-`, o.Title+contd, o.nsamples, o.TextSize, txtCols,
-		txtNsol, txtNcpu, txtTmax, txtDtExc,
-		txtDEC,
-		o.symbF, o.symbF, o.symbF, o.symbF, o.symbF,
-		txtX01)
+	// begin TeX table
+	tex1 := `\begin{table*} [!t] \centering` + "\n"
+
+	// title
+	if o.ShowNsamples {
+		tex1 += io.Sf(`\caption{%s ($N_{samples}=%d$).}`, o.Title, o.nsamples) + "\n"
+	} else {
+		tex1 += io.Sf(`\caption{%s.}`, o.Title) + "\n"
+	}
+
+	// text size formatting
+	tex1 += o.TextSize + "\n"
+
+	// column descriptors
+	txtc := "c" // first column: "P"
+
+	// input data columns
+	tex2 := "P" // problem id
+	if o.ShowNsol {
+		txtc += "c"
+		tex2 += io.Sf(` & $N_{sol}$`)
+	}
+	if o.ShowNcpu {
+		txtc += "c"
+		tex2 += io.Sf(` & $N_{cpu}$`)
+	}
+	if o.ShowTmax {
+		txtc += "c"
+		tex2 += io.Sf(` & $t_{max}$`)
+	}
+	if o.ShowDtExc {
+		txtc += "c"
+		tex2 += io.Sf(` & ${\Delta t_{exc}}$`)
+	}
+	if o.ShowDEC {
+		txtc += "c"
+		tex2 += io.Sf(` & $C_{DE}$`)
+	}
+
+	// stat columns
+	if o.ShowNfeval {
+		txtc += "c"
+		tex2 += io.Sf(` & $N_{eval}$`)
+	}
+	if o.ShowSysTimeAve {
+		txtc += "c"
+		tex2 += io.Sf(` & $T_{sys}^{ave}$`)
+	}
+	if o.ShowSysTimeAve {
+		txtc += "c"
+		tex2 += io.Sf(` & $T_{sys}^{tot}$`)
+	}
+
+	// results columns
+	if o.ShowFref {
+		txtc += "c"
+		tex2 += io.Sf(` & $%s_{ref}$`, o.symbF)
+	}
+	if o.ShowFmin {
+		txtc += "c"
+		tex2 += io.Sf(` & $%s_{min}$`, o.symbF)
+	}
+	if o.ShowFave {
+		txtc += "c"
+		tex2 += io.Sf(` & $%s_{ave}$`, o.symbF)
+	}
+	if o.ShowFmax {
+		txtc += "c"
+		tex2 += io.Sf(` & $%s_{max}$`, o.symbF)
+	}
+	if o.ShowFdev {
+		txtc += "c"
+		tex2 += io.Sf(` & $%s_{dev}$`, o.symbF)
+	}
+	if o.ShowX01 && !o.ShowAllX {
+		if o.ShowXref {
+			txtc += "cccc"
+			tex2 += io.Sf(` & $x_0$ & $x_0^{ref.}$ & $x_1$ & $x_1^{ref.}$`)
+		} else {
+			txtc += "cc"
+			tex2 += io.Sf(` & $x_0$ & $x_1$`)
+		}
+	}
+	if o.ShowAllX {
+		for i := 0; i < o.nflt; i++ {
+			txtc += "c"
+			tex2 += io.Sf(` & $x_{%d}$`, i)
+		}
+	}
+
+	// new line
+	tex2 += ` \\ \hline` + "\n"
+
+	// begin TeX tabular
+	tex1 += io.Sf(`\begin{tabular}[c]{%s} \toprule`, txtc) + "\n"
+
+	// write to buffer
+	io.Ff(o.buf, "%s%s", tex1, tex2)
 }
 
 // normalTableHeader adds table header for normal table
@@ -294,7 +407,7 @@ func (o *TexReport) Generate() {
 	case 3:
 		addRow = o.multiAddRow
 	case 4:
-		addHeader = o.compactTableHeader
+		addHeader = o.tableHeader
 		addRow = o.oneCompactAddRow
 	}
 
@@ -313,16 +426,16 @@ func (o *TexReport) Generate() {
 
 	// add rows
 	idxtab := 0
-	contd := ""
+	strContinued := ""
 	for i, opt := range o.Opts {
 		if i%nRowPerTab == 0 {
 			if i > 0 {
 				o.tableFooter(idxtab) // end previous table
 				io.Ff(o.buf, "\n\n\n")
-				contd = " (contd.)"
+				strContinued = " (contd.)"
 				idxtab++
 			}
-			addHeader(contd) // begin new table
+			addHeader(strContinued) // begin new table
 		} else {
 			if i > 0 {
 				if o.Type != 4 {
@@ -356,7 +469,7 @@ func (o *TexReport) Generate() {
 		if o.UseGeom {
 			str = `\usepackage[margin=1.5cm,footskip=0.5cm]{geometry}`
 		}
-		io.Ff(header, `\documentclass[a4paper]{article}
+		io.Ff(header, `\documentclass[a4paper,landscape]{article}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -389,53 +502,92 @@ func (o *TexReport) Generate() {
 
 // oneCompactAddRow adds row to compact one-obj table
 func (o *TexReport) oneCompactAddRow(opt *Optimiser) {
+
+	// fix formatting strings
 	opt.fix_formatting_data()
-	FrefTxt := "N/A"
-	if len(opt.RptFref) > 0 {
-		FrefTxt = tx(opt.RptFmtF, opt.RptFref[0])
-	}
+
+	// F values
 	Fmin, Fave, Fmax, Fdev, _ := StatF(opt, 0, false)
-	FminTxt, FaveTxt, FmaxTxt, FdevTxt := tx(opt.RptFmtF, Fmin), tx(opt.RptFmtF, Fave), tx(opt.RptFmtF, Fmax), tx(opt.RptFmtFdev, Fdev)
-	txtNsol := ""
+
+	// input data columns
+	tex := opt.RptName // problem id
 	if o.ShowNsol {
-		txtNsol = io.Sf("& %d", opt.Nsol)
+		tex += io.Sf(` & %d`, opt.Nsol)
 	}
-	txtNcpu := ""
 	if o.ShowNcpu {
-		txtNcpu = io.Sf("& %d", opt.Ncpu)
+		tex += io.Sf(` & %d`, opt.Ncpu)
 	}
-	txtTmax := ""
 	if o.ShowTmax {
-		txtTmax = io.Sf("& %d", opt.Tf)
+		tex += io.Sf(` & %d`, opt.Tmax)
 	}
-	txtDtExc := ""
 	if o.ShowDtExc {
-		txtDtExc = io.Sf("& %d", opt.DtExc)
+		tex += io.Sf(` & %d`, opt.DtExc)
 	}
-	txtDEC := ""
 	if o.ShowDEC {
-		txtDEC = io.Sf("& %g", opt.DEC)
+		tex += io.Sf(` & %g`, opt.DEC)
 	}
-	txtX01 := ""
-	if o.ShowX01 {
-		x0, x1, x0ref, x1ref := "N/A", "N/A", "N/A", "N/A"
-		if len(opt.BestOfBestFlt) > 1 {
-			x0 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[0])
-			x1 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
-		}
-		if len(opt.RptXref) > 1 {
-			x0ref = io.Sf(opt.RptFmtX, opt.RptXref[0])
-			x1ref = io.Sf(opt.RptFmtX, opt.RptXref[1])
-		}
-		txtX01 = io.Sf("& %s & (%s) & %s & (%s)", x0, x0ref, x1, x1ref)
+
+	// stat columns
+	if o.ShowNfeval {
+		tex += io.Sf(` & %d`, opt.Nfeval)
 	}
-	io.Ff(o.buf, `%s  %s %s %s %s   %s   & %d & %v & (%s) &   %s & %s & %s & $%s$   %s \\`,
-		opt.RptName,
-		txtNsol, txtNcpu, txtTmax, txtDtExc,
-		txtDEC,
-		opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte), FrefTxt,
-		FminTxt, FaveTxt, FmaxTxt, FdevTxt,
-		txtX01)
+	if o.ShowSysTimeAve {
+		tex += io.Sf(` & %v`, dround(opt.SysTimeAve, o.DroundCte))
+	}
+	if o.ShowSysTimeTot {
+		tex += io.Sf(` & %v`, dround(opt.SysTimeTot, o.DroundCte))
+	}
+
+	// results columns
+	if o.ShowFref {
+		str := "N/A"
+		if len(opt.RptFref) > 0 {
+			str = tx(opt.RptFmtF, opt.RptFref[0])
+		}
+		tex += io.Sf(` & %s`, str)
+	}
+	if o.ShowFmin {
+		tex += io.Sf(` & %s`, tx(opt.RptFmtF, Fmin))
+	}
+	if o.ShowFave {
+		tex += io.Sf(` & %s`, tx(opt.RptFmtF, Fave))
+	}
+	if o.ShowFmax {
+		tex += io.Sf(` & %s`, tx(opt.RptFmtF, Fmax))
+	}
+	if o.ShowFdev {
+		tex += io.Sf(` & $%s$`, tx(opt.RptFmtFdev, Fdev))
+	}
+	if o.ShowX01 && !o.ShowAllX {
+		if o.ShowXref {
+			x0, x1, x0ref, x1ref := "N/A", "N/A", "N/A", "N/A"
+			if len(opt.BestOfBestFlt) > 1 {
+				x0 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[0])
+				x1 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
+			}
+			if len(opt.RptXref) > 1 {
+				x0ref = io.Sf(opt.RptFmtX, opt.RptXref[0])
+				x1ref = io.Sf(opt.RptFmtX, opt.RptXref[1])
+			}
+			tex += io.Sf(` & %s & (%s) & %s & (%s)`, x0, x0ref, x1, x1ref)
+		} else {
+			x0, x1 := "N/A", "N/A"
+			if len(opt.BestOfBestFlt) > 1 {
+				x0 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[0])
+				x1 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
+			}
+			tex += io.Sf(` & %s & %s`, x0, x1)
+		}
+	}
+	if o.ShowAllX {
+		for i := 0; i < o.nflt; i++ {
+			str := io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
+			tex += io.Sf(` & %s`, str)
+		}
+	}
+
+	// write to buffer
+	io.Ff(o.buf, `%s \\`, tex)
 }
 
 // oneNormalAddRow adds row to normal one-obj table
@@ -478,7 +630,7 @@ func (o *TexReport) oneNormalAddRow(opt *Optimiser) {
 \end{minipage} \\
 `,
 		opt.RptName,
-		opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc,
+		opt.Nsol, opt.Ncpu, opt.Tmax, opt.DtExc,
 		opt.RptWordF, FrefTxt, opt.DEC, opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte),
 		opt.RptWordF, FminTxt, opt.RptWordF, FaveTxt, opt.RptWordF, FmaxTxt, opt.RptWordF, FdevTxt,
 		o.MiniPageSz, o.HistTextSize, hist)
@@ -525,7 +677,7 @@ func (o *TexReport) twoAddRow(opt *Optimiser) {
 \end{aligned}$} \\
 `,
 		opt.RptName,
-		opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc,
+		opt.Nsol, opt.Ncpu, opt.Tmax, opt.DtExc,
 		len(E), opt.DEC, opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte),
 		EminTxt, EaveTxt, EmaxTxt, EdevTxt,
 		LminTxt, LaveTxt, LmaxTxt, LdevTxt)
@@ -569,7 +721,7 @@ func (o *TexReport) multiAddRow(opt *Optimiser) {
 \end{minipage} \\
 `,
 		opt.RptName,
-		opt.Nsol, opt.Ncpu, opt.Tf, opt.DtExc,
+		opt.Nsol, opt.Ncpu, opt.Tmax, opt.DtExc,
 		opt.Nova, opt.DEC, opt.Nfeval, dround(opt.SysTimeAve, o.DroundCte),
 		Ekey, EminTxt, Ekey, EaveTxt, Ekey, EmaxTxt, Ekey, EdevTxt,
 		o.MiniPageSz, o.HistTextSize, hist)
