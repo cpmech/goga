@@ -347,36 +347,46 @@ func StatF1F0(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []f
 	return
 }
 
-// StatMulti prints statistical analysis for multi-objective problems
-//  emin, eave, emax, edev -- errors on f1(f0)
-//  key -- "IGD" if IGD values are available. In this case e{...} are IGD values
-func StatMulti(o *Optimiser, verbose bool) (key string, emin, eave, emax, edev float64, E []float64) {
-	if len(o.Multi_err) < 2 && len(o.Multi_IGD) < 2 {
+// StatMultiE prints statistical error analysis for multi-objective problems
+func StatMultiE(o *Optimiser, verbose bool) (Emin, Eave, Emax, Edev float64, E []float64) {
+	if len(o.Multi_err) < 2 {
 		io.Pfred("there are no samples for statistical analysis\n")
 		return
 	}
 	o.fix_formatting_data()
-	n := len(o.Multi_err)
-	key = "E"
-	if n < 2 {
-		n = len(o.Multi_IGD)
-		key = "IGD"
-	}
-	E = make([]float64, n)
-	if key == "E" {
-		copy(E, o.Multi_err)
-	} else {
-		copy(E, o.Multi_IGD)
-	}
-	emin, eave, emax, edev = rnd.StatBasic(E, true)
+	E = make([]float64, len(o.Multi_err))
+	copy(E, o.Multi_err)
+	Emin, Eave, Emax, Edev = rnd.StatBasic(E, true)
 	if verbose {
 		io.Pf("\nerror on Pareto front (multi)\n")
-		io.Pf("%smin = %g\n", key, emin)
-		io.Pf("%save = %g\n", key, eave)
-		io.Pf("%smax = %g\n", key, emax)
-		io.Pf("%sdev = %g\n", key, edev)
-		io.Pf(rnd.BuildTextHist(nice(emin, o.HistNdig)-o.HistDelEmin, nice(emax, o.HistNdig)+o.HistDelEmax,
+		io.Pf("Emin = %g\n", Emin)
+		io.Pf("Eave = %g\n", Eave)
+		io.Pf("Emax = %g\n", Emax)
+		io.Pf("Edev = %g\n", Edev)
+		io.Pf(rnd.BuildTextHist(nice(Emin, o.HistNdig)-o.HistDelEmin, nice(Emax, o.HistNdig)+o.HistDelEmax,
 			o.HistNsta, E, o.HistFmt, o.HistLen))
+	}
+	return
+}
+
+// StatMultiIGD prints statistical IGD analysis for multi-objective problems
+func StatMultiIGD(o *Optimiser, verbose bool) (IGDmin, IGDave, IGDmax, IGDdev float64, IGD []float64) {
+	if len(o.Multi_IGD) < 2 {
+		io.Pfred("there are no samples for statistical analysis\n")
+		return
+	}
+	o.fix_formatting_data()
+	IGD = make([]float64, len(o.Multi_IGD))
+	copy(IGD, o.Multi_IGD)
+	IGDmin, IGDave, IGDmax, IGDdev = rnd.StatBasic(IGD, true)
+	if verbose {
+		io.Pf("\nerror on Pareto front (multi)\n")
+		io.Pf("IGDmin = %g\n", IGDmin)
+		io.Pf("IGDave = %g\n", IGDave)
+		io.Pf("IGDmax = %g\n", IGDmax)
+		io.Pf("IGDdev = %g\n", IGDdev)
+		io.Pf(rnd.BuildTextHist(nice(IGDmin, o.HistNdig)-o.HistDelEmin, nice(IGDmax, o.HistNdig)+o.HistDelEmax,
+			o.HistNsta, IGD, o.HistFmt, o.HistLen))
 	}
 	return
 }
