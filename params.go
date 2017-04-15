@@ -22,7 +22,7 @@ type Parameters struct {
 	Ncpu int // number of cpus
 
 	// time
-	Tf    int // final time
+	Tmax  int // final time
 	DtExc int // delta time for exchange
 	DtOut int // delta time for output
 
@@ -86,7 +86,7 @@ func (o *Parameters) Default() {
 	o.Ncpu = 4
 
 	// time
-	o.Tf = 100
+	o.Tmax = 100
 	o.DtExc = -1
 	o.DtOut = -1
 
@@ -149,14 +149,14 @@ func (o *Parameters) CalcDerived() {
 	if o.Ncpu > o.Nsol/2 {
 		chk.Panic("number of CPU must be smaller than or equal to half the number of solutions. Ncpu=%d > Nsol/2=%d", o.Ncpu, o.Nsol/2)
 	}
-	if o.Tf < 1 {
-		o.Tf = 1
+	if o.Tmax < 1 {
+		o.Tmax = 1
 	}
 	if o.DtExc < 1 {
-		o.DtExc = o.Tf / 10
+		o.DtExc = o.Tmax / 10
 	}
 	if o.DtOut < 1 {
-		o.DtOut = o.Tf / 5
+		o.DtOut = o.Tmax / 5
 	}
 
 	// derived
@@ -276,7 +276,7 @@ func (o *Parameters) LogParams() (l string) {
 	// time
 	l += "\n"
 	l += io.ArgsTable("TIME",
-		"final time", "Tf", o.Tf,
+		"final time", "Tmax", o.Tmax,
 		"delta time for exchange", "DtExc", o.DtExc,
 		"delta time for output", "DtOut", o.DtOut,
 	)

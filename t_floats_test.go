@@ -154,7 +154,7 @@ func Test_flt04(tst *testing.T) {
 	opt.Default()
 	opt.Nsol = 30
 	opt.Ncpu = 1
-	opt.Tf = 100
+	opt.Tmax = 100
 	opt.LatinDup = 5
 	opt.FltMin = []float64{0.1, 0.5}
 	opt.FltMax = []float64{2.25, 2.5}

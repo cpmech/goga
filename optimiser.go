@@ -120,7 +120,7 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	o.tmp = NewSolution(0, 0, &o.Parameters)
 	o.cpupairs = utl.IntsAlloc(o.Ncpu/2, 2)
 	o.iova0 = -1
-	o.ova0 = make([]float64, o.Tf)
+	o.ova0 = make([]float64, o.Tmax)
 
 	// generate trial solutions
 	o.generate_solutions(0)
@@ -156,7 +156,7 @@ func (o *Optimiser) Solve() {
 	done := make(chan int, o.Ncpu)
 	time := 0
 	texc := time + o.DtExc
-	for time < o.Tf {
+	for time < o.Tmax {
 
 		// run groups in parallel. up to exchange time
 		for icpu := 0; icpu < o.Ncpu; icpu++ {
@@ -210,8 +210,8 @@ func (o *Optimiser) Solve() {
 		// update time variables
 		time += o.DtExc
 		texc += o.DtExc
-		time = utl.Imin(time, o.Tf)
-		texc = utl.Imin(texc, o.Tf)
+		time = utl.Imin(time, o.Tmax)
+		texc = utl.Imin(texc, o.Tmax)
 
 		// output
 		if o.Output != nil {
