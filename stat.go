@@ -8,7 +8,6 @@ import (
 	"math"
 	"time"
 
-	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
@@ -68,6 +67,28 @@ type Stat struct {
 	Multi_err      []float64                 // max(error(f[i]))
 	Multi_fStar    [][]float64               // reference points on Pareto front [npoints][nova]
 	Multi_IGD      []float64                 // IGD metric
+
+	// RunMany: statistics: F
+	Fmin []float64 // minimum of each F [iOva]
+	Fave []float64 // average of each F [iOva]
+	Fmax []float64 // maximum of each F [iOva]
+	Fdev []float64 // deviation of each F [iOva]
+
+	// RunMany: statistics: E and L
+	Emin float64 // minimum E
+	Eave float64 // avarage E
+	Emax float64 // maximum E
+	Edev float64 // deviation in E
+	Lmin float64 // minimum L
+	Lave float64 // avarage L
+	Lmax float64 // maximum L
+	Ldev float64 // deviation in L
+
+	// RunMany: statistics: IGD
+	IGDmin float64 // minimum IGD
+	IGDave float64 // avarage IGD
+	IGDmax float64 // maximum IGD
+	IGDdev float64 // deviation in IGD
 }
 
 // RunMany runs many trials in order to produce statistical data
@@ -96,6 +117,12 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 	// remove previous results
 	if fnkey != "" {
 		io.RemoveAll(dirout + "/" + fnkey + "-*.res")
+	}
+
+	// denominator for calculation of L metric
+	denominatorL := 1.0
+	if o.F1F0_arcLenRef > 0 {
+		denominatorL = o.F1F0_arcLenRef
 	}
 
 	// allocate variables
@@ -208,7 +235,7 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 							dist += math.Sqrt(math.Pow(f0-F0, 2.0) + math.Pow(f1-F1, 2.0))
 						}
 					}
-					o.F1F0_arcLen = append(o.F1F0_arcLen, dist)
+					o.F1F0_arcLen = append(o.F1F0_arcLen, dist/denominatorL)
 				}
 			}
 
@@ -231,7 +258,7 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 
 			// IGD metric
 			if o.Nova > 1 && len(o.Multi_fStar) > 0 {
-				o.Multi_IGD = append(o.Multi_IGD, StatIgd(o, o.Multi_fStar))
+				o.Multi_IGD = append(o.Multi_IGD, o.calcIgd(o.Multi_fStar))
 			}
 
 			// save final solutions
@@ -244,11 +271,117 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 			}
 		}
 	}
+
+	// statistics: F
+	o.Fmin = make([]float64, o.Nova)
+	o.Fave = make([]float64, o.Nova)
+	o.Fmax = make([]float64, o.Nova)
+	o.Fdev = make([]float64, o.Nova)
+	for i := 0; i < o.Nova; i++ {
+		if len(o.BestOvas[i]) > 1 {
+			o.Fmin[i], o.Fave[i], o.Fmax[i], o.Fdev[i] = rnd.StatBasic(o.BestOvas[i], true)
+		}
+	}
+
+	// statistics: E and L
+	o.Emin, o.Eave, o.Emax, o.Edev = rnd.StatBasic(o.F1F0_err, true)
+	o.Lmin, o.Lave, o.Lmax, o.Ldev = rnd.StatBasic(o.F1F0_arcLen, true)
+
+	// statistics: IGD
+	o.IGDmin, o.IGDave, o.IGDmax, o.IGDdev = rnd.StatBasic(o.Multi_IGD, true)
 }
 
-// StatIgd computes the IGD metric (smaller value means the Pareto front is wide and accurate).
+// PrintStatF print statistical information corresponding to objective function idxF
+func (o *Optimiser) PrintStatF(idxF int) {
+	if len(o.BestOvas[idxF]) == 0 {
+		io.Pf("there are no samples for statistical analysis\n")
+		return
+	}
+	str := "\n"
+	if len(o.RptFref) == o.Nova {
+		str = io.Sf(" (%g)\n", o.RptFref[idxF])
+	}
+	io.Pf("fmin = %g\n", o.Fmin[idxF])
+	io.Pf("fave = %g"+str, o.Fave[idxF])
+	io.Pf("fmax = %g\n", o.Fmax[idxF])
+	io.Pf("fdev = %g\n", o.Fdev[idxF])
+	o.fix_formatting_data()
+	io.Pf(rnd.BuildTextHist(
+		nice(o.Fmin[idxF], o.HistNdig)-o.HistDelFmin,
+		nice(o.Fmax[idxF], o.HistNdig)+o.HistDelFmax,
+		o.HistNsta, o.BestOvas[idxF], o.HistFmt, o.HistLen))
+}
+
+// PrintStatF1F0 prints statistical analysis for two-objective problems
+//  emin, eave, emax, edev -- errors on f1(f0)
+//  lmin, lave, lmax, ldev -- arc-lengths along f1(f0) curve
+func (o *Optimiser) PrintStatF1F0() {
+	if len(o.F1F0_err) == 0 && len(o.F1F0_arcLen) == 0 {
+		io.Pf("there are no samples for statistical analysis\n")
+		return
+	}
+	o.fix_formatting_data()
+	io.Pf("\nerror on Pareto front\n")
+	io.Pf("emin = %g\n", o.Emin)
+	io.Pf("eave = %g\n", o.Eave)
+	io.Pf("emax = %g\n", o.Emax)
+	io.Pf("edev = %g\n", o.Edev)
+	io.Pf(rnd.BuildTextHist(
+		nice(o.Emin, o.HistNdig)-o.HistDelEmin,
+		nice(o.Emax, o.HistNdig)+o.HistDelEmax,
+		o.HistNsta, o.F1F0_err, o.HistFmt, o.HistLen))
+	io.Pf("\nnormalised arc length along Pareto front (ref = %g)\n", o.F1F0_arcLenRef)
+	io.Pf("lmin = %g\n", o.Lmin)
+	io.Pf("lave = %g\n", o.Lave)
+	io.Pf("lmax = %g\n", o.Lmax)
+	io.Pf("ldev = %g\n", o.Ldev)
+	io.Pf(rnd.BuildTextHist(
+		nice(o.Lmin, o.HistNdig)-o.HistDelEmin,
+		nice(o.Lmax, o.HistNdig)+o.HistDelEmax,
+		o.HistNsta, o.F1F0_arcLen, o.HistFmt, o.HistLen))
+}
+
+// PrintStatMultiE prints statistical error analysis for multi-objective problems
+func (o *Optimiser) PrintStatMultiE() {
+	if len(o.Multi_err) < 2 {
+		io.Pf("there are no samples for statistical analysis\n")
+		return
+	}
+	o.fix_formatting_data()
+	io.Pf("\nerror on Pareto front (multi)\n")
+	io.Pf("Emin = %g\n", o.Emin)
+	io.Pf("Eave = %g\n", o.Eave)
+	io.Pf("Emax = %g\n", o.Emax)
+	io.Pf("Edev = %g\n", o.Edev)
+	io.Pf(rnd.BuildTextHist(
+		nice(o.Emin, o.HistNdig)-o.HistDelEmin,
+		nice(o.Emax, o.HistNdig)+o.HistDelEmax,
+		o.HistNsta, o.Multi_err, o.HistFmt, o.HistLen))
+}
+
+// PrintStatIGD prints statistical IGD analysis for multi-objective problems
+func (o *Optimiser) PrintStatIGD() {
+	if len(o.Multi_IGD) < 2 {
+		io.Pf("there are no samples for statistical analysis\n")
+		return
+	}
+	o.fix_formatting_data()
+	io.Pf("\nerror on Pareto front (multi)\n")
+	io.Pf("IGDmin = %g\n", o.IGDmin)
+	io.Pf("IGDave = %g\n", o.IGDave)
+	io.Pf("IGDmax = %g\n", o.IGDmax)
+	io.Pf("IGDdev = %g\n", o.IGDdev)
+	io.Pf(rnd.BuildTextHist(
+		nice(o.IGDmin, o.HistNdig)-o.HistDelEmin,
+		nice(o.IGDmax, o.HistNdig)+o.HistDelEmax,
+		o.HistNsta, o.Multi_IGD, o.HistFmt, o.HistLen))
+}
+
+// auxiliary ///////////////////////////////////////////////////////////////////////////////////////
+
+// calcIgd computes the IGD metric (smaller value means the Pareto front is wide and accurate).
 //  fStar is a matrix with reference points [npoints][nova]
-func StatIgd(o *Optimiser, fStar [][]float64) (igd float64) {
+func (o *Optimiser) calcIgd(fStar [][]float64) (igd float64) {
 	for _, point := range fStar {
 		dmin := INF
 		for _, sol := range o.Solutions {
@@ -265,129 +398,6 @@ func StatIgd(o *Optimiser, fStar [][]float64) (igd float64) {
 		igd += math.Sqrt(dmin)
 	}
 	igd /= float64(len(fStar))
-	return
-}
-
-// StatF computes statistical information corresponding to objective function idxF
-func StatF(o *Optimiser, idxF int, verbose bool) (fmin, fave, fmax, fdev float64, F []float64, err error) {
-	nsamples := len(o.BestOvas[idxF])
-	if nsamples == 0 {
-		err = chk.Err("there are no samples for statistical analysis\n")
-		return
-	}
-	F = make([]float64, nsamples)
-	if nsamples == 1 {
-		F[0] = o.BestOvas[idxF][0]
-		fmin, fave, fmax = F[0], F[0], F[0]
-		return
-	}
-	for i, f := range o.BestOvas[idxF] {
-		F[i] = f
-	}
-	fmin, fave, fmax, fdev = rnd.StatBasic(F, true)
-	if verbose {
-		str := "\n"
-		if len(o.RptFref) == o.Nova {
-			str = io.Sf(" (%g)\n", o.RptFref[idxF])
-		}
-		io.Pf("fmin = %g\n", fmin)
-		io.Pf("fave = %g"+str, fave)
-		io.Pf("fmax = %g\n", fmax)
-		io.Pf("fdev = %g\n", fdev)
-		o.fix_formatting_data()
-		io.Pf(rnd.BuildTextHist(nice(fmin, o.HistNdig)-o.HistDelFmin, nice(fmax, o.HistNdig)+o.HistDelFmax,
-			o.HistNsta, F, o.HistFmt, o.HistLen))
-	}
-	return
-}
-
-// StatF1F0 prints statistical analysis for two-objective problems
-//  emin, eave, emax, edev -- errors on f1(f0)
-//  lmin, lave, lmax, ldev -- arc-lengths along f1(f0) curve
-func StatF1F0(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []float64, lmin, lave, lmax, ldev float64, L []float64, err error) {
-	if len(o.F1F0_err) == 0 && len(o.F1F0_arcLen) == 0 {
-		err = chk.Err("there are no samples for statistical analysis\n")
-		return
-	}
-	o.fix_formatting_data()
-	if len(o.F1F0_err) > 2 {
-		E = make([]float64, len(o.F1F0_err))
-		copy(E, o.F1F0_err)
-		emin, eave, emax, edev = rnd.StatBasic(E, true)
-		if verbose {
-			io.Pf("\nerror on Pareto front\n")
-			io.Pf("emin = %g\n", emin)
-			io.Pf("eave = %g\n", eave)
-			io.Pf("emax = %g\n", emax)
-			io.Pf("edev = %g\n", edev)
-			io.Pf(rnd.BuildTextHist(nice(emin, o.HistNdig)-o.HistDelEmin, nice(emax, o.HistNdig)+o.HistDelEmax,
-				o.HistNsta, E, o.HistFmt, o.HistLen))
-		}
-	}
-	if len(o.F1F0_arcLen) > 2 {
-		den := 1.0
-		if o.F1F0_arcLenRef > 0 {
-			den = o.F1F0_arcLenRef
-		}
-		L := make([]float64, len(o.F1F0_arcLen))
-		for i, l := range o.F1F0_arcLen {
-			L[i] = l / den
-		}
-		lmin, lave, lmax, ldev = rnd.StatBasic(L, true)
-		if verbose {
-			io.Pf("\nnormalised arc length along Pareto front (ref = %g)\n", o.F1F0_arcLenRef)
-			io.Pf("lmin = %g\n", lmin)
-			io.Pf("lave = %g\n", lave)
-			io.Pf("lmax = %g\n", lmax)
-			io.Pf("ldev = %g\n", ldev)
-			io.Pf(rnd.BuildTextHist(nice(lmin, o.HistNdig)-o.HistDelEmin, nice(lmax, o.HistNdig)+o.HistDelEmax,
-				o.HistNsta, L, o.HistFmt, o.HistLen))
-		}
-	}
-	return
-}
-
-// StatMultiE prints statistical error analysis for multi-objective problems
-func StatMultiE(o *Optimiser, verbose bool) (Emin, Eave, Emax, Edev float64, E []float64, err error) {
-	if len(o.Multi_err) < 2 {
-		err = chk.Err("there are no samples for statistical analysis\n")
-		return
-	}
-	o.fix_formatting_data()
-	E = make([]float64, len(o.Multi_err))
-	copy(E, o.Multi_err)
-	Emin, Eave, Emax, Edev = rnd.StatBasic(E, true)
-	if verbose {
-		io.Pf("\nerror on Pareto front (multi)\n")
-		io.Pf("Emin = %g\n", Emin)
-		io.Pf("Eave = %g\n", Eave)
-		io.Pf("Emax = %g\n", Emax)
-		io.Pf("Edev = %g\n", Edev)
-		io.Pf(rnd.BuildTextHist(nice(Emin, o.HistNdig)-o.HistDelEmin, nice(Emax, o.HistNdig)+o.HistDelEmax,
-			o.HistNsta, E, o.HistFmt, o.HistLen))
-	}
-	return
-}
-
-// StatMultiIGD prints statistical IGD analysis for multi-objective problems
-func StatMultiIGD(o *Optimiser, verbose bool) (IGDmin, IGDave, IGDmax, IGDdev float64, IGD []float64, err error) {
-	if len(o.Multi_IGD) < 2 {
-		err = chk.Err("there are no samples for statistical analysis\n")
-		return
-	}
-	o.fix_formatting_data()
-	IGD = make([]float64, len(o.Multi_IGD))
-	copy(IGD, o.Multi_IGD)
-	IGDmin, IGDave, IGDmax, IGDdev = rnd.StatBasic(IGD, true)
-	if verbose {
-		io.Pf("\nerror on Pareto front (multi)\n")
-		io.Pf("IGDmin = %g\n", IGDmin)
-		io.Pf("IGDave = %g\n", IGDave)
-		io.Pf("IGDmax = %g\n", IGDmax)
-		io.Pf("IGDdev = %g\n", IGDdev)
-		io.Pf(rnd.BuildTextHist(nice(IGDmin, o.HistNdig)-o.HistDelEmin, nice(IGDmax, o.HistNdig)+o.HistDelEmax,
-			o.HistNsta, IGD, o.HistFmt, o.HistLen))
-	}
 	return
 }
 

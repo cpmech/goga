@@ -24,6 +24,9 @@ type TexReport struct {
 
 	// options
 	Title        string  // title of table
+	RtableNotes  string  // footnotes for table with results
+	ItableNotes  string  // footnotes for table with input data
+	XtableNotes  string  // footnotes for table with x values
 	XtableFontSz string  // formatting string for size of text in x-values table
 	TableColSep  float64 // column separation in table
 	UseGeom      bool    // use TeX geometry package
@@ -247,19 +250,19 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 	}
 
 	// generate results table
-	K, M, T, C := o.GenTable()
-	rpt.AddTable(K, T, o.Title, fnkey, M, C)
+	K, nrows, F, M := o.GenTable()
+	rpt.AddTableF(o.Title, fnkey, o.RtableNotes, K, nrows, F, M)
 
 	// generate input data table
 	o.SetColumnsInputData()
-	K, M, T, C = o.GenTable()
-	rpt.AddTable(K, T, o.Title+". Input data", fnkey, M, C)
+	K, nrows, F, M = o.GenTable()
+	rpt.AddTableF(o.Title+". Input data", fnkey, o.ItableNotes, K, nrows, F, M)
 
 	// generate xvalues table
 	o.SetColumnsXvalues()
-	K, M, T, C = o.GenTable()
+	K, nrows, F, M = o.GenTable()
 	rpt.TableFontSz = o.XtableFontSz
-	rpt.AddTable(K, T, o.Title+". X values", fnkey, M, C)
+	rpt.AddTableF(o.Title+". X values", fnkey, o.XtableNotes, K, nrows, F, M)
 
 	// save file
 	err := rpt.WriteTexPdf("/tmp/goga", fnkey, nil)
@@ -269,90 +272,73 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 }
 
 // GenTable generates table for TeX report
-//   K -- keys
-//   M -- key2tex map: converts key into formatted text (i.e. equation)
-//   T -- table with results; a map
-//   C -- key2convert map: converts numbers at column 'key' to string
-func (o *TexReport) GenTable() (K []string, M map[string]string, T map[string][]float64, C map[string]io.FcnConvertNum) {
+//   K -- column keys
+//   nrows -- number of rows
+//   F -- map of functions: key => function returning formatted row value
+//   M -- maps key to tex formatted text of this key (i.e. equation)
+func (o *TexReport) GenTable() (K []string, nrows int, F map[string]io.FcnRow, M map[string]string) {
 
 	// allocate maps
+	F = make(map[string]io.FcnRow)
 	M = make(map[string]string)
-	T = make(map[string][]float64)
-	C = make(map[string]io.FcnConvertNum)
-	nrows := len(o.Opts)
+	nrows = len(o.Opts)
 
-	// column: problem name and desc
-	//K=append(K,"P")
-	//M["P"] = "P"
-	//T["P"] = make([]float64,nrows)
-	//C["P"] = func(i int, v float64) string { return io.Sf("%g", v) }
+	// column: problem name
+	K = append(K, "P")
+	M["P"] = "P"
+	F["P"] = func(i int) string { return o.Opts[i].RptName }
 
 	// columns: input data columns
 	if o.ShowNsol {
 		K = append(K, "Nsol")
 		M["Nsol"] = `$N_{sol}$`
-		T["Nsol"] = make([]float64, nrows)
-		C["Nsol"] = func(i int, v float64) string { return io.Sf("%g", v) }
+		F["Nsol"] = func(i int) string { return io.Sf("%d", o.Opts[i].Nsol) }
 	}
 	if o.ShowNcpu {
 		K = append(K, "Ncpu")
 		M["Ncpu"] = `$N_{cpu}$`
-		T["Ncpu"] = make([]float64, nrows)
-		C["Ncpu"] = func(i int, v float64) string { return io.Sf("%g", v) }
+		F["Ncpu"] = func(i int) string { return io.Sf("%d", o.Opts[i].Ncpu) }
 	}
 	if o.ShowTmax {
 		K = append(K, "Tmax")
 		M["Tmax"] = `$t_{max}$`
-		T["Tmax"] = make([]float64, nrows)
-		C["Tmax"] = func(i int, v float64) string { return io.Sf("%g", v) }
+		F["Tmax"] = func(i int) string { return io.Sf("%d", o.Opts[i].Tmax) }
 	}
 	if o.ShowDtExc {
 		K = append(K, "DtExc")
 		M["DtExc"] = `${\Delta t_{exc}}$`
-		T["DtExc"] = make([]float64, nrows)
-		C["DtExc"] = func(i int, v float64) string { return io.Sf("%g", v) }
+		F["DtExc"] = func(i int) string { return io.Sf("%d", o.Opts[i].DtExc) }
 	}
 	if o.ShowDEC {
 		K = append(K, "DEC")
 		M["DEC"] = `$C_{DE}$`
-		T["DEC"] = make([]float64, nrows)
-		C["DEC"] = func(i int, v float64) string { return io.Sf("%g", v) }
+		F["DEC"] = func(i int) string { return io.Sf("%g", o.Opts[i].DEC) }
 	}
 
 	// columns: stat columns
 	if o.ShowNfeval {
 		K = append(K, "Nfeval")
 		M["Nfeval"] = `$N_{eval}$`
-		T["Nfeval"] = make([]float64, nrows)
-		C["Nfeval"] = func(i int, v float64) string { return io.Sf("%g", v) }
+		F["Nfeval"] = func(i int) string { return io.Sf("%d", o.Opts[i].Nfeval) }
 	}
 	if o.ShowSysTimeAve {
 		K = append(K, "SysTimeAve")
 		M["SysTimeAve"] = `$T_{sys}^{ave}$`
-		T["SysTimeAve"] = make([]float64, nrows)
-		C["SysTimeAve"] = func(i int, v float64) string {
-			d := time.Duration(int(v))
-			return io.Sf(`$\begin{matrix} %v \\ (%v) \end{matrix}$`, dround(d, o.DroundCte), dround(o.Opts[i].SysTimeAve, o.DroundCte))
-		}
+		F["SysTimeAve"] = func(i int) string { return io.Sf("%v", dround(o.Opts[i].SysTimeAve, o.DroundCte)) }
 	}
 	if o.ShowSysTimeTot {
 		K = append(K, "SysTimeTot")
 		M["SysTimeTot"] = `$T_{sys}^{tot}$`
-		T["SysTimeTot"] = make([]float64, nrows)
-		C["SysTimeTot"] = func(i int, v float64) string {
-			d := time.Duration(int(v))
-			return io.Sf("%v", dround(d, o.DroundCte))
-		}
+		F["SysTimeTot"] = func(i int) string { return io.Sf("%v", dround(o.Opts[i].SysTimeTot, o.DroundCte)) }
 	}
 
 	// columns: results columns
 	if o.ShowFref {
 		K = append(K, "Fref")
 		M["Fref"] = io.Sf(`${%s}_{ref}$`, o.symbF)
-		T["Fref"] = make([]float64, nrows)
-		C["Fref"] = func(i int, v float64) string {
+		F["Fref"] = func(i int) string {
 			if len(o.Opts[i].RptFref) > 0 {
-				return tx(o.Opts[i].RptFmtF, v)
+				return tx(o.Opts[i].RptFmtF, o.Opts[i].RptFref[0])
 			} else {
 				return "N/A"
 			}
@@ -361,26 +347,22 @@ func (o *TexReport) GenTable() (K []string, M map[string]string, T map[string][]
 	if o.ShowFmin {
 		K = append(K, "Fmin")
 		M["Fmin"] = io.Sf(`${%s}_{min}$`, o.symbF)
-		T["Fmin"] = make([]float64, nrows)
-		C["Fmin"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtF, v) }
+		F["Fmin"] = func(i int) string { return tx(o.Opts[i].RptFmtF, o.Opts[i].Fmin[0]) }
 	}
 	if o.ShowFave {
 		K = append(K, "Fave")
 		M["Fave"] = io.Sf(`${%s}_{ave}$`, o.symbF)
-		T["Fave"] = make([]float64, nrows)
-		C["Fave"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtF, v) }
+		F["Fave"] = func(i int) string { return tx(o.Opts[i].RptFmtF, o.Opts[i].Fave[0]) }
 	}
 	if o.ShowFmax {
 		K = append(K, "Fmax")
 		M["Fmax"] = io.Sf(`${%s}_{max}$`, o.symbF)
-		T["Fmax"] = make([]float64, nrows)
-		C["Fmax"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtF, v) }
+		F["Fmax"] = func(i int) string { return tx(o.Opts[i].RptFmtF, o.Opts[i].Fmax[0]) }
 	}
 	if o.ShowFdev {
 		K = append(K, "Fdev")
 		M["Fdev"] = io.Sf(`${%s}_{dev}$`, o.symbF)
-		T["Fdev"] = make([]float64, nrows)
-		C["Fdev"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtF, v) }
+		F["Fdev"] = func(i int) string { return tx(o.Opts[i].RptFmtF, o.Opts[i].Fdev[0]) }
 	}
 
 	// x-values
@@ -389,14 +371,13 @@ func (o *TexReport) GenTable() (K []string, M map[string]string, T map[string][]
 			key := io.Sf("x%d", j)
 			K = append(K, key)
 			M[key] = io.Sf(`$x_{%d}$`, j)
-			T[key] = make([]float64, nrows)
 			jcopy := j // must create copy because when the function is called, j will be changed
-			C[key] = func(i int, v float64) string {
+			F[key] = func(i int) string {
 				nflt := o.Opts[i].Nflt
 				if jcopy >= nflt {
 					return ""
 				}
-				xval := io.Sf(o.Opts[i].RptFmtX, v)
+				xval := io.Sf(o.Opts[i].RptFmtX, o.Opts[i].BestOfBestFlt[jcopy])
 				if o.ShowXref {
 					xref := "N/A"
 					if len(o.Opts[i].RptXref) == nflt {
@@ -414,204 +395,71 @@ func (o *TexReport) GenTable() (K []string, M map[string]string, T map[string][]
 	if o.ShowEmin {
 		K = append(K, "Emin")
 		M["Emin"] = `$E_{min}$`
-		T["Emin"] = make([]float64, nrows)
-		C["Emin"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
+		F["Emin"] = func(i int) string { return tx(o.Opts[i].RptFmtE, o.Opts[i].Emin) }
 	}
 	if o.ShowEave {
 		K = append(K, "Eave")
 		M["Eave"] = `$E_{ave}$`
-		T["Eave"] = make([]float64, nrows)
-		C["Eave"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
+		F["Eave"] = func(i int) string { return tx(o.Opts[i].RptFmtE, o.Opts[i].Eave) }
 	}
 	if o.ShowEmax {
 		K = append(K, "Emax")
 		M["Emax"] = `$E_{max}$`
-		T["Emax"] = make([]float64, nrows)
-		C["Emax"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
+		F["Emax"] = func(i int) string { return tx(o.Opts[i].RptFmtE, o.Opts[i].Emax) }
 	}
 	if o.ShowEdev {
 		K = append(K, "Edev")
 		M["Edev"] = `$E_{dev}$`
-		T["Edev"] = make([]float64, nrows)
-		C["Edev"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
+		F["Edev"] = func(i int) string { return tx(o.Opts[i].RptFmtE, o.Opts[i].Edev) }
 	}
 	if o.ShowLmin {
 		K = append(K, "Lmin")
 		M["Lmin"] = `$L_{dev}$`
-		T["Lmin"] = make([]float64, nrows)
-		C["Lmin"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtL, v) }
+		F["Lmin"] = func(i int) string { return tx(o.Opts[i].RptFmtL, o.Opts[i].Lmin) }
 	}
 	if o.ShowLave {
 		K = append(K, "Lave")
 		M["Lave"] = `$L_{ave}$`
-		T["Lave"] = make([]float64, nrows)
-		C["Lave"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtL, v) }
+		F["Lave"] = func(i int) string { return tx(o.Opts[i].RptFmtL, o.Opts[i].Lave) }
 	}
 	if o.ShowLmax {
 		K = append(K, "Lmax")
 		M["Lmax"] = `$L_{max}$`
-		T["Lmax"] = make([]float64, nrows)
-		C["Lmax"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtL, v) }
+		F["Lmax"] = func(i int) string { return tx(o.Opts[i].RptFmtL, o.Opts[i].Lmax) }
 	}
 	if o.ShowLdev {
 		K = append(K, "Ldev")
 		M["Ldev"] = `$L_{dev}$`
-		T["Ldev"] = make([]float64, nrows)
-		C["Ldev"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtL, v) }
+		F["Ldev"] = func(i int) string { return tx(o.Opts[i].RptFmtL, o.Opts[i].Ldev) }
 	}
 	if o.ShowIGDmin {
 		K = append(K, "IGDmin")
 		M["IGDmin"] = `${IGD}_{dev}$`
-		T["IGDmin"] = make([]float64, nrows)
-		C["IGDmin"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
+		F["IGDmin"] = func(i int) string { return tx(o.Opts[i].RptFmtE, o.Opts[i].IGDmin) }
 	}
 	if o.ShowIGDave {
 		K = append(K, "IGDave")
 		M["IGDave"] = `${IGD}_{ave}$`
-		T["IGDave"] = make([]float64, nrows)
-		C["IGDave"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
+		F["IGDave"] = func(i int) string { return tx(o.Opts[i].RptFmtE, o.Opts[i].IGDave) }
 	}
 	if o.ShowIGDmax {
 		K = append(K, "IGDmax")
 		M["IGDmax"] = `${IGD}_{max}$`
-		T["IGDmax"] = make([]float64, nrows)
-		C["IGDmax"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
+		F["IGDmax"] = func(i int) string { return tx(o.Opts[i].RptFmtE, o.Opts[i].IGDmax) }
 	}
 	if o.ShowIGDdev {
 		K = append(K, "IGDdev")
 		M["IGDdev"] = `${IGD}_{dev}$`
-		T["IGDdev"] = make([]float64, nrows)
-		C["IGDdev"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
+		F["IGDdev"] = func(i int) string { return tx(o.Opts[i].RptFmtE, o.Opts[i].IGDdev) }
 	}
 
-	// add rows
-	for i, opt := range o.Opts {
-		o.tableRow(T, i, opt)
+	// column: problem description
+	if o.ShowDescription {
+		K = append(K, "desc")
+		M["desc"] = o.DescHeader
+		F["desc"] = func(i int) string { return o.Opts[i].RptDesc }
 	}
 	return
-}
-
-// tableRow generates one row in table
-func (o *TexReport) tableRow(T map[string][]float64, i int, opt *Optimiser) {
-
-	// compute F stat values
-	var errF error
-	var Fmin, Fave, Fmax, Fdev float64
-	if o.ShowFmin || o.ShowFave || o.ShowFmax || o.ShowFdev {
-		Fmin, Fave, Fmax, Fdev, _, errF = StatF(opt, 0, false)
-	}
-
-	// compute E and L stat values
-	var errE error
-	var Emin, Eave, Emax, Edev float64
-	var Lmin, Lave, Lmax, Ldev float64
-	if o.ShowLmin || o.ShowLave || o.ShowLmax || o.ShowLdev {
-		Emin, Eave, Emax, Edev, _, Lmin, Lave, Lmax, Ldev, _, errE = StatF1F0(opt, false)
-	} else {
-		if o.ShowEmin || o.ShowEave || o.ShowEmax || o.ShowEdev {
-			Emin, Eave, Emax, Edev, _, errE = StatMultiE(opt, false)
-		}
-	}
-
-	// compute IGD stat values
-	var errIGD error
-	var IGDmin, IGDave, IGDmax, IGDdev float64
-	if o.ShowIGDmin || o.ShowIGDave || o.ShowIGDmax || o.ShowIGDdev {
-		IGDmin, IGDave, IGDmax, IGDdev, _, errIGD = StatMultiIGD(opt, false)
-	}
-
-	// columns: multi-objective columns
-	if o.ShowNsol {
-		T["Nsol"][i] = float64(opt.Nsol)
-	}
-	if o.ShowNcpu {
-		T["Ncpu"][i] = float64(opt.Ncpu)
-	}
-	if o.ShowTmax {
-		T["Tmax"][i] = float64(opt.Tmax)
-	}
-	if o.ShowDtExc {
-		T["DtExc"][i] = float64(opt.DtExc)
-	}
-	if o.ShowDEC {
-		T["DEC"][i] = opt.DEC
-	}
-
-	// columns: multi-objective columns
-	if o.ShowNfeval {
-		T["Nfeval"][i] = float64(opt.Nfeval)
-	}
-	if o.ShowSysTimeAve {
-		T["SysTimeAve"][i] = float64(opt.SysTimeAve.Nanoseconds())
-	}
-	if o.ShowSysTimeTot {
-		T["SysTimeTot"][i] = float64(opt.SysTimeTot.Nanoseconds())
-	}
-
-	// columns: multi-objective columns
-	if o.ShowFref {
-		if len(opt.RptFref) > 0 {
-			T["Fref"][i] = opt.RptFref[0]
-		}
-	}
-	if o.ShowFmin && errF == nil {
-		T["Fmin"][i] = Fmin
-	}
-	if o.ShowFave && errF == nil {
-		T["Fave"][i] = Fave
-	}
-	if o.ShowFmax && errF == nil {
-		T["Fmax"][i] = Fmax
-	}
-	if o.ShowFdev && errF == nil {
-		T["Fdev"][i] = Fdev
-	}
-
-	// x-values
-	if o.ShowAllX {
-		for j := 0; j < opt.Nflt; j++ {
-			key := io.Sf("x%d", j)
-			T[key][i] = opt.BestOfBestFlt[j]
-		}
-	}
-
-	// columns: multi-objective columns
-	if o.ShowEmin && errE == nil {
-		T["Emin"][i] = Emin
-	}
-	if o.ShowEave && errE == nil {
-		T["Eave"][i] = Eave
-	}
-	if o.ShowEmax && errE == nil {
-		T["Emax"][i] = Emax
-	}
-	if o.ShowEdev && errE == nil {
-		T["Edev"][i] = Edev
-	}
-	if o.ShowLmin && errE == nil {
-		T["Lmin"][i] = Lmin
-	}
-	if o.ShowLave && errE == nil {
-		T["Lave"][i] = Lave
-	}
-	if o.ShowLmax && errE == nil {
-		T["Lmax"][i] = Lmax
-	}
-	if o.ShowLdev && errE == nil {
-		T["Ldev"][i] = Ldev
-	}
-	if o.ShowIGDmin && errIGD == nil {
-		T["IGDmin"][i] = IGDmin
-	}
-	if o.ShowIGDave && errIGD == nil {
-		T["IGDave"][i] = IGDave
-	}
-	if o.ShowIGDmax && errIGD == nil {
-		T["IGDmax"][i] = IGDmax
-	}
-	if o.ShowIGDdev && errIGD == nil {
-		T["IGDdev"][i] = IGDdev
-	}
 }
 
 // other reporting functions ///////////////////////////////////////////////////////////////////////
@@ -655,11 +503,6 @@ func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
 
 func tx(fmt string, num float64) string {
 	return "$" + io.TexNum(fmt, num, true) + "$"
-}
-
-func lbl(i int, label string) string {
-	C := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	return io.Sf("%s:%s", label, string(C[i%len(C)]))
 }
 
 func dround(d, r time.Duration) time.Duration {
