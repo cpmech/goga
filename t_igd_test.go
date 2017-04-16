@@ -52,7 +52,7 @@ func Test_igd01(tst *testing.T) {
 	opt.Init(gen, nil, obj, nf, ng, nh)
 
 	// compute igd
-	igd := StatIgd(&opt, fStar)
+	igd := opt.calcIgd(fStar)
 	io.Pforan("igd = %v\n", igd)
 	chk.Scalar(tst, "igd", 1e-15, igd, 0)
 
@@ -116,7 +116,7 @@ func Test_igd02(tst *testing.T) {
 	opt.Init(gen, nil, obj, nf, ng, nh)
 
 	// compute igd
-	igd := StatIgd(&opt, fStar)
+	igd := opt.calcIgd(fStar)
 	io.Pforan("igd = %v\n", igd)
 	chk.Scalar(tst, "igd", 1e-15, igd, 1.5019007244180080e-03)
 
