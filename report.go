@@ -251,23 +251,34 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 
 	// generate results table
 	K, nrows, F, M := o.GenTable()
-	rpt.AddTableF(o.Title, fnkey, o.RtableNotes, K, nrows, F, M)
+	rpt.AddTableF(o.Title+". Results.", fnkey+"-res", o.RtableNotes, K, nrows, F, M)
 
 	// generate input data table
 	o.SetColumnsInputData()
 	K, nrows, F, M = o.GenTable()
-	rpt.AddTableF(o.Title+". Input data", fnkey, o.ItableNotes, K, nrows, F, M)
+	rpt.AddTableF(o.Title+". Input data.", fnkey+"-inp", o.ItableNotes, K, nrows, F, M)
 
 	// generate xvalues table
 	o.SetColumnsXvalues()
 	K, nrows, F, M = o.GenTable()
 	rpt.TableFontSz = o.XtableFontSz
-	rpt.AddTableF(o.Title+". X values", fnkey, o.XtableNotes, K, nrows, F, M)
+	rpt.AddTableF(o.Title+". X values.", fnkey+"-xvs", o.XtableNotes, K, nrows, F, M)
 
 	// save file
-	err := rpt.WriteTexPdf("/tmp/goga", fnkey, nil)
+	err := rpt.WriteTexPdf(dirout, fnkey, nil)
 	if err != nil {
 		io.PfRed("pdflatex failed: %v\n", err)
+		return
+	}
+
+	// save tables
+	err = rpt.WriteTexTables(dirout, map[string]string{
+		fnkey + "-res": "table-" + fnkey + "-results",
+		fnkey + "-inp": "table-" + fnkey + "-inputdata",
+		fnkey + "-xvs": "table-" + fnkey + "-xvalues",
+	})
+	if err != nil {
+		io.PfRed("write tex tables failed: %v\n", err)
 	}
 }
 
