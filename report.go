@@ -23,35 +23,31 @@ type TexReport struct {
 	Opts []*Optimiser // all optimisers
 
 	// options
-	Title      string // title of table
-	TextSize   string // formatting string for size of text
-	NrowPerTab int    // number of rows per table. -1 means all rows
-	UseGeom    bool   // use TeX geometry package
-	Landscape  bool   // landscape paper
-	RunPDF     bool   // generate PDF
-	DescHeader string // description header
-
-	// options for histogram
-	MiniPageSz   string // string for minipage size
-	HistTextSize string // formatting string for histogram size
+	Title        string  // title of table
+	XtableFontSz string  // formatting string for size of text in x-values table
+	TableColSep  float64 // column separation in table
+	UseGeom      bool    // use TeX geometry package
+	Landscape    bool    // landscape paper
+	RunPDF       bool    // generate PDF
+	DescHeader   string  // description header
 
 	// title and description
 	ShowNsamples    bool // show Nsamples
 	ShowDescription bool // show description
 
-	// input data columns
+	// columns: input data columns
 	ShowNsol  bool // show Nsol
 	ShowNcpu  bool // show Ncpu
 	ShowTmax  bool // show Tmax
 	ShowDtExc bool // show Dtexc
 	ShowDEC   bool // show DE coefficient
 
-	// stat columns
+	// columns: stat columns
 	ShowNfeval     bool // show Nfeval
 	ShowSysTimeAve bool // show SysTimeAve
 	ShowSysTimeTot bool // show SysTimeTot
 
-	// results columns
+	// columns: results columns
 	ShowFref bool // show Fref
 	ShowFmin bool // show Fmin
 	ShowFave bool // show Fave
@@ -61,7 +57,7 @@ type TexReport struct {
 	ShowAllX bool // show all x values in table
 	ShowXref bool // show X references as well as X values
 
-	// multi-objective columns
+	// columns: multi-objective columns
 	ShowEmin   bool // show Emin
 	ShowEave   bool // show Eave
 	ShowEmax   bool // show Emax
@@ -76,12 +72,11 @@ type TexReport struct {
 	ShowIGDdev bool // show IGDdev
 
 	// derived
-	nsamples  int           // number of samples
-	nfltMax   int           // max number of floats from all opt problems
-	nintMax   int           // max number of integers from fall opt problems
-	singleObj bool          // is single obj problem
-	symbF     string        // symbol for F function
-	buf       *bytes.Buffer // buffer with text to be written
+	nsamples  int    // number of samples
+	nfltMax   int    // max number of floats from all opt problems
+	nintMax   int    // max number of integers from fall opt problems
+	singleObj bool   // is single obj problem
+	symbF     string // symbol for F function
 }
 
 // NewTexReport allocates new TexReport object
@@ -98,16 +93,12 @@ func NewTexReport(opts []*Optimiser) (o *TexReport) {
 
 	// options
 	o.Title = "Goga Report"
-	o.TextSize = `\scriptsize  \setlength{\tabcolsep}{0.5em}`
-	o.NrowPerTab = 10
+	o.XtableFontSz = "\\scriptsize"
+	o.TableColSep = 0.5
 	o.UseGeom = true
 	o.Landscape = false
 	o.RunPDF = true
 	o.DescHeader = "desc"
-
-	// options for histogram
-	o.MiniPageSz = "4.1cm"
-	o.HistTextSize = `\fontsize{5pt}{6pt}`
 
 	// check
 	if len(o.Opts) < 1 {
@@ -123,7 +114,6 @@ func NewTexReport(opts []*Optimiser) (o *TexReport) {
 		o.nintMax = utl.Imax(o.nintMax, opt.Nint)
 	}
 	o.singleObj = o.Opts[0].Nova == 1
-	o.buf = new(bytes.Buffer)
 
 	// symbol for F
 	o.symbF = o.Opts[0].RptWordF
@@ -248,440 +238,380 @@ func (o *TexReport) SetColumnsAll(flag bool) {
 // Generate generates report
 func (o *TexReport) Generate(dirout, fnkey string) {
 
-	// clear buffer
-	o.buf.Reset()
-
-	// number of rows per table
-	nRowPerTab := o.NrowPerTab
-	if nRowPerTab < 1 {
-		nRowPerTab = len(o.Opts)
+	// TeX report
+	rpt := io.Report{
+		Title:       o.Title,
+		Author:      "Goga Authors",
+		Landscape:   o.Landscape,
+		TableColSep: o.TableColSep,
 	}
 
 	// generate results table
-	o.addHeader(". Results")
-	idxtab := 0
-	for i, opt := range o.Opts {
-		if i%nRowPerTab == 0 {
-			if i > 0 {
-				o.addFooter(fnkey, idxtab) // end previous table
-				io.Ff(o.buf, "\n")
-				o.addHeader(" (contd.)") // begin new table
-				idxtab++
-			}
-		} else {
-			if i > 0 {
-				io.Ff(o.buf, "\n")
-			}
-		}
-		o.addRow(opt, false, false)
-	}
-	o.addFooter(fnkey, idxtab)
+	K, M, T, C := o.GenTable()
+	rpt.AddTable(K, T, o.Title, fnkey, M, C)
 
 	// generate input data table
-	io.Ff(o.buf, "\n")
 	o.SetColumnsInputData()
-	o.addHeader(". Input data")
-	for _, opt := range o.Opts {
-		o.addRow(opt, true, false)
-	}
-	o.addFooter(fnkey+"-inp", 0)
+	K, M, T, C = o.GenTable()
+	rpt.AddTable(K, T, o.Title+". Input data", fnkey, M, C)
 
 	// generate xvalues table
-	io.Ff(o.buf, "\n")
 	o.SetColumnsXvalues()
-	o.addHeader(". X values")
-	for _, opt := range o.Opts {
-		o.addRow(opt, false, true)
-	}
-	o.addFooter(fnkey+"-xvals", 0)
+	K, M, T, C = o.GenTable()
+	rpt.TableFontSz = o.XtableFontSz
+	rpt.AddTable(K, T, o.Title+". X values", fnkey, M, C)
 
-	// write file
-	fn := fnkey + ".tex"
-	io.WriteFileVD(dirout, fn, o.buf)
-
-	// generate PDF
-	if o.RunPDF {
-		pdf := new(bytes.Buffer)
-		if o.Landscape {
-			io.Ff(pdf, "\\documentclass[a4paper,landscape]{article}\n")
-		} else {
-			io.Ff(pdf, "\\documentclass[a4paper]{article}\n")
-		}
-		io.Ff(pdf, "\\usepackage{amsmath}\n")
-		io.Ff(pdf, "\\usepackage{amssymb}\n")
-		io.Ff(pdf, "\\usepackage{booktabs}\n")
-		if o.UseGeom {
-			io.Ff(pdf, "\\usepackage[margin=1.5cm,footskip=0.5cm]{geometry}\n")
-		}
-		io.Ff(pdf, "\n\\begin{document}\n\n")
-		io.Ff(pdf, "%s\n", o.buf)
-		io.Ff(pdf, "\\end{document}\n")
-
-		// write temporary TeX file
-		fn = "tmp_" + fnkey + ".tex"
-		io.WriteFileD(dirout, fn, pdf)
-
-		// run pdflatex
-		_, err := io.RunCmd(false, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory="+dirout, fn)
-		if err != nil {
-			io.PfBlue("file <%s/%s> generated\n", dirout, fn)
-			io.PfRed("pdflatex failed: %v\n", err)
-			return
-		}
-		io.PfBlue("file <%s/tmp_%s.pdf> generated\n", dirout, fnkey)
+	// save file
+	err := rpt.WriteTexPdf("/tmp/goga", fnkey, nil)
+	if err != nil {
+		io.PfRed("pdflatex failed: %v\n", err)
 	}
 }
 
-// add header, rows and footer /////////////////////////////////////////////////////////////////////
+// GenTable generates table for TeX report
+//   K -- keys
+//   M -- key2tex map: converts key into formatted text (i.e. equation)
+//   T -- table with results; a map
+//   C -- key2convert map: converts numbers at column 'key' to string
+func (o *TexReport) GenTable() (K []string, M map[string]string, T map[string][]float64, C map[string]io.FcnConvertNum) {
 
-// addHeader adds table header
-func (o *TexReport) addHeader(titleExtra string) {
+	// allocate maps
+	M = make(map[string]string)
+	T = make(map[string][]float64)
+	C = make(map[string]io.FcnConvertNum)
+	nrows := len(o.Opts)
 
-	// begin TeX table
-	tex1 := `\begin{table*} [!t] \centering` + "\n"
+	// column: problem name and desc
+	//K=append(K,"P")
+	//M["P"] = "P"
+	//T["P"] = make([]float64,nrows)
+	//C["P"] = func(i int, v float64) string { return io.Sf("%g", v) }
 
-	// title
-	if o.ShowNsamples {
-		tex1 += io.Sf(`\caption{%s%s ($N_{samples}=%d$).}`, o.Title, titleExtra, o.nsamples) + "\n"
-	} else {
-		tex1 += io.Sf(`\caption{%s%s.}`, o.Title, titleExtra) + "\n"
-	}
-
-	// text size formatting
-	tex1 += o.TextSize + "\n"
-
-	// column descriptors
-	txtc := "c" // first column: "P"
-
-	// input data columns
-	tex2 := "P" // problem id
+	// columns: input data columns
 	if o.ShowNsol {
-		txtc += "c"
-		tex2 += io.Sf(` & $N_{sol}$`)
+		K = append(K, "Nsol")
+		M["Nsol"] = `$N_{sol}$`
+		T["Nsol"] = make([]float64, nrows)
+		C["Nsol"] = func(i int, v float64) string { return io.Sf("%g", v) }
 	}
 	if o.ShowNcpu {
-		txtc += "c"
-		tex2 += io.Sf(` & $N_{cpu}$`)
+		K = append(K, "Ncpu")
+		M["Ncpu"] = `$N_{cpu}$`
+		T["Ncpu"] = make([]float64, nrows)
+		C["Ncpu"] = func(i int, v float64) string { return io.Sf("%g", v) }
 	}
 	if o.ShowTmax {
-		txtc += "c"
-		tex2 += io.Sf(` & $t_{max}$`)
+		K = append(K, "Tmax")
+		M["Tmax"] = `$t_{max}$`
+		T["Tmax"] = make([]float64, nrows)
+		C["Tmax"] = func(i int, v float64) string { return io.Sf("%g", v) }
 	}
 	if o.ShowDtExc {
-		txtc += "c"
-		tex2 += io.Sf(` & ${\Delta t_{exc}}$`)
+		K = append(K, "DtExc")
+		M["DtExc"] = `${\Delta t_{exc}}$`
+		T["DtExc"] = make([]float64, nrows)
+		C["DtExc"] = func(i int, v float64) string { return io.Sf("%g", v) }
 	}
 	if o.ShowDEC {
-		txtc += "c"
-		tex2 += io.Sf(` & $C_{DE}$`)
+		K = append(K, "DEC")
+		M["DEC"] = `$C_{DE}$`
+		T["DEC"] = make([]float64, nrows)
+		C["DEC"] = func(i int, v float64) string { return io.Sf("%g", v) }
 	}
 
-	// stat columns
+	// columns: stat columns
 	if o.ShowNfeval {
-		txtc += "c"
-		tex2 += io.Sf(` & $N_{eval}$`)
+		K = append(K, "Nfeval")
+		M["Nfeval"] = `$N_{eval}$`
+		T["Nfeval"] = make([]float64, nrows)
+		C["Nfeval"] = func(i int, v float64) string { return io.Sf("%g", v) }
 	}
 	if o.ShowSysTimeAve {
-		txtc += "c"
-		tex2 += io.Sf(` & $T_{sys}^{ave}$`)
+		K = append(K, "SysTimeAve")
+		M["SysTimeAve"] = `$T_{sys}^{ave}$`
+		T["SysTimeAve"] = make([]float64, nrows)
+		C["SysTimeAve"] = func(i int, v float64) string {
+			d := time.Duration(int(v))
+			return io.Sf(`$\begin{matrix} %v \\ (%v) \end{matrix}$`, dround(d, o.DroundCte), dround(o.Opts[i].SysTimeAve, o.DroundCte))
+		}
 	}
 	if o.ShowSysTimeTot {
-		txtc += "c"
-		tex2 += io.Sf(` & $T_{sys}^{tot}$`)
+		K = append(K, "SysTimeTot")
+		M["SysTimeTot"] = `$T_{sys}^{tot}$`
+		T["SysTimeTot"] = make([]float64, nrows)
+		C["SysTimeTot"] = func(i int, v float64) string {
+			d := time.Duration(int(v))
+			return io.Sf("%v", dround(d, o.DroundCte))
+		}
 	}
 
-	// results columns
+	// columns: results columns
 	if o.ShowFref {
-		txtc += "c"
-		tex2 += io.Sf(` & $%s_{ref}$`, o.symbF)
-	}
-	if o.ShowFmin {
-		txtc += "c"
-		tex2 += io.Sf(` & $%s_{min}$`, o.symbF)
-	}
-	if o.ShowFave {
-		txtc += "c"
-		tex2 += io.Sf(` & $%s_{ave}$`, o.symbF)
-	}
-	if o.ShowFmax {
-		txtc += "c"
-		tex2 += io.Sf(` & $%s_{max}$`, o.symbF)
-	}
-	if o.ShowFdev {
-		txtc += "c"
-		tex2 += io.Sf(` & $%s_{dev}$`, o.symbF)
-	}
-	if o.ShowX01 && !o.ShowAllX {
-		if o.ShowXref {
-			txtc += "cccc"
-			tex2 += io.Sf(` & $x_0$ & $x_0^{ref}$ & $x_1$ & $x_1^{ref}$`)
-		} else {
-			txtc += "cc"
-			tex2 += io.Sf(` & $x_0$ & $x_1$`)
-		}
-	}
-	if o.ShowAllX {
-		for i := 0; i < o.nfltMax; i++ {
-			txtc += "c"
-			tex2 += io.Sf(` & $x_{%d}$`, i)
-		}
-	}
-
-	// multi-objective columns
-	if o.ShowEmin {
-		txtc += "c"
-		tex2 += io.Sf(` & $E_{min}$`)
-	}
-	if o.ShowEave {
-		txtc += "c"
-		tex2 += io.Sf(` & $E_{ave}$`)
-	}
-	if o.ShowEmax {
-		txtc += "c"
-		tex2 += io.Sf(` & $E_{max}$`)
-	}
-	if o.ShowEdev {
-		txtc += "c"
-		tex2 += io.Sf(` & $E_{dev}$`)
-	}
-	if o.ShowLmin {
-		txtc += "c"
-		tex2 += io.Sf(` & $L_{dev}$`)
-	}
-	if o.ShowLave {
-		txtc += "c"
-		tex2 += io.Sf(` & $L_{ave}$`)
-	}
-	if o.ShowLmax {
-		txtc += "c"
-		tex2 += io.Sf(` & $L_{max}$`)
-	}
-	if o.ShowLdev {
-		txtc += "c"
-		tex2 += io.Sf(` & $L_{dev}$`)
-	}
-	if o.ShowIGDmin {
-		txtc += "c"
-		tex2 += io.Sf(` & ${IGD}_{dev}$`)
-	}
-	if o.ShowIGDave {
-		txtc += "c"
-		tex2 += io.Sf(` & ${IGD}_{ave}$`)
-	}
-	if o.ShowIGDmax {
-		txtc += "c"
-		tex2 += io.Sf(` & ${IGD}_{max}$`)
-	}
-	if o.ShowIGDdev {
-		txtc += "c"
-		tex2 += io.Sf(` & ${IGD}_{dev}$`)
-	}
-
-	// description
-	if o.ShowDescription {
-		txtc += "c"
-		tex2 += io.Sf(` & %s`, o.DescHeader)
-	}
-
-	// new line
-	tex2 += ` \\ \hline` + "\n"
-
-	// begin TeX tabular
-	tex1 += io.Sf(`\begin{tabular}[c]{%s} \toprule`, txtc) + "\n"
-
-	// write to buffer
-	io.Ff(o.buf, "%s%s", tex1, tex2)
-}
-
-// addRow adds row to table
-func (o *TexReport) addRow(opt *Optimiser, inpDatTable, xvalsTable bool) {
-
-	// results
-	var Fmin, Fave, Fmax, Fdev float64
-	var Emin, Eave, Emax, Edev float64
-	var Lmin, Lave, Lmax, Ldev float64
-	var IGDmin, IGDave, IGDmax, IGDdev float64
-	if !inpDatTable && !xvalsTable {
-
-		// compute F stat values
-		if o.ShowFmin || o.ShowFave || o.ShowFmax || o.ShowFdev {
-			Fmin, Fave, Fmax, Fdev, _ = StatF(opt, 0, false)
-		}
-
-		// compute E and L stat values
-		if o.ShowLmin || o.ShowLave || o.ShowLmax || o.ShowLdev {
-			Emin, Eave, Emax, Edev, _, Lmin, Lave, Lmax, Ldev, _ = StatF1F0(opt, false)
-		} else {
-			if o.ShowEmin || o.ShowEave || o.ShowEmax || o.ShowEdev {
-				Emin, Eave, Emax, Edev, _ = StatMultiE(opt, false)
-			}
-		}
-
-		// compute IGD stat values
-		if o.ShowIGDmin || o.ShowIGDave || o.ShowIGDmax || o.ShowIGDdev {
-			IGDmin, IGDave, IGDmax, IGDdev, _ = StatMultiIGD(opt, false)
-		}
-	}
-
-	// fix formatting strings
-	opt.fix_formatting_data()
-
-	// input data columns
-	tex := opt.RptName // problem id
-	if o.ShowNsol {
-		tex += io.Sf(` & %d`, opt.Nsol)
-	}
-	if o.ShowNcpu {
-		tex += io.Sf(` & %d`, opt.Ncpu)
-	}
-	if o.ShowTmax {
-		tex += io.Sf(` & %d`, opt.Tmax)
-	}
-	if o.ShowDtExc {
-		tex += io.Sf(` & %d`, opt.DtExc)
-	}
-	if o.ShowDEC {
-		tex += io.Sf(` & %g`, opt.DEC)
-	}
-
-	// stat columns
-	if o.ShowNfeval {
-		tex += io.Sf(` & %d`, opt.Nfeval)
-	}
-	if o.ShowSysTimeAve {
-		tex += io.Sf(` & %v`, dround(opt.SysTimeAve, o.DroundCte))
-	}
-	if o.ShowSysTimeTot {
-		tex += io.Sf(` & %v`, dround(opt.SysTimeTot, o.DroundCte))
-	}
-
-	// results columns
-	if o.ShowFref {
-		str := "N/A"
-		if len(opt.RptFref) > 0 {
-			str = tx(opt.RptFmtF, opt.RptFref[0])
-		}
-		tex += io.Sf(` & %s`, str)
-	}
-	if o.ShowFmin {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtF, Fmin))
-	}
-	if o.ShowFave {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtF, Fave))
-	}
-	if o.ShowFmax {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtF, Fmax))
-	}
-	if o.ShowFdev {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtFdev, Fdev))
-	}
-	if o.ShowX01 && !o.ShowAllX {
-		if o.ShowXref {
-			x0, x1, x0ref, x1ref := "N/A", "N/A", "N/A", "N/A"
-			if len(opt.BestOfBestFlt) == opt.Nflt {
-				x0 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[0])
-				x1 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
-			}
-			if len(opt.RptXref) == opt.Nflt {
-				x0ref = io.Sf(opt.RptFmtX, opt.RptXref[0])
-				x1ref = io.Sf(opt.RptFmtX, opt.RptXref[1])
-			}
-			tex += io.Sf(` & %s & (%s) & %s & (%s)`, x0, x0ref, x1, x1ref)
-		} else {
-			x0, x1 := "N/A", "N/A"
-			if len(opt.BestOfBestFlt) == opt.Nflt {
-				x0 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[0])
-				x1 = io.Sf(opt.RptFmtX, opt.BestOfBestFlt[1])
-			}
-			tex += io.Sf(` & %s & %s`, x0, x1)
-		}
-	}
-	if o.ShowAllX {
-		for i := 0; i < o.nfltMax; i++ {
-			if i >= opt.Nflt {
-				tex += " & "
+		K = append(K, "Fref")
+		M["Fref"] = io.Sf(`${%s}_{ref}$`, o.symbF)
+		T["Fref"] = make([]float64, nrows)
+		C["Fref"] = func(i int, v float64) string {
+			if len(o.Opts[i].RptFref) > 0 {
+				return tx(o.Opts[i].RptFmtF, v)
 			} else {
-				str := io.Sf(opt.RptFmtX, opt.BestOfBestFlt[i])
-				tex += io.Sf(` & %s`, str)
+				return "N/A"
 			}
 		}
-		if xvalsTable {
-			tex += " \\\\\n ref"
-			for i := 0; i < o.nfltMax; i++ {
-				if i >= opt.Nflt {
-					tex += " & "
-				} else {
-					if len(opt.RptXref) == opt.Nflt {
-						str := io.Sf(opt.RptFmtX, opt.RptXref[i])
-						tex += io.Sf(` & %s`, str)
-					} else {
-						tex += " & N/A"
+	}
+	if o.ShowFmin {
+		K = append(K, "Fmin")
+		M["Fmin"] = io.Sf(`${%s}_{min}$`, o.symbF)
+		T["Fmin"] = make([]float64, nrows)
+		C["Fmin"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtF, v) }
+	}
+	if o.ShowFave {
+		K = append(K, "Fave")
+		M["Fave"] = io.Sf(`${%s}_{ave}$`, o.symbF)
+		T["Fave"] = make([]float64, nrows)
+		C["Fave"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtF, v) }
+	}
+	if o.ShowFmax {
+		K = append(K, "Fmax")
+		M["Fmax"] = io.Sf(`${%s}_{max}$`, o.symbF)
+		T["Fmax"] = make([]float64, nrows)
+		C["Fmax"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtF, v) }
+	}
+	if o.ShowFdev {
+		K = append(K, "Fdev")
+		M["Fdev"] = io.Sf(`${%s}_{dev}$`, o.symbF)
+		T["Fdev"] = make([]float64, nrows)
+		C["Fdev"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtF, v) }
+	}
+
+	// x-values
+	if o.ShowAllX {
+		for j := 0; j < o.nfltMax; j++ {
+			key := io.Sf("x%d", j)
+			K = append(K, key)
+			M[key] = io.Sf(`$x_{%d}$`, j)
+			T[key] = make([]float64, nrows)
+			jcopy := j // must create copy because when the function is called, j will be changed
+			C[key] = func(i int, v float64) string {
+				nflt := o.Opts[i].Nflt
+				if jcopy >= nflt {
+					return ""
+				}
+				xval := io.Sf(o.Opts[i].RptFmtX, v)
+				if o.ShowXref {
+					xref := "N/A"
+					if len(o.Opts[i].RptXref) == nflt {
+						xref = io.Sf(o.Opts[i].RptFmtX, o.Opts[i].RptXref[jcopy])
 					}
+					return io.Sf(`$\begin{matrix} %s \\ (%s) \end{matrix}$`, xval, xref)
+				} else {
+					return xval
 				}
 			}
 		}
 	}
 
-	// multi-objective columns
+	// columns: multi-objective columns
 	if o.ShowEmin {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtE, Emin))
+		K = append(K, "Emin")
+		M["Emin"] = `$E_{min}$`
+		T["Emin"] = make([]float64, nrows)
+		C["Emin"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
 	}
 	if o.ShowEave {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtE, Eave))
+		K = append(K, "Eave")
+		M["Eave"] = `$E_{ave}$`
+		T["Eave"] = make([]float64, nrows)
+		C["Eave"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
 	}
 	if o.ShowEmax {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtE, Emax))
+		K = append(K, "Emax")
+		M["Emax"] = `$E_{max}$`
+		T["Emax"] = make([]float64, nrows)
+		C["Emax"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
 	}
 	if o.ShowEdev {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtE, Edev))
+		K = append(K, "Edev")
+		M["Edev"] = `$E_{dev}$`
+		T["Edev"] = make([]float64, nrows)
+		C["Edev"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
 	}
 	if o.ShowLmin {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtL, Lmin))
+		K = append(K, "Lmin")
+		M["Lmin"] = `$L_{dev}$`
+		T["Lmin"] = make([]float64, nrows)
+		C["Lmin"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtL, v) }
 	}
 	if o.ShowLave {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtL, Lave))
+		K = append(K, "Lave")
+		M["Lave"] = `$L_{ave}$`
+		T["Lave"] = make([]float64, nrows)
+		C["Lave"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtL, v) }
 	}
 	if o.ShowLmax {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtL, Lmax))
+		K = append(K, "Lmax")
+		M["Lmax"] = `$L_{max}$`
+		T["Lmax"] = make([]float64, nrows)
+		C["Lmax"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtL, v) }
 	}
 	if o.ShowLdev {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtL, Ldev))
+		K = append(K, "Ldev")
+		M["Ldev"] = `$L_{dev}$`
+		T["Ldev"] = make([]float64, nrows)
+		C["Ldev"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtL, v) }
 	}
 	if o.ShowIGDmin {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtE, IGDmin))
+		K = append(K, "IGDmin")
+		M["IGDmin"] = `${IGD}_{dev}$`
+		T["IGDmin"] = make([]float64, nrows)
+		C["IGDmin"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
 	}
 	if o.ShowIGDave {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtE, IGDave))
+		K = append(K, "IGDave")
+		M["IGDave"] = `${IGD}_{ave}$`
+		T["IGDave"] = make([]float64, nrows)
+		C["IGDave"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
 	}
 	if o.ShowIGDmax {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtE, IGDmax))
+		K = append(K, "IGDmax")
+		M["IGDmax"] = `${IGD}_{max}$`
+		T["IGDmax"] = make([]float64, nrows)
+		C["IGDmax"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
 	}
 	if o.ShowIGDdev {
-		tex += io.Sf(` & %s`, tx(opt.RptFmtE, IGDdev))
+		K = append(K, "IGDdev")
+		M["IGDdev"] = `${IGD}_{dev}$`
+		T["IGDdev"] = make([]float64, nrows)
+		C["IGDdev"] = func(i int, v float64) string { return tx(o.Opts[i].RptFmtE, v) }
 	}
 
-	// description
-	if o.ShowDescription {
-		tex += io.Sf(` & %s`, opt.RptDesc)
+	// add rows
+	for i, opt := range o.Opts {
+		o.tableRow(T, i, opt)
 	}
-
-	// new line
-	tex += " \\\\\n"
-
-	// write to buffer
-	io.Ff(o.buf, "%s", tex)
+	return
 }
 
-// addFooter add table footer
-func (o *TexReport) addFooter(tableLabel string, idxtab int) {
-	io.Ff(o.buf, "\n\\bottomrule\n")
-	io.Ff(o.buf, "\\end{tabular}\n")
-	if idxtab > 0 {
-		io.Ff(o.buf, "\\label{tab:%s}\n", io.Sf("%s%d", tableLabel, idxtab))
-	} else {
-		io.Ff(o.buf, "\\label{tab:%s}\n", tableLabel)
+// tableRow generates one row in table
+func (o *TexReport) tableRow(T map[string][]float64, i int, opt *Optimiser) {
+
+	// compute F stat values
+	var errF error
+	var Fmin, Fave, Fmax, Fdev float64
+	if o.ShowFmin || o.ShowFave || o.ShowFmax || o.ShowFdev {
+		Fmin, Fave, Fmax, Fdev, _, errF = StatF(opt, 0, false)
 	}
-	io.Ff(o.buf, "\\end{table*}\n")
+
+	// compute E and L stat values
+	var errE error
+	var Emin, Eave, Emax, Edev float64
+	var Lmin, Lave, Lmax, Ldev float64
+	if o.ShowLmin || o.ShowLave || o.ShowLmax || o.ShowLdev {
+		Emin, Eave, Emax, Edev, _, Lmin, Lave, Lmax, Ldev, _, errE = StatF1F0(opt, false)
+	} else {
+		if o.ShowEmin || o.ShowEave || o.ShowEmax || o.ShowEdev {
+			Emin, Eave, Emax, Edev, _, errE = StatMultiE(opt, false)
+		}
+	}
+
+	// compute IGD stat values
+	var errIGD error
+	var IGDmin, IGDave, IGDmax, IGDdev float64
+	if o.ShowIGDmin || o.ShowIGDave || o.ShowIGDmax || o.ShowIGDdev {
+		IGDmin, IGDave, IGDmax, IGDdev, _, errIGD = StatMultiIGD(opt, false)
+	}
+
+	// columns: multi-objective columns
+	if o.ShowNsol {
+		T["Nsol"][i] = float64(opt.Nsol)
+	}
+	if o.ShowNcpu {
+		T["Ncpu"][i] = float64(opt.Ncpu)
+	}
+	if o.ShowTmax {
+		T["Tmax"][i] = float64(opt.Tmax)
+	}
+	if o.ShowDtExc {
+		T["DtExc"][i] = float64(opt.DtExc)
+	}
+	if o.ShowDEC {
+		T["DEC"][i] = opt.DEC
+	}
+
+	// columns: multi-objective columns
+	if o.ShowNfeval {
+		T["Nfeval"][i] = float64(opt.Nfeval)
+	}
+	if o.ShowSysTimeAve {
+		T["SysTimeAve"][i] = float64(opt.SysTimeAve.Nanoseconds())
+	}
+	if o.ShowSysTimeTot {
+		T["SysTimeTot"][i] = float64(opt.SysTimeTot.Nanoseconds())
+	}
+
+	// columns: multi-objective columns
+	if o.ShowFref {
+		if len(opt.RptFref) > 0 {
+			T["Fref"][i] = opt.RptFref[0]
+		}
+	}
+	if o.ShowFmin && errF == nil {
+		T["Fmin"][i] = Fmin
+	}
+	if o.ShowFave && errF == nil {
+		T["Fave"][i] = Fave
+	}
+	if o.ShowFmax && errF == nil {
+		T["Fmax"][i] = Fmax
+	}
+	if o.ShowFdev && errF == nil {
+		T["Fdev"][i] = Fdev
+	}
+
+	// x-values
+	if o.ShowAllX {
+		for j := 0; j < opt.Nflt; j++ {
+			key := io.Sf("x%d", j)
+			T[key][i] = opt.BestOfBestFlt[j]
+		}
+	}
+
+	// columns: multi-objective columns
+	if o.ShowEmin && errE == nil {
+		T["Emin"][i] = Emin
+	}
+	if o.ShowEave && errE == nil {
+		T["Eave"][i] = Eave
+	}
+	if o.ShowEmax && errE == nil {
+		T["Emax"][i] = Emax
+	}
+	if o.ShowEdev && errE == nil {
+		T["Edev"][i] = Edev
+	}
+	if o.ShowLmin && errE == nil {
+		T["Lmin"][i] = Lmin
+	}
+	if o.ShowLave && errE == nil {
+		T["Lave"][i] = Lave
+	}
+	if o.ShowLmax && errE == nil {
+		T["Lmax"][i] = Lmax
+	}
+	if o.ShowLdev && errE == nil {
+		T["Ldev"][i] = Ldev
+	}
+	if o.ShowIGDmin && errIGD == nil {
+		T["IGDmin"][i] = IGDmin
+	}
+	if o.ShowIGDave && errIGD == nil {
+		T["IGDave"][i] = IGDave
+	}
+	if o.ShowIGDmax && errIGD == nil {
+		T["IGDmax"][i] = IGDmax
+	}
+	if o.ShowIGDdev && errIGD == nil {
+		T["IGDdev"][i] = IGDdev
+	}
 }
 
 // other reporting functions ///////////////////////////////////////////////////////////////////////

@@ -8,6 +8,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
@@ -268,12 +269,10 @@ func StatIgd(o *Optimiser, fStar [][]float64) (igd float64) {
 }
 
 // StatF computes statistical information corresponding to objective function idxF
-func StatF(o *Optimiser, idxF int, verbose bool) (fmin, fave, fmax, fdev float64, F []float64) {
+func StatF(o *Optimiser, idxF int, verbose bool) (fmin, fave, fmax, fdev float64, F []float64, err error) {
 	nsamples := len(o.BestOvas[idxF])
 	if nsamples == 0 {
-		if verbose {
-			io.Pfred("there are no samples for statistical analysis\n")
-		}
+		err = chk.Err("there are no samples for statistical analysis\n")
 		return
 	}
 	F = make([]float64, nsamples)
@@ -305,9 +304,9 @@ func StatF(o *Optimiser, idxF int, verbose bool) (fmin, fave, fmax, fdev float64
 // StatF1F0 prints statistical analysis for two-objective problems
 //  emin, eave, emax, edev -- errors on f1(f0)
 //  lmin, lave, lmax, ldev -- arc-lengths along f1(f0) curve
-func StatF1F0(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []float64, lmin, lave, lmax, ldev float64, L []float64) {
+func StatF1F0(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []float64, lmin, lave, lmax, ldev float64, L []float64, err error) {
 	if len(o.F1F0_err) == 0 && len(o.F1F0_arcLen) == 0 {
-		io.Pfred("there are no samples for statistical analysis\n")
+		err = chk.Err("there are no samples for statistical analysis\n")
 		return
 	}
 	o.fix_formatting_data()
@@ -349,9 +348,9 @@ func StatF1F0(o *Optimiser, verbose bool) (emin, eave, emax, edev float64, E []f
 }
 
 // StatMultiE prints statistical error analysis for multi-objective problems
-func StatMultiE(o *Optimiser, verbose bool) (Emin, Eave, Emax, Edev float64, E []float64) {
+func StatMultiE(o *Optimiser, verbose bool) (Emin, Eave, Emax, Edev float64, E []float64, err error) {
 	if len(o.Multi_err) < 2 {
-		io.Pfred("there are no samples for statistical analysis\n")
+		err = chk.Err("there are no samples for statistical analysis\n")
 		return
 	}
 	o.fix_formatting_data()
@@ -371,9 +370,9 @@ func StatMultiE(o *Optimiser, verbose bool) (Emin, Eave, Emax, Edev float64, E [
 }
 
 // StatMultiIGD prints statistical IGD analysis for multi-objective problems
-func StatMultiIGD(o *Optimiser, verbose bool) (IGDmin, IGDave, IGDmax, IGDdev float64, IGD []float64) {
+func StatMultiIGD(o *Optimiser, verbose bool) (IGDmin, IGDave, IGDmax, IGDdev float64, IGD []float64, err error) {
 	if len(o.Multi_IGD) < 2 {
-		io.Pfred("there are no samples for statistical analysis\n")
+		err = chk.Err("there are no samples for statistical analysis\n")
 		return
 	}
 	o.fix_formatting_data()
