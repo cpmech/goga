@@ -16,7 +16,33 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-func solve_problem(problem int) (opt *goga.Optimiser) {
+// main function
+func main() {
+
+	// problem numbers
+	P := utl.IntRange2(1, 9)
+	//P := []int{2}
+
+	// allocate and run each problem
+	opts := make([]*goga.Optimiser, len(P))
+	for i, problem := range P {
+		opts[i] = solve_problem(problem)
+	}
+
+	// report
+	io.Pf("\n-------------------------- generating report --------------------------\nn")
+
+	// table
+	rpt := goga.NewTexReport(opts)
+	rpt.NRowPerTab = 10
+	rpt.Type = 1
+	rpt.Title = "Constrained and unconstrained three-objective problems"
+	rpt.Fnkey = "three-obj"
+	rpt.Generate()
+}
+
+// threeObj runs three-obj problem
+func threeObj(problem int) (opt *goga.Optimiser) {
 
 	io.Pf("\n\n------------------------------------- problem = %d ---------------------------------------\n", problem)
 
@@ -303,20 +329,4 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 		goga.WriteAllValues("/tmp/goga", "res_three-obj", opt)
 	}
 	return
-}
-
-func main() {
-	P := utl.IntRange2(1, 9)
-	//P := []int{2}
-	opts := make([]*goga.Optimiser, len(P))
-	for i, problem := range P {
-		opts[i] = solve_problem(problem)
-	}
-	io.Pf("\n-------------------------- generating report --------------------------\nn")
-	rpt := goga.NewTexReport(opts)
-	rpt.NRowPerTab = 10
-	rpt.Type = 1
-	rpt.Title = "Unconstrained and constrained three objective problems."
-	rpt.Fnkey = "three-obj"
-	rpt.Generate()
 }

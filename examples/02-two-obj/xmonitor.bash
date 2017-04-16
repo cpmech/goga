@@ -1,6 +1,15 @@
 #!/bin/bash
 
-GOGA="$HOME/10.go/pkg/linux_amd64/github.com/cpmech/goga.a"
+GP1="${GOPATH%:*}"
+GP2="${GOPATH#*:}"
+
+GP=$GP2
+if [[ -z "${GP// }" ]]; then
+    GP=$GP1
+fi
+
+GOGA="$GP/pkg/linux_amd64/github.com/cpmech/goga.a"
+
 FILES="*.go"
 
 if [ -f $GOGA ]; then
@@ -11,13 +20,15 @@ echo
 echo "monitoring:"
 echo $FILES
 echo
+echo "with:"
+echo "GP = $GP"
+echo
 echo
 
 refresh(){
     echo
     echo
-    #go run calcZDT3points.go
-    #go run plotLognorm.go
+    echo
     go run two-obj.go
 }
 

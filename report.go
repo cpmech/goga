@@ -373,7 +373,7 @@ func (o *TexReport) GenTable() (K []string, nrows int, F map[string]io.FcnRow, M
 	if o.ShowFdev {
 		K = append(K, "Fdev")
 		M["Fdev"] = io.Sf(`${%s}_{dev}$`, o.symbF)
-		F["Fdev"] = func(i int) string { return tx(o.Opts[i].RptFmtF, o.Opts[i].Fdev[0]) }
+		F["Fdev"] = func(i int) string { return tx(o.Opts[i].RptFmtFdev, o.Opts[i].Fdev[0]) }
 	}
 
 	// x-values
@@ -421,7 +421,7 @@ func (o *TexReport) GenTable() (K []string, nrows int, F map[string]io.FcnRow, M
 	if o.ShowEdev {
 		K = append(K, "Edev")
 		M["Edev"] = `$E_{dev}$`
-		F["Edev"] = func(i int) string { return tx(o.Opts[i].RptFmtE, o.Opts[i].Edev) }
+		F["Edev"] = func(i int) string { return tx(o.Opts[i].RptFmtEdev, o.Opts[i].Edev) }
 	}
 	if o.ShowLmin {
 		K = append(K, "Lmin")
@@ -441,7 +441,7 @@ func (o *TexReport) GenTable() (K []string, nrows int, F map[string]io.FcnRow, M
 	if o.ShowLdev {
 		K = append(K, "Ldev")
 		M["Ldev"] = `$L_{dev}$`
-		F["Ldev"] = func(i int) string { return tx(o.Opts[i].RptFmtL, o.Opts[i].Ldev) }
+		F["Ldev"] = func(i int) string { return tx(o.Opts[i].RptFmtLdev, o.Opts[i].Ldev) }
 	}
 	if o.ShowIGDmin {
 		K = append(K, "IGDmin")
@@ -461,7 +461,7 @@ func (o *TexReport) GenTable() (K []string, nrows int, F map[string]io.FcnRow, M
 	if o.ShowIGDdev {
 		K = append(K, "IGDdev")
 		M["IGDdev"] = `${IGD}_{dev}$`
-		F["IGDdev"] = func(i int) string { return tx(o.Opts[i].RptFmtE, o.Opts[i].IGDdev) }
+		F["IGDdev"] = func(i int) string { return tx(o.Opts[i].RptFmtEdev, o.Opts[i].IGDdev) }
 	}
 
 	// column: problem description

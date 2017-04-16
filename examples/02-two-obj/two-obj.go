@@ -16,7 +16,32 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-func solve_problem(problem int) (opt *goga.Optimiser) {
+// main function
+func main() {
+
+	// problem numbers
+	//P := utl.IntRange2(1, 7)
+	//P := []int{1, 2, 4, 6}
+	//P := []int{4, 5, 6}
+	P := []int{1, 2}
+
+	// allocate and run each problem
+	opts := make([]*goga.Optimiser, len(P))
+	for i, problem := range P {
+		opts[i] = twoObj(problem)
+	}
+
+	// report
+	io.Pf("\n-------------------------- generating report --------------------------\nn")
+
+	// table
+	rpt := goga.NewTexReport(opts)
+	rpt.Title = "Unconstrained two-objective problems"
+	rpt.Generate("/tmp/goga", "two-obj", "two_obj")
+}
+
+// twoObj runs two-obj problem
+func twoObj(problem int) (opt *goga.Optimiser) {
 
 	io.Pf("\n\n------------------------------------- problem = %d ---------------------------------------\n", problem)
 
@@ -24,8 +49,9 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 	opt = new(goga.Optimiser)
 	opt.Default()
 	opt.Ncpu = 1
-	opt.Tf = 500
+	opt.Tmax = 500
 	opt.Verbose = false
+	opt.VerbStat = false
 	opt.Nsamples = 2
 	opt.GenType = "latin"
 	opt.DEC = 0.1
@@ -266,11 +292,11 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 
 	// plot
 	if true {
-		feasibleOnly := true
 		plt.SetForEps(0.8, 300)
-		fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
-		fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
-		goga.PlotOvaOvaPareto(opt, sols0, 0, 1, feasibleOnly, fmtAll, fmtFront)
+		pp := goga.NewPlotParams(false)
+		//fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
+		//fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
+		opt.PlotOvaOvaPareto(sols0, 0, 1, pp)
 		np := 201
 		F0 := utl.LinSpace(fmin[0], fmax[0], np)
 		F1 := make([]float64, np)
@@ -289,22 +315,4 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 		plt.SaveD("/tmp/goga", io.Sf("%s.eps", opt.RptName))
 	}
 	return
-}
-
-func main() {
-	P := utl.IntRange2(1, 7)
-	//P := []int{1, 2, 4, 6}
-	//P := []int{4, 5, 6}
-	//P := []int{4}
-	opts := make([]*goga.Optimiser, len(P))
-	for i, problem := range P {
-		opts[i] = solve_problem(problem)
-	}
-	io.Pf("\n-------------------------- generating report --------------------------\nn")
-	rpt := goga.NewTexReport(opts)
-	rpt.NRowPerTab = 9
-	rpt.Type = 2
-	rpt.Title = "Unconstrained two objective problems."
-	rpt.Fnkey = "two-obj"
-	rpt.Generate()
 }
