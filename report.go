@@ -146,6 +146,7 @@ func (o *TexReport) SetColumnsInputData() {
 	o.ShowTmax = true
 	o.ShowDtExc = true
 	o.ShowDEC = true
+	o.ShowNfeval = true
 }
 
 // SetColumnsXvalues sets flags to generate a table with xvalues
@@ -262,6 +263,10 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 	o.SetColumnsXvalues()
 	K, nrows, F, M = o.GenTable()
 	rpt.TableFontSz = o.XtableFontSz
+	if o.ShowXref {
+		rpt.RowGapPt = 14
+		rpt.RowGapStep = 1
+	}
 	rpt.AddTableF(o.Title+". X values.", fnkey+"-xvs", o.XtableNotes, K, nrows, F, M)
 
 	// save file
@@ -394,7 +399,7 @@ func (o *TexReport) GenTable() (K []string, nrows int, F map[string]io.FcnRow, M
 					if len(o.Opts[i].RptXref) == nflt {
 						xref = io.Sf(o.Opts[i].RptFmtX, o.Opts[i].RptXref[jcopy])
 					}
-					return io.Sf(`$\begin{matrix} %s \\ (%s) \end{matrix}$`, xval, xref)
+					return io.Sf(`$\begin{matrix} %s \\ %s \end{matrix}$`, xval, xref)
 				} else {
 					return xval
 				}
