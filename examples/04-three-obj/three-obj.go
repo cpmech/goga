@@ -21,12 +21,12 @@ func main() {
 
 	// problem numbers
 	P := utl.IntRange2(1, 9)
-	//P := []int{2}
+	//P := []int{6}
 
 	// allocate and run each problem
 	opts := make([]*goga.Optimiser, len(P))
 	for i, problem := range P {
-		opts[i] = solve_problem(problem)
+		opts[i] = threeObj(problem)
 	}
 
 	// report
@@ -34,11 +34,13 @@ func main() {
 
 	// table
 	rpt := goga.NewTexReport(opts)
-	rpt.NRowPerTab = 10
-	rpt.Type = 1
+	rpt.ShowDescription = false
+	rpt.ShowLmin = false
+	rpt.ShowLave = false
+	rpt.ShowLmax = false
+	rpt.ShowLdev = false
 	rpt.Title = "Constrained and unconstrained three-objective problems"
-	rpt.Fnkey = "three-obj"
-	rpt.Generate()
+	rpt.Generate("/tmp/goga", "three-obj")
 }
 
 // threeObj runs three-obj problem
@@ -46,22 +48,28 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 
 	io.Pf("\n\n------------------------------------- problem = %d ---------------------------------------\n", problem)
 
+	// options
+	plotVTK := false
+	plotPy := false
+	plotStar := false
+	writeRes := false
+	printResults := false
+	constantSeed := false
+
 	// GA parameters
 	opt = new(goga.Optimiser)
 	opt.Default()
 	opt.Nsol = 200
 	opt.Ncpu = 5
-	opt.Tf = 500
-	opt.Nsamples = 2
+	opt.Tmax = 500
+	opt.Nsamples = 3 /////////////// increase this number
 	opt.DEC = 0.01
 
 	// options for report
 	opt.HistNsta = 6
 	opt.HistLen = 13
-	opt.RptFmtE = "%.4e"
-	opt.RptFmtL = "%.4e"
-	opt.RptFmtEdev = "%.3e"
-	opt.RptFmtLdev = "%.3e"
+	opt.RptFmtE = "%.2e"
+	opt.RptFmtEdev = "%.2e"
 	opt.RptFmin = make([]float64, 3)
 	opt.RptFmax = make([]float64, 3)
 	for i := 0; i < 3; i++ {
@@ -287,15 +295,15 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 	opt.Init(goga.GenTrialSolutions, nil, fcn, nf, ng, nh)
 
 	// solve
-	opt.RunMany("", "")
-	goga.StatMulti(opt, true)
+	opt.RunMany("", "", constantSeed)
+	opt.PrintStatMultiE()
 
 	// check
 	goga.CheckFront0(opt, true)
 
 	// print results
-	if false {
-		goga.SortByOva(opt.Solutions, 0)
+	if printResults {
+		goga.SortSolutions(opt.Solutions, 0)
 		m, l := opt.Nsol/2, opt.Nsol-1
 		A, B, C := opt.Solutions[0], opt.Solutions[m], opt.Solutions[l]
 		io.Pforan("A = %v\n", A.Flt)
@@ -304,28 +312,29 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 	}
 
 	// plot results
-	if false {
+	if plotPy {
 		py_plot3(0, 1, nf-1, opt, plot_solution, true, true)
 	}
 
 	// vtk
-	if false {
+	if plotVTK {
 		ptRad := 0.015
 		if opt.RptName == "DTLZ1" {
 			ptRad = 0.01
 		}
-		vtk_plot3(opt, αcone, ptRad, true, true)
+		twice := false
+		vtk_plot3(opt, αcone, ptRad, true, twice)
 	}
 
 	// star plot
-	if false {
+	if plotStar {
 		plt.SetForEps(1, 300)
-		goga.PlotStar(opt)
+		opt.PlotStar()
 		plt.SaveD("/tmp/goga", io.Sf("starplot_%s.eps", opt.RptName))
 	}
 
 	// write all results
-	if false {
+	if writeRes {
 		goga.WriteAllValues("/tmp/goga", "res_three-obj", opt)
 	}
 	return

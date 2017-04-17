@@ -247,6 +247,15 @@ func vtk_plot3(opt *goga.Optimiser, αcone, ptRad float64, onlyFront0, twice boo
 		scn.AxesLen = 0.6
 	}
 
+	// set camera
+	scn.Width = 600
+	scn.Height = 600
+	scn.Zoom = 1.4
+	if opt.RptName == "DTLZ2c" {
+		scn.Zoom = 1.5
+		scn.SetCamera(0, 0, 1, 0, 0, 0, 2, 1, 1.5)
+	}
+
 	// optimal Pareto front
 	front := vtk.NewIsoSurf(func(x []float64) (f, vx, vy, vz float64) {
 		f = opt.Multi_fcnErr(x)
@@ -281,8 +290,8 @@ func vtk_plot3(opt *goga.Optimiser, αcone, ptRad float64, onlyFront0, twice boo
 	P.AddTo(scn)
 
 	// start interactive mode
-	scn.SaveEps = false
-	scn.SavePng = true
+	scn.SaveEps = true
+	scn.SavePng = false
 	scn.PngMag = 2
 	scn.Fnk = io.Sf("/tmp/goga/vtk_%s_A", opt.RptName)
 	scn.Run()
