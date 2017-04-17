@@ -267,7 +267,7 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 		rpt.RowGapPt = 14
 		rpt.RowGapStep = 1
 	}
-	rpt.AddTableF(o.Title+". X values.", fnkey+"-xvs", o.XtableNotes, K, nrows, F, M)
+	rpt.AddTableF(o.Title+". Solutions.", fnkey+"-sol", o.XtableNotes, K, nrows, F, M)
 
 	// save file
 	err := rpt.WriteTexPdf(dirout, fnkey, nil)
@@ -280,7 +280,7 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 	err = rpt.WriteTexTables(dirout, map[string]string{
 		fnkey + "-res": "table-" + fnkey + "-results",
 		fnkey + "-inp": "table-" + fnkey + "-inputdata",
-		fnkey + "-xvs": "table-" + fnkey + "-xvalues",
+		fnkey + "-sol": "table-" + fnkey + "-solutions",
 	})
 	if err != nil {
 		io.PfRed("write tex tables failed: %v\n", err)
