@@ -12,15 +12,15 @@ import (
 	"github.com/cpmech/goga"
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/utl"
 )
 
 // main function
 func main() {
 
 	// problem numbers
-	//P := utl.IntRange2(1, 10)
-	//P := utl.IntRange2(1, 7)
-	P := []int{1, 2}
+	P := utl.IntRange2(1, 10)
+	//P := []int{9}
 
 	// check problem constraints
 	checkOnly := false
@@ -38,7 +38,6 @@ func main() {
 
 	// report
 	io.Pf("\n-------------------------- generating report --------------------------\n")
-	withHistogram := false
 
 	// table with input data
 	rpt := goga.NewTexReport(opts)
@@ -46,13 +45,8 @@ func main() {
 	rpt.Landscape = false
 	rpt.DescHeader = "ref"
 	rpt.SetColumnsSingleObj(false, false)
-	//rpt.SetColumnsAll(true)
 	rpt.Title = "Constrained single-objective problems"
 	rpt.Generate("/tmp/goga", "one-obj")
-
-	// histogram
-	if withHistogram {
-	}
 }
 
 // oneObj runs one-obj problem
@@ -67,7 +61,7 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 	opt.Tmax = 500
 	opt.Verbose = false
 	opt.VerbStat = false
-	opt.Nsamples = 3
+	opt.Nsamples = 3 /////////// increase this number
 	opt.GenType = "latin"
 
 	// options for report
@@ -329,6 +323,7 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 	//   \emph{case 5} in \citep{mich:95} and
 	//   \emph{test 8} in \citep{deb:00}.
 	case 7:
+		opt.Tmax = 1000
 		opt.Ncpu = 2
 		opt.RptName = "7"
 		opt.RptFref = []float64{24.3062091}
@@ -350,6 +345,7 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 			g[6] = -x[0]*x[0] - 2.0*math.Pow(x[1]-2.0, 2.0) + 2.0*x[0]*x[1] - 14.0*x[4] + 6.0*x[5]
 			g[7] = 3.0*x[0] - 6.0*x[1] - 12.0*math.Pow(x[8]-8.0, 2.0) + 7.0*x[9]
 		}
+		opt.RptFmtFdev = "%.2e"
 		opt.RptDesc = `\cite{deb:00}-T8`
 
 	// problem # 8 -- Deb's problem 4 -- Z. Michalewicz 1995
@@ -360,6 +356,7 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 	//   \emph{case 2} in \citep{mich:95} and
 	//   \emph{test 4} in \citep{deb:00}.
 	case 8:
+		opt.Tmax = 5000
 		opt.Ncpu = 2
 		opt.RptName = "8"
 		opt.RptFref = []float64{7049.330923}
@@ -383,17 +380,19 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 			g[5] = x[2]*x[7] - x[2]*x[4] + 2500.0*x[4] - 1250000
 		}
 		opt.HistLen = 12
+		opt.RptFmtFdev = "%.2e"
 		opt.RptDesc = `\cite{deb:00}-T4`
 
 	// problem # 9 -- Deb's problem 7 -- Z. Michalewicz 1995
 	//   has 5 variables, 3 equality constraints and is a very difficult problem.
 	//   The objective function is the exponential of all variables multiplied together.
 	//   The equality constraints are nonlinear (quadratic and cubic) expressions.
-	//   To handle these constraints $\epsilon_h=10^{-3}$ is selected. The problem corresponds to
+	//   The problem corresponds to
 	//   \emph{problem 80 (page 100)} in \citep{hock:81},
-	//   \emph{case 4} in \citep{mich:95} and
+	//   \emph{case 4} in \citep{mich:95} (page 146) and
 	//   \emph{test 7} in \citep{deb:00}.
 	case 9:
+		opt.Tmax = 7000
 		opt.EpsH = 1e-3
 		opt.RptName = "9"
 		opt.RptFref = []float64{0.0539498478}
@@ -407,6 +406,7 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 			h[1] = x[1]*x[2] - 5.0*x[3]*x[4]
 			h[2] = math.Pow(x[0], 3.0) + math.Pow(x[1], 3.0) + 1.0
 		}
+		opt.RptFmtFdev = "%.2e"
 		opt.RptDesc = `\cite{deb:00}-T7`
 
 	default:
@@ -421,13 +421,15 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 
 	// number of trial solutions
 	opt.Nsol = len(opt.FltMin) * 10
+	//opt.Nsol = 6
 
 	// initialise optimiser
 	nf := 1
 	opt.Init(goga.GenTrialSolutions, nil, fcn, nf, ng, nh)
 
 	// solve
-	opt.RunMany("", "")
+	constantSeed := false
+	opt.RunMany("", "", constantSeed)
 	opt.PrintStatF(0)
 	io.PfMag("Tsys{tot} = %v\n", opt.SysTimeTot)
 	io.PfYel("Tsys{ave} = %v\n", opt.SysTimeAve)
