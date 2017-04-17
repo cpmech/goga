@@ -10,7 +10,14 @@ import (
 )
 
 // GenTrialSolutions generates (initial) trial solutions
-func GenTrialSolutions(sols []*Solution, prms *Parameters) {
+func GenTrialSolutions(sols []*Solution, prms *Parameters, reset bool) {
+
+	// reset solutions
+	if reset {
+		for id, sol := range sols {
+			sol.Reset(id)
+		}
+	}
 
 	// floats
 	n := len(sols) // cannot use Nsol here because subsets of Solutions may be provided; e.g. parallel code
