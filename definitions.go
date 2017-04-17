@@ -10,7 +10,7 @@ const (
 )
 
 // Generator_t defines callback function to generate trial solutions
-type Generator_t func(sols []*Solution, prms *Parameters)
+type Generator_t func(sols []*Solution, prms *Parameters, reset bool)
 
 // ObjFunc_t defines the objective fuction
 type ObjFunc_t func(sol *Solution, cpu int)

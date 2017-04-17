@@ -37,8 +37,11 @@ func Test_igd01(tst *testing.T) {
 	nf, ng, nh := 2, 0, 0
 
 	// generator (store fStar into Flt)
-	gen := func(sols []*Solution, prms *Parameters) {
+	gen := func(sols []*Solution, prms *Parameters, reset bool) {
 		for i, sol := range sols {
+			if reset {
+				sol.Reset(i)
+			}
 			sol.Flt[0], sol.Flt[1] = fStar[i][0], fStar[i][1]
 		}
 	}
@@ -101,8 +104,11 @@ func Test_igd02(tst *testing.T) {
 	nf, ng, nh := 2, 0, 0
 
 	// generator (store fNum into Flt)
-	gen := func(sols []*Solution, prms *Parameters) {
+	gen := func(sols []*Solution, prms *Parameters, reset bool) {
 		for i, sol := range sols {
+			if reset {
+				sol.Reset(i)
+			}
 			sol.Flt[0], sol.Flt[1] = fNum[i][0], fNum[i][1]
 		}
 	}
