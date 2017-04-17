@@ -30,6 +30,7 @@ refresh(){
     echo
     echo
     go run one-obj.go
+    #go run one-obj-prob9-dbg.go
 }
 
 while true; do
