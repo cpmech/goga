@@ -37,6 +37,10 @@ func main() {
 	io.Pf("\n-------------------------- generating report --------------------------\nn")
 	rpt := goga.NewTexReport(opts)
 	rpt.ShowDescription = false
+	rpt.ShowLmin = false
+	rpt.ShowLave = false
+	rpt.ShowLmax = false
+	rpt.ShowLdev = false
 	rpt.Title = "Constrained two-objective problems"
 	rpt.Generate("/tmp/goga", "two-obj-ct")
 }
@@ -57,17 +61,16 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 	opt.Ncpu = 3
 	opt.Tmax = 500
 	opt.Verbose = false
-	opt.Nsamples = 1000 ////////////// increase this number
+	opt.VerbStat = false
+	opt.Nsamples = 3 ////////////// increase this number
 	opt.GenType = "latin"
 	opt.DEC = 0.1
 
 	// options for report
 	opt.HistNsta = 6
 	opt.HistLen = 13
-	opt.RptFmtE = "%.1e"
-	opt.RptFmtL = "%.1e"
-	opt.RptFmtEdev = "%.1e"
-	opt.RptFmtLdev = "%.1e"
+	opt.RptFmtE = "%.2e"
+	opt.RptFmtEdev = "%.2e"
 
 	// problem variables
 	nx := 10
