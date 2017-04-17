@@ -25,9 +25,24 @@ func (o *Group) Init(cpu, ncpu int, solutions []*Solution, prms *Parameters) {
 	o.Pairs = utl.IntsAlloc(o.Ncur/2, 2)
 	for i := 0; i < o.Ncur; i++ {
 		o.All[i] = solutions[start+i]
-		o.All[o.Ncur+i] = NewSolution(-i, nsol, prms)
+		o.All[o.Ncur+i] = NewSolution(-(1 + i), nsol, prms) // the index is for debugging
 		o.Indices[i] = i
 	}
 	o.Metrics = new(Metrics)
 	o.Metrics.Init(len(o.All), prms)
+}
+
+// Reset resets group data
+func (o *Group) Reset(cpu, ncpu int, solutions []*Solution) {
+	nsol := len(solutions)
+	start := (cpu * nsol) / ncpu
+	for i, pp := range o.Pairs {
+		for j, _ := range pp {
+			o.Pairs[i][j] = 0
+		}
+	}
+	for i := 0; i < o.Ncur; i++ {
+		o.All[i] = solutions[start+i]
+		o.All[o.Ncur+i].Reset(-(1 + i)) // there is no real need for this; but helps with debugging
+	}
 }
