@@ -7,7 +7,6 @@ package goga
 import (
 	"math"
 
-	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/utl"
@@ -45,6 +44,7 @@ type PlotParams struct {
 	Yrange       []float64 // to override y-range
 	IdxH         int       // index of h function to plot. -1 means all
 	Refx         []float64 // reference x vector with the other values in case Nflt > 2
+	ContourAt    string    // if Refx==nil, options: "minimum", "maximum", "middle", "best" (default)
 	NoF          bool      // without f(x)
 	NoG          bool      // without g(x)
 	NoH          bool      // without h(x)
@@ -118,16 +118,28 @@ func NewPlotParams(simple bool) (o *PlotParams) {
 	return
 }
 
-// PlotContour plots contour
+// PlotContour plots contour with other components @ x=Refx
+//  If Refx==nil, x can be either @ minimum, maximum, middle or best
+//  For x @ best, Solutions will be sorted
 func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 
 	// check
 	var x []float64
 	if pp.Refx == nil {
-		if iFlt > 1 || jFlt > 1 {
-			chk.Panic("Refx vector must be given to PlotContour when iFlt or jFlt > 1")
+		x = make([]float64, o.Nflt)
+		switch pp.ContourAt {
+		case "minimum":
+			copy(x, o.FltMin)
+		case "maximum":
+			copy(x, o.FltMax)
+		case "middle":
+			for k := 0; k < o.Nflt; k++ {
+				x[k] = (o.FltMin[k] + o.FltMax[k]) / 2.0
+			}
+		default:
+			SortSolutions(o.Solutions, 0)
+			copy(x, o.Solutions[0].Flt)
 		}
-		x = make([]float64, 2)
 	} else {
 		x = make([]float64, len(pp.Refx))
 		copy(x, pp.Refx)
