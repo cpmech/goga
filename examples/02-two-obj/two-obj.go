@@ -20,10 +20,10 @@ import (
 func main() {
 
 	// problem numbers
-	//P := utl.IntRange2(1, 7)
+	P := utl.IntRange2(1, 7)
 	//P := []int{1, 2, 4, 6}
 	//P := []int{4, 5, 6}
-	P := []int{1, 2}
+	//P := []int{6}
 
 	// allocate and run each problem
 	opts := make([]*goga.Optimiser, len(P))
@@ -36,14 +36,20 @@ func main() {
 
 	// table
 	rpt := goga.NewTexReport(opts)
+	rpt.ShowDescription = false
 	rpt.Title = "Unconstrained two-objective problems"
-	rpt.Generate("/tmp/goga", "two-obj", "two_obj")
+	rpt.Generate("/tmp/goga", "two-obj")
 }
 
 // twoObj runs two-obj problem
 func twoObj(problem int) (opt *goga.Optimiser) {
 
 	io.Pf("\n\n------------------------------------- problem = %d ---------------------------------------\n", problem)
+
+	// options
+	doPlot := false
+	withSols0 := false
+	constantSeed := false
 
 	// parameters
 	opt = new(goga.Optimiser)
@@ -52,17 +58,17 @@ func twoObj(problem int) (opt *goga.Optimiser) {
 	opt.Tmax = 500
 	opt.Verbose = false
 	opt.VerbStat = false
-	opt.Nsamples = 2
+	opt.Nsamples = 2 ///////// increase this number
 	opt.GenType = "latin"
 	opt.DEC = 0.1
 
 	// options for report
 	opt.HistNsta = 6
 	opt.HistLen = 13
-	opt.RptFmtE = "%.4e"
-	opt.RptFmtL = "%.4e"
-	opt.RptFmtEdev = "%.3e"
-	opt.RptFmtLdev = "%.3e"
+	opt.RptFmtE = "%.1e"
+	opt.RptFmtL = "%.1e"
+	opt.RptFmtEdev = "%.1e"
+	opt.RptFmtLdev = "%.1e"
 
 	// problem variables
 	var fmin, fmax []float64
@@ -279,40 +285,43 @@ func twoObj(problem int) (opt *goga.Optimiser) {
 
 	// initial solutions
 	var sols0 []*goga.Solution
-	if false {
+	if withSols0 {
 		sols0 = opt.GetSolutionsCopy()
 	}
 
 	// solve
-	opt.RunMany("", "")
-	goga.StatF1F0(opt, true)
+	opt.RunMany("", "", constantSeed)
+	opt.PrintStatF1F0()
 
 	// check
 	goga.CheckFront0(opt, true)
 
 	// plot
-	if true {
-		plt.SetForEps(0.8, 300)
+	if doPlot {
+		plt.SetForEps(0.75, 250)
 		pp := goga.NewPlotParams(false)
-		//fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
-		//fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
+		pp.FmtFront.M = "."
+		pp.FmtFront.Ms = 5
+		pp.FnKey = opt.RptName
+		pp.Extra = func() {
+			np := 201
+			F0 := utl.LinSpace(fmin[0], fmax[0], np)
+			F1 := make([]float64, np)
+			for i := 0; i < np; i++ {
+				F1[i] = opt.F1F0_func(F0[i])
+			}
+			plt.Plot(F0, F1, io.Sf("'b-', label='%s'", opt.RptName))
+			for _, f0vals := range opt.F1F0_f0ranges {
+				f0A, f0B := f0vals[0], f0vals[1]
+				f1A, f1B := opt.F1F0_func(f0A), opt.F1F0_func(f0B)
+				plt.PlotOne(f0A, f1A, "'g_', mew=1.5, ms=10, clip_on=0")
+				plt.PlotOne(f0B, f1B, "'g|', mew=1.5, ms=10, clip_on=0")
+			}
+		}
+		//plt.AxisRange(fmin[0], fmax[0], fmin[1], fmax[1])
+		//plt.Gll("$f_0$", "$f_1$", "")
+		//plt.SaveD("/tmp/goga", io.Sf("%s.eps", opt.RptName))
 		opt.PlotOvaOvaPareto(sols0, 0, 1, pp)
-		np := 201
-		F0 := utl.LinSpace(fmin[0], fmax[0], np)
-		F1 := make([]float64, np)
-		for i := 0; i < np; i++ {
-			F1[i] = opt.F1F0_func(F0[i])
-		}
-		plt.Plot(F0, F1, io.Sf("'b-', label='%s'", opt.RptName))
-		for _, f0vals := range opt.F1F0_f0ranges {
-			f0A, f0B := f0vals[0], f0vals[1]
-			f1A, f1B := opt.F1F0_func(f0A), opt.F1F0_func(f0B)
-			plt.PlotOne(f0A, f1A, "'g_', mew=1.5, ms=10, clip_on=0")
-			plt.PlotOne(f0B, f1B, "'g|', mew=1.5, ms=10, clip_on=0")
-		}
-		plt.AxisRange(fmin[0], fmax[0], fmin[1], fmax[1])
-		plt.Gll("$f_0$", "$f_1$", "")
-		plt.SaveD("/tmp/goga", io.Sf("%s.eps", opt.RptName))
 	}
 	return
 }
