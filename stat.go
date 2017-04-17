@@ -92,7 +92,7 @@ type Stat struct {
 }
 
 // RunMany runs many trials in order to produce statistical data
-func (o *Optimiser) RunMany(dirout, fnkey string) {
+func (o *Optimiser) RunMany(dirout, fnkey string, constantSeed bool) {
 
 	// benchmark
 	t0 := time.Now()
@@ -140,7 +140,7 @@ func (o *Optimiser) RunMany(dirout, fnkey string) {
 		// re-generate solutions
 		o.Nfeval = 0
 		if itrial > 0 {
-			o.generate_solutions(itrial)
+			o.Reset(constantSeed)
 		}
 
 		// save initial solutions

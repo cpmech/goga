@@ -123,7 +123,7 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 	o.ova0 = make([]float64, o.Tmax)
 
 	// generate trial solutions
-	o.generate_solutions(0)
+	o.generate_solutions(false)
 }
 
 // GetSolutionsCopy returns a copy of Solutions
@@ -133,6 +133,17 @@ func (o *Optimiser) GetSolutionsCopy() (res []*Solution) {
 		sol.CopyInto(res[i])
 	}
 	return
+}
+
+// Reset resets all variables for a next sample run
+func (o *Optimiser) Reset(reSeed bool) {
+	if reSeed {
+		rnd.Init(o.Seed)
+	}
+	o.generate_solutions(true)
+	for cpu := 0; cpu < o.Ncpu; cpu++ {
+		o.Groups[cpu].Reset(cpu, o.Ncpu, o.Solutions)
+	}
 }
 
 // Solve solves optimisation problem
@@ -319,12 +330,12 @@ func (o *Optimiser) Tournament(A, B, a, b *Solution, m *Metrics) {
 // auxiliary //////////////////////////////////////////////////////////////////////////////////////
 
 // generate_solutions generate solutions
-func (o *Optimiser) generate_solutions(itrial int) {
+func (o *Optimiser) generate_solutions(reset bool) {
 
 	// benchmark
 	t0 := gotime.Now()
 	var tgen, tmsh gotime.Time
-	if o.VerbTime && itrial == 0 {
+	if o.VerbTime && !reset {
 		defer func() {
 			io.Pfblue2("time spent in generation of solutions = %v\n", tgen.Sub(t0))
 			io.Pfblue2("time spent in Delaunay triangulations = %v\n", tmsh.Sub(tgen))
@@ -334,7 +345,7 @@ func (o *Optimiser) generate_solutions(itrial int) {
 
 	// generate
 	if o.GenAll {
-		o.Generator(o.Solutions, &o.Parameters)
+		o.Generator(o.Solutions, &o.Parameters, reset)
 		for _, sol := range o.Solutions {
 			o.ObjFunc(sol, 0)
 		}
@@ -344,7 +355,7 @@ func (o *Optimiser) generate_solutions(itrial int) {
 			go func(cpu int) {
 				start, endp1 := (cpu*o.Nsol)/o.Ncpu, ((cpu+1)*o.Nsol)/o.Ncpu
 				sols := o.Solutions[start:endp1]
-				o.Generator(sols, &o.Parameters)
+				o.Generator(sols, &o.Parameters, reset)
 				for _, sol := range sols {
 					o.ObjFunc(sol, cpu)
 				}
