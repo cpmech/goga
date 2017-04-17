@@ -274,17 +274,28 @@ func (o *Optimiser) RunMany(dirout, fnkey string, constantSeed bool) {
 	o.Fmax = make([]float64, o.Nova)
 	o.Fdev = make([]float64, o.Nova)
 	for i := 0; i < o.Nova; i++ {
-		if len(o.BestOvas[i]) > 1 {
+		o.Fmin[i], o.Fave[i], o.Fmax[i], o.Fdev[i] = INF, INF, INF, INF
+		if len(o.BestOvas[i]) > 1 && o.Nova == 1 {
 			o.Fmin[i], o.Fave[i], o.Fmax[i], o.Fdev[i] = rnd.StatBasic(o.BestOvas[i], true)
 		}
 	}
 
 	// statistics: E and L
-	o.Emin, o.Eave, o.Emax, o.Edev = rnd.StatBasic(o.F1F0_err, true)
-	o.Lmin, o.Lave, o.Lmax, o.Ldev = rnd.StatBasic(o.F1F0_arcLen, true)
+	o.Emin, o.Eave, o.Emax, o.Edev = INF, INF, INF, INF
+	o.Lmin, o.Lave, o.Lmax, o.Ldev = INF, INF, INF, INF
+	if o.F1F0_func != nil {
+		o.Emin, o.Eave, o.Emax, o.Edev = rnd.StatBasic(o.F1F0_err, true)
+		o.Lmin, o.Lave, o.Lmax, o.Ldev = rnd.StatBasic(o.F1F0_arcLen, true)
+	}
+	if o.Multi_fcnErr != nil {
+		o.Emin, o.Eave, o.Emax, o.Edev = rnd.StatBasic(o.Multi_err, true)
+	}
 
 	// statistics: IGD
-	o.IGDmin, o.IGDave, o.IGDmax, o.IGDdev = rnd.StatBasic(o.Multi_IGD, true)
+	o.IGDmin, o.IGDave, o.IGDmax, o.IGDdev = INF, INF, INF, INF
+	if len(o.Multi_IGD) > 0 {
+		o.IGDmin, o.IGDave, o.IGDmax, o.IGDdev = rnd.StatBasic(o.Multi_IGD, true)
+	}
 }
 
 // PrintStatF print statistical information corresponding to objective function idxF
