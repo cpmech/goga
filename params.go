@@ -98,7 +98,7 @@ func (o *Parameters) Default() {
 	o.LatinDup = 2
 	o.EpsH = 0.1
 	o.Verbose = true
-	o.VerbStat = true
+	o.VerbStat = false
 	o.VerbTime = false
 	o.GenAll = false
 	o.Nsamples = 10
