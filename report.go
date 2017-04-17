@@ -260,14 +260,16 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 	rpt.AddTableF(o.Title+". Input data.", fnkey+"-inp", o.ItableNotes, K, nrows, F, M)
 
 	// generate xvalues table
-	o.SetColumnsXvalues()
-	K, nrows, F, M = o.GenTable()
-	rpt.TableFontSz = o.XtableFontSz
-	if o.ShowXref {
-		rpt.RowGapPt = 14
-		rpt.RowGapStep = 1
+	if o.singleObj {
+		o.SetColumnsXvalues()
+		K, nrows, F, M = o.GenTable()
+		rpt.TableFontSz = o.XtableFontSz
+		if o.ShowXref {
+			rpt.RowGapPt = 14
+			rpt.RowGapStep = 1
+		}
+		rpt.AddTableF(o.Title+". Solutions.", fnkey+"-sol", o.XtableNotes, K, nrows, F, M)
 	}
-	rpt.AddTableF(o.Title+". Solutions.", fnkey+"-sol", o.XtableNotes, K, nrows, F, M)
 
 	// save file
 	err := rpt.WriteTexPdf(dirout, fnkey, nil)
@@ -277,11 +279,18 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 	}
 
 	// save tables
-	err = rpt.WriteTexTables(dirout, map[string]string{
-		fnkey + "-res": "table-" + fnkey + "-results",
-		fnkey + "-inp": "table-" + fnkey + "-inputdata",
-		fnkey + "-sol": "table-" + fnkey + "-solutions",
-	})
+	if o.singleObj {
+		err = rpt.WriteTexTables(dirout, map[string]string{
+			fnkey + "-res": "table-" + fnkey + "-results",
+			fnkey + "-inp": "table-" + fnkey + "-inputdata",
+			fnkey + "-sol": "table-" + fnkey + "-solutions",
+		})
+	} else {
+		err = rpt.WriteTexTables(dirout, map[string]string{
+			fnkey + "-res": "table-" + fnkey + "-results",
+			fnkey + "-inp": "table-" + fnkey + "-inputdata",
+		})
+	}
 	if err != nil {
 		io.PfRed("write tex tables failed: %v\n", err)
 	}
