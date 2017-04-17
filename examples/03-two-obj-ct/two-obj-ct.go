@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// report
-	io.Pf("\n-------------------------- generating report --------------------------\nn")
+	io.Pf("\n----------------------------------- generating report -----------------------------------\n\n")
 	rpt := goga.NewTexReport(opts)
 	rpt.ShowDescription = false
 	rpt.ShowLmin = false
@@ -62,13 +62,11 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 	opt.Tmax = 500
 	opt.Verbose = false
 	opt.VerbStat = false
-	opt.Nsamples = 3 ////////////// increase this number
 	opt.GenType = "latin"
 	opt.DEC = 0.1
+	opt.Nsamples = 3 //////////////////////// increase this number
 
 	// options for report
-	opt.HistNsta = 6
-	opt.HistLen = 13
 	opt.RptFmtE = "%.2e"
 	opt.RptFmtEdev = "%.2e"
 
@@ -374,8 +372,7 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 	return
 }
 
-// auxiliary ///////////////////////////////////////////////////////////////////////////////////////
-
+// CTPconstraint implements the constraint function in CTP problem
 func CTPconstraint(θ, a, b, c, d, e float64, f0, f1 float64) (g0 float64) {
 	sθ, cθ := math.Sin(θ), math.Cos(θ)
 	c1 := cθ*(f1-e) - sθ*f0
@@ -384,6 +381,7 @@ func CTPconstraint(θ, a, b, c, d, e float64, f0, f1 float64) (g0 float64) {
 	return c1 - a*math.Pow(math.Abs(c3), d)
 }
 
+// CTPgenerator generates CTP problem
 func CTPgenerator(θ, a, b, c, d, e float64) goga.MinProb_t {
 	return func(f, g, h, x []float64, ξ []int, cpu int) {
 		c0 := 1.0
@@ -396,6 +394,7 @@ func CTPgenerator(θ, a, b, c, d, e float64) goga.MinProb_t {
 	}
 }
 
+// CTPplotter plots CTP problem
 func CTPplotter(θ, a, b, c, d, e, f1max float64) func() {
 	return func() {
 		np := 401
@@ -415,6 +414,7 @@ func CTPplotter(θ, a, b, c, d, e, f1max float64) func() {
 	}
 }
 
+// CTPerror1 implements the error function in CTP problem
 func CTPerror1(θ, a, b, c, d, e float64) func(f []float64) float64 {
 	return func(f []float64) float64 {
 		return CTPconstraint(θ, a, b, c, d, e, f[0], f[1])

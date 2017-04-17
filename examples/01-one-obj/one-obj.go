@@ -20,7 +20,7 @@ func main() {
 
 	// problem numbers
 	P := utl.IntRange2(1, 10)
-	//P := []int{9}
+	//P := []int{1}
 
 	// check problem constraints
 	checkOnly := false
@@ -37,9 +37,7 @@ func main() {
 	}
 
 	// report
-	io.Pf("\n-------------------------- generating report --------------------------\n")
-
-	// table with input data
+	io.Pf("\n----------------------------------- generating report -----------------------------------\n\n")
 	rpt := goga.NewTexReport(opts)
 	rpt.UseGeom = true
 	rpt.Landscape = false
@@ -64,12 +62,10 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 	opt.Tmax = 500
 	opt.Verbose = false
 	opt.VerbStat = false
-	opt.Nsamples = 3 /////////// increase this number
 	opt.GenType = "latin"
+	opt.Nsamples = 3 /////////////////////// increase this number
 
 	// options for report
-	opt.HistNsta = 6
-	opt.HistLen = 13
 	opt.RptFmtF = "%.5f"
 	opt.RptFmtFdev = "%.5f"
 	opt.RptFmtX = "%.5f"
@@ -192,7 +188,6 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 		}
 		opt.RptFmtF = "%.2f"
 		opt.RptFmtFdev = "%.2e"
-		opt.HistLen = 5
 		opt.RptDesc = `\cite{deb:00}-T6`
 
 	// problem # 4 -- Deb's problem 2 -- D.M. Himmelblau 1972 -- W. Hock, K. Schittkowski 1981
@@ -382,7 +377,6 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 			g[4] = x[1]*x[6] - 1250.0*x[4] - x[1]*x[3] + 1250.0*x[3]
 			g[5] = x[2]*x[7] - x[2]*x[4] + 2500.0*x[4] - 1250000
 		}
-		opt.HistLen = 12
 		opt.RptFmtFdev = "%.2e"
 		opt.RptDesc = `\cite{deb:00}-T4`
 
@@ -424,7 +418,6 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 
 	// number of trial solutions
 	opt.Nsol = len(opt.FltMin) * 10
-	//opt.Nsol = 6
 
 	// initialise optimiser
 	nf := 1

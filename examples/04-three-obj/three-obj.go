@@ -21,7 +21,7 @@ func main() {
 
 	// problem numbers
 	P := utl.IntRange2(1, 9)
-	//P := []int{6}
+	//P := []int{1}
 
 	// allocate and run each problem
 	opts := make([]*goga.Optimiser, len(P))
@@ -30,9 +30,7 @@ func main() {
 	}
 
 	// report
-	io.Pf("\n-------------------------- generating report --------------------------\nn")
-
-	// table
+	io.Pf("\n----------------------------------- generating report -----------------------------------\n\n")
 	rpt := goga.NewTexReport(opts)
 	rpt.ShowDescription = false
 	rpt.ShowLmin = false
@@ -62,12 +60,10 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 	opt.Nsol = 200
 	opt.Ncpu = 5
 	opt.Tmax = 500
-	opt.Nsamples = 3 /////////////// increase this number
 	opt.DEC = 0.01
+	opt.Nsamples = 3 /////////////////////// increase this number
 
 	// options for report
-	opt.HistNsta = 6
-	opt.HistLen = 13
 	opt.RptFmtE = "%.2e"
 	opt.RptFmtEdev = "%.2e"
 	opt.RptFmin = make([]float64, 3)
@@ -107,7 +103,7 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 		opt.Multi_fcnErr = func(f []float64) float64 {
 			return f[0] + f[1] + f[2] - 0.5
 		}
-		plot_solution = func() { plot_plane(false) }
+		plot_solution = func() { PlotPlane(false) }
 		opt.RptFmax = []float64{0.5, 0.5, 0.5}
 
 	// DTLZ2
@@ -131,7 +127,7 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 		opt.Multi_fcnErr = func(f []float64) float64 {
 			return f[0]*f[0] + f[1]*f[1] + f[2]*f[2] - 1.0
 		}
-		plot_solution = func() { plot_sphere(false) }
+		plot_solution = func() { PlotSphere(false) }
 
 	// DTLZ3
 	case 3:
@@ -155,7 +151,7 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 		opt.Multi_fcnErr = func(f []float64) float64 {
 			return f[0]*f[0] + f[1]*f[1] + f[2]*f[2] - 1.0
 		}
-		plot_solution = func() { plot_sphere(false) }
+		plot_solution = func() { PlotSphere(false) }
 
 	// DTLZ4
 	case 4:
@@ -179,7 +175,7 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 		opt.Multi_fcnErr = func(f []float64) float64 {
 			return f[0]*f[0] + f[1]*f[1] + f[2]*f[2] - 1.0
 		}
-		plot_solution = func() { plot_sphere(false) }
+		plot_solution = func() { PlotSphere(false) }
 
 	// DTLZ2x (convex)
 	case 5:
@@ -205,7 +201,7 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 		opt.Multi_fcnErr = func(f []float64) float64 {
 			return math.Pow(math.Abs(f[0]), 0.5) + math.Pow(math.Abs(f[1]), 0.5) + f[2] - 1.0
 		}
-		plot_solution = func() { plot_convex(1.0, false) }
+		plot_solution = func() { PlotConvex(1.0, false) }
 
 	// DTLZ2c (constraint)
 	case 6:
@@ -227,14 +223,14 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 			f[0] = (1.0 + c) * math.Cos(x[0]*PI/2.0) * math.Cos(x[1]*PI/2.0)
 			f[1] = (1.0 + c) * math.Cos(x[0]*PI/2.0) * math.Sin(x[1]*PI/2.0)
 			f[2] = (1.0 + c) * math.Sin(x[0]*PI/2.0)
-			g[0] = math.Tan(αcone) - cone_angle(f)
+			g[0] = math.Tan(αcone) - ConeAngle(f)
 		}
 		opt.Multi_fcnErr = func(f []float64) float64 {
 			return f[0]*f[0] + f[1]*f[1] + f[2]*f[2] - 1.0
 		}
 		plot_solution = func() {
-			plot_sphere(false)
-			plot_cone(αcone, true)
+			PlotSphere(false)
+			PlotCone(αcone, true)
 		}
 
 	// Superquadric 1
@@ -253,14 +249,14 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 			for i := 2; i < 12; i++ {
 				c += math.Pow((x[i] - 0.5), 2.0)
 			}
-			f[0] = (1.0 + c) * cosX(x[0]*PI/2.0, A) * cosX(x[1]*PI/2.0, A)
-			f[1] = (1.0 + c) * cosX(x[0]*PI/2.0, B) * sinX(x[1]*PI/2.0, B)
-			f[2] = (1.0 + c) * sinX(x[0]*PI/2.0, C)
+			f[0] = (1.0 + c) * CosX(x[0]*PI/2.0, A) * CosX(x[1]*PI/2.0, A)
+			f[1] = (1.0 + c) * CosX(x[0]*PI/2.0, B) * SinX(x[1]*PI/2.0, B)
+			f[2] = (1.0 + c) * SinX(x[0]*PI/2.0, C)
 		}
 		opt.Multi_fcnErr = func(f []float64) float64 {
 			return math.Pow(math.Abs(f[0]), a) + math.Pow(math.Abs(f[1]), b) + math.Pow(math.Abs(f[2]), c) - 1.0
 		}
-		plot_solution = func() { plot_superquadric(a, b, c, false) }
+		plot_solution = func() { PlotSuperquadric(a, b, c, false) }
 
 	// Superquadric 2
 	case 8:
@@ -278,14 +274,14 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 			for i := 2; i < 12; i++ {
 				c += math.Pow((x[i] - 0.5), 2.0)
 			}
-			f[0] = (1.0 + c) * cosX(x[0]*PI/2.0, A) * cosX(x[1]*PI/2.0, A)
-			f[1] = (1.0 + c) * cosX(x[0]*PI/2.0, B) * sinX(x[1]*PI/2.0, B)
-			f[2] = (1.0 + c) * sinX(x[0]*PI/2.0, C)
+			f[0] = (1.0 + c) * CosX(x[0]*PI/2.0, A) * CosX(x[1]*PI/2.0, A)
+			f[1] = (1.0 + c) * CosX(x[0]*PI/2.0, B) * SinX(x[1]*PI/2.0, B)
+			f[2] = (1.0 + c) * SinX(x[0]*PI/2.0, C)
 		}
 		opt.Multi_fcnErr = func(f []float64) float64 {
 			return math.Pow(math.Abs(f[0]), a) + math.Pow(math.Abs(f[1]), b) + math.Pow(math.Abs(f[2]), c) - 1.0
 		}
-		plot_solution = func() { plot_superquadric(a, b, c, false) }
+		plot_solution = func() { PlotSuperquadric(a, b, c, false) }
 
 	default:
 		chk.Panic("problem %d is not available", problem)
@@ -313,7 +309,7 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 
 	// plot results
 	if plotPy {
-		py_plot3(0, 1, nf-1, opt, plot_solution, true, true)
+		PyPlot3(0, 1, nf-1, opt, plot_solution, true, true)
 	}
 
 	// vtk
@@ -323,7 +319,7 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 			ptRad = 0.01
 		}
 		twice := false
-		vtk_plot3(opt, αcone, ptRad, true, twice)
+		VtkPlot3(opt, αcone, ptRad, true, twice)
 	}
 
 	// star plot

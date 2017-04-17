@@ -18,6 +18,7 @@ import (
 	"github.com/cpmech/gosl/vtk"
 )
 
+// constants
 const (
 	SQ2 = math.Sqrt2
 	PI  = math.Pi
@@ -25,10 +26,18 @@ const (
 	NV  = 21
 )
 
-func cosX(w, m float64) float64 { return fun.Sign(math.Cos(w)) * math.Pow(math.Abs(math.Cos(w)), m) }
-func sinX(w, m float64) float64 { return fun.Sign(math.Sin(w)) * math.Pow(math.Abs(math.Sin(w)), m) }
+// Extended cosine function
+func CosX(w, m float64) float64 {
+	return fun.Sign(math.Cos(w)) * math.Pow(math.Abs(math.Cos(w)), m)
+}
 
-func cone_angle(s []float64) float64 {
+// Extended sine function
+func SinX(w, m float64) float64 {
+	return fun.Sign(math.Sin(w)) * math.Pow(math.Abs(math.Sin(w)), m)
+}
+
+// ConeAngle computes the angle between a point on cone and the space diagonal
+func ConeAngle(s []float64) float64 {
 	den := s[0] + s[1] + s[2]
 	if den < 1e-14 {
 		return 1e30
@@ -36,7 +45,8 @@ func cone_angle(s []float64) float64 {
 	return math.Sqrt(math.Pow(s[0]-s[1], 2.0)+math.Pow(s[1]-s[2], 2.0)+math.Pow(s[2]-s[0], 2.0)) / den
 }
 
-func rot_matrix() [][]float64 {
+// RotMatrix computes the rotation matrix
+func RotMatrix() [][]float64 {
 	if false {
 		return [][]float64{
 			{1, 0, 0},
@@ -52,7 +62,8 @@ func rot_matrix() [][]float64 {
 	}
 }
 
-func plot_cone(α float64, preservePrev bool) {
+// PlotCone plots the cone surface
+func PlotCone(α float64, preservePrev bool) {
 	nu, nv := 11, 21
 	l := 1.2
 	r := math.Tan(α) * l
@@ -62,7 +73,7 @@ func plot_cone(α float64, preservePrev bool) {
 	Z := la.MatAlloc(nv, nu)
 	u := make([]float64, 3)
 	v := make([]float64, 3)
-	L := rot_matrix()
+	L := RotMatrix()
 	for j := 0; j < nu; j++ {
 		for i := 0; i < nv; i++ {
 			u[0] = S[i][j] * r * math.Cos(T[i][j])
@@ -79,7 +90,8 @@ func plot_cone(α float64, preservePrev bool) {
 	plt.Wireframe(X, Y, Z, io.Sf("color='b', lw=0.5, preservePrev=%d", pp))
 }
 
-func plot_plane_axis(loc float64, dir int, preservePrev bool) {
+// PlotPlaneAxes plots the 3d axes (Python)
+func PlotPlaneAxes(loc float64, dir int, preservePrev bool) {
 	if !preservePrev {
 		plt.PyCmds("gcf().add_subplot(111, projection='3d')\n")
 	}
@@ -95,7 +107,8 @@ gca().add_collection3d(poly, zs=%g, zdir='%s')
 	return
 }
 
-func plot_plane(preservePrev bool) {
+// PlotPlane plots the 3d plane (Python)
+func PlotPlane(preservePrev bool) {
 	N := []float64{1, 1, 1}   // normal
 	P := []float64{0.5, 0, 0} // point on plane
 	d := -N[0]*P[0] - N[1]*P[1] - N[2]*P[2]
@@ -116,7 +129,8 @@ func plot_plane(preservePrev bool) {
 	plt.Wireframe(X, Y, Z, io.Sf("color='k', lw=0.5, preservePrev=%d", pp))
 }
 
-func plot_sphere(preservePrev bool) {
+// PlotSphere plots sphere (Python)
+func PlotSphere(preservePrev bool) {
 	R := 1.0
 	U, V := utl.MeshGrid2D(0, PI/2.0, 0, PI/2.0, NU, NV)
 	X, Y, Z := la.MatAlloc(NV, NU), la.MatAlloc(NV, NU), la.MatAlloc(NV, NU)
@@ -134,16 +148,17 @@ func plot_sphere(preservePrev bool) {
 	plt.Wireframe(X, Y, Z, io.Sf("color='k', lw=0.5, preservePrev=%d", pp))
 }
 
-func plot_superquadric(a, b, c float64, preservePrev bool) {
+// PlotSuperquadric plots superquadric (Python)
+func PlotSuperquadric(a, b, c float64, preservePrev bool) {
 	A, B, C := 2.0/a, 2.0/b, 2.0/c
 	R := 1.0
 	U, V := utl.MeshGrid2D(0, PI/2.0, 0, PI/2.0, NU, NV)
 	X, Y, Z := la.MatAlloc(NV, NU), la.MatAlloc(NV, NU), la.MatAlloc(NV, NU)
 	for j := 0; j < NU; j++ {
 		for i := 0; i < NV; i++ {
-			X[i][j] = R * cosX(U[i][j], A) * sinX(V[i][j], A)
-			Y[i][j] = R * sinX(U[i][j], B) * sinX(V[i][j], B)
-			Z[i][j] = R * cosX(V[i][j], C)
+			X[i][j] = R * CosX(U[i][j], A) * SinX(V[i][j], A)
+			Y[i][j] = R * SinX(U[i][j], B) * SinX(V[i][j], B)
+			Z[i][j] = R * CosX(V[i][j], C)
 		}
 	}
 	pp := 0
@@ -153,7 +168,8 @@ func plot_superquadric(a, b, c float64, preservePrev bool) {
 	plt.Wireframe(X, Y, Z, io.Sf("color='k', lw=0.5, preservePrev=%d", pp))
 }
 
-func plot_convex(level float64, preservePrev bool) {
+// PlotConvex plots convex superquadric
+func PlotConvex(level float64, preservePrev bool) {
 	X, Y := utl.MeshGrid2D(0, 1, 0, 1, NU, NV)
 	Z := la.MatAlloc(NV, NU)
 	for j := 0; j < NU; j++ {
@@ -171,7 +187,8 @@ func plot_convex(level float64, preservePrev bool) {
 	plt.Wireframe(X, Y, Z, io.Sf("color='k', lw=0.5, preservePrev=%d", pp))
 }
 
-func py_plot3(iOva, jOva, kOva int, opt *goga.Optimiser, plot_solution func(), onlyFront0, twice bool) {
+// PyPlot3 plots 3d space (Python)
+func PyPlot3(iOva, jOva, kOva int, opt *goga.Optimiser, plot_solution func(), onlyFront0, twice bool) {
 
 	// results
 	var X, Y, Z []float64
@@ -214,7 +231,8 @@ func py_plot3(iOva, jOva, kOva int, opt *goga.Optimiser, plot_solution func(), o
 	}
 }
 
-func vtk_plot3(opt *goga.Optimiser, αcone, ptRad float64, onlyFront0, twice bool) {
+// VtkPlot3 plots 3d space (VTK)
+func VtkPlot3(opt *goga.Optimiser, αcone, ptRad float64, onlyFront0, twice bool) {
 
 	// results
 	var X, Y, Z []float64
@@ -270,7 +288,7 @@ func vtk_plot3(opt *goga.Optimiser, αcone, ptRad float64, onlyFront0, twice boo
 	// cone
 	if opt.RptName == "DTLZ2c" {
 		cone := vtk.NewIsoSurf(func(x []float64) (f, vx, vy, vz float64) {
-			f = cone_angle(x) - math.Tan(αcone)
+			f = ConeAngle(x) - math.Tan(αcone)
 			return
 		})
 		cone.Limits = []float64{0, -1, 0, 1, 0, 360}

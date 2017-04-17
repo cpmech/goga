@@ -20,10 +20,8 @@ import (
 func main() {
 
 	// problem numbers
-	P := utl.IntRange2(1, 7)
-	//P := []int{1, 2, 4, 6}
-	//P := []int{4, 5, 6}
-	//P := []int{6}
+	//P := utl.IntRange2(1, 7)
+	P := []int{1}
 
 	// allocate and run each problem
 	opts := make([]*goga.Optimiser, len(P))
@@ -32,9 +30,7 @@ func main() {
 	}
 
 	// report
-	io.Pf("\n-------------------------- generating report --------------------------\nn")
-
-	// table
+	io.Pf("\n----------------------------------- generating report -----------------------------------\n\n")
 	rpt := goga.NewTexReport(opts)
 	rpt.ShowDescription = false
 	rpt.Title = "Unconstrained two-objective problems"
@@ -58,13 +54,11 @@ func twoObj(problem int) (opt *goga.Optimiser) {
 	opt.Tmax = 500
 	opt.Verbose = false
 	opt.VerbStat = false
-	opt.Nsamples = 2 ///////// increase this number
 	opt.GenType = "latin"
 	opt.DEC = 0.1
+	opt.Nsamples = 3 //////////////////////// increase this number
 
 	// options for report
-	opt.HistNsta = 6
-	opt.HistLen = 13
 	opt.RptFmtE = "%.1e"
 	opt.RptFmtL = "%.1e"
 	opt.RptFmtEdev = "%.1e"
