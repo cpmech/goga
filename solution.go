@@ -9,6 +9,7 @@ import (
 	"sort"
 
 	"github.com/cpmech/gosl/chk"
+	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
@@ -18,7 +19,7 @@ type Solution struct {
 
 	// essential
 	prms  *Parameters // pointer to parameters
-	Id    int         // identifier
+	Id    int         // identifier (for debugging). future solutions have negative ids
 	Fixed bool        // cannot be changed
 	Ova   []float64   // objective values
 	Oor   []float64   // out-of-range values
@@ -58,6 +59,32 @@ func NewSolutions(nsol int, prms *Parameters) (res []*Solution) {
 		res[i] = NewSolution(i, nsol, prms)
 	}
 	return
+}
+
+// Reset rests state; i.e. zeroes all values
+func (o *Solution) Reset(id int) {
+
+	// essential
+	o.Id = id
+	o.Fixed = false
+	la.VecFill(o.Ova, 0)
+	la.VecFill(o.Oor, 0)
+	la.VecFill(o.Flt, 0)
+	utl.IntFill(o.Int, 0)
+
+	// metrics
+	for i := 0; i < len(o.WinOver); i++ {
+		o.WinOver[i] = nil
+	}
+	o.Nwins = 0
+	o.Nlosses = 0
+	o.FrontId = 0
+	o.DistCrowd = 0
+	o.DistNeigh = 0
+	o.Closest = nil
+
+	// auxiliary
+	o.Aux = 0
 }
 
 // Feasible tells whether this solution is feasible or not
