@@ -318,9 +318,6 @@ func twoObj(problem int) (opt *goga.Optimiser) {
 				plt.PlotOne(f0B, f1B, "'g|', mew=1.5, ms=10, clip_on=0")
 			}
 		}
-		//plt.AxisRange(fmin[0], fmax[0], fmin[1], fmax[1])
-		//plt.Gll("$f_0$", "$f_1$", "")
-		//plt.SaveD("/tmp/goga", io.Sf("%s.eps", opt.RptName))
 		opt.PlotOvaOvaPareto(sols0, 0, 1, pp)
 	}
 	return

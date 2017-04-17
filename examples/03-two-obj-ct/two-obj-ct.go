@@ -20,72 +20,54 @@ const (
 	PI = math.Pi
 )
 
-func CTPconstraint(θ, a, b, c, d, e float64, f0, f1 float64) (g0 float64) {
-	sθ, cθ := math.Sin(θ), math.Cos(θ)
-	c1 := cθ*(f1-e) - sθ*f0
-	c2 := sθ*(f1-e) + cθ*f0
-	c3 := math.Sin(b * PI * math.Pow(c2, c))
-	return c1 - a*math.Pow(math.Abs(c3), d)
-}
+// main function
+func main() {
 
-func CTPgenerator(θ, a, b, c, d, e float64) goga.MinProb_t {
-	return func(f, g, h, x []float64, ξ []int, cpu int) {
-		c0 := 1.0
-		for i := 1; i < len(x); i++ {
-			c0 += x[i]
-		}
-		f[0] = x[0]
-		f[1] = c0 * (1.0 - f[0]/c0)
-		g[0] = CTPconstraint(θ, a, b, c, d, e, f[0], f[1])
+	// problem numbers
+	P := utl.IntRange2(0, 9)
+	//P := []int{0}
+
+	// allocate and run each problem
+	opts := make([]*goga.Optimiser, len(P))
+	for i, problem := range P {
+		opts[i] = twoObjCt(problem)
 	}
+
+	// report
+	io.Pf("\n-------------------------- generating report --------------------------\nn")
+	rpt := goga.NewTexReport(opts)
+	rpt.ShowDescription = false
+	rpt.Title = "Constrained two-objective problems"
+	rpt.Generate("/tmp/goga", "two-obj-ct")
 }
 
-func CTPplotter(θ, a, b, c, d, e, f1max float64) func() {
-	return func() {
-		np := 401
-		X, Y := utl.MeshGrid2D(0, 1, 0, f1max, np, np)
-		Z1 := utl.DblsAlloc(np, np)
-		Z2 := utl.DblsAlloc(np, np)
-		sθ, cθ := math.Sin(θ), math.Cos(θ)
-		for j := 0; j < np; j++ {
-			for i := 0; i < np; i++ {
-				f0, f1 := X[i][j], Y[i][j]
-				Z1[i][j] = cθ*(f1-e) - sθ*f0
-				Z2[i][j] = CTPconstraint(θ, a, b, c, d, e, X[i][j], Y[i][j])
-			}
-		}
-		plt.Contour(X, Y, Z2, "levels=[0,2],cbar=0,lwd=0.5,fsz=5,cmapidx=6")
-		plt.ContourSimple(X, Y, Z1, false, 7, "linestyles=['--'], linewidths=[0.7], colors=['b'], levels=[0]")
-	}
-}
-
-func CTPerror1(θ, a, b, c, d, e float64) func(f []float64) float64 {
-	return func(f []float64) float64 {
-		return CTPconstraint(θ, a, b, c, d, e, f[0], f[1])
-	}
-}
-
-func solve_problem(problem int) (opt *goga.Optimiser) {
+// twoObjCt runs two-objective problem with constraints
+func twoObjCt(problem int) (opt *goga.Optimiser) {
 
 	io.Pf("\n\n------------------------------------- problem = %d ---------------------------------------\n", problem)
+
+	// options
+	doPlot := false
+	withSols0 := false
+	constantSeed := false
 
 	// parameters
 	opt = new(goga.Optimiser)
 	opt.Default()
 	opt.Ncpu = 3
-	opt.Tf = 500
+	opt.Tmax = 500
 	opt.Verbose = false
-	opt.Nsamples = 1000
+	opt.Nsamples = 1000 ////////////// increase this number
 	opt.GenType = "latin"
 	opt.DEC = 0.1
 
 	// options for report
 	opt.HistNsta = 6
 	opt.HistLen = 13
-	opt.RptFmtE = "%.4e"
-	opt.RptFmtL = "%.4e"
-	opt.RptFmtEdev = "%.3e"
-	opt.RptFmtLdev = "%.3e"
+	opt.RptFmtE = "%.1e"
+	opt.RptFmtL = "%.1e"
+	opt.RptFmtEdev = "%.1e"
+	opt.RptFmtLdev = "%.1e"
 
 	// problem variables
 	nx := 10
@@ -345,62 +327,93 @@ func solve_problem(problem int) (opt *goga.Optimiser) {
 
 	// initial solutions
 	var sols0 []*goga.Solution
-	if false {
+	if withSols0 {
 		sols0 = opt.GetSolutionsCopy()
 	}
 
 	// solve
-	opt.RunMany("", "")
-	goga.StatMulti(opt, true)
-	io.PfYel("Tsys = %v\n", opt.SysTime)
+	opt.RunMany("", "", constantSeed)
+	opt.PrintStatMultiE()
 
 	// check
 	goga.CheckFront0(opt, true)
 
 	// plot
-	if true {
-		feasibleOnly := false
-		plt.SetForEps(0.8, 300)
-		fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
-		fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
-		goga.PlotOvaOvaPareto(opt, sols0, 0, 1, feasibleOnly, fmtAll, fmtFront)
-		extraplot()
-		//plt.AxisYrange(0, f1max)
-		if problem > 0 && problem < 6 {
-			plt.Text(0.05, 0.05, "unfeasible", "color='gray', ha='left',va='bottom'")
-			plt.Text(0.95, f1max-0.05, "feasible", "color='white', ha='right',va='top'")
+	if doPlot {
+		plt.SetForEps(0.75, 250)
+		pp := goga.NewPlotParams(false)
+		pp.FmtFront.M = "."
+		pp.FmtFront.Ms = 5
+		pp.FnKey = opt.RptName
+		pp.Extra = func() {
+			extraplot()
+			if problem > 0 && problem < 6 {
+				plt.Text(0.05, 0.05, "unfeasible", "color='gray', ha='left',va='bottom'")
+				plt.Text(0.95, f1max-0.05, "feasible", "color='white', ha='right',va='top'")
+			}
+			if opt.RptName == "CTP6" {
+				plt.Text(0.02, 0.15, "unfeasible", "rotation=-7,color='gray', ha='left',va='bottom'")
+				plt.Text(0.02, 6.50, "unfeasible", "rotation=-7,color='gray', ha='left',va='bottom'")
+				plt.Text(0.02, 13.0, "unfeasible", "rotation=-7,color='gray', ha='left',va='bottom'")
+				plt.Text(0.50, 2.40, "feasible", "rotation=-7,color='white', ha='center',va='bottom'")
+				plt.Text(0.50, 8.80, "feasible", "rotation=-7,color='white', ha='center',va='bottom'")
+				plt.Text(0.50, 15.30, "feasible", "rotation=-7,color='white', ha='center',va='bottom'")
+			}
+			if opt.RptName == "TNK" {
+				plt.Text(0.05, 0.05, "unfeasible", "color='gray', ha='left',va='bottom'")
+				plt.Text(0.80, 0.85, "feasible", "color='white', ha='left',va='top'")
+				plt.Equal()
+				plt.AxisRange(0, 1.22, 0, 1.22)
+			}
 		}
-		if opt.RptName == "CTP6" {
-			plt.Text(0.02, 0.15, "unfeasible", "rotation=-7,color='gray', ha='left',va='bottom'")
-			plt.Text(0.02, 6.50, "unfeasible", "rotation=-7,color='gray', ha='left',va='bottom'")
-			plt.Text(0.02, 13.0, "unfeasible", "rotation=-7,color='gray', ha='left',va='bottom'")
-			plt.Text(0.50, 2.40, "feasible", "rotation=-7,color='white', ha='center',va='bottom'")
-			plt.Text(0.50, 8.80, "feasible", "rotation=-7,color='white', ha='center',va='bottom'")
-			plt.Text(0.50, 15.30, "feasible", "rotation=-7,color='white', ha='center',va='bottom'")
-		}
-		if opt.RptName == "TNK" {
-			plt.Text(0.05, 0.05, "unfeasible", "color='gray', ha='left',va='bottom'")
-			plt.Text(0.80, 0.85, "feasible", "color='white', ha='left',va='top'")
-			plt.Equal()
-			plt.AxisRange(0, 1.22, 0, 1.22)
-		}
-		plt.SaveD("/tmp/goga", io.Sf("%s.eps", opt.RptName))
+		opt.PlotOvaOvaPareto(sols0, 0, 1, pp)
 	}
 	return
 }
 
-func main() {
-	textSize := `\scriptsize  \setlength{\tabcolsep}{0.5em}`
-	miniPageSz, histTextSize := "4.1cm", `\fontsize{5pt}{6pt}`
-	P := utl.IntRange2(0, 9)
-	//P := []int{0}
-	opts := make([]*goga.Optimiser, len(P))
-	for i, problem := range P {
-		opts[i] = solve_problem(problem)
+// auxiliary ///////////////////////////////////////////////////////////////////////////////////////
+
+func CTPconstraint(θ, a, b, c, d, e float64, f0, f1 float64) (g0 float64) {
+	sθ, cθ := math.Sin(θ), math.Cos(θ)
+	c1 := cθ*(f1-e) - sθ*f0
+	c2 := sθ*(f1-e) + cθ*f0
+	c3 := math.Sin(b * PI * math.Pow(c2, c))
+	return c1 - a*math.Pow(math.Abs(c3), d)
+}
+
+func CTPgenerator(θ, a, b, c, d, e float64) goga.MinProb_t {
+	return func(f, g, h, x []float64, ξ []int, cpu int) {
+		c0 := 1.0
+		for i := 1; i < len(x); i++ {
+			c0 += x[i]
+		}
+		f[0] = x[0]
+		f[1] = c0 * (1.0 - f[0]/c0)
+		g[0] = CTPconstraint(θ, a, b, c, d, e, f[0], f[1])
 	}
-	io.Pf("\n-------------------------- generating report --------------------------\nn")
-	nRowPerTab := 10
-	title := "Constrained two objective problems"
-	goga.TexReport("/tmp/goga", "tmp_ct-two-obj", title, "ct-two-obj", 3, nRowPerTab, true, false, textSize, miniPageSz, histTextSize, opts)
-	goga.TexReport("/tmp/goga", "ct-two-obj", title, "ct-two-obj", 3, nRowPerTab, false, false, textSize, miniPageSz, histTextSize, opts)
+}
+
+func CTPplotter(θ, a, b, c, d, e, f1max float64) func() {
+	return func() {
+		np := 401
+		X, Y := utl.MeshGrid2D(0, 1, 0, f1max, np, np)
+		Z1 := utl.DblsAlloc(np, np)
+		Z2 := utl.DblsAlloc(np, np)
+		sθ, cθ := math.Sin(θ), math.Cos(θ)
+		for j := 0; j < np; j++ {
+			for i := 0; i < np; i++ {
+				f0, f1 := X[i][j], Y[i][j]
+				Z1[i][j] = cθ*(f1-e) - sθ*f0
+				Z2[i][j] = CTPconstraint(θ, a, b, c, d, e, X[i][j], Y[i][j])
+			}
+		}
+		plt.Contour(X, Y, Z2, "levels=[0,2],cbar=0,lwd=0.5,fsz=5,cmapidx=6")
+		plt.ContourSimple(X, Y, Z1, false, 7, "linestyles=['--'], linewidths=[0.7], colors=['b'], levels=[0]")
+	}
+}
+
+func CTPerror1(θ, a, b, c, d, e float64) func(f []float64) float64 {
+	return func(f []float64) float64 {
+		return CTPconstraint(θ, a, b, c, d, e, f[0], f[1])
+	}
 }

@@ -54,6 +54,9 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 
 	io.Pf("\n\n------------------------------------- problem = %d ---------------------------------------\n", problem)
 
+	// options
+	constantSeed := false
+
 	// GA parameters
 	opt = new(goga.Optimiser)
 	opt.Default()
@@ -428,7 +431,6 @@ func oneObj(problem int, checkOnly bool) (opt *goga.Optimiser) {
 	opt.Init(goga.GenTrialSolutions, nil, fcn, nf, ng, nh)
 
 	// solve
-	constantSeed := false
 	opt.RunMany("", "", constantSeed)
 	opt.PrintStatF(0)
 	io.PfMag("Tsys{tot} = %v\n", opt.SysTimeTot)
