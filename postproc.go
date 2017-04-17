@@ -29,11 +29,7 @@ func GetBestFeasible(opt *Optimiser, iOvaSort int) (best *Solution, feasible []*
 	if len(feasible) == 0 {
 		return
 	}
-	if opt.Nova > 1 { // multi-objective
-		SortByFrontThenOva(feasible, iOvaSort)
-	} else { // single-objective
-		SortByOva(feasible, iOvaSort)
-	}
+	SortSolutions(feasible, iOvaSort)
 	best = feasible[0]
 	return
 }

@@ -159,11 +159,7 @@ func (o *Optimiser) RunMany(dirout, fnkey string, constantSeed bool) {
 		o.SysTimes[itrial] = time.Now().Sub(timeIni)
 
 		// sort
-		if o.Nova > 1 { // multi-objective
-			SortByFrontThenOva(o.Solutions, 0)
-		} else { // single-objective
-			SortByOva(o.Solutions, 0)
-		}
+		SortSolutions(o.Solutions, 0)
 
 		// feasible solution
 		if o.Solutions[0].Feasible() {

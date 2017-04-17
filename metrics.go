@@ -174,7 +174,7 @@ func (o *Metrics) Compute(sols []*Solution) (nfronts int) {
 		}
 		F := o.Fronts[r][:l]
 		for j := 0; j < o.prms.Nova; j++ {
-			SortByOva(F, j)
+			sortByOva(F, j)
 			δ := o.Omax[j] - o.Omin[j] + 1e-15
 			F[0].DistCrowd = INF
 			F[m].DistCrowd = INF

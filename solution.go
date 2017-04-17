@@ -220,6 +220,18 @@ func (A *Solution) Fight(B *Solution) (A_wins bool) {
 
 // sorting /////////////////////////////////////////////////////////////////////////////////////////
 
+// SortSolutions sort solutions either by OVA (single-obj) or Pareto front (multi-obj)
+func SortSolutions(s []*Solution, idxOva int) {
+	if len(s) > 0 {
+		nova := len(s[0].Ova)
+		if nova > 1 { // multi-objective
+			sortByFrontThenOva(s, idxOva)
+		} else { // single-objective
+			sortByOva(s, idxOva)
+		}
+	}
+}
+
 ////////////////////////////////////////////////////////////
 // TODO: Improve this part to handle any number of Ovas ////
 ////////////////////////////////////////////////////////////
@@ -336,8 +348,8 @@ func (o solByFrontThenOva0) Less(i, j int) bool {
 	return o[i].FrontId < o[j].FrontId
 }
 
-// SortByOva sorts slice of solutions in ascending order of ova
-func SortByOva(s []*Solution, idxOva int) {
+// sortByOva sorts slice of solutions in ascending order of ova
+func sortByOva(s []*Solution, idxOva int) {
 	switch idxOva {
 	case 0:
 		sort.Sort(solByOva0(s))
@@ -384,8 +396,8 @@ func SortByOva(s []*Solution, idxOva int) {
 	}
 }
 
-// SortByFrontThenOva sorts solutions first by front and then by ova
-func SortByFrontThenOva(s []*Solution, idxOva int) {
+// sortByFrontThenOva sorts solutions first by front and then by ova
+func sortByFrontThenOva(s []*Solution, idxOva int) {
 	switch idxOva {
 	case 0:
 		sort.Sort(solByFrontThenOva0(s))
