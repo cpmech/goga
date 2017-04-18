@@ -61,7 +61,7 @@ func Test_igd01(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		fmt := &plt.Fmt{C: "red", M: ".", Ms: 1, Ls: "None", L: "solutions"}
+		fmt := &plt.A{C: "red", M: ".", Ms: 1, Ls: "None", L: "solutions"}
 		fS0 := utl.DblsGetColumn(0, fStar)
 		fS1 := utl.DblsGetColumn(1, fStar)
 		io.Pforan("len(fS0) = %v\n", len(fS0))
@@ -128,7 +128,7 @@ func Test_igd02(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		fmt := &plt.Fmt{C: "red", M: ".", Ms: 1, Ls: "None", L: "solutions"}
+		fmt := &plt.A{C: "red", M: ".", Ms: 1, Ls: "None", L: "solutions"}
 		fS0 := utl.DblsGetColumn(0, fStar)
 		fS1 := utl.DblsGetColumn(1, fStar)
 		io.Pforan("len(fS0) = %v\n", len(fS0))

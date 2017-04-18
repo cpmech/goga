@@ -17,12 +17,12 @@ type PlotParams struct {
 	DirOut       string    // output directory; default = "/tmp/goga"
 	FnKey        string    // filename key
 	FnExt        string    // filename extension; default = ".eps" IMPORTANT: "." is required
-	FmtSols0     plt.Fmt   // format for points indicating initial solutions
-	FmtSols      plt.Fmt   // format for points indicating final solutions
-	FmtBest      plt.Fmt   // format for points indicating best solution
-	FmtFront     plt.Fmt   // format for points on Pareto front
+	FmtSols0     plt.A     // format for points indicating initial solutions
+	FmtSols      plt.A     // format for points indicating final solutions
+	FmtBest      plt.A     // format for points indicating best solution
+	FmtFront     plt.A     // format for points on Pareto front
 	YfuncX       YfuncX_t  // y(x) function to plot from FltMin[iFlt] to FltMax[iFlt]
-	FmtYfX       plt.Fmt   // format for y(x) function
+	FmtYfX       plt.A     // format for y(x) function
 	NptsYfX      int       // number of points for y(x) function
 	Extra        func()    // extra plotting commands
 	AxEqual      bool      // make axes equal
@@ -36,10 +36,10 @@ type PlotParams struct {
 	CmapIdx      int       // colormap index
 	Cbar         bool      // with color bar
 	Simple       bool      // simple contour
-	FmtF         plt.Fmt   // format for f(x) function
-	FmtG         plt.Fmt   // format for g(x) function
-	FmtH         plt.Fmt   // format for h(x) function
-	FmtA         plt.Fmt   // format for auxiliary field
+	FmtF         plt.A     // format for f(x) function
+	FmtG         plt.A     // format for g(x) function
+	FmtH         plt.A     // format for h(x) function
+	FmtA         plt.A     // format for auxiliary field
 	Xrange       []float64 // to override x-range
 	Yrange       []float64 // to override y-range
 	IdxH         int       // index of h function to plot. -1 means all
@@ -276,27 +276,27 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 }
 
 // PlotAddFltFlt adds flt-flt points to existent plot
-func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, fmt *plt.Fmt) {
+func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, fmt *plt.A) {
 	nsol := len(sols)
 	x, y := make([]float64, nsol), make([]float64, nsol)
 	for i, sol := range sols {
 		x[i], y[i] = sol.Flt[iFlt], sol.Flt[jFlt]
 	}
-	plt.Plot(x, y, fmt.GetArgs(""))
+	plt.Plot(x, y, fmt.String(""))
 }
 
 // PlotAddFltOva adds flt-ova points to existent plot
-func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult float64, fmt *plt.Fmt) {
+func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult float64, fmt *plt.A) {
 	nsol := len(sols)
 	x, y := make([]float64, nsol), make([]float64, nsol)
 	for i, sol := range sols {
 		x[i], y[i] = sol.Flt[iFlt], sol.Ova[iOva]*ovaMult
 	}
-	plt.Plot(x, y, fmt.GetArgs(""))
+	plt.Plot(x, y, fmt.String(""))
 }
 
 // PlotAddOvaOva adds ova-ova points to existent plot
-func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.Fmt) {
+func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.A) {
 	var x, y []float64
 	for _, sol := range sols {
 		if sol.Feasible() || !feasibleOnly {
@@ -304,13 +304,13 @@ func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, feasibleOnly
 			y = append(y, sol.Ova[jOva])
 		}
 	}
-	plt.Plot(x, y, fmt.GetArgs(""))
+	plt.Plot(x, y, fmt.String(""))
 }
 
 // PlotAddParetoFront highlights Pareto front
-func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.Fmt) {
+func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.A) {
 	x, y, _ := GetParetoFront(iOva, jOva, sols, feasibleOnly)
-	plt.Plot(x, y, fmt.GetArgs(""))
+	plt.Plot(x, y, fmt.String(""))
 }
 
 // PlotFltOva plots flt-ova points
@@ -321,7 +321,7 @@ func (o *Optimiser) PlotFltOva(sols0 []*Solution, iFlt, iOva int, ovaMult float6
 		for i := 0; i < pp.NptsYfX; i++ {
 			Y[i] = pp.YfuncX(X[i])
 		}
-		plt.Plot(X, Y, pp.FmtYfX.GetArgs(""))
+		plt.Plot(X, Y, pp.FmtYfX.String(""))
 	}
 	if sols0 != nil {
 		o.PlotAddFltOva(iFlt, iOva, sols0, ovaMult, &pp.FmtSols0)
@@ -329,7 +329,7 @@ func (o *Optimiser) PlotFltOva(sols0 []*Solution, iFlt, iOva int, ovaMult float6
 	o.PlotAddFltOva(iFlt, iOva, o.Solutions, ovaMult, &pp.FmtSols)
 	best, _ := GetBestFeasible(o, iOva)
 	if best != nil {
-		plt.PlotOne(best.Flt[iFlt], best.Ova[iOva]*ovaMult, pp.FmtBest.GetArgs(""))
+		plt.PlotOne(best.Flt[iFlt], best.Ova[iOva]*ovaMult, pp.FmtBest.String(""))
 	}
 	if pp.Extra != nil {
 		pp.Extra()
@@ -353,7 +353,7 @@ func (o *Optimiser) PlotFltFltContour(sols0 []*Solution, iFlt, jFlt, iOva int, p
 		}
 		o.PlotAddFltFlt(i, j, o.Solutions, &pp.FmtSols)
 		if best != nil {
-			plt.PlotOne(best.Flt[i], best.Flt[j], pp.FmtBest.GetArgs(""))
+			plt.PlotOne(best.Flt[i], best.Flt[j], pp.FmtBest.String(""))
 		}
 		if pp.Extra != nil {
 			pp.Extra()
@@ -384,7 +384,7 @@ func (o *Optimiser) PlotFltFltContour(sols0 []*Solution, iFlt, jFlt, iOva int, p
 		plt.Subplot(ncol, ncol, idx)
 		plt.AxisOff()
 		// TODO: fix formatting of open marker, add star to legend
-		plt.DrawLegend([]plt.Fmt{pp.FmtSols0, pp.FmtSols, pp.FmtBest}, 8, "center", false, "")
+		plt.DrawLegend([]plt.A{pp.FmtSols0, pp.FmtSols, pp.FmtBest}, 8, "center", false, "")
 	} else {
 		plotCommands(iFlt, jFlt)
 		if pp.Xlabel == "" {
