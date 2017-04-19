@@ -18,9 +18,9 @@ func Test_data2d(tst *testing.T) {
 	dat := PFdata(prob)
 	X := utl.DblsGetColumn(0, dat)
 	Y := utl.DblsGetColumn(1, dat)
-	plt.SetForEps(1.0, 250)
-	plt.Plot(X, Y, "'r.'")
-	plt.Gll("$f_1$", "$f_2$", "")
+	plt.SetForEps(1.0, 250, nil)
+	plt.Plot(X, Y, nil)
+	plt.Gll("$f_1$", "$f_2$", nil)
 	plt.SaveD("/tmp/goga", io.Sf("cec09-%s.eps", prob))
 }
 
@@ -34,11 +34,11 @@ func Test_data3d(tst *testing.T) {
 	Z := utl.DblsGetColumn(2, dat)
 
 	// figure
-	plt.SetForEps(1.0, 400)
-	plt.Plot3dPoints(X, Y, Z, "s=0.05, color='r', facecolor='r', edgecolor='r', xlbl='$f_1$', ylbl='$f_2$', zlbl='$f_3$'")
+	plt.SetForEps(1.0, 400, nil)
+	plt.Plot3dPoints(X, Y, Z, true, nil)
 	plt.AxisRange3d(0, 1, 0, 1, 0, 1)
-	plt.Camera(10, -135, "")
-	//plt.Camera(10, 45, "")
+	plt.Camera(10, -135, nil)
+	//plt.Camera(10, 45, nil)
 	plt.SaveD("/tmp/goga", io.Sf("cec09-%s.eps", prob))
 
 	// interactive
