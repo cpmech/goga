@@ -67,7 +67,7 @@ func PlotCone(α float64, preservePrev bool) {
 	nu, nv := 11, 21
 	l := 1.2
 	r := math.Tan(α) * l
-	S, T := utl.MeshGrid2D(0, l, 0, 2.0*PI, nu, nv)
+	S, T := utl.MeshGrid2d(0, l, 0, 2.0*PI, nu, nv)
 	X := la.MatAlloc(nv, nu)
 	Y := la.MatAlloc(nv, nu)
 	Z := la.MatAlloc(nv, nu)
@@ -83,11 +83,7 @@ func PlotCone(α float64, preservePrev bool) {
 			X[i][j], Y[i][j], Z[i][j] = v[0], v[1], v[2]
 		}
 	}
-	pp := 0
-	if preservePrev {
-		pp = 1
-	}
-	plt.Wireframe(X, Y, Z, io.Sf("color='b', lw=0.5, preservePrev=%d", pp))
+	plt.Wireframe(X, Y, Z, !preservePrev, &plt.A{C: "b", Lw: 0.5})
 }
 
 // PlotPlaneAxes plots the 3d axes (Python)
@@ -112,7 +108,7 @@ func PlotPlane(preservePrev bool) {
 	N := []float64{1, 1, 1}   // normal
 	P := []float64{0.5, 0, 0} // point on plane
 	d := -N[0]*P[0] - N[1]*P[1] - N[2]*P[2]
-	X, Y := utl.MeshGrid2D(0, 0.5, 0, 0.5, NU, NV)
+	X, Y := utl.MeshGrid2d(0, 0.5, 0, 0.5, NU, NV)
 	Z := la.MatAlloc(NV, NU)
 	for j := 0; j < NU; j++ {
 		for i := 0; i < NV; i++ {
@@ -122,17 +118,13 @@ func PlotPlane(preservePrev bool) {
 			}
 		}
 	}
-	pp := 0
-	if preservePrev {
-		pp = 1
-	}
-	plt.Wireframe(X, Y, Z, io.Sf("color='k', lw=0.5, preservePrev=%d", pp))
+	plt.Wireframe(X, Y, Z, !preservePrev, &plt.A{C: "b", Lw: 0.5})
 }
 
 // PlotSphere plots sphere (Python)
 func PlotSphere(preservePrev bool) {
 	R := 1.0
-	U, V := utl.MeshGrid2D(0, PI/2.0, 0, PI/2.0, NU, NV)
+	U, V := utl.MeshGrid2d(0, PI/2.0, 0, PI/2.0, NU, NV)
 	X, Y, Z := la.MatAlloc(NV, NU), la.MatAlloc(NV, NU), la.MatAlloc(NV, NU)
 	for j := 0; j < NU; j++ {
 		for i := 0; i < NV; i++ {
@@ -141,18 +133,14 @@ func PlotSphere(preservePrev bool) {
 			Z[i][j] = R * math.Cos(V[i][j])
 		}
 	}
-	pp := 0
-	if preservePrev {
-		pp = 1
-	}
-	plt.Wireframe(X, Y, Z, io.Sf("color='k', lw=0.5, preservePrev=%d", pp))
+	plt.Wireframe(X, Y, Z, !preservePrev, &plt.A{C: "b", Lw: 0.5})
 }
 
 // PlotSuperquadric plots superquadric (Python)
 func PlotSuperquadric(a, b, c float64, preservePrev bool) {
 	A, B, C := 2.0/a, 2.0/b, 2.0/c
 	R := 1.0
-	U, V := utl.MeshGrid2D(0, PI/2.0, 0, PI/2.0, NU, NV)
+	U, V := utl.MeshGrid2d(0, PI/2.0, 0, PI/2.0, NU, NV)
 	X, Y, Z := la.MatAlloc(NV, NU), la.MatAlloc(NV, NU), la.MatAlloc(NV, NU)
 	for j := 0; j < NU; j++ {
 		for i := 0; i < NV; i++ {
@@ -161,16 +149,12 @@ func PlotSuperquadric(a, b, c float64, preservePrev bool) {
 			Z[i][j] = R * CosX(V[i][j], C)
 		}
 	}
-	pp := 0
-	if preservePrev {
-		pp = 1
-	}
-	plt.Wireframe(X, Y, Z, io.Sf("color='k', lw=0.5, preservePrev=%d", pp))
+	plt.Wireframe(X, Y, Z, !preservePrev, &plt.A{C: "b", Lw: 0.5})
 }
 
 // PlotConvex plots convex superquadric
 func PlotConvex(level float64, preservePrev bool) {
-	X, Y := utl.MeshGrid2D(0, 1, 0, 1, NU, NV)
+	X, Y := utl.MeshGrid2d(0, 1, 0, 1, NU, NV)
 	Z := la.MatAlloc(NV, NU)
 	for j := 0; j < NU; j++ {
 		for i := 0; i < NV; i++ {
@@ -180,11 +164,7 @@ func PlotConvex(level float64, preservePrev bool) {
 			}
 		}
 	}
-	pp := 0
-	if preservePrev {
-		pp = 1
-	}
-	plt.Wireframe(X, Y, Z, io.Sf("color='k', lw=0.5, preservePrev=%d", pp))
+	plt.Wireframe(X, Y, Z, !preservePrev, &plt.A{C: "b", Lw: 0.5})
 }
 
 // PyPlot3 plots 3d space (Python)
@@ -208,9 +188,10 @@ func PyPlot3(iOva, jOva, kOva int, opt *goga.Optimiser, plot_solution func(), on
 	}
 
 	// plot
-	plt.SetForEps(1.0, 400)
+	plt.Reset(false, nil)
 	plot_solution()
-	plt.Plot3dPoints(X, Y, Z, "s=7, color='r', facecolor='r', edgecolor='r', preservePrev=1, xlbl='$f_0$', ylbl='$f_1$', zlbl='$f_2$'")
+	plt.Plot3dPoints(X, Y, Z, true, &plt.A{C: "r", Fc: "r", Ec: "r", Fsz: 7})
+	// TODO: set labels with f0,f1,f2
 	e, a := 10.0, 45.0
 	if opt.RptName == "DTLZ2c" {
 		e, a = 15, 30
@@ -218,16 +199,16 @@ func PyPlot3(iOva, jOva, kOva int, opt *goga.Optimiser, plot_solution func(), on
 	//plt.Camera(e, a, "")
 	//plt.AxDist(11.0)
 	//plt.AxisRange3d(opt.RptFmin[iOva], opt.RptFmax[iOva], opt.RptFmin[jOva], opt.RptFmax[jOva], opt.RptFmin[kOva], opt.RptFmax[kOva])
-	//plt.SaveD("/tmp/goga", io.Sf("py_%s_A.eps", opt.RptName))
+	//plt.Save("/tmp/goga", io.Sf("py_%s_A", opt.RptName))
 	if twice {
 		e, a = 10, -45
 		if opt.RptName == "DTLZ2c" {
 			e, a = 10, -45
 		}
-		plt.Camera(e, a, "")
+		plt.Camera(e, a, nil)
 		plt.AxDist(11.0)
 		plt.AxisRange3d(opt.RptFmin[iOva], opt.RptFmax[iOva], opt.RptFmin[jOva], opt.RptFmax[jOva], opt.RptFmin[kOva], opt.RptFmax[kOva])
-		plt.SaveD("/tmp/goga", io.Sf("py_%s_B.eps", opt.RptName))
+		plt.Save("/tmp/goga", io.Sf("py_%s_B", opt.RptName))
 	}
 }
 

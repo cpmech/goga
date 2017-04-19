@@ -132,7 +132,7 @@ func Test_flt03(tst *testing.T) {
 		pp := NewPlotParams(false)
 		pp.FnKey = "fig-flt03"
 		pp.AxEqual = true
-		plt.SetForEps(1, 400, nil)
+		plt.Reset(false, nil)
 		opt.PlotFltFltContour(sols0, 0, 1, 0, pp)
 	}
 }

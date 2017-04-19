@@ -119,10 +119,10 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 					Z3[i][j] = g1
 				}
 			}
-			plt.ContourF(X, Y, Z1, &plt.A{Ulevels: []float64{0, 2}, UnoCbar: true, Lw: 0.5, UcmapIdx: 6, Fsz: 5})
+			plt.ContourF(X, Y, Z1, &plt.A{Levels: []float64{0, 2}, NoCbar: true, Lw: 0.5, CmapIdx: 6, Fsz: 5})
 			plt.Text(0.3, 0.95, "0.000", &plt.A{Fsz: 5, Rot: 10})
-			plt.ContourL(X, Y, Z2, &plt.A{Colors: []string{"k"}, Ulevels: []float64{0}, Lw: 0.7})
-			plt.ContourL(X, Y, Z3, &plt.A{Colors: []string{"k"}, Ulevels: []float64{0}, Lw: 1.0})
+			plt.ContourL(X, Y, Z2, &plt.A{Colors: []string{"k"}, Levels: []float64{0}, Lw: 0.7})
+			plt.ContourL(X, Y, Z3, &plt.A{Colors: []string{"k"}, Levels: []float64{0}, Lw: 1.0})
 		}
 		opt.Multi_fcnErr = func(f []float64) float64 {
 			return f[0]*f[0] + f[1]*f[1] - 1.0 - 0.1*math.Cos(16.0*math.Atan2(f[0], f[1]))
@@ -168,7 +168,7 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 					Z[i][j] = opt.Multi_fcnErr([]float64{X[i][j], Y[i][j]})
 				}
 			}
-			plt.ContourF(X, Y, Z, &plt.A{Ulevels: []float64{0, 0.6}, UnoCbar: true, Lw: 0.5, UcmapIdx: 6})
+			plt.ContourF(X, Y, Z, &plt.A{Levels: []float64{0, 0.6}, NoCbar: true, Lw: 0.5, CmapIdx: 6})
 			F0 := utl.LinSpace(0, 1, 21)
 			F1r := make([]float64, len(F0))
 			F1s := make([]float64, len(F0))
@@ -236,7 +236,7 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 					Z[i][j] = CTPconstraint(θ, a, b, c, d, e, X[i][j], Y[i][j])
 				}
 			}
-			plt.ContourF(X, Y, Z, &plt.A{Ulevels: []float64{-30, -15, 0, 15, 30}, UnoCbar: true, Lw: 0.5, UcmapIdx: 6, Fsz: 5})
+			plt.ContourF(X, Y, Z, &plt.A{Levels: []float64{-30, -15, 0, 15, 30}, NoCbar: true, Lw: 0.5, CmapIdx: 6, Fsz: 5})
 		}
 		opt.Multi_fcnErr = CTPerror1(θ, a, b, c, d, e)
 
@@ -258,8 +258,8 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 					Z2[i][j] = CTPconstraint(θ, a, b, c, d, e, X[i][j], Y[i][j])
 				}
 			}
-			plt.ContourF(X, Y, Z2, &plt.A{Ulevels: []float64{0, 3}, UnoCbar: true, Lw: 0.5, UcmapIdx: 6, Fsz: 5})
-			plt.ContourL(X, Y, Z1, &plt.A{Ulevels: []float64{0}, Colors: []string{"b"}, Ls: "--", Lw: 0.7})
+			plt.ContourF(X, Y, Z2, &plt.A{Levels: []float64{0, 3}, NoCbar: true, Lw: 0.5, CmapIdx: 6, Fsz: 5})
+			plt.ContourL(X, Y, Z1, &plt.A{Levels: []float64{0}, Colors: []string{"b"}, Ls: "--", Lw: 0.7})
 		}
 
 	// problem # 8 -- CTP8, Deb 2001, p368/373, fig 232
@@ -313,9 +313,9 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 					}
 				}
 			}
-			plt.ContourF(X, Y, Z3, &plt.A{Colors: []string{"white", "grey"}, UnoLabels: false, UnoCbar: true, Lw: 0.5, Fsz: 5})
-			plt.ContourL(X, Y, Z1, &plt.A{Ulevels: []float64{0}, Colors: []string{"gray"}, Ls: "--", Lw: 0.7})
-			plt.ContourL(X, Y, Z2, &plt.A{Ulevels: []float64{0}, Colors: []string{"gray"}, Ls: "--", Lw: 0.7})
+			plt.ContourF(X, Y, Z3, &plt.A{Colors: []string{"white", "grey"}, NoLabels: false, NoCbar: true, Lw: 0.5, Fsz: 5})
+			plt.ContourL(X, Y, Z1, &plt.A{Levels: []float64{0}, Colors: []string{"gray"}, Ls: "--", Lw: 0.7})
+			plt.ContourL(X, Y, Z2, &plt.A{Levels: []float64{0}, Colors: []string{"gray"}, Ls: "--", Lw: 0.7})
 		}
 		opt.Multi_fcnErr = CTPerror1(θ1, a, b, c, d, e)
 
@@ -341,7 +341,7 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 
 	// plot
 	if doPlot {
-		plt.SetForEps(0.75, 250, nil)
+		plt.Reset(false, nil)
 		pp := goga.NewPlotParams(false)
 		pp.FnKey = opt.RptName
 		pp.Extra = func() {

@@ -324,9 +324,9 @@ func threeObj(problem int) (opt *goga.Optimiser) {
 
 	// star plot
 	if plotStar {
-		plt.SetForEps(1, 300)
+		plt.Reset(false, nil)
 		opt.PlotStar()
-		plt.SaveD("/tmp/goga", io.Sf("starplot_%s.eps", opt.RptName))
+		plt.Save("/tmp/goga", io.Sf("starplot_%s", opt.RptName))
 	}
 
 	// write all results

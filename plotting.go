@@ -18,7 +18,6 @@ type PlotParams struct {
 	// output directory and filename
 	DirOut string // output directory; default = "/tmp/goga"
 	FnKey  string // filename key
-	FnExt  string // filename extension; default = ".eps" IMPORTANT: "." is required
 
 	// auxiliary
 	YfuncX  YfuncX_t // y(x) function to plot from FltMin[iFlt] to FltMax[iFlt]
@@ -65,7 +64,6 @@ func NewPlotParams(simple bool) (o *PlotParams) {
 	o = new(PlotParams)
 	o.DirOut = "/tmp/goga"
 	o.FnKey = "plt-goga"
-	o.FnExt = ".eps"
 
 	// auxiliary
 	o.NptsYfX = 101
@@ -297,7 +295,7 @@ func (o *Optimiser) PlotFltOva(sols0 []*Solution, iFlt, iOva int, ovaMult float6
 		plt.Equal()
 	}
 	plt.Gll(io.Sf("$x_{%d}$", iFlt), io.Sf("$f_{%d}$", iOva), &plt.A{LegOut: true, LegNcol: 4, LegHlen: 1.5})
-	plt.SaveD(pp.DirOut, pp.FnKey+pp.FnExt)
+	plt.Save(pp.DirOut, pp.FnKey)
 }
 
 // PlotFltFlt plots flt-flt contour
@@ -348,7 +346,7 @@ func (o *Optimiser) PlotFltFltContour(sols0 []*Solution, iFlt, jFlt, iOva int, p
 		plotCommands(iFlt, jFlt)
 		plt.Gll(io.Sf("$x_{%d}$", iFlt), io.Sf("$x_{%d}$", jFlt), pp.ArgsLeg)
 	}
-	plt.SaveD(pp.DirOut, pp.FnKey+pp.FnExt)
+	plt.Save(pp.DirOut, pp.FnKey)
 }
 
 // PlotOvaOvaPareto plots ova-ova Pareto values
@@ -366,7 +364,7 @@ func (o *Optimiser) PlotOvaOvaPareto(sols0 []*Solution, iOva, jOva int, pp *Plot
 		pp.Extra()
 	}
 	plt.Gll(io.Sf("$f_{%d}$", iOva), io.Sf("$f_{%d}$", jOva), pp.ArgsLeg)
-	plt.SaveD(pp.DirOut, pp.FnKey+pp.FnExt)
+	plt.Save(pp.DirOut, pp.FnKey)
 }
 
 // PlotStar plots star with normalised OVAs

@@ -295,7 +295,7 @@ func twoObj(problem int) (opt *goga.Optimiser) {
 		args0 := &plt.A{C: "b", M: "-", L: opt.RptName}
 		args1 := &plt.A{C: "g", M: "_", Mew: 1.5, Ms: 10}
 		args2 := &plt.A{C: "g", M: "|", Mew: 1.5, Ms: 10}
-		plt.SetForEps(0.75, 250, nil)
+		plt.Reset(false, nil)
 		pp := goga.NewPlotParams(false)
 		pp.FnKey = opt.RptName
 		pp.Extra = func() {
