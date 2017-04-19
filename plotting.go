@@ -71,17 +71,17 @@ func NewPlotParams(simple bool) (o *PlotParams) {
 	o.NptsYfX = 101
 
 	// plot arguments
-	o.ArgsLeg = &plt.A{UcmapIdx: 0, LegOut: true, LegNcol: 4, LegHlen: 1.5}
+	o.ArgsLeg = &plt.A{CmapIdx: 0, LegOut: true, LegNcol: 4, LegHlen: 1.5}
 	o.ArgsF = &plt.A{}
-	o.ArgsG = &plt.A{Colors: []string{"y"}, Ulevels: []float64{0}, Lw: 2}
-	o.ArgsH = &plt.A{Colors: []string{"y"}, Ulevels: []float64{0}, Lw: 2}
-	o.ArgsAux = &plt.A{Colors: []string{"y"}, Ulevels: []float64{0}, Lw: 2}
+	o.ArgsG = &plt.A{Colors: []string{"y"}, Levels: []float64{0}, Lw: 2}
+	o.ArgsH = &plt.A{Colors: []string{"y"}, Levels: []float64{0}, Lw: 2}
+	o.ArgsAux = &plt.A{Colors: []string{"y"}, Levels: []float64{0}, Lw: 2}
 	o.ArgsSols0 = &plt.A{C: "k", M: "o", Ms: 3, Ls: "none", L: "initial"}
 	o.ArgsSols = &plt.A{C: "m", M: "o", Ms: 7, Ls: "none", L: "final", Void: true}
 	o.ArgsBest = &plt.A{C: "#00b30d", M: "*", Ms: 6, Ls: "none", Mec: "white", Mew: 0.3, L: "best"}
 	o.ArgsFront = &plt.A{C: "r", M: "*", Ms: 6, Ls: "none", Mec: "black", Mew: 0.3, L: "front"}
 	o.ArgsYfX = &plt.A{C: "b", Ls: "--", L: "y(x)"}
-	o.ArgsSimple = &plt.A{Colors: []string{"y"}, Ulevels: []float64{0}, Lw: 2}
+	o.ArgsSimple = &plt.A{Colors: []string{"y"}, Levels: []float64{0}, Lw: 2}
 
 	// options
 	o.Simple = simple
