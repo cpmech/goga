@@ -65,10 +65,10 @@ func Test_igd01(tst *testing.T) {
 		fS0 := utl.DblsGetColumn(0, fStar)
 		fS1 := utl.DblsGetColumn(1, fStar)
 		io.Pforan("len(fS0) = %v\n", len(fS0))
-		plt.SetForEps(0.75, 300)
+		plt.SetForEps(0.75, 300, nil)
 		opt.PlotAddOvaOva(0, 1, opt.Solutions, true, fmt)
-		plt.Plot(fS0, fS1, io.Sf("'b.', ms=2, label='star(%s)', clip_on=0", prob))
-		plt.Gll("$f_0$", "$f_1$", "")
+		plt.Plot(fS0, fS1, &plt.A{C: "b", Ms: 2, L: io.Sf("star(%s)", prob)})
+		plt.Gll("$f_0$", "$f_1$", nil)
 		plt.SaveD("/tmp/goga", "igd01.eps")
 	}
 }
@@ -132,10 +132,10 @@ func Test_igd02(tst *testing.T) {
 		fS0 := utl.DblsGetColumn(0, fStar)
 		fS1 := utl.DblsGetColumn(1, fStar)
 		io.Pforan("len(fS0) = %v\n", len(fS0))
-		plt.SetForEps(0.75, 300)
+		plt.SetForEps(0.75, 300, nil)
 		opt.PlotAddOvaOva(0, 1, opt.Solutions, true, fmt)
-		plt.Plot(fS0, fS1, io.Sf("'b.', ms=2, label='star(%s)', clip_on=0", prob))
-		plt.Gll("$f_0$", "$f_1$", "")
+		plt.Plot(fS0, fS1, &plt.A{C: "b", Ms: 2, L: io.Sf("star(%s)", prob)})
+		plt.Gll("$f_0$", "$f_1$", nil)
 		plt.SaveD("/tmp/goga", "igd02.eps")
 	}
 }

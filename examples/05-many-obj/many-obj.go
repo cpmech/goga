@@ -112,7 +112,7 @@ func manyObj(problem int) (opt *goga.Optimiser) {
 
 	// star plot
 	if plotStar {
-		plt.SetForEps(1, 300)
+		plt.SetForEps(1, 300, nil)
 		opt.PlotStar()
 		plt.SaveD("/tmp/goga", io.Sf("starplot_%s.eps", opt.RptName))
 	}

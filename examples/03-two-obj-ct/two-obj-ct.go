@@ -105,7 +105,7 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 		}
 		extraplot = func() {
 			np := 301
-			X, Y := utl.MeshGrid2D(0, 1.3, 0, 1.3, np, np)
+			X, Y := utl.MeshGrid2d(0, 1.3, 0, 1.3, np, np)
 			Z1, Z2, Z3 := utl.DblsAlloc(np, np), utl.DblsAlloc(np, np), utl.DblsAlloc(np, np)
 			for j := 0; j < np; j++ {
 				for i := 0; i < np; i++ {
@@ -119,10 +119,10 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 					Z3[i][j] = g1
 				}
 			}
-			plt.Contour(X, Y, Z1, "levels=[0,2],cbar=0,lwd=0.5,fsz=5,cmapidx=6")
-			plt.Text(0.3, 0.95, "0.000", "size=5,rotation=10")
-			plt.ContourSimple(X, Y, Z2, false, 7, "linestyles=['-'], linewidths=[0.7], colors=['k'], levels=[0]")
-			plt.ContourSimple(X, Y, Z3, false, 7, "linestyles=['-'], linewidths=[1.0], colors=['k'], levels=[0]")
+			plt.ContourF(X, Y, Z1, &plt.A{Ulevels: []float64{0, 2}, UnoCbar: true, Lw: 0.5, UcmapIdx: 6, Fsz: 5})
+			plt.Text(0.3, 0.95, "0.000", &plt.A{Fsz: 5, Rot: 10})
+			plt.ContourL(X, Y, Z2, &plt.A{Colors: []string{"k"}, Ulevels: []float64{0}, Lw: 0.7})
+			plt.ContourL(X, Y, Z3, &plt.A{Colors: []string{"k"}, Ulevels: []float64{0}, Lw: 1.0})
 		}
 		opt.Multi_fcnErr = func(f []float64) float64 {
 			return f[0]*f[0] + f[1]*f[1] - 1.0 - 0.1*math.Cos(16.0*math.Atan2(f[0], f[1]))
@@ -161,14 +161,14 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 		}
 		extraplot = func() {
 			np := 201
-			X, Y := utl.MeshGrid2D(0, 1, 0, 1, np, np)
+			X, Y := utl.MeshGrid2d(0, 1, 0, 1, np, np)
 			Z := utl.DblsAlloc(np, np)
 			for j := 0; j < np; j++ {
 				for i := 0; i < np; i++ {
 					Z[i][j] = opt.Multi_fcnErr([]float64{X[i][j], Y[i][j]})
 				}
 			}
-			plt.Contour(X, Y, Z, "levels=[0,0.6],cbar=0,lwd=0.5,fsz=5,cmapidx=6")
+			plt.ContourF(X, Y, Z, &plt.A{Ulevels: []float64{0, 0.6}, UnoCbar: true, Lw: 0.5, UcmapIdx: 6})
 			F0 := utl.LinSpace(0, 1, 21)
 			F1r := make([]float64, len(F0))
 			F1s := make([]float64, len(F0))
@@ -178,11 +178,11 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 				F1s[i] = a0 * math.Exp(-b0*f0)
 				F1t[i] = a1 * math.Exp(-b1*f0)
 			}
-			plt.Plot(F0, F1r, "'k--',color='blue'")
-			plt.Plot(F0, F1s, "'k--',color='green'")
-			plt.Plot(F0, F1t, "'k--',color='gray'")
-			plt.PlotOne(f0a, f1a, "'k|', ms=20")
-			plt.PlotOne(f0b, f1b, "'k|', ms=20")
+			plt.Plot(F0, F1r, &plt.A{C: "blue", Ls: "--"})
+			plt.Plot(F0, F1s, &plt.A{C: "green", Ls: "--"})
+			plt.Plot(F0, F1t, &plt.A{C: "gray", Ls: "--"})
+			plt.PlotOne(f0a, f1a, &plt.A{C: "k", M: "|", Ms: 20})
+			plt.PlotOne(f0b, f1b, &plt.A{C: "k", M: "|", Ms: 20})
 		}
 
 	// problem # 2 -- CTP2, Deb 2001, p368/369, fig 226
@@ -229,14 +229,14 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 		fcn = CTPgenerator(θ, a, b, c, d, e)
 		extraplot = func() {
 			np := 201
-			X, Y := utl.MeshGrid2D(0, 1, 0, 20, np, np)
+			X, Y := utl.MeshGrid2d(0, 1, 0, 20, np, np)
 			Z := utl.DblsAlloc(np, np)
 			for j := 0; j < np; j++ {
 				for i := 0; i < np; i++ {
 					Z[i][j] = CTPconstraint(θ, a, b, c, d, e, X[i][j], Y[i][j])
 				}
 			}
-			plt.Contour(X, Y, Z, "levels=[-30,-15,0,15,30],cbar=0,lwd=0.5,fsz=5,cmapidx=6")
+			plt.ContourF(X, Y, Z, &plt.A{Ulevels: []float64{-30, -15, 0, 15, 30}, UnoCbar: true, Lw: 0.5, UcmapIdx: 6, Fsz: 5})
 		}
 		opt.Multi_fcnErr = CTPerror1(θ, a, b, c, d, e)
 
@@ -249,7 +249,7 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 		opt.Multi_fcnErr = func(f []float64) float64 { return f[1] - (1.0 - f[0]) }
 		extraplot = func() {
 			np := 201
-			X, Y := utl.MeshGrid2D(0, 1, 0, f1max, np, np)
+			X, Y := utl.MeshGrid2d(0, 1, 0, f1max, np, np)
 			Z1 := utl.DblsAlloc(np, np)
 			Z2 := utl.DblsAlloc(np, np)
 			for j := 0; j < np; j++ {
@@ -258,8 +258,8 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 					Z2[i][j] = CTPconstraint(θ, a, b, c, d, e, X[i][j], Y[i][j])
 				}
 			}
-			plt.Contour(X, Y, Z2, "levels=[0,3],cbar=0,lwd=0.5,fsz=5,cmapidx=6")
-			plt.ContourSimple(X, Y, Z1, false, 7, "linestyles=['--'], linewidths=[0.7], colors=['b'], levels=[0]")
+			plt.ContourF(X, Y, Z2, &plt.A{Ulevels: []float64{0, 3}, UnoCbar: true, Lw: 0.5, UcmapIdx: 6, Fsz: 5})
+			plt.ContourL(X, Y, Z1, &plt.A{Ulevels: []float64{0}, Colors: []string{"b"}, Ls: "--", Lw: 0.7})
 		}
 
 	// problem # 8 -- CTP8, Deb 2001, p368/373, fig 232
@@ -292,7 +292,7 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 		}
 		extraplot = func() {
 			np := 401
-			X, Y := utl.MeshGrid2D(0, 1, 0, 20, np, np)
+			X, Y := utl.MeshGrid2d(0, 1, 0, 20, np, np)
 			Z1 := utl.DblsAlloc(np, np)
 			Z2 := utl.DblsAlloc(np, np)
 			Z3 := utl.DblsAlloc(np, np)
@@ -313,9 +313,9 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 					}
 				}
 			}
-			plt.Contour(X, Y, Z3, "colors=['white','gray'],clabels=0,cbar=0,lwd=0.5,fsz=5")
-			plt.ContourSimple(X, Y, Z1, false, 7, "linestyles=['--'], linewidths=[0.7], colors=['gray'], levels=[0]")
-			plt.ContourSimple(X, Y, Z2, false, 7, "linestyles=['--'], linewidths=[0.7], colors=['gray'], levels=[0]")
+			plt.ContourF(X, Y, Z3, &plt.A{Colors: []string{"white", "grey"}, UnoLabels: false, UnoCbar: true, Lw: 0.5, Fsz: 5})
+			plt.ContourL(X, Y, Z1, &plt.A{Ulevels: []float64{0}, Colors: []string{"gray"}, Ls: "--", Lw: 0.7})
+			plt.ContourL(X, Y, Z2, &plt.A{Ulevels: []float64{0}, Colors: []string{"gray"}, Ls: "--", Lw: 0.7})
 		}
 		opt.Multi_fcnErr = CTPerror1(θ1, a, b, c, d, e)
 
@@ -341,28 +341,28 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 
 	// plot
 	if doPlot {
-		plt.SetForEps(0.75, 250)
+		plt.SetForEps(0.75, 250, nil)
 		pp := goga.NewPlotParams(false)
-		pp.FmtFront.M = "."
-		pp.FmtFront.Ms = 5
 		pp.FnKey = opt.RptName
 		pp.Extra = func() {
 			extraplot()
 			if problem > 0 && problem < 6 {
-				plt.Text(0.05, 0.05, "unfeasible", "color='gray', ha='left',va='bottom'")
-				plt.Text(0.95, f1max-0.05, "feasible", "color='white', ha='right',va='top'")
+				plt.Text(0.05, 0.05, "unfeasible", &plt.A{C: "gray", Ha: "left", Va: "bottom"})
+				plt.Text(0.95, f1max-0.05, "feasible", &plt.A{C: "white", Ha: "right", Va: "top"})
 			}
+			glb := &plt.A{Rot: -7, C: "gray", Ha: "left", Va: "bottom"}
+			wcb := &plt.A{Rot: -7, C: "white", Ha: "center", Va: "bottom"}
 			if opt.RptName == "CTP6" {
-				plt.Text(0.02, 0.15, "unfeasible", "rotation=-7,color='gray', ha='left',va='bottom'")
-				plt.Text(0.02, 6.50, "unfeasible", "rotation=-7,color='gray', ha='left',va='bottom'")
-				plt.Text(0.02, 13.0, "unfeasible", "rotation=-7,color='gray', ha='left',va='bottom'")
-				plt.Text(0.50, 2.40, "feasible", "rotation=-7,color='white', ha='center',va='bottom'")
-				plt.Text(0.50, 8.80, "feasible", "rotation=-7,color='white', ha='center',va='bottom'")
-				plt.Text(0.50, 15.30, "feasible", "rotation=-7,color='white', ha='center',va='bottom'")
+				plt.Text(0.02, 0.15, "unfeasible", glb)
+				plt.Text(0.02, 6.50, "unfeasible", glb)
+				plt.Text(0.02, 13.0, "unfeasible", glb)
+				plt.Text(0.50, 2.40, "feasible", wcb)
+				plt.Text(0.50, 8.80, "feasible", wcb)
+				plt.Text(0.50, 15.30, "feasible", wcb)
 			}
 			if opt.RptName == "TNK" {
-				plt.Text(0.05, 0.05, "unfeasible", "color='gray', ha='left',va='bottom'")
-				plt.Text(0.80, 0.85, "feasible", "color='white', ha='left',va='top'")
+				plt.Text(0.05, 0.05, "unfeasible", glb)
+				plt.Text(0.80, 0.85, "feasible", &plt.A{C: "white", Ha: "left", Va: "top"})
 				plt.Equal()
 				plt.AxisRange(0, 1.22, 0, 1.22)
 			}
@@ -398,7 +398,7 @@ func CTPgenerator(θ, a, b, c, d, e float64) goga.MinProb_t {
 func CTPplotter(θ, a, b, c, d, e, f1max float64) func() {
 	return func() {
 		np := 401
-		X, Y := utl.MeshGrid2D(0, 1, 0, f1max, np, np)
+		X, Y := utl.MeshGrid2d(0, 1, 0, f1max, np, np)
 		Z1 := utl.DblsAlloc(np, np)
 		Z2 := utl.DblsAlloc(np, np)
 		sθ, cθ := math.Sin(θ), math.Cos(θ)
@@ -409,8 +409,8 @@ func CTPplotter(θ, a, b, c, d, e, f1max float64) func() {
 				Z2[i][j] = CTPconstraint(θ, a, b, c, d, e, X[i][j], Y[i][j])
 			}
 		}
-		plt.Contour(X, Y, Z2, "levels=[0,2],cbar=0,lwd=0.5,fsz=5,cmapidx=6")
-		plt.ContourSimple(X, Y, Z1, false, 7, "linestyles=['--'], linewidths=[0.7], colors=['b'], levels=[0]")
+		//plt.Contour(X, Y, Z2, "levels=[0,2],cbar=0,lwd=0.5,fsz=5,cmapidx=6")
+		//plt.ContourSimple(X, Y, Z1, false, 7, "linestyles=['--'], linewidths=[0.7], colors=['b'], levels=[0]")
 	}
 }
 

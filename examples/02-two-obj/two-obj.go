@@ -292,10 +292,11 @@ func twoObj(problem int) (opt *goga.Optimiser) {
 
 	// plot
 	if doPlot {
-		plt.SetForEps(0.75, 250)
+		args0 := &plt.A{C: "b", M: "-", L: opt.RptName}
+		args1 := &plt.A{C: "g", M: "_", Mew: 1.5, Ms: 10}
+		args2 := &plt.A{C: "g", M: "|", Mew: 1.5, Ms: 10}
+		plt.SetForEps(0.75, 250, nil)
 		pp := goga.NewPlotParams(false)
-		pp.FmtFront.M = "."
-		pp.FmtFront.Ms = 5
 		pp.FnKey = opt.RptName
 		pp.Extra = func() {
 			np := 201
@@ -304,12 +305,12 @@ func twoObj(problem int) (opt *goga.Optimiser) {
 			for i := 0; i < np; i++ {
 				F1[i] = opt.F1F0_func(F0[i])
 			}
-			plt.Plot(F0, F1, io.Sf("'b-', label='%s'", opt.RptName))
+			plt.Plot(F0, F1, args0)
 			for _, f0vals := range opt.F1F0_f0ranges {
 				f0A, f0B := f0vals[0], f0vals[1]
 				f1A, f1B := opt.F1F0_func(f0A), opt.F1F0_func(f0B)
-				plt.PlotOne(f0A, f1A, "'g_', mew=1.5, ms=10, clip_on=0")
-				plt.PlotOne(f0B, f1B, "'g|', mew=1.5, ms=10, clip_on=0")
+				plt.PlotOne(f0A, f1A, args1)
+				plt.PlotOne(f0B, f1B, args2)
 			}
 		}
 		opt.PlotOvaOvaPareto(sols0, 0, 1, pp)

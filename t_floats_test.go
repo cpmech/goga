@@ -132,7 +132,7 @@ func Test_flt03(tst *testing.T) {
 		pp := NewPlotParams(false)
 		pp.FnKey = "fig-flt03"
 		pp.AxEqual = true
-		plt.SetForEps(1, 400)
+		plt.SetForEps(1, 400, nil)
 		opt.PlotFltFltContour(sols0, 0, 1, 0, pp)
 	}
 }
@@ -180,10 +180,9 @@ func Test_flt04(tst *testing.T) {
 		_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
 		pp := NewPlotParams(false)
 		pp.FnKey = "fig-flt04"
-		pp.FmtSols.C = "gray"
 		pp.WithAll = true
 		pp.Extra = func() {
-			plt.Plot(dat["f1"], dat["f2"], "'b-',ms=3,markeredgecolor='b'")
+			plt.Plot(dat["f1"], dat["f2"], &plt.A{C: "b", Ms: 3, Mec: "b"})
 			plt.AxisRange(0, 250, 0, 0.15)
 		}
 		opt.PlotOvaOvaPareto(sols0, 0, 1, pp)

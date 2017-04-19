@@ -14,118 +14,93 @@ import (
 
 // PlotParams holds parameters to customize plots
 type PlotParams struct {
-	DirOut       string    // output directory; default = "/tmp/goga"
-	FnKey        string    // filename key
-	FnExt        string    // filename extension; default = ".eps" IMPORTANT: "." is required
-	FmtSols0     plt.A     // format for points indicating initial solutions
-	FmtSols      plt.A     // format for points indicating final solutions
-	FmtBest      plt.A     // format for points indicating best solution
-	FmtFront     plt.A     // format for points on Pareto front
-	YfuncX       YfuncX_t  // y(x) function to plot from FltMin[iFlt] to FltMax[iFlt]
-	FmtYfX       plt.A     // format for y(x) function
-	NptsYfX      int       // number of points for y(x) function
-	Extra        func()    // extra plotting commands
-	AxEqual      bool      // make axes equal
-	Xlabel       string    // xlabel. "" means use default
-	Ylabel       string    // xlabel. "" means use default
-	LegPrms      string    // legend parameters
-	FeasibleOnly bool      // plot feasible solutions only
-	WithAll      bool      // with all points
-	NoFront      bool      // do not show Pareto front
-	Npts         int       // number of points for contour
-	CmapIdx      int       // colormap index
-	Cbar         bool      // with color bar
-	Simple       bool      // simple contour
-	FmtF         plt.A     // format for f(x) function
-	FmtG         plt.A     // format for g(x) function
-	FmtH         plt.A     // format for h(x) function
-	FmtA         plt.A     // format for auxiliary field
-	Xrange       []float64 // to override x-range
-	Yrange       []float64 // to override y-range
-	IdxH         int       // index of h function to plot. -1 means all
-	Refx         []float64 // reference x vector with the other values in case Nflt > 2
-	ContourAt    string    // if Refx==nil, options: "minimum", "maximum", "middle", "best" (default)
+
+	// output directory and filename
+	DirOut string // output directory; default = "/tmp/goga"
+	FnKey  string // filename key
+	FnExt  string // filename extension; default = ".eps" IMPORTANT: "." is required
+
+	// auxiliary
+	YfuncX  YfuncX_t // y(x) function to plot from FltMin[iFlt] to FltMax[iFlt]
+	NptsYfX int      // number of points for y(x) function
+	Extra   func()   // extra plotting commands
+
+	// options
 	NoF          bool      // without f(x)
 	NoG          bool      // without g(x)
 	NoH          bool      // without h(x)
 	WithAux      bool      // plot Solution.Aux (with the same colors as g(x))
 	OnlyAux      bool      // plot only Solution.Aux
 	Limits       bool      // plot limits of variables in contour
+	FeasibleOnly bool      // plot feasible solutions only
+	WithAll      bool      // with all points
+	NoFront      bool      // do not show Pareto front
+	Simple       bool      // simple contour
+	Npts         int       // number of points for contour
+	IdxH         int       // index of h function to plot. -1 means all
+	RefX         []float64 // reference x vector with the other values in case Nflt > 2
+	Xrange       []float64 // to override x-range
+	Yrange       []float64 // to override y-range
+	ContourAt    string    // if RefX==nil, options: "minimum", "maximum", "middle", "best" (default)
+
+	// plot arguments
+	AxEqual    bool   // plot: equal scales
+	ArgsLeg    *plt.A // plot: arguments for legend
+	ArgsF      *plt.A // plot: f(x) function
+	ArgsG      *plt.A // plot: g(x) function
+	ArgsH      *plt.A // plot: h(x) function
+	ArgsAux    *plt.A // plot: format for auxiliary field
+	ArgsSols0  *plt.A // plot: points indicating initial solutions
+	ArgsSols   *plt.A // plot: points indicating final solutions
+	ArgsBest   *plt.A // plot: points indicating best solution
+	ArgsFront  *plt.A // plot: points on Pareto front
+	ArgsYfX    *plt.A // plot: y(x) function
+	ArgsSimple *plt.A // plot: simple contours
 }
 
 // NewPlotParams allocates and sets default PlotParams
 func NewPlotParams(simple bool) (o *PlotParams) {
 
+	// output directory and filename
 	o = new(PlotParams)
 	o.DirOut = "/tmp/goga"
 	o.FnKey = "plt-goga"
 	o.FnExt = ".eps"
 
-	o.FmtSols0.L = "initial"
-	o.FmtSols0.M = "o"
-	o.FmtSols0.C = "k"
-	o.FmtSols0.Ls = "none"
-	o.FmtSols0.Ms = 3
+	// auxiliary
+	o.NptsYfX = 101
 
-	o.FmtSols.L = "final"
-	o.FmtSols.M = "o"
-	o.FmtSols.C = "magenta"
-	o.FmtSols.Ls = "none"
-	o.FmtSols.Ms = 7
-	o.FmtSols.Void = true
+	// plot arguments
+	o.ArgsLeg = &plt.A{UcmapIdx: 0, LegOut: true, LegNcol: 4, LegHlen: 1.5}
+	o.ArgsF = &plt.A{}
+	o.ArgsG = &plt.A{Colors: []string{"y"}, Ulevels: []float64{0}, Lw: 2}
+	o.ArgsH = &plt.A{Colors: []string{"y"}, Ulevels: []float64{0}, Lw: 2}
+	o.ArgsAux = &plt.A{Colors: []string{"y"}, Ulevels: []float64{0}, Lw: 2}
+	o.ArgsSols0 = &plt.A{C: "k", M: "o", Ms: 3, Ls: "none", L: "initial"}
+	o.ArgsSols = &plt.A{C: "m", M: "o", Ms: 7, Ls: "none", L: "final", Void: true}
+	o.ArgsBest = &plt.A{C: "#00b30d", M: "*", Ms: 6, Ls: "none", Mec: "white", Mew: 0.3, L: "best"}
+	o.ArgsFront = &plt.A{C: "r", M: "*", Ms: 6, Ls: "none", Mec: "black", Mew: 0.3, L: "front"}
+	o.ArgsYfX = &plt.A{C: "b", Ls: "--", L: "y(x)"}
+	o.ArgsSimple = &plt.A{Colors: []string{"y"}, Ulevels: []float64{0}, Lw: 2}
 
-	o.FmtBest.L = "best"
-	o.FmtBest.M = "*"
-	o.FmtBest.Ls = "none"
-	o.FmtBest.C = "#00b30d"
-	o.FmtBest.Mec = "white"
-	o.FmtBest.Ms = 6
-	o.FmtBest.Mew = 0.3
-	o.FmtBest.Z = 20
-
-	o.FmtFront.L = "front"
-	o.FmtFront.M = "*"
-	o.FmtFront.Ls = "none"
-	o.FmtFront.C = "red"
-	o.FmtFront.Mec = "black"
-	o.FmtFront.Ms = 6
-	o.FmtFront.Mew = 0.3
-	o.FmtFront.Z = 20
-
-	o.NptsYfX = 41
-	o.FmtYfX.L = "y(x)"
-	o.FmtYfX.C = "blue"
-	o.FmtYfX.Ls = "--"
-
-	if simple {
-		o.FmtSols.C = "#00b30d"
-		o.FmtBest.C = "red"
-		o.FmtBest.Mec = "black"
-	}
-
-	o.LegPrms = "leg_out=1, leg_ncol=4, leg_hlen=1.5"
-
-	o.Npts = 41
-	o.FmtF.C = "black"
-	o.FmtF.Lw = 1
-	o.FmtG.C = "yellow"
-	o.FmtG.Lw = 1.5
-	o.FmtH.C = "yellow"
-	o.FmtH.Lw = 1.5
-	o.FmtA.C = "yellow"
-	o.FmtA.Lw = 1.5
+	// options
 	o.Simple = simple
+	if simple {
+		o.ArgsSols.C = "#00b30d"
+		o.ArgsBest.C = "red"
+		o.ArgsBest.Mec = "black"
+	}
 	return
 }
 
-// PlotContour plots contour with other components @ x=Refx
-//  If Refx==nil, x can be either @ minimum, maximum, middle or best
+// PlotContour plots contour with other components @ x=RefX
+//  If RefX==nil, x can be either @ minimum, maximum, middle or best
 //  For x @ best, Solutions will be sorted
 func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 
 	// check
 	var x []float64
-	if pp.Refx == nil {
+	if pp.RefX == nil {
 		x = make([]float64, o.Nflt)
 		switch pp.ContourAt {
 		case "minimum":
@@ -141,8 +116,8 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 			copy(x, o.Solutions[0].Flt)
 		}
 	} else {
-		x = make([]float64, len(pp.Refx))
-		copy(x, pp.Refx)
+		x = make([]float64, len(pp.RefX))
+		copy(x, pp.RefX)
 	}
 
 	// limits and meshgrid
@@ -162,13 +137,13 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 		pp.NoH = true
 		sol = NewSolution(o.Nsol, 0, &o.Parameters)
 		o.Solutions[0].CopyInto(sol)
-		if pp.Refx != nil {
-			copy(sol.Flt, pp.Refx)
+		if pp.RefX != nil {
+			copy(sol.Flt, pp.RefX)
 		}
 	}
 
 	// auxiliary variables
-	X, Y := utl.MeshGrid2D(xmin, xmax, ymin, ymax, pp.Npts, pp.Npts)
+	X, Y := utl.MeshGrid2d(xmin, xmax, ymin, ymax, pp.Npts, pp.Npts)
 	var Zf [][]float64
 	var Zg [][][]float64
 	var Zh [][][]float64
@@ -221,21 +196,17 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 
 	// plot f
 	if !pp.NoF && !pp.OnlyAux {
-		txt := "cbar=0"
-		if pp.Cbar {
-			txt = ""
-		}
 		if pp.Simple {
-			plt.ContourSimple(X, Y, Zf, true, 7, io.Sf("colors=['%s'], fsz=7, %s", pp.FmtF.C, txt))
+			plt.ContourL(X, Y, Zf, pp.ArgsSimple)
 		} else {
-			plt.Contour(X, Y, Zf, io.Sf("fsz=7, cmapidx=%d, %s", pp.CmapIdx, txt))
+			plt.ContourF(X, Y, Zf, pp.ArgsF)
 		}
 	}
 
 	// plot g
 	if !pp.NoG && !pp.OnlyAux {
 		for _, g := range Zg {
-			plt.ContourSimple(X, Y, g, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", pp.FmtG.C, pp.FmtG.Lw))
+			plt.ContourL(X, Y, g, pp.ArgsG)
 		}
 	}
 
@@ -243,26 +214,14 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 	if !pp.NoH && !pp.OnlyAux {
 		for i, h := range Zh {
 			if i == pp.IdxH || pp.IdxH < 0 {
-				plt.ContourSimple(X, Y, h, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", pp.FmtH.C, pp.FmtH.Lw))
+				plt.ContourL(X, Y, h, pp.ArgsH)
 			}
 		}
 	}
 
 	// plot aux
 	if pp.WithAux {
-		if pp.OnlyAux {
-			txt := "cbar=0"
-			if pp.Cbar {
-				txt = ""
-			}
-			if pp.Simple {
-				plt.ContourSimple(X, Y, Za, true, 7, io.Sf("colors=['%s'], fsz=7, %s", pp.FmtF.C, txt))
-			} else {
-				plt.Contour(X, Y, Za, io.Sf("fsz=7, markZero='red', cmapidx=%d, %s", pp.CmapIdx, txt))
-			}
-		} else {
-			plt.ContourSimple(X, Y, Za, false, 7, io.Sf("zorder=5, levels=[0], colors=['%s'], linewidths=[%g], clip_on=0", pp.FmtA.C, pp.FmtA.Lw))
-		}
+		plt.ContourL(X, Y, Za, pp.ArgsAux)
 	}
 
 	// limits
@@ -270,33 +229,33 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 		plt.Plot(
 			[]float64{o.FltMin[iFlt], o.FltMax[iFlt], o.FltMax[iFlt], o.FltMin[iFlt], o.FltMin[iFlt]},
 			[]float64{o.FltMin[jFlt], o.FltMin[jFlt], o.FltMax[jFlt], o.FltMax[jFlt], o.FltMin[jFlt]},
-			"'y--', color='yellow', zorder=10",
+			nil,
 		)
 	}
 }
 
 // PlotAddFltFlt adds flt-flt points to existent plot
-func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, fmt *plt.A) {
+func (o *Optimiser) PlotAddFltFlt(iFlt, jFlt int, sols []*Solution, args *plt.A) {
 	nsol := len(sols)
 	x, y := make([]float64, nsol), make([]float64, nsol)
 	for i, sol := range sols {
 		x[i], y[i] = sol.Flt[iFlt], sol.Flt[jFlt]
 	}
-	plt.Plot(x, y, fmt.String(""))
+	plt.Plot(x, y, args)
 }
 
 // PlotAddFltOva adds flt-ova points to existent plot
-func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult float64, fmt *plt.A) {
+func (o *Optimiser) PlotAddFltOva(iFlt, iOva int, sols []*Solution, ovaMult float64, args *plt.A) {
 	nsol := len(sols)
 	x, y := make([]float64, nsol), make([]float64, nsol)
 	for i, sol := range sols {
 		x[i], y[i] = sol.Flt[iFlt], sol.Ova[iOva]*ovaMult
 	}
-	plt.Plot(x, y, fmt.String(""))
+	plt.Plot(x, y, args)
 }
 
 // PlotAddOvaOva adds ova-ova points to existent plot
-func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.A) {
+func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, feasibleOnly bool, args *plt.A) {
 	var x, y []float64
 	for _, sol := range sols {
 		if sol.Feasible() || !feasibleOnly {
@@ -304,13 +263,13 @@ func (o *Optimiser) PlotAddOvaOva(iOva, jOva int, sols []*Solution, feasibleOnly
 			y = append(y, sol.Ova[jOva])
 		}
 	}
-	plt.Plot(x, y, fmt.String(""))
+	plt.Plot(x, y, args)
 }
 
 // PlotAddParetoFront highlights Pareto front
-func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, feasibleOnly bool, fmt *plt.A) {
+func (o *Optimiser) PlotAddParetoFront(iOva, jOva int, sols []*Solution, feasibleOnly bool, args *plt.A) {
 	x, y, _ := GetParetoFront(iOva, jOva, sols, feasibleOnly)
-	plt.Plot(x, y, fmt.String(""))
+	plt.Plot(x, y, args)
 }
 
 // PlotFltOva plots flt-ova points
@@ -321,15 +280,15 @@ func (o *Optimiser) PlotFltOva(sols0 []*Solution, iFlt, iOva int, ovaMult float6
 		for i := 0; i < pp.NptsYfX; i++ {
 			Y[i] = pp.YfuncX(X[i])
 		}
-		plt.Plot(X, Y, pp.FmtYfX.String(""))
+		plt.Plot(X, Y, pp.ArgsYfX)
 	}
 	if sols0 != nil {
-		o.PlotAddFltOva(iFlt, iOva, sols0, ovaMult, &pp.FmtSols0)
+		o.PlotAddFltOva(iFlt, iOva, sols0, ovaMult, pp.ArgsSols0)
 	}
-	o.PlotAddFltOva(iFlt, iOva, o.Solutions, ovaMult, &pp.FmtSols)
+	o.PlotAddFltOva(iFlt, iOva, o.Solutions, ovaMult, pp.ArgsSols)
 	best, _ := GetBestFeasible(o, iOva)
 	if best != nil {
-		plt.PlotOne(best.Flt[iFlt], best.Ova[iOva]*ovaMult, pp.FmtBest.String(""))
+		plt.PlotOne(best.Flt[iFlt], best.Ova[iOva]*ovaMult, pp.ArgsBest)
 	}
 	if pp.Extra != nil {
 		pp.Extra()
@@ -337,7 +296,7 @@ func (o *Optimiser) PlotFltOva(sols0 []*Solution, iFlt, iOva int, ovaMult float6
 	if pp.AxEqual {
 		plt.Equal()
 	}
-	plt.Gll(io.Sf("$x_{%d}$", iFlt), io.Sf("$f_{%d}$", iOva), "leg_out=1, leg_ncol=4, leg_hlen=1.5")
+	plt.Gll(io.Sf("$x_{%d}$", iFlt), io.Sf("$f_{%d}$", iOva), &plt.A{LegOut: true, LegNcol: 4, LegHlen: 1.5})
 	plt.SaveD(pp.DirOut, pp.FnKey+pp.FnExt)
 }
 
@@ -349,11 +308,11 @@ func (o *Optimiser) PlotFltFltContour(sols0 []*Solution, iFlt, jFlt, iOva int, p
 	plotCommands := func(i, j int) {
 		o.PlotContour(i, j, iOva, pp)
 		if sols0 != nil {
-			o.PlotAddFltFlt(i, j, sols0, &pp.FmtSols0)
+			o.PlotAddFltFlt(i, j, sols0, pp.ArgsSols0)
 		}
-		o.PlotAddFltFlt(i, j, o.Solutions, &pp.FmtSols)
+		o.PlotAddFltFlt(i, j, o.Solutions, pp.ArgsSols)
 		if best != nil {
-			plt.PlotOne(best.Flt[i], best.Flt[j], pp.FmtBest.String(""))
+			plt.PlotOne(best.Flt[i], best.Flt[j], pp.ArgsBest)
 		}
 		if pp.Extra != nil {
 			pp.Extra()
@@ -375,7 +334,7 @@ func (o *Optimiser) PlotFltFltContour(sols0 []*Solution, iFlt, jFlt, iOva int, p
 					plt.SetXnticks(0)
 					plt.SetYnticks(0)
 				} else {
-					plt.Gll(io.Sf("$x_{%d}$", col), io.Sf("$x_{%d}$", row), "leg=0")
+					plt.Gll(io.Sf("$x_{%d}$", col), io.Sf("$x_{%d}$", row), nil)
 				}
 				idx++
 			}
@@ -384,14 +343,10 @@ func (o *Optimiser) PlotFltFltContour(sols0 []*Solution, iFlt, jFlt, iOva int, p
 		plt.Subplot(ncol, ncol, idx)
 		plt.AxisOff()
 		// TODO: fix formatting of open marker, add star to legend
-		plt.DrawLegend([]plt.A{pp.FmtSols0, pp.FmtSols, pp.FmtBest}, 8, "center", false, "")
+		plt.LegendX([]*plt.A{pp.ArgsSols0, pp.ArgsSols, pp.ArgsBest}, pp.ArgsLeg)
 	} else {
 		plotCommands(iFlt, jFlt)
-		if pp.Xlabel == "" {
-			plt.Gll(io.Sf("$x_{%d}$", iFlt), io.Sf("$x_{%d}$", jFlt), pp.LegPrms)
-		} else {
-			plt.Gll(pp.Xlabel, pp.Ylabel, pp.LegPrms)
-		}
+		plt.Gll(io.Sf("$x_{%d}$", iFlt), io.Sf("$x_{%d}$", jFlt), pp.ArgsLeg)
 	}
 	plt.SaveD(pp.DirOut, pp.FnKey+pp.FnExt)
 }
@@ -399,18 +354,18 @@ func (o *Optimiser) PlotFltFltContour(sols0 []*Solution, iFlt, jFlt, iOva int, p
 // PlotOvaOvaPareto plots ova-ova Pareto values
 func (o *Optimiser) PlotOvaOvaPareto(sols0 []*Solution, iOva, jOva int, pp *PlotParams) {
 	if sols0 != nil {
-		o.PlotAddOvaOva(iOva, jOva, sols0, pp.FeasibleOnly, &pp.FmtSols0)
+		o.PlotAddOvaOva(iOva, jOva, sols0, pp.FeasibleOnly, pp.ArgsSols0)
 	}
 	if pp.WithAll {
-		o.PlotAddOvaOva(iOva, jOva, o.Solutions, pp.FeasibleOnly, &pp.FmtSols)
+		o.PlotAddOvaOva(iOva, jOva, o.Solutions, pp.FeasibleOnly, pp.ArgsSols)
 	}
 	if !pp.NoFront {
-		o.PlotAddParetoFront(iOva, jOva, o.Solutions, pp.FeasibleOnly, &pp.FmtFront)
+		o.PlotAddParetoFront(iOva, jOva, o.Solutions, pp.FeasibleOnly, pp.ArgsFront)
 	}
 	if pp.Extra != nil {
 		pp.Extra()
 	}
-	plt.Gll(io.Sf("$f_{%d}$", iOva), io.Sf("$f_{%d}$", jOva), pp.LegPrms)
+	plt.Gll(io.Sf("$f_{%d}$", iOva), io.Sf("$f_{%d}$", jOva), pp.ArgsLeg)
 	plt.SaveD(pp.DirOut, pp.FnKey+pp.FnExt)
 }
 
@@ -423,17 +378,17 @@ func (o *Optimiser) PlotStar() {
 		θ0 = -math.Pi / 6.0
 	}
 	for _, ρ := range []float64{0.25, 0.5, 0.75, 1.0} {
-		plt.Circle(0, 0, ρ, "ec='gray',lw=0.5,zorder=5")
+		plt.Circle(0, 0, ρ, &plt.A{Ec: "grey", Lw: 0.5})
 	}
 	arrowM, textM := 1.1, 1.15
 	for i := 0; i < nf; i++ {
 		θ := θ0 + float64(i)*dθ
 		xi, yi := 0.0, 0.0
 		xf, yf := arrowM*math.Cos(θ), arrowM*math.Sin(θ)
-		plt.Arrow(xi, yi, xf, yf, "sc=10,st='->',lw=0.7,zorder=10,clip_on=0")
-		plt.PlotOne(xf, yf, "'k+', ms=0")
+		plt.Arrow(xi, yi, xf, yf, &plt.A{Scale: 10, Style: "->", Lw: 0.7})
+		plt.PlotOne(xf, yf, &plt.A{C: "k", M: "+"})
 		xf, yf = textM*math.Cos(θ), textM*math.Sin(θ)
-		plt.Text(xf, yf, io.Sf("%d", i), "size=6,zorder=10,clip_on=0")
+		plt.Text(xf, yf, io.Sf("%d", i), nil)
 	}
 	X, Y := make([]float64, nf+1), make([]float64, nf+1)
 	clr := false
@@ -456,9 +411,9 @@ func (o *Optimiser) PlotStar() {
 			X[nf], Y[nf] = X[0], Y[0]
 			if clr {
 				j := count % len(colors)
-				plt.Plot(X, Y, io.Sf("'k-',color='%s',markersize=3,clip_on=0", colors[j]))
+				plt.Plot(X, Y, &plt.A{C: colors[j], Ms: 3})
 			} else {
-				plt.Plot(X, Y, "'r-',marker='.',markersize=3,clip_on=0")
+				plt.Plot(X, Y, &plt.A{C: "r", M: ".", Ms: 3})
 			}
 			count++
 		}
