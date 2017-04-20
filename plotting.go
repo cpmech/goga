@@ -147,7 +147,7 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 	var Zh [][][]float64
 	var Za [][]float64
 	if !pp.NoF {
-		Zf = utl.DblsAlloc(pp.Npts, pp.Npts)
+		Zf = utl.Alloc(pp.Npts, pp.Npts)
 	}
 	if o.Ng > 0 && !pp.NoG {
 		Zg = utl.Deep3alloc(o.Ng, pp.Npts, pp.Npts)
@@ -156,7 +156,7 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 		Zh = utl.Deep3alloc(o.Nh, pp.Npts, pp.Npts)
 	}
 	if pp.WithAux {
-		Za = utl.DblsAlloc(pp.Npts, pp.Npts)
+		Za = utl.Alloc(pp.Npts, pp.Npts)
 	}
 
 	// compute values

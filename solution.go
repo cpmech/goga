@@ -151,9 +151,9 @@ func (A *Solution) Compare(B *Solution) (A_dominates, B_dominates bool) {
 				B_dominates = true
 				return
 			}
-			A_dominates, B_dominates = utl.DblsParetoMin(A.Oor, B.Oor)
+			A_dominates, B_dominates = utl.ParetoMin(A.Oor, B.Oor)
 			if !A_dominates && !B_dominates {
-				A_dominates, B_dominates = utl.DblsParetoMin(A.Ova, B.Ova)
+				A_dominates, B_dominates = utl.ParetoMin(A.Ova, B.Ova)
 			}
 			return
 		}
@@ -164,7 +164,7 @@ func (A *Solution) Compare(B *Solution) (A_dominates, B_dominates bool) {
 		A_dominates = true
 		return
 	}
-	A_dominates, B_dominates = utl.DblsParetoMin(A.Ova, B.Ova)
+	A_dominates, B_dominates = utl.ParetoMin(A.Ova, B.Ova)
 	return
 }
 

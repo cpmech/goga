@@ -42,9 +42,9 @@ func GetResults(sols []*Solution, ovaOnly bool) (ova, oor [][]float64) {
 	nsol := len(sols)
 	nova := len(sols[0].Ova)
 	noor := len(sols[0].Oor)
-	ova = utl.DblsAlloc(nsol, nova)
+	ova = utl.Alloc(nsol, nova)
 	if !ovaOnly {
-		oor = utl.DblsAlloc(nsol, noor)
+		oor = utl.Alloc(nsol, noor)
 	}
 	for i, sol := range sols {
 		for j := 0; j < nova; j++ {

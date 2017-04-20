@@ -62,8 +62,8 @@ func Test_igd01(tst *testing.T) {
 	// plot
 	if chk.Verbose {
 		fmt := &plt.A{C: "red", M: ".", Ms: 1, Ls: "None", L: "solutions"}
-		fS0 := utl.DblsGetColumn(0, fStar)
-		fS1 := utl.DblsGetColumn(1, fStar)
+		fS0 := utl.GetColumn(0, fStar)
+		fS1 := utl.GetColumn(1, fStar)
 		io.Pforan("len(fS0) = %v\n", len(fS0))
 		plt.Reset(false, nil)
 		opt.PlotAddOvaOva(0, 1, opt.Solutions, true, fmt)
@@ -129,8 +129,8 @@ func Test_igd02(tst *testing.T) {
 	// plot
 	if chk.Verbose {
 		fmt := &plt.A{C: "red", M: ".", Ms: 1, Ls: "None", L: "solutions"}
-		fS0 := utl.DblsGetColumn(0, fStar)
-		fS1 := utl.DblsGetColumn(1, fStar)
+		fS0 := utl.GetColumn(0, fStar)
+		fS1 := utl.GetColumn(1, fStar)
 		io.Pforan("len(fS0) = %v\n", len(fS0))
 		plt.Reset(false, nil)
 		opt.PlotAddOvaOva(0, 1, opt.Solutions, true, fmt)

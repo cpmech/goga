@@ -22,7 +22,7 @@ func (o *Group) Init(cpu, ncpu int, solutions []*Solution, prms *Parameters) {
 	o.Ncur = endp1 - start
 	o.All = make([]*Solution, o.Ncur*2)
 	o.Indices = make([]int, o.Ncur)
-	o.Pairs = utl.IntsAlloc(o.Ncur/2, 2)
+	o.Pairs = utl.IntAlloc(o.Ncur/2, 2)
 	for i := 0; i < o.Ncur; i++ {
 		o.All[i] = solutions[start+i]
 		o.All[o.Ncur+i] = NewSolution(-(1 + i), nsol, prms) // the index is for debugging

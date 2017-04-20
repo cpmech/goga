@@ -118,7 +118,7 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 
 	// auxiliary
 	o.tmp = NewSolution(0, 0, &o.Parameters)
-	o.cpupairs = utl.IntsAlloc(o.Ncpu/2, 2)
+	o.cpupairs = utl.IntAlloc(o.Ncpu/2, 2)
 	o.iova0 = -1
 	o.ova0 = make([]float64, o.Tmax)
 
