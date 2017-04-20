@@ -35,7 +35,7 @@ func Test_data3d(tst *testing.T) {
 
 	// figure
 	plt.Reset(false, nil)
-	plt.Plot3dPoints(X, Y, Z, true, nil)
+	plt.Plot3dPoints(X, Y, Z, nil)
 	plt.AxisRange3d(0, 1, 0, 1, 0, 1)
 	plt.Camera(10, -135, nil)
 	//plt.Camera(10, 45, nil)
