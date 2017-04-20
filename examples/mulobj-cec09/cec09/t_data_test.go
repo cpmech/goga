@@ -16,8 +16,8 @@ import (
 func Test_data2d(tst *testing.T) {
 	prob := "CF4"
 	dat := PFdata(prob)
-	X := utl.DblsGetColumn(0, dat)
-	Y := utl.DblsGetColumn(1, dat)
+	X := utl.GetColumn(0, dat)
+	Y := utl.GetColumn(1, dat)
 	plt.Reset(false, nil)
 	plt.Plot(X, Y, nil)
 	plt.Gll("$f_1$", "$f_2$", nil)
@@ -29,9 +29,9 @@ func Test_data3d(tst *testing.T) {
 	// data
 	prob := "CF9"
 	dat := PFdata(prob)
-	X := utl.DblsGetColumn(0, dat)
-	Y := utl.DblsGetColumn(1, dat)
-	Z := utl.DblsGetColumn(2, dat)
+	X := utl.GetColumn(0, dat)
+	Y := utl.GetColumn(1, dat)
+	Z := utl.GetColumn(2, dat)
 
 	// figure
 	plt.Reset(false, nil)
@@ -45,7 +45,7 @@ func Test_data3d(tst *testing.T) {
 	if false {
 		r := 0.005
 		scn := vtk.NewScene()
-		P := vtk.Spheres{X: X, Y: Y, Z: Z, R: utl.DblVals(len(X), r), Color: []float64{1, 0, 0, 1}}
+		P := vtk.Spheres{X: X, Y: Y, Z: Z, R: utl.Vals(len(X), r), Color: []float64{1, 0, 0, 1}}
 		P.AddTo(scn)
 		scn.Run()
 	}

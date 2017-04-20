@@ -19,8 +19,8 @@ import (
 func plot2(opt *goga.Optimiser, onlyFront0 bool) {
 
 	// plot reference values
-	f0 := utl.DblsGetColumn(0, opt.Multi_fStar)
-	f1 := utl.DblsGetColumn(1, opt.Multi_fStar)
+	f0 := utl.GetColumn(0, opt.Multi_fStar)
+	f1 := utl.GetColumn(1, opt.Multi_fStar)
 	plt.Plot(f0, f1, "'b-', label='reference'")
 
 	// plot goga values
@@ -63,7 +63,7 @@ func plot3(opt *goga.Optimiser, onlyFront0, twice bool, ptRad float64) {
 	// particles
 	var P vtk.Spheres
 	P.X, P.Y, P.Z = X, Y, Z
-	P.R = utl.DblVals(len(X), ptRad)
+	P.R = utl.Vals(len(X), ptRad)
 	P.Color = []float64{1, 0, 0, 1}
 	P.AddTo(scn)
 

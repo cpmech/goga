@@ -106,7 +106,7 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 		extraplot = func() {
 			np := 301
 			X, Y := utl.MeshGrid2d(0, 1.3, 0, 1.3, np, np)
-			Z1, Z2, Z3 := utl.DblsAlloc(np, np), utl.DblsAlloc(np, np), utl.DblsAlloc(np, np)
+			Z1, Z2, Z3 := utl.Alloc(np, np), utl.Alloc(np, np), utl.Alloc(np, np)
 			for j := 0; j < np; j++ {
 				for i := 0; i < np; i++ {
 					g1 := 0.5 - math.Pow(X[i][j]-0.5, 2.0) - math.Pow(Y[i][j]-0.5, 2.0)
@@ -162,7 +162,7 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 		extraplot = func() {
 			np := 201
 			X, Y := utl.MeshGrid2d(0, 1, 0, 1, np, np)
-			Z := utl.DblsAlloc(np, np)
+			Z := utl.Alloc(np, np)
 			for j := 0; j < np; j++ {
 				for i := 0; i < np; i++ {
 					Z[i][j] = opt.Multi_fcnErr([]float64{X[i][j], Y[i][j]})
@@ -230,7 +230,7 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 		extraplot = func() {
 			np := 201
 			X, Y := utl.MeshGrid2d(0, 1, 0, 20, np, np)
-			Z := utl.DblsAlloc(np, np)
+			Z := utl.Alloc(np, np)
 			for j := 0; j < np; j++ {
 				for i := 0; i < np; i++ {
 					Z[i][j] = CTPconstraint(θ, a, b, c, d, e, X[i][j], Y[i][j])
@@ -250,8 +250,8 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 		extraplot = func() {
 			np := 201
 			X, Y := utl.MeshGrid2d(0, 1, 0, f1max, np, np)
-			Z1 := utl.DblsAlloc(np, np)
-			Z2 := utl.DblsAlloc(np, np)
+			Z1 := utl.Alloc(np, np)
+			Z2 := utl.Alloc(np, np)
 			for j := 0; j < np; j++ {
 				for i := 0; i < np; i++ {
 					Z1[i][j] = opt.Multi_fcnErr([]float64{X[i][j], Y[i][j]})
@@ -293,9 +293,9 @@ func twoObjCt(problem int) (opt *goga.Optimiser) {
 		extraplot = func() {
 			np := 401
 			X, Y := utl.MeshGrid2d(0, 1, 0, 20, np, np)
-			Z1 := utl.DblsAlloc(np, np)
-			Z2 := utl.DblsAlloc(np, np)
-			Z3 := utl.DblsAlloc(np, np)
+			Z1 := utl.Alloc(np, np)
+			Z2 := utl.Alloc(np, np)
+			Z3 := utl.Alloc(np, np)
 			for j := 0; j < np; j++ {
 				for i := 0; i < np; i++ {
 					c1 := cos1*(Y[i][j]-e) - sin1*X[i][j]
@@ -399,8 +399,8 @@ func CTPplotter(θ, a, b, c, d, e, f1max float64) func() {
 	return func() {
 		np := 401
 		X, Y := utl.MeshGrid2d(0, 1, 0, f1max, np, np)
-		Z1 := utl.DblsAlloc(np, np)
-		Z2 := utl.DblsAlloc(np, np)
+		Z1 := utl.Alloc(np, np)
+		Z2 := utl.Alloc(np, np)
 		sθ, cθ := math.Sin(θ), math.Cos(θ)
 		for j := 0; j < np; j++ {
 			for i := 0; i < np; i++ {
