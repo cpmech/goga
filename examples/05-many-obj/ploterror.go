@@ -10,10 +10,11 @@ import "github.com/cpmech/gosl/plt"
 
 func main() {
 	Nf := []float64{5, 7, 10, 13, 15, 20}
-	Eave := []float64{3.5998e-12, 2.9629e-10, 6.0300e-8, 3.3686e-6, 2.5914e-5, 1.1966e-3}
-	plt.SetForEps(0.75, 200)
-	plt.Plot(Nf, Eave, "'b-', marker='.', clip_on=0")
+	Eave := []float64{2.33e-12, 2.39e-10, 5.76e-8, 2.39e-6, 2.58e-5, 1.12e-3}
+	plt.Reset(true, &plt.A{Eps: true, Prop: 0.75, WidthPt: 220})
+	plt.HideBorders(&plt.A{HideR: true, HideT: true})
+	plt.Plot(Nf, Eave, &plt.A{C: "r", M: ".", Lw: 1.2, NoClip: true})
 	plt.SetYlog()
-	plt.Gll("$N_f$", "$E_{ave}$", "")
-	plt.SaveD("/tmp/goga", "multierror.eps")
+	plt.Gll("$N_f$", "$E_{ave}$", nil)
+	plt.Save("/tmp/goga", "multierror")
 }
