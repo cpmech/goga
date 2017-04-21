@@ -61,5 +61,11 @@ Cmd('godoc -html github.com/cpmech/goga >> '+idxfn)
 Cmd("sed -i -e 's@/src/target@https://github.com/cpmech/goga/blob/master/@g' "+idxfn+"")
 Cmd("sed -i -e 's@/src/github.com/cpmech/goga/@https://github.com/cpmech/goga/blob/master/@g' "+idxfn+"")
 
+# fix links to subdirectories (harder to automate)
+subdirs = ["data", "doc", "examples"]
+
+for subdir in subdirs:
+    Cmd("sed -i -e 's@<a href=\""+subdir+"/\">@<a href=\"https://github.com/cpmech/goga/tree/master/"+subdir+"\">@g' "+idxfn)
+
 Cmd('echo "</dl>\n</div><!-- manual-nav -->" >> '+idxfn)
 Cmd('echo "'+footer()+'" >> '+idxfn)
