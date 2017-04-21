@@ -59,6 +59,7 @@ Cmd('godoc -html github.com/cpmech/goga >> '+idxfn)
 
 # fix links
 Cmd("sed -i -e 's@/src/target@https://github.com/cpmech/goga/blob/master/@g' "+idxfn+"")
+Cmd("sed -i -e 's@/src/github.com/cpmech/goga/@https://github.com/cpmech/goga/blob/master/@g' "+idxfn+"")
 
 Cmd('echo "</dl>\n</div><!-- manual-nav -->" >> '+idxfn)
 Cmd('echo "'+footer()+'" >> '+idxfn)
