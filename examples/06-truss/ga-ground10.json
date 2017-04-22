@@ -1,7 +1,7 @@
 {
   "Nsol"         : 200,
-  "Ncpu"         : 5,
-  "Tf"           : 500,
+  "Ncpu"         : 4,
+  "Tmax"         : 500,
   "ExcTour"      : true,
   "ExcOne"       : true,
   "ClearFlt_bad" : false,

@@ -10,11 +10,13 @@ import (
 	"encoding/json"
 	"math"
 
+	"github.com/cpmech/gofem/ele/solid"
 	"github.com/cpmech/gofem/fem"
 	"github.com/cpmech/gofem/inp"
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/fun"
 	"github.com/cpmech/gosl/io"
+	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/utl"
 )
 
@@ -63,10 +65,10 @@ func (o *OptData) CalcDerived() {
 	}
 }
 
-// FemData structure
+// FemData holds derived data for FE analyses, one per CPU
 type FemData struct {
 	Opt       OptData     // optimisation data
-	Analysis  *fem.FEM    // fem structure
+	Analysis  *fem.Main   // fem structure
 	Reg       *inp.Region // region
 	Dom       *fem.Domain // domain
 	ReqVids   []int       // required vertex ids
@@ -93,7 +95,7 @@ func NewData(filename, fnkey string, cpu int) *FemData {
 	o.Opt.CalcDerived()
 
 	// load FEM data
-	o.Analysis = fem.NewFEM(filename, io.Sf("cpu%d", cpu), false, false, false, false, false, cpu)
+	o.Analysis = fem.NewMain(filename, io.Sf("cpu%d", cpu), false, false, false, false, false, cpu)
 	o.Reg = o.Analysis.Sim.Regions[0]
 	o.Dom = o.Analysis.Domains[0]
 
@@ -136,7 +138,7 @@ func NewData(filename, fnkey string, cpu int) *FemData {
 	// compute max weight
 	o.Analysis.SetStage(0)
 	for _, elem := range o.Dom.Elems {
-		ele := elem.(*fem.ElastRod)
+		ele := elem.(*solid.ElastRod)
 		o.MaxWeight += ele.Mdl.Rho * ele.Mdl.A * ele.L
 	}
 	return &o
@@ -200,7 +202,7 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, draw int, debug bool) (
 
 	// set elements' cross-sectional areas and compute weight
 	for _, elem := range o.Dom.Elems {
-		ele := elem.(*fem.ElastRod)
+		ele := elem.(*solid.ElastRod)
 		cid := ele.Cell.Id
 		xid := o.Cid2xid[cid]
 		ele.Mdl.A = Areas[xid]
@@ -233,7 +235,7 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, draw int, debug bool) (
 
 	// find max stress
 	for _, elem := range o.Dom.Elems {
-		ele := elem.(*fem.ElastRod)
+		ele := elem.(*solid.ElastRod)
 		tag := ele.Cell.Tag
 		sig := ele.CalcSig(o.Dom.Sol)
 		smax = utl.Max(smax, math.Abs(sig))
@@ -243,15 +245,13 @@ func (o *FemData) RunFEM(Enabled []int, Areas []float64, draw int, debug bool) (
 
 	// draw
 	if draw > 0 {
-		lwds := make(map[int]float64)
+		args := make(map[int]*plt.A)
 		for _, elem := range o.Dom.Elems {
-			ele := elem.(*fem.ElastRod)
+			ele := elem.(*solid.ElastRod)
 			cid := ele.Cell.Id
-			lwds[cid] = 0.1 + ele.Mdl.A/20.0
+			args[cid] = &plt.A{C: "#004cc9", Lw: 0.3 + ele.Mdl.A/15.0}
 		}
-		o.Dom.Msh.Draw2d(true, false, lwds, 1)
-		//plt.Title(io.Sf("weight=%.3f deflection=%.6f", weight, umax), "")
-		//plt.SaveD("/tmp/goga", io.Sf("mesh-topology-%03d.eps", draw))
+		o.Dom.Msh.Draw2d(true, false, false, nil, args, nil)
 	}
 
 	// debug
