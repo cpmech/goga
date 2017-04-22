@@ -61,7 +61,7 @@ func run(ncpu int) (nsol, tmax int, elaspsedTime time.Duration) {
 
 	// options
 	doPlot := true
-	doReport := false
+	doReport := true
 
 	// input filename
 	fn, fnkey := io.ArgToFilename(0, "ground10", ".sim", true)
