@@ -41,6 +41,8 @@ type PlotParams struct {
 	Xrange       []float64 // to override x-range
 	Yrange       []float64 // to override y-range
 	ContourAt    string    // if RefX==nil, options: "minimum", "maximum", "middle", "best" (default)
+	Xlabel       string    // x-axis label
+	Ylabel       string    // y-axis label
 
 	// plot arguments
 	AxEqual    bool   // plot: equal scales
@@ -77,7 +79,7 @@ func NewPlotParams(simple bool) (o *PlotParams) {
 	o.ArgsSols0 = &plt.A{C: "k", M: "o", Ms: 3, Ls: "none", L: "initial"}
 	o.ArgsSols = &plt.A{C: "m", M: "o", Ms: 7, Ls: "none", L: "final", Void: true}
 	o.ArgsBest = &plt.A{C: "#00b30d", M: "*", Ms: 6, Ls: "none", Mec: "white", Mew: 0.3, L: "best"}
-	o.ArgsFront = &plt.A{C: "r", M: "*", Ms: 6, Ls: "none", Mec: "black", Mew: 0.3, L: "front"}
+	o.ArgsFront = &plt.A{C: "r", M: ".", Ms: 6, Ls: "none", Mec: "black", Mew: 0.3, L: "front"}
 	o.ArgsYfX = &plt.A{C: "b", Ls: "--", L: "y(x)"}
 	o.ArgsSimple = &plt.A{Colors: []string{"y"}, Levels: []float64{0}, Lw: 2}
 
@@ -363,7 +365,14 @@ func (o *Optimiser) PlotOvaOvaPareto(sols0 []*Solution, iOva, jOva int, pp *Plot
 	if pp.Extra != nil {
 		pp.Extra()
 	}
-	plt.Gll(io.Sf("$f_{%d}$", iOva), io.Sf("$f_{%d}$", jOva), pp.ArgsLeg)
+	xl, yl := io.Sf("$f_{%d}$", iOva), io.Sf("$f_{%d}$", jOva)
+	if pp.Xlabel != "" {
+		xl = pp.Xlabel
+	}
+	if pp.Ylabel != "" {
+		yl = pp.Ylabel
+	}
+	plt.Gll(xl, yl, pp.ArgsLeg)
 	plt.Save(pp.DirOut, pp.FnKey)
 }
 
