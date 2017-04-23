@@ -32,10 +32,10 @@ refresh(){
     echo
     echo
     #go run genmsh.go
+    #go run drawmsh.go
     go run femsim.go reporting.go topology.go
     #go run setandrunfem.go
     #go run plotCPUtime.go
-    #python fig-mesh.py
 }
 
 while true; do
