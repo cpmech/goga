@@ -1,3 +1,3 @@
 #!/bin/bash
 
-go run femsim.go topology.go
+go run reporting.go femsim.go topology.go
