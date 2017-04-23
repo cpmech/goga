@@ -8,30 +8,35 @@ package main
 
 import (
 	"bytes"
-	"math"
 
 	"github.com/cpmech/goga"
-	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
-	"github.com/cpmech/gosl/utl"
 )
 
 func main() {
+
+	// options
+	doPlot := true
+	doReport := true
+	constantSeed := false
 
 	// goga parameters
 	opt := new(goga.Optimiser)
 	opt.Default()
 	opt.Nsol = 200
 	opt.Ncpu = 4
-	opt.Tf = 500
-	opt.Verbose = false
+	opt.Tmax = 500
+	//opt.Tmax = 100
+	opt.Verbose = true
+	opt.VerbTime = true
+	opt.VerbStat = true
 	opt.GenType = "latin"
+	opt.Nsamples = 1
 	opt.EpsH = 1e-3
 
 	// flags
 	problem := 4
-	idxsel := 120
 	checkOnly := false
 	lossless := problem < 4
 
@@ -109,53 +114,73 @@ func main() {
 	}
 
 	// solve
-	opt.RunMany("", "")
-
-	// selected solutions
-	goga.SortByOva(opt.Solutions, 0)
-	m, l := idxsel, opt.Nsol-1
-	A, B, C := opt.Solutions[0], opt.Solutions[m], opt.Solutions[l]
+	opt.RunMany("", "", constantSeed)
+	goga.SortSolutions(opt.Solutions, 0)
 
 	// post-processing
+	fnkey := io.Sf("eed%d", problem)
 	switch problem {
 	case 1:
+		// selected results
+		idxsel := 120
+		m, l := idxsel, opt.Nsol-1
+		A, B, C := opt.Solutions[0], opt.Solutions[m], opt.Solutions[l]
 
 		// results
-		print_results(&sys, A, B, C, opt.RptXref, opt.RptFref[0], 0.22214)
+		PrintResults(&sys, []*goga.Solution{A, B, C}, opt.RptXref, opt.RptFref[0], 0.22214)
 
 		// stat
 		io.Pf("\n")
-		goga.StatF(opt, 0, true)
+		opt.PrintStatF(0)
 
 	case 2:
+		// selected results
+		idxsel := 120
+		m, l := idxsel, opt.Nsol-1
+		A, B, C := opt.Solutions[0], opt.Solutions[m], opt.Solutions[l]
 
 		// results
-		print_results(&sys, A, B, C, opt.RptXref, 638.260, opt.RptFref[0])
+		PrintResults(&sys, []*goga.Solution{A, B, C}, opt.RptXref, 638.260, opt.RptFref[0])
 
 		// stat
 		io.Pf("\n")
-		goga.StatF(opt, 0, true)
+		opt.PrintStatF(0)
 
 	default:
 
-		// results
-		print_results(&sys, A, B, C, nil, -1, -1)
+		// check
+		nfailed, front0 := goga.CheckFront0(opt, true)
 
-		// stat
-		goga.StatF1F0(opt, true)
+		// selected results
+		ia, ib, ic, id, ie, iF := 0, 0, 0, 0, 0, 0
+		nfront0 := len(front0)
+		if nfront0 > 4 {
+			ib = int(float64(nfront0) * 0.3)
+			ic = int(float64(nfront0) * 0.5)
+			id = int(float64(nfront0) * 0.7)
+			ie = int(float64(nfront0) * 0.9)
+			iF = nfront0 - 1
+		}
+		A := front0[ia]
+		B := front0[ib]
+		C := front0[ic]
+		D := front0[id]
+		E := front0[ie]
+		F := front0[iF]
 
-		// plot
-		feasibleOnly := true
-		plt.SetForEps(0.8, 300)
-		fmtAll := &plt.Fmt{L: "final solutions", M: ".", C: "orange", Ls: "none", Ms: 3}
-		fmtFront := &plt.Fmt{L: "final Pareto front", C: "r", M: "o", Ms: 3, Ls: "none"}
-		goga.PlotOvaOvaPareto(opt, sols0, 0, 1, feasibleOnly, fmtAll, fmtFront)
-		plt.PlotOne(A.Ova[0], A.Ova[1], "'g*', zorder=1000, clip_on=0")
-		plt.PlotOne(B.Ova[0], B.Ova[1], "'g*', zorder=1000, clip_on=0")
-		plt.PlotOne(C.Ova[0], C.Ova[1], "'g*', zorder=1000, clip_on=0")
-		plt.Text(A.Ova[0]+1, A.Ova[1], "A", "")
-		plt.Text(B.Ova[0]+1, B.Ova[1], "B", "")
-		plt.Text(C.Ova[0]+1, C.Ova[1], "C", "")
+		// print results
+		selected := []*goga.Solution{A, B, C, D, E, F}
+		strRes := PrintResults(&sys, selected, nil, -1, -1)
+
+		// save results
+		var log, res bytes.Buffer
+		io.Ff(&log, opt.LogParams())
+		io.Ff(&res, strRes)
+		io.Ff(&res, io.Sf("\n\nnfailed = %d\n", nfailed))
+		io.WriteFileVD("/tmp/goga", fnkey+".log", &log)
+		io.WriteFileVD("/tmp/goga", fnkey+".res", &res)
+
+		// load reference data
 		title := "Economic emission dispatch. Results: Lossy case."
 		label := "eedLossy"
 		var dat map[string][]float64
@@ -166,136 +191,41 @@ func main() {
 		} else {
 			_, dat, _ = io.ReadTable("abido2006-fig8.dat")
 		}
-		plt.Plot(dat["cost"], dat["emission"], "'b-', label='reference'")
-		plt.Gll("$f_0:\\;$ cost~[\\$/h]", "$f_1:\\quad$ emission~[ton/h]", "")
-		if problem == 3 {
-			plt.AxisXmin(599)
+
+		// plot
+		if doPlot {
+			argsSel := &plt.A{C: "b", M: "*"}
+			argsTxt := &plt.A{C: "b"}
+			addSelected := func(key string, P *goga.Solution) {
+				plt.PlotOne(P.Ova[0], P.Ova[1], argsSel)
+				plt.Text(P.Ova[0]+1, P.Ova[1], key, argsTxt)
+			}
+			plt.Reset(true, &plt.A{Eps: true, Prop: 0.75, WidthPt: 300})
+			pp := goga.NewPlotParams(false)
+			pp.FnKey = fnkey
+			pp.Xlabel = "$f_0:\\;$ cost~[\\$/h]"
+			pp.Ylabel = "$f_1:\\quad$ emission~[ton/h]"
+			pp.ArgsLeg = &plt.A{LegOut: false}
+			pp.Extra = func() {
+				plt.Plot(dat["cost"], dat["emission"], &plt.A{C: "#2c7248", Ls: "-", L: "reference"})
+				for i, selected := range selected {
+					addSelected(selectedKeys[i], selected)
+				}
+				plt.HideBorders(&plt.A{HideR: true, HideT: true})
+				if problem == 3 {
+					plt.AxisXmin(599)
+				}
+			}
+			opt.PlotOvaOvaPareto(sols0, 0, 1, pp)
 		}
-		fnkey := io.Sf("ecoemission_prob%d", problem)
-		plt.SaveD("/tmp/goga", fnkey+".eps")
 
 		// tex file
-		document := true
-		compact := true
-		tex_results("/tmp/goga", "tmp_"+fnkey, title, label, &sys, A, B, C, document, compact)
-		document = false
-		tex_results("/tmp/goga", fnkey, title, label, &sys, A, B, C, document, compact)
-	}
-}
-
-func print_results(sys *System, A, B, C *goga.Solution, Pref []float64, costRef, emisRef float64) {
-	n := 9*2 + 8*6 + 12 + 3
-	io.Pf("%s", io.StrThickLine(n))
-	io.Pf("%3s%9s%9s%8s%8s%8s%8s%8s%8s%12s\n", "pt", "cost", "emis", "P1", "P2", "P3", "P4", "P5", "P6", "bal.err")
-	io.Pf("%s", io.StrThinLine(n))
-	if Pref != nil {
-		io.Pfyel("%3s%9.4f%9.5f%8.5f%8.5f%8.5f%8.5f%8.5f%8.5f%12.4e\n", "ref", costRef, emisRef, Pref[0], Pref[1], Pref[2], Pref[3], Pref[4], Pref[5], sys.Balance(Pref))
-	}
-	writeline := func(pt string, P []float64) {
-		io.Pf("%3s%9.4f%9.5f%8.5f%8.5f%8.5f%8.5f%8.5f%8.5f%12.4e\n", pt, sys.FuelCost(P), sys.Emission(P), P[0], P[1], P[2], P[3], P[4], P[5], sys.Balance(P))
-	}
-	writeline("A", A.Flt)
-	writeline("B", B.Flt)
-	writeline("C", C.Flt)
-	io.Pf("%s", io.StrThickLine(n))
-}
-
-func tex_results(dirout, fnkey, title, label string, sys *System, A, B, C *goga.Solution, document, compact bool) {
-	buf := new(bytes.Buffer)
-	if document {
-		io.Ff(buf, `\documentclass[a4paper]{article}
-
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{booktabs}
-\usepackage[margin=1.5cm,footskip=0.5cm]{geometry}
-
-\title{GOGA Report}
-\author{Dorival Pedroso}
-
-\begin{document}
-
-`)
-	}
-	io.Ff(buf, `\begin{table} \centering
-\caption{%s}
-`, title)
-	if compact {
-		io.Ff(buf, `\begin{tabular}[c]{ccccccc} \toprule
-point & cost & emission & $h_0$  &  $P_0$ & $P_1$ & $P_2$ \\
-      &      &          &        &  $P_3$ & $P_4$ & $P_5$ \\ \hline
-`)
-	} else {
-		io.Ff(buf, `\begin{tabular}[c]{cccccccccc} \toprule
-point & cost & emission & $P_0$ & $P_1$ & $P_2$ & $P_3$ & $P_4$ & $P_5$ & $h_0$ \\ \hline
-`)
-	}
-
-	writeline := func(pt string, P []float64) {
-		strh0 := utl.TexNum("%.2e", sys.Balance(P), true)
-		if compact {
-			io.Ff(buf, "%s & $%.4f$ & $%.6f$ & $%s$  &  $%.6f$ & $%.6f$ & $%.6f$ \\\\\n", pt, sys.FuelCost(P), sys.Emission(P), strh0, P[0], P[1], P[2])
-			io.Ff(buf, "   &        &        &       &  $%.6f$ & $%.6f$ & $%.6f$ \\\\\n", P[3], P[4], P[5])
-		} else {
-			io.Ff(buf, "%s & $%.4f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%.6f$ & $%s$ \\\\\n", pt, sys.FuelCost(P), sys.Emission(P), P[0], P[1], P[2], P[3], P[4], P[5], strh0)
-		}
-	}
-
-	writeline("A", A.Flt)
-	writeline("B", B.Flt)
-	writeline("C", C.Flt)
-
-	io.Ff(buf, `
-\bottomrule
-\end{tabular}
-\label{tab:%s}
-\end{table}
-`, label)
-	if document {
-		io.Ff(buf, ` \end{document}`)
-	}
-
-	tex := fnkey + ".tex"
-	if document {
-		io.WriteFileD(dirout, tex, buf)
-		_, err := io.RunCmd(true, "pdflatex", "-interaction=batchmode", "-halt-on-error", "-output-directory=/tmp/goga/", tex)
-		if err != nil {
-			chk.Panic("%v", err)
-		}
-		io.PfBlue("file <%s/%s.pdf> generated\n", dirout, fnkey)
-	} else {
-		io.WriteFileVD(dirout, tex, buf)
-	}
-}
-
-func check(fcn goga.MinProb_t, ng, nh int, xs []float64, fs, ϵ float64) {
-	f := make([]float64, 1)
-	g := make([]float64, ng)
-	h := make([]float64, nh)
-	cpu := 0
-	fcn(f, g, h, xs, nil, cpu)
-	io.Pfblue2("xs = %v\n", xs)
-	io.Pfblue2("f(x)=%g  (%g)  diff=%g\n", f[0], fs, math.Abs(fs-f[0]))
-	for i, v := range g {
-		unfeasible := false
-		if v < 0 {
-			unfeasible = true
-		}
-		if unfeasible {
-			io.Pfred("g%d(x) = %g\n", i, v)
-		} else {
-			io.Pfgreen("g%d(x) = %g\n", i, v)
-		}
-	}
-	for i, v := range h {
-		unfeasible := false
-		if math.Abs(v) > ϵ {
-			unfeasible = true
-		}
-		if unfeasible {
-			io.Pfred("h%d(x) = %g\n", i, v)
-		} else {
-			io.Pfgreen("h%d(x) = %g\n", i, v)
+		if doReport {
+			document := true
+			compact := true
+			texResults("/tmp/goga", "tmp_"+fnkey, title, label, &sys, selected, document, compact)
+			document = false
+			texResults("/tmp/goga", fnkey, title, label, &sys, selected, document, compact)
 		}
 	}
 }
