@@ -39,7 +39,7 @@ func fcnA(f, g, h, x []float64, y []int, cpu int) {
 	f[0] = 2.0 + (1.0+x[0])*(1.0+x[0])
 }
 
-// case B: finding the minimum of
+// case A: finding the minimum of 2.0 + (1+x)² (same function, but different function call)
 func fcnB(sol *goga.Solution, cpu int) {
 	x := sol.Flt
 	sol.Ova[0] = 2.0 + (1.0+x[0])*(1.0+x[0])
