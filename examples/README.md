@@ -13,7 +13,7 @@
 
 # 0 Very simple problem
 
-Goga can use two times of objective functions:
+Goga can use two types of objective functions:
 
 (A) the higher-level one: MinProb\_t which takes the vector of random variables x and returns
   the objectives values in f. It may also return the inequality constraints in g and the
