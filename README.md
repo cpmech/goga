@@ -5,6 +5,10 @@ algorithms. The goal of these algorithms is to solve optimisation problems with 
 constraints and many objectives. Also, problems with mixed-type representations such as those with
 real numbers and integers are considered by Goga.
 
+[See the documentation](https://godoc.org/github.com/cpmech/goga) for more details (e.g. how to call
+functions and use structures).
+
+[![GoDoc](https://godoc.org/github.com/cpmech/goga?status.svg)](https://godoc.org/github.com/cpmech/goga)
 
 
 ## Examples
@@ -39,11 +43,6 @@ like `self` or `this`).
 
 Some objects need to be initialised before usage. In this case, functions named `Init` have to be
 called (e.g. like `constructors`).
-
-Goga has several functions and _structures_. Checkout the **[developer's
-documentation](http://rawgit.com/cpmech/goga/master/doc/index.html)** to see what's available and
-how to call functions and methods.
-
 
 
 
