@@ -9,7 +9,6 @@ import (
 	"sort"
 
 	"github.com/cpmech/gosl/chk"
-	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
@@ -67,9 +66,9 @@ func (o *Solution) Reset(id int) {
 	// essential
 	o.Id = id
 	o.Fixed = false
-	la.VecFill(o.Ova, 0)
-	la.VecFill(o.Oor, 0)
-	la.VecFill(o.Flt, 0)
+	utl.Fill(o.Ova, 0)
+	utl.Fill(o.Oor, 0)
+	utl.Fill(o.Flt, 0)
 	utl.IntFill(o.Int, 0)
 
 	// metrics

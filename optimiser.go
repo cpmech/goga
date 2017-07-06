@@ -11,7 +11,6 @@ import (
 	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/gm/tri"
 	"github.com/cpmech/gosl/io"
-	"github.com/cpmech/gosl/la"
 	"github.com/cpmech/gosl/rnd"
 	"github.com/cpmech/gosl/utl"
 )
@@ -93,9 +92,9 @@ func (o *Optimiser) Init(gen Generator_t, obj ObjFunc_t, fcn MinProb_t, nf, ng, 
 				sol.Oor[o.Ng+i] = utl.GtePenalty(o.EpsH, h, 1) // ϵ ≥ |h[i]|
 			}
 		}
-		o.F = la.MatAlloc(o.Ncpu, o.Nf)
-		o.G = la.MatAlloc(o.Ncpu, o.Ng)
-		o.H = la.MatAlloc(o.Ncpu, o.Nh)
+		o.F = utl.Alloc(o.Ncpu, o.Nf)
+		o.G = utl.Alloc(o.Ncpu, o.Ng)
+		o.H = utl.Alloc(o.Ncpu, o.Nh)
 		o.Nova = o.Nf
 		o.Noor = o.Ng + o.Nh
 	}
