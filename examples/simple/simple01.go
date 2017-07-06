@@ -13,7 +13,7 @@ import (
 	"github.com/cpmech/gosl/utl"
 )
 
-// goga can use two times of objective functions:
+// goga can use two types of objective functions:
 //
 //   (A) the higher-level one: MinProb_t which takes the vector of random variables x and returns
 //       the objectives values in f. It may also return the inequality constraints in g and the
