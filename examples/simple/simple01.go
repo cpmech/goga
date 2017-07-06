@@ -84,6 +84,7 @@ func main() {
 		fcnA(fvec, nil, nil, xvec, nil, 0)
 		return fvec[0]
 	})
+	plt.Reset(true, nil)
 	plt.PlotOne(xBest, fBest, &plt.A{C: "r", M: "o", Ms: 20, NoClip: true})
 	plt.Plot(X, F, nil)
 	plt.Gll("$x$", "$f$", nil)
