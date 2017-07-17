@@ -57,7 +57,7 @@ func Test_igd01(tst *testing.T) {
 	// compute igd
 	igd := opt.calcIgd(fStar)
 	io.Pforan("igd = %v\n", igd)
-	chk.Scalar(tst, "igd", 1e-15, igd, 0)
+	chk.Float64(tst, "igd", 1e-15, igd, 0)
 
 	// plot
 	if chk.Verbose {
@@ -124,7 +124,7 @@ func Test_igd02(tst *testing.T) {
 	// compute igd
 	igd := opt.calcIgd(fStar)
 	io.Pforan("igd = %v\n", igd)
-	chk.Scalar(tst, "igd", 1e-15, igd, 1.5019007244180080e-03)
+	chk.Float64(tst, "igd", 1e-15, igd, 1.5019007244180080e-03)
 
 	// plot
 	if chk.Verbose {
