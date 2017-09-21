@@ -10,7 +10,6 @@ import (
 	"math"
 
 	"github.com/cpmech/goga"
-	"github.com/cpmech/gosl/chk"
 	"github.com/cpmech/gosl/io"
 	"github.com/cpmech/gosl/plt"
 	"github.com/cpmech/gosl/utl"
@@ -69,10 +68,7 @@ func PyPlot3(iOva, jOva, kOva int, opt *goga.Optimiser, surface func(), onlyFron
 	plt.Default3dView(min, max, min, max, min, max, true)
 
 	// save figure
-	err := plt.Save("/tmp/goga", "fig-"+opt.RptName)
-	if err != nil {
-		chk.Panic("%v", err)
-	}
+	plt.Save("/tmp/goga", "fig-"+opt.RptName)
 }
 
 // VtkPlot3 plots 3d space (VTK)
