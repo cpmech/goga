@@ -177,7 +177,7 @@ func Test_flt04(tst *testing.T) {
 
 	// plot
 	if chk.Verbose {
-		_, dat, _ := io.ReadTable("data/coelho-fig1.6.dat")
+		_, dat := io.ReadTable("data/coelho-fig1.6.dat")
 		pp := NewPlotParams(false)
 		pp.FnKey = "fig-flt04"
 		pp.WithAll = true

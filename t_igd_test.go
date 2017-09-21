@@ -20,11 +20,7 @@ func Test_igd01(tst *testing.T) {
 
 	// load star values
 	prob := "UF1"
-	fStar, err := io.ReadMatrix(io.Sf("./examples/mulobj-cec09/cec09/pf_data/%s.dat", prob))
-	if err != nil {
-		tst.Errorf("cannot read fStar matrix:\n%v", err)
-		return
-	}
+	fStar := io.ReadMatrix(io.Sf("./examples/mulobj-cec09/cec09/pf_data/%s.dat", prob))
 	npts := len(fStar)
 
 	// optimiser
@@ -80,18 +76,10 @@ func Test_igd02(tst *testing.T) {
 
 	// load star values
 	prob := "UF1"
-	fStar, err := io.ReadMatrix(io.Sf("./examples/mulobj-cec09/cec09/pf_data/%s.dat", prob))
-	if err != nil {
-		tst.Errorf("cannot read fStar matrix:\n%v", err)
-		return
-	}
+	fStar := io.ReadMatrix(io.Sf("./examples/mulobj-cec09/cec09/pf_data/%s.dat", prob))
 
 	// load reference numerical solution (MOEAD/CEC09)
-	fNum, err := io.ReadMatrix("./data/MOEAD-CEC09_PF_UF1_01.dat")
-	if err != nil {
-		tst.Errorf("cannot read fNum matrix:\n%v", err)
-		return
-	}
+	fNum := io.ReadMatrix("./data/MOEAD-CEC09_PF_UF1_01.dat")
 	nNum := len(fNum)
 
 	// optimiser

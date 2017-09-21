@@ -272,27 +272,20 @@ func (o *TexReport) Generate(dirout, fnkey string) {
 	}
 
 	// save file
-	err := rpt.WriteTexPdf(dirout, fnkey, nil)
-	if err != nil {
-		io.PfRed("pdflatex failed: %v\n", err)
-		return
-	}
+	rpt.WriteTexPdf(dirout, fnkey, nil)
 
 	// save tables
 	if o.singleObj {
-		err = rpt.WriteTexTables(dirout, map[string]string{
+		rpt.WriteTexTables(dirout, map[string]string{
 			fnkey + "-res": "table-" + fnkey + "-results",
 			fnkey + "-inp": "table-" + fnkey + "-inputdata",
 			fnkey + "-sol": "table-" + fnkey + "-solutions",
 		})
 	} else {
-		err = rpt.WriteTexTables(dirout, map[string]string{
+		rpt.WriteTexTables(dirout, map[string]string{
 			fnkey + "-res": "table-" + fnkey + "-results",
 			fnkey + "-inp": "table-" + fnkey + "-inputdata",
 		})
-	}
-	if err != nil {
-		io.PfRed("write tex tables failed: %v\n", err)
 	}
 }
 

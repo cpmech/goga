@@ -374,7 +374,6 @@ func (o *Optimiser) generate_solutions(reset bool) {
 
 	// meshes
 	if o.Nflt > 1 && o.UseMesh {
-		var err error
 		Xi, Xj := make([]float64, o.Nsol), make([]float64, o.Nsol)
 		o.Meshes = make([][]*Mesh, o.Nflt-1)
 		for i := 0; i < o.Nflt-1; i++ {
@@ -386,10 +385,7 @@ func (o *Optimiser) generate_solutions(reset bool) {
 				for k, s := range o.Solutions {
 					Xj[k] = s.Flt[j]
 				}
-				o.Meshes[i][j].V, o.Meshes[i][j].C, err = tri.Delaunay(Xi, Xj, false)
-				if err != nil {
-					chk.Panic("Delaunay2d failed:%v\n", err)
-				}
+				o.Meshes[i][j].V, o.Meshes[i][j].C = tri.Delaunay(Xi, Xj, false)
 			}
 		}
 	}
