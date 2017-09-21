@@ -120,11 +120,8 @@ func (o *Parameters) Default() {
 // Read reads configuration parameters from JSON file
 func (o *Parameters) Read(filenamepath string) {
 	o.Default()
-	b, err := io.ReadFile(filenamepath)
-	if err != nil {
-		chk.Panic("cannot read parameters file %q", filenamepath)
-	}
-	err = json.Unmarshal(b, o)
+	b := io.ReadFile(filenamepath)
+	err := json.Unmarshal(b, o)
 	if err != nil {
 		chk.Panic("cannot unmarshal parameters file %q", filenamepath)
 	}
