@@ -100,6 +100,9 @@ func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 
 	// check
 	var x []float64
+	if pp == nil {
+		pp = NewPlotParams(false)
+	}
 	if pp.RefX == nil {
 		x = make([]float64, o.Nflt)
 		switch pp.ContourAt {
