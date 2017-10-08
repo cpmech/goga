@@ -31,5 +31,7 @@ while true; do
     echo
     echo
     echo
-    go run simple02.go
+    #go run simple02.go
+    #go run cross-in-tray.go
+    go run cross-in-tray-stat.go
 done

@@ -1,7 +1,7 @@
 # Goga &ndash; examples
 
 ## Summary
-0. Simple curves
+0. Simple functions
 1. Constrained one-objective problems
 2. Unconstrained two-objective problems
 3. Constrained two-objective problems
@@ -11,7 +11,7 @@
 7. Economic emission load dispatch
 
 
-# 0 Simple curves
+# 0 Simple functions
 
 Goga can use two types of objective functions:
 
@@ -166,6 +166,97 @@ Source code: <a href="simple/simple02.go">simple/simple02.go</a>
 <p><img src="simple/figs/simple02.png" width="450"></p>
 Output of simple02.go
 </div>
+
+
+## Cross-in-tray function
+
+See [cross-in-tray function on wikipedia](https://en.wikipedia.org/wiki/Test_functions_for_optimization)
+
+```go
+// objective function
+func fcn(f, g, h, x []float64, y []int, cpu int) {
+	f[0] = -0.0001 * Pow(Abs(Sin(x[0])*Sin(x[1])*Exp(Abs(100-Sqrt(Pow(x[0], 2)+Pow(x[1], 2))/Pi)))+1, 0.1)
+}
+
+// main function
+func main() {
+
+	// problem definition
+	nf := 1 // number of objective functions
+	ng := 0 // number of inequality constraints
+	nh := 0 // number of equality constraints
+
+	// the solver (optimiser)
+	var opt goga.Optimiser
+	opt.Default()                    // must call this to set default constants
+	opt.FltMin = []float64{-10, -10} // must set minimum
+	opt.FltMax = []float64{+10, +10} // must set maximum
+	opt.Nsol = 80
+
+	// initialise the solver
+	opt.Init(goga.GenTrialSolutions, nil, fcn, nf, ng, nh)
+
+	// solve problem
+	tstart := time.Now()
+	opt.Solve()
+	cputime := time.Now().Sub(tstart)
+
+	// print results
+	fvec := []float64{0} // temporary vector to use with fcn
+	xbest := opt.Solutions[0].Flt
+	fcn(fvec, nil, nil, xbest, nil, 0)
+	io.Pf("xBest    = %v\n", xbest)
+	io.Pf("f(xBest) = %v\n", fvec)
+
+	// plotting
+	pp := goga.NewPlotParams(false)
+	pp.Npts = 101
+	pp.ArgsF.NoLines = true
+	pp.ArgsF.CmapIdx = 4
+	plt.Reset(true, nil)
+	plt.Title(io.Sf("Nsol(pop.size)=%d  Tmax(generations)=%d CpuTime=%v", opt.Nsol, opt.Tmax, io.RoundDuration(cputime, 1e3)), &plt.A{Fsz: 8})
+	opt.PlotContour(0, 1, 0, pp)
+	plt.PlotOne(xbest[0], xbest[1], &plt.A{C: "r", Mec: "r", M: "*"})
+	plt.Gll("$x_0$", "$x_1$", nil)
+	plt.Save("/tmp/goga", "cross-in-tray")
+}
+```
+
+Source code: <a href="simple/cross-in-tray.go">simple/cross-in-tray.go</a>
+
+<div id="container">
+<p><img src="simple/figs/cross-in-tray.png" width="450"></p>
+Output of cross-in-tray.go
+</div>
+
+To check the **repeatability** of the code, the optimisation loop can be called several times. This
+can be done with the `RunMany` function. For example, replace `opt.Solve()` with
+
+```go
+	// solve problem
+	opt.RunMany("", "", false)
+
+	// stat
+	opt.PrintStatF(0)
+```
+
+Which will produce something similar to:
+```
+fmin = -2.0626118708227428
+fave = -2.062611870822731
+fmax = -2.0626118708217605
+fdev = 9.817431965542015e-14
+ [-2.11,-2.10) |    0 
+ [-2.10,-2.08) |    0 
+ [-2.08,-2.07) |    0 
+ [-2.07,-2.06) |  100 #####################
+ [-2.06,-2.04) |    0 
+ [-2.04,-2.03) |    0 
+ [-2.03,-2.01) |    0 
+         count =  100
+```
+
+Source code: <a href="simple/cross-in-tray-stat.go">simple/cross-in-tray-stat.go</a>
 
 
 
