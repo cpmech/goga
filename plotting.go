@@ -69,6 +69,7 @@ func NewPlotParams(simple bool) (o *PlotParams) {
 
 	// auxiliary
 	o.NptsYfX = 101
+	o.Npts = 21
 
 	// plot arguments
 	o.ArgsLeg = &plt.A{CmapIdx: 0, LegOut: true, LegNcol: 4, LegHlen: 1.5}
@@ -96,6 +97,8 @@ func NewPlotParams(simple bool) (o *PlotParams) {
 // PlotContour plots contour with other components @ x=RefX
 //  If RefX==nil, x can be either @ minimum, maximum, middle or best
 //  For x @ best, Solutions will be sorted
+//  Input:
+//    pp -- plotting parameters [may be nil]
 func (o *Optimiser) PlotContour(iFlt, jFlt, iOva int, pp *PlotParams) {
 
 	// check
