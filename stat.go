@@ -92,6 +92,9 @@ type Stat struct {
 }
 
 // RunMany runs many trials in order to produce statistical data
+//   Input:
+//     dirout -- directory to write files with results [may be ""]
+//     fnkey  -- filename key with results (will add .res) [may be ""]
 func (o *Optimiser) RunMany(dirout, fnkey string, constantSeed bool) {
 
 	// benchmark
