@@ -18,11 +18,7 @@ import (
 func main() {
 
 	// read README.md file
-	md, err := io.ReadFile("README.md")
-	if err != nil {
-		io.PfRed("cannot read README.md\n")
-		return
-	}
+	md := io.ReadFile("README.md")
 
 	// process markdown
 	//html := string(blackfriday.MarkdownCommon(md))
