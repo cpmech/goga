@@ -482,6 +482,7 @@ func (o *TexReport) GenTable() (K []string, nrows int, F map[string]io.FcnRow, M
 
 // other reporting functions ///////////////////////////////////////////////////////////////////////
 
+// WriteAllValues export all values to file
 func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
 	var buf bytes.Buffer
 	io.Ff(&buf, "%5s", "front")
@@ -510,7 +511,7 @@ func WriteAllValues(dirout, fnkey string, opt *Optimiser) {
 			io.Ff(&buf, "%24g", sol.Flt[i])
 		}
 		for i := 0; i < opt.Nint; i++ {
-			io.Ff(&buf, "%24g", sol.Int[i])
+			io.Ff(&buf, "%24d", sol.Int[i])
 		}
 		io.Ff(&buf, "\n")
 	}
