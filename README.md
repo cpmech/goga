@@ -10,8 +10,16 @@ functions and use structures).
 
 [![GoDoc](https://godoc.org/github.com/cpmech/goga?status.svg)](https://godoc.org/github.com/cpmech/goga)
 
-The core algorithms in Goga are well explained in [this journal paper](doc/goga.pdf); see also [1, 2]
+The core algorithms in Goga are well explained in my paper entitled `Parallel evolutionary algorithm for constrained single and multi objective optimisation` which was rejected (due to silly reasons such as `too long`) from _IEEE Transactions on Evolutionary Computation_ but accepted in _Applied Soft Computing_.
 
+The original version for IEEE contains all the equations and is nicely formatted. You can get them freely from here:
+
+1. [Part I: Methods, single and two-objective test cases](doc/goga-ieee-part1.pdf)
+2. [Part II: Multi/many-objective test cases and applications](doc/goga-ieee-part2.pdf)
+
+The shorter and slightly improved (published) version is also freely availabe from here:
+
+3. [Summary of GOGA Algorithms](doc/goga.pdf); see also [1, 2]
 
 ## Examples
 
@@ -55,8 +63,6 @@ func main() {
 }
 ```
 
-
-
 ## Installation
 
 1 Install dependencies:
@@ -69,7 +75,6 @@ install Gosl first.
 ```
 go get github.com/cpmech/goga
 ```
-
 
 ## Documentation
 
@@ -84,15 +89,12 @@ like `self` or `this`).
 Some objects need to be initialised before usage. In this case, functions named `Init` have to be
 called (e.g. like `constructors`).
 
-
-
 ## Bibliography
 
 Goga is included in the following works:
 
 1. Pedroso DM, Bonyadi MR, Gallagher M (2017) Parallel evolutionary algorithm for single and multi-objective optimisation: differential evolution and constraints handling, Applied Soft Computing http://dx.doi.org/10.1016/j.asoc.2017.09.006
 2. Pedroso DM (2017) FORM reliability analysis using a parallel evolutionary algorithm, Structural Safety 65:84-99 http://dx.doi.org/10.1016/j.strusafe.2017.01.001
-
 
 ## Authors and license
 
